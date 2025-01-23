@@ -21,6 +21,7 @@ void Rept( LPSTR sz, ... );
 //Dimensions of possible screen resolutions
 __declspec( dllexport ) int ModeLX[32];
 __declspec( dllexport ) int ModeLY[32];
+SDL_DisplayMode SDLDisplayModes[32];
 
 //Number of possible screen resolutions
 __declspec( dllexport ) int NModes = 0;
@@ -43,18 +44,25 @@ __declspec( dllexport ) int RSCRSizeY;
 __declspec( dllexport ) int COPYSizeX;
 __declspec( dllexport ) int Pitch;
 
-LPDIRECTDRAW            lpDD = NULL;      // DirectDraw object
-LPDIRECTDRAWSURFACE     lpDDSPrimary;   // DirectDraw primary surface
-LPDIRECTDRAWSURFACE     lpDDSBack;      // DirectDraw back surface
+//LPDIRECTDRAW            lpDD = NULL;      // DirectDraw object
+//LPDIRECTDRAWSURFACE     lpDDSPrimary;   // DirectDraw primary surface
+//LPDIRECTDRAWSURFACE     lpDDSBack;      // DirectDraw back surface
+SDL_Renderer* renderer;                 // SDL Renderer object
+SDL_Surface* primarySurface;            // SDL primary surface
+SDL_Texture* primaryTexture;            // SDL primary texture
+SDL_Surface* backSurface;               // SDL back surface
 BOOL                    bActive;        // is application active (not minimized / has focus)?
 BOOL                    CurrentSurface; //=FALSE if backbuffer
 										// is active (Primary surface is visible)
 										//=TRUE if  primary surface is active
 										// (but backbuffer is visible)
 BOOL                    DDError;        //=FALSE if Direct Draw works normally 
-DDSURFACEDESC           ddsd;
-PALETTEENTRY            GPal[256];
-LPDIRECTDRAWPALETTE     lpDDPal;
+bool                    SDLError;       // false if SDL works normally
+//DDSURFACEDESC           ddsd;
+void*                     lpSurface;
+//PALETTEENTRY            GPal[256];
+//LPDIRECTDRAWPALETTE     lpDDPal;
+SDL_Palette*            sdlPal;
 
 extern bool PalDone;
 extern word PlayerMenuMode;
@@ -65,13 +73,14 @@ struct zzz
 	PALETTEENTRY XPal[255];
 };
 
+// Get closest palette color from RGB
 __declspec( dllexport ) byte GetPaletteColor( int r, int g, int b )
 {
 	int dmax = 10000;
 	int bestc = 0;
 	for (int i = 0; i < 256; i++)
 	{
-		int d = abs( r - GPal[i].peRed ) + abs( g - GPal[i].peGreen ) + abs( b - GPal[i].peBlue );
+		int d = abs( r - sdlPal->colors[i].r ) + abs( g - sdlPal->colors[i].g ) + abs( b - sdlPal->colors[i].b );
 		if (d < dmax)
 		{
 			dmax = d;
@@ -117,9 +126,9 @@ __declspec( dllexport ) void FlipPages( void )
 
 		for (int i = 0; i < 256; i++)
 		{
-			xxt.bmp.bmiColors[i].rgbRed = GPal[i].peRed;
-			xxt.bmp.bmiColors[i].rgbBlue = GPal[i].peBlue;
-			xxt.bmp.bmiColors[i].rgbGreen = GPal[i].peGreen;
+			xxt.bmp.bmiColors[i].rgbRed = sdlPal->colors[i].r;
+			xxt.bmp.bmiColors[i].rgbBlue = sdlPal->colors[i].b;
+			xxt.bmp.bmiColors[i].rgbGreen = sdlPal->colors[i].g;
 		}
 
 		xxt.bmp.bmiHeader.biSize = sizeof BITMAPINFOHEADER;
@@ -130,6 +139,7 @@ __declspec( dllexport ) void FlipPages( void )
 		xxt.bmp.bmiHeader.biCompression = BI_RGB;
 		xxt.bmp.bmiHeader.biSizeImage = 0;
 
+		// TODO: replace with SDL code
 		int z = StretchDIBits( WH,
 			0, 0, //X|YDest
 			COPYSizeX, RSCRSizeY, //nDestWidth|Height
@@ -204,29 +214,32 @@ void LockSurface( void )
 	if (window_mode)
 	{
 		ScreenPtr = (void*) ( int( offScreenPtr ) + MaxSizeX * 32 );
-		ddsd.lpSurface = ScreenPtr;
+		// ddsd has no alternative in SDL, so we just create lpSurface variable
+		lpSurface = ScreenPtr;
 		RealScreenPtr = ScreenPtr;
 		return;
 	}
 
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
-
-	if (( dderr = lpDDSPrimary->Lock( NULL, &ddsd,
-		DDLOCK_SURFACEMEMORYPTR |
-		DDLOCK_WAIT, NULL ) ) != DD_OK)
+	if (!SDL_LockSurface(primarySurface))
 	{
 		DDError = true;
+		SDLError = true;
+	}
+	else
+	{
+		lpSurface = primarySurface->pixels;
 	}
 
-	RSCRSizeX = ddsd.lPitch;
+	RSCRSizeX = primarySurface->pitch;
 
 	ScreenPtr = (void*) ( int( offScreenPtr ) + MaxSizeX * 32 );
 	RealScreenPtr = ScreenPtr;
-	RealScreenPtr = ddsd.lpSurface;
-	SCRSZY = ddsd.dwHeight;
+	RealScreenPtr = lpSurface;
+	SCRSZY = primarySurface->h;
 	ClearScreen();
 }
 
@@ -242,15 +255,13 @@ void UnlockSurface( void )
 		return;
 	}
 
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
+	SDL_UnlockSurface(primarySurface);
 
-	if (lpDDSPrimary->Unlock( NULL ) != DD_OK)
-	{
-		DDError = true;
-	}
+	// TODO: render to the screen here?
 }
 
 int BestVX = 640;
@@ -258,59 +269,104 @@ int BestVY = 480;
 int BestBPP = 32;
 
 //Save results of DirectX display mode enumeration
-HRESULT CALLBACK ModeCallback( LPDDSURFACEDESC pdds, LPVOID lParam )
+//HRESULT CALLBACK ModeCallback( LPDDSURFACEDESC pdds, LPVOID lParam )
+//{
+//	if (1024 > pdds->dwWidth || 768 > pdds->dwHeight)
+//	{//Don't allow for resolutions less than 1024 x 768 ot bigger than 1920x[...]
+//		return S_FALSE;
+//	}
+//
+//	if (1920 < pdds->dwWidth)
+//	{//Also disable all resolutions above ~1920 px wide for fairness reasons
+//		return S_FALSE;
+//	}
+//
+//	if (32 == pdds->ddpfPixelFormat.dwRGBBitCount)
+//	{
+//		ModeLX[NModes] = pdds->dwWidth;
+//		ModeLY[NModes] = pdds->dwHeight;
+//		NModes++;
+//	}
+//
+//	//return S_TRUE to stop enuming modes, S_FALSE to continue
+//	return S_FALSE;
+//}
+
+void SDLModeCallback(SDL_DisplayMode* mode)
 {
-	if (1024 > pdds->dwWidth || 768 > pdds->dwHeight)
+	
+	if (1024 > mode->w || 768 > mode->h)
 	{//Don't allow for resolutions less than 1024 x 768 ot bigger than 1920x[...]
-		return S_FALSE;
+		return;
 	}
 
-	if (1920 < pdds->dwWidth)
+	if (1920 < mode->w)
 	{//Also disable all resolutions above ~1920 px wide for fairness reasons
-		return S_FALSE;
+		return;
 	}
 
-	if (32 == pdds->ddpfPixelFormat.dwRGBBitCount)
+	const SDL_PixelFormatDetails* formatDetails = SDL_GetPixelFormatDetails(mode->format);
+
+	if (32 == formatDetails->bits_per_pixel)
 	{
-		ModeLX[NModes] = pdds->dwWidth;
-		ModeLY[NModes] = pdds->dwHeight;
+		ModeLX[NModes] = mode->w;
+		ModeLY[NModes] = mode->h;
+		SDLDisplayModes[NModes] = *mode;
 		NModes++;
 	}
-
-	//return S_TRUE to stop enuming modes, S_FALSE to continue
-	return S_FALSE;
 }
 
 //Init DirectDraw and find possible resolutions
 bool EnumModesOnly()
 {
-	HRESULT ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-	if (ddrval == DD_OK)
-	{
-		lpDD->EnumDisplayModes( 0, NULL, NULL, ModeCallback );
-		lpDD->Release();
-		lpDD = NULL;
+	//HRESULT ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
+	//if (ddrval == DD_OK)
+	//{
+	//	lpDD->EnumDisplayModes( 0, NULL, NULL, ModeCallback );
+	//	lpDD->Release();
+	//	lpDD = NULL;
 
-		return true;
-	}
-	else
+	//	return true;
+	//}
+	//else
+	//{
+	//	MessageBox( hwnd, "Unable to initialise Direct Draw. Cossacks should not run.", "Loading error", MB_ICONSTOP );
+	//	exit( 0 );
+	//}
+
+	SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
+	if (primaryDisplay)
 	{
-		MessageBox( hwnd, "Unable to initialise Direct Draw. Cossacks should not run.", "Loading error", MB_ICONSTOP );
-		exit( 0 );
+		int numModes;
+		SDL_DisplayMode** modes = SDL_GetFullscreenDisplayModes(primaryDisplay, &numModes);
+		if (modes)
+		{
+			for (int i = 0; i < numModes; i++)
+			{
+				SDLModeCallback(modes[i]);
+			}
+
+			SDL_free(modes);
+		}
 	}
+
+	return true;
 }
 
-bool CreateDDObjects( HWND hwnd )
+bool CreateDDObjects( SDL_Window* sdlWindow )
 {
-	HRESULT ddrval;
+	//HRESULT ddrval;
+	bool success;
 	char buf[256];
 	DDError = false;
+	SDLError = false;
 	CurrentSurface = true;
 
 	if (window_mode)
 	{
 		SVSC.SetSize( RealLx, RealLy );
 		DDError = false;
+		SDLError = false;
 		SCRSizeX = MaxSizeX;
 		SCRSizeY = MaxSizeY;
 		COPYSizeX = RealLx;
@@ -330,24 +386,29 @@ bool CreateDDObjects( HWND hwnd )
 		BytesPerPixel = 1;
 		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
 
-		const int screen_width = GetSystemMetrics( SM_CXSCREEN );
-		const int screen_height = GetSystemMetrics( SM_CYSCREEN );
+		SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
+		SDL_Rect displayBounds;
+		SDL_GetDisplayBounds(displayID, &displayBounds);
 
-		const int ModeLX_candidates[] = { 1024, 1152, 1280, 1280, 1366, 1600, 1920 };
-		const int ModeLY_candidates[] = { 768,  864,  720, 1024,  768,  900, 1080 };
+		const int screen_width = displayBounds.w;
+		const int screen_height = displayBounds.h;
 
-		NModes = 0;
-		for (int i = 0; i < 8; i++)
-		{
-			//Only show resolutions up to current screen resolution
-			if (ModeLX_candidates[i] <= screen_width
-				&& ModeLY_candidates[i] <= screen_height)
-			{
-				ModeLX[i] = ModeLX_candidates[i];
-				ModeLY[i] = ModeLY_candidates[i];
-				NModes++;
-			}
-		}
+		//const int ModeLX_candidates[] = { 1024, 1152, 1280, 1280, 1366, 1600, 1920 };
+		//const int ModeLY_candidates[] = { 768,  864,  720, 1024,  768,  900, 1080 };
+
+		//// Overwrites EnumModesOnly results
+		//NModes = 0;
+		//for (int i = 0; i < 8; i++)
+		//{
+		//	//Only show resolutions up to current screen resolution
+		//	if (ModeLX_candidates[i] <= screen_width
+		//		&& ModeLY_candidates[i] <= screen_height)
+		//	{
+		//		ModeLX[i] = ModeLX_candidates[i];
+		//		ModeLY[i] = ModeLY_candidates[i];
+		//		NModes++;
+		//	}
+		//}
 
 		return true;
 	}
@@ -355,37 +416,55 @@ bool CreateDDObjects( HWND hwnd )
 	SVSC.SetSize( RealLx, RealLy );
 	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
 
-	if (lpDD)
+	if (renderer)
 	{
-		lpDDSPrimary->Release();
+		SDL_DestroySurface(primarySurface);
+		SDL_DestroyTexture(primaryTexture);
 		goto SDMOD;
 	}
 
-	lpDD = NULL;
+	renderer = NULL;
 
-	ddrval = DirectDrawCreate_wrapper( nullptr, &lpDD, nullptr );
+	success = CreateSDLRenderer();
 
-	if (ddrval == DD_OK)
+	if (success)
 	{
 SDMOD:;
-		ddrval = lpDD->SetCooperativeLevel( hwnd,
-			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
-		if (ddrval == DD_OK)
+		// TODO: check SDL_WINDOW_FULLSCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP modes if any problem here
+		success = SDL_SetWindowFullscreen(sdlWindow, true);
+		SDL_SyncWindow(sdlWindow);
+		//ddrval = lpDD->SetCooperativeLevel( hwnd,
+		//	DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
+		if (success)
 		{
-			ddrval = lpDD->SetDisplayMode( RealLx, RealLy, 8 );
-			if (ddrval == DD_OK)
+			// TODO: originally was set to RealLx, RealLy, 8. Need to make sure we choose the same display mode or sync back chosen with RealLx and RealLy (and a lot of other variables)
+			for (int i = 0; i < NModes; i++)
 			{
-				ddsd.dwSize = sizeof( ddsd );
-				ddsd.dwFlags = DDSD_CAPS;
-				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, nullptr );
-				if (ddrval == DD_OK)
+				if (ModeLX[i] == RealLx && ModeLY[i] == RealLy)
+				{
+					success = SDL_SetWindowFullscreenMode(sdlWindow, &SDLDisplayModes[i]);
+					break;
+				}
+			}
+			//ddrval = lpDD->SetDisplayMode( RealLx, RealLy, 8 );
+			if (success)
+			{
+				//ddsd.dwSize = sizeof( ddsd );
+				//ddsd.dwFlags = DDSD_CAPS;
+				//ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+				//primarySurface = SDL_GetWindowSurface(sdlWindow);
+				primarySurface = SDL_CreateSurface(RealLx, RealLy, SDL_PIXELFORMAT_INDEX8);
+				// FIXME: possibly need to use 32 bpp texture
+				primaryTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, RealLx, RealLy);
+				//ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, nullptr );
+				if (primarySurface)
 				{
 					DDError = false;
+					SDLError = false;
 					SCRSizeX = MaxSizeX;
 					SCRSizeY = MaxSizeY;
 					RSCRSizeX = RealLx;
-					Pitch = ddsd.lPitch;
+					Pitch = primarySurface->pitch;
 					COPYSizeX = RealLx;
 					RSCRSizeY = RealLy;
 					ScrHeight = SCRSizeY;
@@ -396,185 +475,186 @@ SDMOD:;
 					WindLy = RealLy;
 					WindX1 = WindLx - 1;
 					WindY1 = WindLy - 1;
-					BytesPerPixel = 1;
+					//BytesPerPixel = 1;
+					BytesPerPixel = SDL_GetPixelFormatDetails(primarySurface->format)->bytes_per_pixel;
 
 					return true;
 				}
 			}
 		}
 	}
-	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
-	MessageBox( hwnd, buf, "ERROR", MB_OK );
+	//wsprintf( buf, "SDL Init Failed (%08lx)\n", ddrval );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), NULL);
 	return false;
 }
 
-BOOL CreateRGBDDObjects( HWND hwnd )
-{
-	HRESULT ddrval;
-	char    buf[256];
-	DDError = false;
-	CurrentSurface = true;
-	if (window_mode)
-	{
+//BOOL CreateRGBDDObjects( HWND hwnd )
+//{
+//	HRESULT ddrval;
+//	char    buf[256];
+//	DDError = false;
+//	CurrentSurface = true;
+//	if (window_mode)
+//	{
+//
+//		DDError = false;
+//		SCRSizeX = MaxSizeX;
+//		SCRSizeY = MaxSizeY;
+//		COPYSizeX = RealLx;
+//		RSCRSizeX = RealLx;
+//		RSCRSizeY = RealLy;
+//		ScrHeight = SCRSizeY;
+//		ScrWidth = SCRSizeX;
+//		InitRLCWindows();
+//		WindX = 0;
+//		WindY = 0;
+//		WindLx = RealLx;
+//		WindLy = RealLy;
+//		WindX1 = WindLx - 1;
+//		WindY1 = WindLy - 1;
+//		BytesPerPixel = 1;
+//		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
+//		return true;
+//	}
+//#ifdef COPYSCR
+//	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
+//#endif
+//	if (lpDD)
+//	{
+//		lpDDSPrimary->Release();
+//		goto SDMOD;
+//	}
+//	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
+//	if (ddrval == DD_OK)
+//	{
+//		// Get exclusive mode
+//		ddrval = lpDD->SetCooperativeLevel( hwnd,
+//			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
+//		if (ddrval == DD_OK)
+//		{
+//SDMOD:
+//			ddrval = lpDD->SetDisplayMode( 800, 600, 32 ); //COPYSizeX,RSCRSizeY, 8 );
+//			if (ddrval == DD_OK)
+//			{
+//				// Create the primary surface with 1 back buffer
+//				ddsd.dwSize = sizeof( ddsd );
+//				ddsd.dwFlags = DDSD_CAPS;
+//				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+//				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
+//				if (ddrval == DD_OK)
+//				{
+//					DDError = false;
+//					SCRSizeX = MaxSizeX;
+//					SCRSizeY = MaxSizeY;
+//					RSCRSizeX = RealLx;//ddsd.lPitch;
+//					Pitch = ddsd.lPitch;
+//					COPYSizeX = RealLx;
+//					RSCRSizeY = RealLy;
+//					ScrHeight = SCRSizeY;
+//					ScrWidth = SCRSizeX;
+//					WindX = 0;
+//					WindY = 0;
+//					WindLx = SCRSizeX;
+//					WindLy = SCRSizeY;
+//					WindX1 = WindLx - 1;
+//					WindY1 = WindLy - 1;
+//					BytesPerPixel = 1;
+//					return true;
+//				}
+//			}
+//		}
+//	}
+//	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
+//	MessageBox( hwnd, buf, "ERROR", MB_OK );
+//	return false;
+//}
 
-		DDError = false;
-		SCRSizeX = MaxSizeX;
-		SCRSizeY = MaxSizeY;
-		COPYSizeX = RealLx;
-		RSCRSizeX = RealLx;
-		RSCRSizeY = RealLy;
-		ScrHeight = SCRSizeY;
-		ScrWidth = SCRSizeX;
-		InitRLCWindows();
-		WindX = 0;
-		WindY = 0;
-		WindLx = RealLx;
-		WindLy = RealLy;
-		WindX1 = WindLx - 1;
-		WindY1 = WindLy - 1;
-		BytesPerPixel = 1;
-		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
-		return true;
-	}
-#ifdef COPYSCR
-	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
-#endif
-	if (lpDD)
-	{
-		lpDDSPrimary->Release();
-		goto SDMOD;
-	}
-	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-	if (ddrval == DD_OK)
-	{
-		// Get exclusive mode
-		ddrval = lpDD->SetCooperativeLevel( hwnd,
-			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
-		if (ddrval == DD_OK)
-		{
-SDMOD:
-			ddrval = lpDD->SetDisplayMode( 800, 600, 32 ); //COPYSizeX,RSCRSizeY, 8 );
-			if (ddrval == DD_OK)
-			{
-				// Create the primary surface with 1 back buffer
-				ddsd.dwSize = sizeof( ddsd );
-				ddsd.dwFlags = DDSD_CAPS;
-				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
-				if (ddrval == DD_OK)
-				{
-					DDError = false;
-					SCRSizeX = MaxSizeX;
-					SCRSizeY = MaxSizeY;
-					RSCRSizeX = RealLx;//ddsd.lPitch;
-					Pitch = ddsd.lPitch;
-					COPYSizeX = RealLx;
-					RSCRSizeY = RealLy;
-					ScrHeight = SCRSizeY;
-					ScrWidth = SCRSizeX;
-					WindX = 0;
-					WindY = 0;
-					WindLx = SCRSizeX;
-					WindLy = SCRSizeY;
-					WindX1 = WindLx - 1;
-					WindY1 = WindLy - 1;
-					BytesPerPixel = 1;
-					return true;
-				}
-			}
-		}
-	}
-	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
-	MessageBox( hwnd, buf, "ERROR", MB_OK );
-	return false;
-}
-
-BOOL CreateRGB640DDObjects( HWND hwnd )
-{
-	HRESULT ddrval;
-	//DDSCAPS ddscaps;
-	char    buf[256];
-	DDError = false;
-	CurrentSurface = true;
-	if (window_mode)
-	{
-
-		DDError = false;
-		SCRSizeX = MaxSizeX;
-		SCRSizeY = MaxSizeY;
-		COPYSizeX = RealLx;
-		RSCRSizeX = RealLx;
-		RSCRSizeY = RealLy;
-		ScrHeight = SCRSizeY;
-		ScrWidth = SCRSizeX;
-		InitRLCWindows();
-		WindX = 0;
-		WindY = 0;
-		WindLx = SCRSizeX;
-		WindLy = SCRSizeY;
-		WindX1 = WindLx - 1;
-		WindY1 = WindLy - 1;
-		BytesPerPixel = 1;
-		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
-		return true;
-	}
-#ifdef COPYSCR
-	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
-#endif
-	if (lpDD)
-	{
-		lpDDSPrimary->Release();
-		goto SDMOD;
-	};
-	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-	if (ddrval == DD_OK)
-	{
-SDMOD:;
-		// Get exclusive mode
-		ddrval = lpDD->SetCooperativeLevel( hwnd,
-			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
-		if (ddrval == DD_OK)
-		{
-			ddrval = lpDD->SetDisplayMode( 640, 480, BestBPP ); //COPYSizeX,RSCRSizeY, 8 );
-			if (ddrval == DD_OK)
-			{
-				// Create the primary surface with 1 back buffer
-				ddsd.dwSize = sizeof( ddsd );
-				ddsd.dwFlags = DDSD_CAPS;
-				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
-				if (ddrval == DD_OK)
-				{
-					DDError = false;
-					SCRSizeX = MaxSizeX;
-					SCRSizeY = MaxSizeY;
-					RSCRSizeX = RealLx;//ddsd.lPitch;
-					Pitch = ddsd.lPitch;
-					COPYSizeX = RealLx;
-					RSCRSizeY = RealLy;
-					ScrHeight = SCRSizeY;
-					ScrWidth = SCRSizeX;
-					WindX = 0;
-					WindY = 0;
-					WindLx = SCRSizeX;
-					WindLy = SCRSizeY;
-					WindX1 = WindLx - 1;
-					WindY1 = WindLy - 1;
-					BytesPerPixel = 1;
-					return true;
-				}
-			}
-		}
-	}
-	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
-	MessageBox( hwnd, buf, "ERROR", MB_OK );
-	return false;
-}
+//BOOL CreateRGB640DDObjects( HWND hwnd )
+//{
+//	HRESULT ddrval;
+//	//DDSCAPS ddscaps;
+//	char    buf[256];
+//	DDError = false;
+//	CurrentSurface = true;
+//	if (window_mode)
+//	{
+//
+//		DDError = false;
+//		SCRSizeX = MaxSizeX;
+//		SCRSizeY = MaxSizeY;
+//		COPYSizeX = RealLx;
+//		RSCRSizeX = RealLx;
+//		RSCRSizeY = RealLy;
+//		ScrHeight = SCRSizeY;
+//		ScrWidth = SCRSizeX;
+//		InitRLCWindows();
+//		WindX = 0;
+//		WindY = 0;
+//		WindLx = SCRSizeX;
+//		WindLy = SCRSizeY;
+//		WindX1 = WindLx - 1;
+//		WindY1 = WindLy - 1;
+//		BytesPerPixel = 1;
+//		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
+//		return true;
+//	}
+//#ifdef COPYSCR
+//	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
+//#endif
+//	if (lpDD)
+//	{
+//		lpDDSPrimary->Release();
+//		goto SDMOD;
+//	};
+//	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
+//	if (ddrval == DD_OK)
+//	{
+//SDMOD:;
+//		// Get exclusive mode
+//		ddrval = lpDD->SetCooperativeLevel( hwnd,
+//			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
+//		if (ddrval == DD_OK)
+//		{
+//			ddrval = lpDD->SetDisplayMode( 640, 480, BestBPP ); //COPYSizeX,RSCRSizeY, 8 );
+//			if (ddrval == DD_OK)
+//			{
+//				// Create the primary surface with 1 back buffer
+//				ddsd.dwSize = sizeof( ddsd );
+//				ddsd.dwFlags = DDSD_CAPS;
+//				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+//				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
+//				if (ddrval == DD_OK)
+//				{
+//					DDError = false;
+//					SCRSizeX = MaxSizeX;
+//					SCRSizeY = MaxSizeY;
+//					RSCRSizeX = RealLx;//ddsd.lPitch;
+//					Pitch = ddsd.lPitch;
+//					COPYSizeX = RealLx;
+//					RSCRSizeY = RealLy;
+//					ScrHeight = SCRSizeY;
+//					ScrWidth = SCRSizeX;
+//					WindX = 0;
+//					WindY = 0;
+//					WindLx = SCRSizeX;
+//					WindLy = SCRSizeY;
+//					WindX1 = WindLx - 1;
+//					WindY1 = WindLy - 1;
+//					BytesPerPixel = 1;
+//					return true;
+//				}
+//			}
+//		}
+//	}
+//	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
+//	MessageBox( hwnd, buf, "ERROR", MB_OK );
+//	return false;
+//}
 
 /*   Direct Draw palette loading*/
 void LoadPalette( LPCSTR lpFileName )
 {
-	if (!lpDDPal)
+	if (!sdlPal)
 	{
 		return;
 	}
@@ -590,13 +670,16 @@ void LoadPalette( LPCSTR lpFileName )
 	}
 
 	ResFile pf = RReset( lpFileName );
-	memset( &GPal, 0, 1024 );
+	sdlPal = SDL_CreatePalette(256);
+	//memset( &GPal, 0, 1024 );
 
 	if (pf != INVALID_HANDLE_VALUE)
 	{
 		for (int i = 0; i < 256; i++)
 		{
-			RBlockRead( pf, &GPal[i], 3 );
+			SDL_Color color = { 0, 0, 0, 0 };
+			RBlockRead( pf, &color, 3 );
+			SDL_SetPaletteColors(sdlPal, &color, i, 1);
 		}
 		RClose( pf );
 
@@ -637,13 +720,15 @@ void LoadPalette( LPCSTR lpFileName )
 					bb = bb - ( ( rr*( 2 - i ) ) / 3 );
 				}
 
-				GPal[0xB0 + i].peBlue = bb;
-				GPal[0xB0 + i].peRed = rr;
-				GPal[0xB0 + i].peGreen = gg;
+				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 0 };
+				SDL_SetPaletteColors(sdlPal, &color, 0xB0 + i, 1);
 				C0 += 5;
 			}
 			ResFile pf = RRewrite( lpFileName );
-			for (int i = 0; i < 256; i++)RBlockWrite( pf, &GPal[i], 3 );
+			for (int i = 0; i < 256; i++)
+			{
+				RBlockWrite(pf, &(sdlPal->colors[i]), 3);
+			}
 			RClose( pf );
 		}
 
@@ -651,14 +736,16 @@ void LoadPalette( LPCSTR lpFileName )
 		{
 			if (!PalDone)
 			{
-				lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, NULL );
+				// Already created above
+				//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, NULL );
 				PalDone = true;
-				lpDDSPrimary->SetPalette( lpDDPal );
+				SDL_SetSurfacePalette(primarySurface, sdlPal);
 			}
-			else
-			{
-				lpDDPal->SetEntries( 0, 0, 256, GPal );
-			}
+			// Already set above
+			//else
+			//{
+			//	lpDDPal->SetEntries( 0, 0, 256, GPal );
+			//}
 		}
 	}
 }
@@ -671,41 +758,51 @@ void SetDarkPalette()
 		return;
 	}
 
-	memset( &GPal, 0, 1024 );
+	//memset( &GPal, 0, 1024 );
+	for (int i = 0; i < 256; i++)
+	{
+		SDL_Color color = { 0, 0, 0, 0 };
+		SDL_SetPaletteColors(sdlPal, &color, i, 1);
+	}
 
 	if (!window_mode)
 	{
 		if (!PalDone)
 		{
-			lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, nullptr );
+			//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, nullptr );
 			PalDone = true;
-			lpDDSPrimary->SetPalette( lpDDPal );
+			SDL_SetSurfacePalette(primarySurface, sdlPal);
 		}
-		else
-		{
-			lpDDPal->SetEntries( 0, 0, 256, GPal );
-		}
+		//else
+		//{
+		//	lpDDPal->SetEntries( 0, 0, 256, GPal );
+		//}
 	}
 }
 
 __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 {
-	PALETTEENTRY NPal[256];
-
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
 
 	SetDarkPalette();
 	ResFile pf = RReset( lpFileName );
-	memset( &GPal, 0, 1024 );
+	//memset( &GPal, 0, 1024 );
+	for (int i = 0; i < 256; i++)
+	{
+		SDL_Color color = { 0, 0, 0, 0 };
+		SDL_SetPaletteColors(sdlPal, &color, i, 1);
+	}
 
 	if (pf != INVALID_HANDLE_VALUE)
 	{
 		for (int i = 0; i < 256; i++)
 		{
-			RBlockRead( pf, &GPal[i], 3 );
+			SDL_Color color = { 0, 0, 0, 0 };
+			RBlockRead(pf, &color, 3);
+			SDL_SetPaletteColors(sdlPal, &color, i, 1);
 		}
 
 		RClose( pf );
@@ -752,16 +849,15 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 				//	gg=gg*10/11;
 				//	bb=bb*10/11;
 				//};
-				GPal[0xB0 + i].peBlue = bb;
-				GPal[0xB0 + i].peRed = rr;
-				GPal[0xB0 + i].peGreen = gg;
+				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 0 };
+				SDL_SetPaletteColors(sdlPal, &color, 0xB0 + i, 1);
 				C0 += 5;
 			}
 			ResFile pf = RRewrite( lpFileName );
 
 			for (int i = 0; i < 256; i++)
 			{
-				RBlockWrite( pf, &GPal[i], 3 );
+				RBlockWrite(pf, &(sdlPal->colors[0]), 3);
 			}
 
 			RClose( pf );
@@ -769,8 +865,8 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 
 		if (!window_mode)
 		{
-			byte* pal = (byte*) NPal;
-			byte* pal0 = (byte*) GPal;
+			SDL_Color originalColors[256];
+			memcpy(originalColors, sdlPal->colors, sizeof(SDL_Color) * 256);
 			int mul = 0;
 			int t0 = GetTickCount();
 			int mul0 = 0;
@@ -784,15 +880,22 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 
 				if (mul != mul0)
 				{
-					for (int j = 0; j < 1024; j++)
+					//for (int j = 0; j < 1024; j++)
+					//{
+						//pal[j] = byte( ( int( pal0[j] )*mul ) >> 8 );
+					//}
+					for (int j = 0; j < 255; j++)
 					{
-						pal[j] = byte( ( int( pal0[j] )*mul ) >> 8 );
+						SDL_Color color = {
+							byte((int(originalColors[j].r) * mul) >> 8),
+							byte((int(originalColors[j].g) * mul) >> 8),
+							byte((int(originalColors[j].b) * mul) >> 8),
+							byte((int(originalColors[j].a) * mul) >> 8),
+						};
+						SDL_SetPaletteColors(sdlPal, &color, j, 1);
 					}
-					pal[1023] = 0;
-					pal[1022] = 0;
-					pal[1021] = 0;
-					pal[1020] = 0;
-					lpDDPal->SetEntries( 0, 0, 255, NPal );
+					SDL_Color color = { 0, 0, 0, 0 };
+					SDL_SetPaletteColors(sdlPal, &color, 255, 1);
 				}
 				mul0 = mul;
 			} while (mul != 255);
@@ -802,16 +905,15 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 
 __declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
 {
-	PALETTEENTRY NPal[256];
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
 
 	if (!window_mode)
 	{
-		byte* pal = (byte*) NPal;
-		byte* pal0 = (byte*) GPal;
+		SDL_Color originalColors[256];
+		memcpy(originalColors, sdlPal->colors, sizeof(SDL_Color) * 256);
 		int mul = 0;
 		int t0 = GetTickCount();
 		int mul0 = 0;
@@ -825,16 +927,22 @@ __declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
 
 			if (mul != mul0)
 			{
-				for (int j = 0; j < 1024; j++)
+				//for (int j = 0; j < 1024; j++)
+				//{
+				//	pal[j] = byte( ( int( pal0[j] )*( 255 - mul ) ) >> 8 );
+				//}
+				for (int j = 0; j < 255; j++)
 				{
-					pal[j] = byte( ( int( pal0[j] )*( 255 - mul ) ) >> 8 );
+					SDL_Color color = {
+						byte((int(originalColors[j].r) * ( 255 - mul )) >> 8),
+						byte((int(originalColors[j].g) * ( 255 - mul )) >> 8),
+						byte((int(originalColors[j].b) * ( 255 - mul )) >> 8),
+						byte((int(originalColors[j].a) * ( 255 - mul )) >> 8),
+					};
+					SDL_SetPaletteColors(sdlPal, &color, j, 1);
 				}
-
-				pal[1023] = 0;
-				pal[1022] = 0;
-				pal[1021] = 0;
-				pal[1020] = 0;
-				lpDDPal->SetEntries( 0, 0, 255, NPal );
+				SDL_Color color = { 0, 0, 0, 0 };
+				SDL_SetPaletteColors(sdlPal, &color, 255, 1);
 			};
 			mul0 = mul;
 		} while (mul != 255);
@@ -857,25 +965,30 @@ void FreeDDObjects( void )
 		return;
 	}
 
-	if (lpDD != nullptr)
+	if (renderer != nullptr)
 	{
 		//ClearScreen();
-		if (lpDDSPrimary != nullptr)
+		if (primarySurface != nullptr)
 		{
-			lpDDSPrimary->Release();
-			lpDDSPrimary = nullptr;
+			SDL_DestroySurface(primarySurface);
+			SDL_DestroyTexture(primaryTexture);
+			primarySurface = nullptr;
+			primaryTexture = nullptr;
 		};
-		lpDD->Release();
-		lpDD = nullptr;
+		SDL_DestroyRenderer(renderer);
+		renderer = nullptr;
 	}
 }
 
 __declspec( dllexport )
 void GetPalColor( byte idx, byte* r, byte* g, byte* b )
 {
-	*r = GPal[idx].peRed;
-	*g = GPal[idx].peGreen;
-	*b = GPal[idx].peBlue;
+	//*r = GPal[idx].peRed;
+	//*g = GPal[idx].peGreen;
+	//*b = GPal[idx].peBlue;
+	*r = sdlPal->colors[idx].r;
+	*g = sdlPal->colors[idx].g;
+	*b = sdlPal->colors[idx].b;
 }
 
 /*
@@ -885,19 +998,56 @@ void GetPalColor( byte idx, byte* r, byte* g, byte* b )
 	No idea what the mdraw.dll funtion does, but you end up with a working
 	IDirectDraw interface and no legacy bugs.
 */
-HRESULT DirectDrawCreate_wrapper( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter )
+//HRESULT DirectDrawCreate_wrapper( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter )
+//{
+//	HMODULE mdrawHandle = LoadLibrary( "mdraw.dll" );
+//	if (nullptr != mdrawHandle)
+//	{
+//		typedef HRESULT( __stdcall *mdrawProcType )( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter );
+//		mdrawProcType mdrawProc = (mdrawProcType) GetProcAddress( mdrawHandle, "DirectDrawCreate" );
+//		if (nullptr != mdrawProc)
+//		{
+//			HRESULT mdrawResult = mdrawProc( lpGUID, lplpDD, pUnkOuter );
+//			return mdrawResult;
+//		}
+//		FreeLibrary( mdrawHandle );
+//	}
+//	return DDERR_GENERIC;
+//}
+
+bool CreateSDLRenderer()
 {
-	HMODULE mdrawHandle = LoadLibrary( "mdraw.dll" );
-	if (nullptr != mdrawHandle)
+	if (renderer)
 	{
-		typedef HRESULT( __stdcall *mdrawProcType )( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter );
-		mdrawProcType mdrawProc = (mdrawProcType) GetProcAddress( mdrawHandle, "DirectDrawCreate" );
-		if (nullptr != mdrawProc)
-		{
-			HRESULT mdrawResult = mdrawProc( lpGUID, lplpDD, pUnkOuter );
-			return mdrawResult;
-		}
-		FreeLibrary( mdrawHandle );
+		return true;
 	}
-	return DDERR_GENERIC;
+	renderer = SDL_CreateRenderer(sdlWindow, NULL);
+	if (!renderer)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL renderer", NULL);
+		//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		//SDL_RenderClear(renderer);
+		//SDL_RenderPresent(renderer);
+		return false;
+	}
+	return true;
+}
+
+bool InitSDLWindow()
+{
+	if (!SDL_Init(SDL_INIT_VIDEO))
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to initialise SDL3", NULL);
+		exit(0);
+	}
+
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hwnd);
+	sdlWindow = SDL_CreateWindowWithProperties(props);
+	if (!sdlWindow)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
+		exit(0);
+	}
+	return true;
 }

@@ -657,7 +657,7 @@ bool InitScreen();
 int OldSizeX;
 int OldSizeY;
 int mul3( int );
-extern LPDIRECTDRAW lpDD;
+//extern LPDIRECTDRAW lpDD;
 unsigned long GetRealTime();
 
 void GSSetup800();

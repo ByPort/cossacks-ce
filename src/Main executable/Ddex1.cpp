@@ -315,6 +315,7 @@ void CloseEventHandler( int i )
 }
 
 HWND hwnd;
+SDL_Window* sdlWindow;
 
 //fonts
 RLCTable RCross;
@@ -1003,9 +1004,9 @@ long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 		bActive = wParam;
 		if (bActive)
 		{
-			if (lpDDSPrimary)
+			if (primarySurface)
 			{
-				CreateDDObjects( hwnd );
+				CreateDDObjects( sdlWindow );
 				LockSurface();
 				UnlockSurface();
 				LoadFog( CurPalette );
@@ -2142,7 +2143,7 @@ bool PalDone;
 bool InitScreen()
 {
 	PalDone = false;
-	CreateDDObjects( hwnd );
+	CreateDDObjects( sdlWindow );
 	PalDone = false;
 	LoadPalette( "agew_1.pal" );
 	if (!DDError)
@@ -2166,39 +2167,39 @@ bool InitScreen()
 	return false;
 }
 
-BOOL CreateRGBDDObjects( HWND hwnd );
+//BOOL CreateRGBDDObjects( HWND hwnd );
 
-bool InitRGBScreen()
-{
-	PalDone = false;
-	CreateRGBDDObjects( hwnd );
-	PalDone = false;
-	if (!DDError)
-	{
-		LockSurface();
+//bool InitRGBScreen()
+//{
+//	PalDone = false;
+//	CreateRGBDDObjects( hwnd );
+//	PalDone = false;
+//	if (!DDError)
+//	{
+//		LockSurface();
+//
+//		UnlockSurface();
+//
+//		return true;
+//	}
+//	return false;
+//}
 
-		UnlockSurface();
+//BOOL CreateRGB640DDObjects( HWND hwnd );
 
-		return true;
-	}
-	return false;
-}
-
-BOOL CreateRGB640DDObjects( HWND hwnd );
-
-bool InitRGB640Screen()
-{
-	CreateRGB640DDObjects( hwnd );
-	if (!DDError)
-	{
-		LockSurface();
-
-		UnlockSurface();
-
-		return true;
-	}
-	return false;
-}
+//bool InitRGB640Screen()
+//{
+//	CreateRGB640DDObjects( hwnd );
+//	if (!DDError)
+//	{
+//		LockSurface();
+//
+//		UnlockSurface();
+//
+//		return true;
+//	}
+//	return false;
+//}
 
 bool ProcessMessages();
 extern int PlayMode;
@@ -2321,11 +2322,11 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	}
 
 	//Create the screen object with RealLx x RealLy resolution
-	CreateDDObjects( hwnd );
+	CreateDDObjects( sdlWindow );
 
 	CHKALL();
 
-	if (!DDError)
+	if (!SDLError)
 	{
 		LockSurface();
 		UnlockSurface();
@@ -2335,7 +2336,8 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 
 		if (!RealScreenPtr)
 		{
-			MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[2]", MB_ICONSTOP );
+			//MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[2]", MB_ICONSTOP );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[2]", "Unable to initialise SDL. It is possible that hardware acceleration is turned off.", nullptr);
 			exit( 0 );
 		}
 
@@ -2345,8 +2347,9 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 		}
 	}
 
-	wsprintf( buf, "Direct Draw Init Failed\n" );
-	MessageBox( hwnd, buf, "ERROR", MB_OK );
+	wsprintf( buf, "SDL Init Failed\n" );
+	//MessageBox( hwnd, buf, "ERROR", MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", buf, nullptr);
 	finiObjects();
 	DestroyWindow( hwnd );
 	return FALSE;
@@ -3184,6 +3187,7 @@ extern int PlayMode;
 unsigned long GetRealTime();
 
 //Create "Cossacks.reg" with Microsoft DirectPlay key
+// TODO: Remove once DirectPlay is removed
 void CreateReg()
 {
 	char path[300];
@@ -3219,6 +3223,7 @@ extern int ModeLX[32];
 extern int ModeLY[32];
 extern int NModes;
 bool EnumModesOnly();
+bool InitSDLWindow();
 
 int ROLL = 1;
 void NRFUNC()
@@ -3263,20 +3268,24 @@ int PASCAL WinMain(
 		}
 	}
 
-	if (strstr( lpCmdLine, "/window" ))
-	{
-		window_mode = true;
-	}
-	else
-	{
-		window_mode = false;
-	}
+	//if (strstr( lpCmdLine, "/window" ))
+	//{
+	//	window_mode = true;
+	//}
+	//else
+	//{
+	//	window_mode = false;
+	//}
 
-	if ( strstr( lpCmdLine, "/borderless" ) )
-	{
-		window_mode = true;
-		window_style = WS_POPUP;
-	}
+	//if ( strstr( lpCmdLine, "/borderless" ) )
+	//{
+	//	window_mode = true;
+	//	window_style = WS_POPUP;
+	//}
+	window_mode = false;
+
+	// Init SDL window
+	InitSDLWindow();
 
 	//Init DirectDraw and find possible resolutions
 	EnumModesOnly();
