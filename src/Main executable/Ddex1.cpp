@@ -3270,23 +3270,20 @@ int PASCAL WinMain(
 		}
 	}
 
-	//if (strstr( lpCmdLine, "/window" ))
-	//{
-	//	window_mode = true;
-	//}
-	//else
-	//{
-	//	window_mode = false;
-	//}
+	if (strstr( lpCmdLine, "/window" ))
+	{
+		window_mode = true;
+	}
+	else
+	{
+		window_mode = false;
+	}
 
-	//if ( strstr( lpCmdLine, "/borderless" ) )
-	//{
-	//	window_mode = true;
-	//	window_style = WS_POPUP;
-	//}
-	window_mode = false;
-	//window_mode = true;
-	//window_style = WS_POPUP;
+	if ( strstr( lpCmdLine, "/borderless" ) )
+	{
+		window_mode = true;
+		window_style = WS_POPUP;
+	}
 
 	// Init SDL window
 	InitSDL();

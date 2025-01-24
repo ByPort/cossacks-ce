@@ -121,34 +121,22 @@ __declspec( dllexport ) void FlipPages( void )
 
 	if (window_mode)
 	{
-		HDC WH = GetDC( hwnd );
+		SDL_Surface* srcSurface;
+		SDL_Surface* targetSurface;
 
-		for (int i = 0; i < 256; i++)
-		{
-			xxt.bmp.bmiColors[i].rgbRed = sdlPal->colors[i].r;
-			xxt.bmp.bmiColors[i].rgbBlue = sdlPal->colors[i].b;
-			xxt.bmp.bmiColors[i].rgbGreen = sdlPal->colors[i].g;
-		}
+		srcSurface = SDL_CreateSurfaceFrom(COPYSizeX, RSCRSizeY, SDL_PIXELFORMAT_INDEX8, RealScreenPtr, SCRSizeX);
+		SDL_SetSurfacePalette(srcSurface, sdlPal);
 
-		xxt.bmp.bmiHeader.biSize = sizeof BITMAPINFOHEADER;
-		xxt.bmp.bmiHeader.biWidth = SCRSizeX;
-		xxt.bmp.bmiHeader.biHeight = -SCRSizeY;
-		xxt.bmp.bmiHeader.biPlanes = 1;
-		xxt.bmp.bmiHeader.biBitCount = 8;
-		xxt.bmp.bmiHeader.biCompression = BI_RGB;
-		xxt.bmp.bmiHeader.biSizeImage = 0;
+		SDL_LockTextureToSurface(primaryTexture, nullptr, &targetSurface);
+		SDL_BlitSurfaceScaled(srcSurface, nullptr, targetSurface, nullptr, SDL_SCALEMODE_LINEAR);
+		// IMG_SavePNG(targetSurface, "test.png");
+		SDL_UnlockTexture(primaryTexture);
 
-		// TODO: replace with SDL code
-		int z = StretchDIBits( WH,
-			0, 0, //X|YDest
-			COPYSizeX, RSCRSizeY, //nDestWidth|Height
-			0, MaxSizeY - RSCRSizeY, //X|YSrc
-			COPYSizeX, RSCRSizeY, //nSrcWidth|Height
-			RealScreenPtr, //*lpBits
-			&xxt.bmp, //*lpBitsInfo
-			DIB_RGB_COLORS, SRCCOPY ); //iUsage, dwRop
+		// SDL_RenderClear(renderer);
+		SDL_RenderTexture(renderer, primaryTexture, nullptr, nullptr);
+		SDL_RenderPresent(renderer);
 
-		ReleaseDC( hwnd, WH );
+		SDL_DestroySurface(srcSurface);
 
 		return;
 	}
@@ -379,12 +367,33 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 		BytesPerPixel = 1;
 		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
 
-		SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
-		SDL_Rect displayBounds;
-		SDL_GetDisplayBounds(displayID, &displayBounds);
+		if (renderer)
+		{
+			SDL_DestroySurface(primarySurface);
+			SDL_DestroyTexture(primaryTexture);
+			success = true;
+		}
+		else
+		{
+			renderer = nullptr;
+			success = CreateSDLRenderer();
+		}
+		if (success)
+		{
+			primarySurface = SDL_CreateSurface(COPYSizeX, RSCRSizeY, SDL_PIXELFORMAT_INDEX8);
+			primaryTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, COPYSizeX, RSCRSizeY);
+			if (primarySurface)
+			{
+				return true;
+			}
+		}
 
-		const int screen_width = displayBounds.w;
-		const int screen_height = displayBounds.h;
+		//SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
+		//SDL_Rect displayBounds;
+		//SDL_GetDisplayBounds(displayID, &displayBounds);
+
+		//const int screen_width = displayBounds.w;
+		//const int screen_height = displayBounds.h;
 
 		//const int ModeLX_candidates[] = { 1024, 1152, 1280, 1280, 1366, 1600, 1920 };
 		//const int ModeLY_candidates[] = { 768,  864,  720, 1024,  768,  900, 1080 };
@@ -403,7 +412,8 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 		//	}
 		//}
 
-		return true;
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), NULL);
+		return false;
 	}
 
 	SVSC.SetSize( RealLx, RealLy );
@@ -416,7 +426,7 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 		goto SDMOD;
 	}
 
-	renderer = NULL;
+	renderer = nullptr;
 
 	success = CreateSDLRenderer();
 
@@ -447,8 +457,9 @@ SDMOD:;
 				//ddsd.dwFlags = DDSD_CAPS;
 				//ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
 				//primarySurface = SDL_GetWindowSurface(sdlWindow);
+
+				// TODO: remove primaryTexture as not needed
 				primarySurface = SDL_CreateSurface(RealLx, RealLy, SDL_PIXELFORMAT_INDEX8);
-				// FIXME: possibly need to use 32 bpp texture
 				primaryTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, RealLx, RealLy);
 				//ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, nullptr );
 				if (primarySurface)
