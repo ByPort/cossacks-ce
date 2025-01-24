@@ -12,6 +12,7 @@
 #include <windowsx.h>
 //#include <ddraw.h>
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include "resource.h"
@@ -47,13 +48,13 @@ extern BOOL                    CurrentSurface; //=FALSE if backbuffer
 											   // is active (Primary surface is visible)
 											   //=TRUE if  primary surface is active
 											   // (but backbuffer is visible)
-extern BOOL                    DDError;        //=FALSE if Direct Draw works normally 
+//extern BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 extern bool                    SDLError;       // false if SDL works normally 
 //extern DDSURFACEDESC   ddsd;
-extern void*                   lpSurface;
 extern HWND hwnd;
 extern SDL_Window* sdlWindow;
 extern bool window_mode;
+extern SDL_Palette* sdlPal;
 /*  Create Direct Draw object
  *
  * This procedure creadtes Direct Draw object with primary surface and
@@ -100,6 +101,9 @@ void NoDebugMode();
 //HRESULT DirectDrawCreate_wrapper(GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter);
 
 bool CreateSDLRenderer();
+// TODO: move to Ddex1.cpp along with InitSDL.
+// Why this works and moving to Ddex1.cpp doesn't?
+bool CreateSDLWindow();
 
 //#endif
 #endif //__DDINI_H_

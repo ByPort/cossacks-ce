@@ -4931,6 +4931,22 @@ void CopyToScreen( int zx, int zy, int zLx, int zLy )
 			lpp4 : pop		edi
 			pop		esi
 	}
+
+	SDL_Surface* srcSurface;
+	SDL_Surface* targetSurface;
+	srcSurface = SDL_CreateSurfaceFrom(RealLx, RSCRSizeY, SDL_PIXELFORMAT_INDEX8, RealScreenPtr, RealLx);
+	SDL_SetSurfacePalette(srcSurface, sdlPal);
+	SDL_LockTextureToSurface(primaryTexture, nullptr, &targetSurface);
+	SDL_BlitSurfaceScaled(srcSurface, nullptr, targetSurface, nullptr, SDL_SCALEMODE_LINEAR);
+	// IMG_SavePNG(targetSurface, "test.png");
+	SDL_UnlockTexture(primaryTexture);
+	SDL_Texture* renderTarget = SDL_GetRenderTarget(renderer);
+	// SDL_RenderClear(renderer);
+	SDL_RenderTexture(renderer, primaryTexture, nullptr, nullptr);
+	SDL_RenderPresent(renderer);
+	//SDL_Delay(0);
+
+	SDL_DestroySurface(srcSurface);
 }
 
 void CopyToOffScreen( int zx, int zy,

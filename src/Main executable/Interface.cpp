@@ -6665,16 +6665,20 @@ int processMainMenu()
 
 			ProcessMessages();
 
-			MMenu.ProcessDialogs();
-
-			MMenu.RefreshView();
-
 			InMainMenuLoop = 0;
 			if ( !nn )
 			{
 				SlowLoadPalette( "2\\agew_1.pal" );
 				LoadFog( 2 );
 			}
+
+			// Since SlowLoadPalette doesn't render changes immediately, we need to refresh the view after the palette is propertly set
+
+			// Render Menu
+			MMenu.ProcessDialogs();
+
+			MMenu.RefreshView();
+
 			nn++;
 
 			if ( RUNMAPEDITOR )

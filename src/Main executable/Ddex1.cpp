@@ -2146,7 +2146,7 @@ bool InitScreen()
 	CreateDDObjects( sdlWindow );
 	PalDone = false;
 	LoadPalette( "agew_1.pal" );
-	if (!DDError)
+	if (!SDLError)
 	{
 		LockSurface();
 
@@ -2268,6 +2268,8 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	{
 		return FALSE;
 	}
+	
+	CreateSDLWindow();
 
 	ShowWindow( hwnd, SW_SHOWNORMAL );
 
@@ -3223,7 +3225,7 @@ extern int ModeLX[32];
 extern int ModeLY[32];
 extern int NModes;
 bool EnumModesOnly();
-bool InitSDLWindow();
+bool InitSDL();
 
 int ROLL = 1;
 void NRFUNC()
@@ -3283,9 +3285,11 @@ int PASCAL WinMain(
 	//	window_style = WS_POPUP;
 	//}
 	window_mode = false;
+	//window_mode = true;
+	//window_style = WS_POPUP;
 
 	// Init SDL window
-	InitSDLWindow();
+	InitSDL();
 
 	//Init DirectDraw and find possible resolutions
 	EnumModesOnly();
@@ -3390,8 +3394,11 @@ int PASCAL WinMain(
 	}
 
 	//Save native display resolution for future use
-	screen_width = GetSystemMetrics( SM_CXSCREEN );
-	screen_height = GetSystemMetrics( SM_CYSCREEN );
+	SDL_DisplayID displayId = SDL_GetPrimaryDisplay();
+	SDL_Rect displayRect;
+	SDL_GetDisplayBounds(displayId, &displayRect);
+	screen_width = displayRect.w;
+	screen_height = displayRect.h;
 
 	//Calculate native resolution aspect ratio
 	double scale = 0.01;

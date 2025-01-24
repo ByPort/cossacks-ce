@@ -56,10 +56,9 @@ BOOL                    CurrentSurface; //=FALSE if backbuffer
 										// is active (Primary surface is visible)
 										//=TRUE if  primary surface is active
 										// (but backbuffer is visible)
-BOOL                    DDError;        //=FALSE if Direct Draw works normally 
+//BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 bool                    SDLError;       // false if SDL works normally
 //DDSURFACEDESC           ddsd;
-void*                     lpSurface;
 //PALETTEENTRY            GPal[256];
 //LPDIRECTDRAWPALETTE     lpDDPal;
 SDL_Palette*            sdlPal;
@@ -210,12 +209,10 @@ int SCRSZY = 0;
 
 void LockSurface( void )
 {
-	long dderr = 0;
 	if (window_mode)
 	{
 		ScreenPtr = (void*) ( int( offScreenPtr ) + MaxSizeX * 32 );
 		// ddsd has no alternative in SDL, so we just create lpSurface variable
-		lpSurface = ScreenPtr;
 		RealScreenPtr = ScreenPtr;
 		return;
 	}
@@ -224,21 +221,21 @@ void LockSurface( void )
 	{
 		return;
 	}
+	// TODO: actually primarySurface is not needed and can be removed
 	if (!SDL_LockSurface(primarySurface))
 	{
-		DDError = true;
 		SDLError = true;
 	}
-	else
-	{
-		lpSurface = primarySurface->pixels;
-	}
+	//else
+	//{
+	//	lpSurface = primarySurface->pixels;
+	//}
 
 	RSCRSizeX = primarySurface->pitch;
 
 	ScreenPtr = (void*) ( int( offScreenPtr ) + MaxSizeX * 32 );
-	RealScreenPtr = ScreenPtr;
-	RealScreenPtr = lpSurface;
+	RealScreenPtr = malloc(primarySurface->w * primarySurface->h);
+	//RealScreenPtr = lpSurface;
 	SCRSZY = primarySurface->h;
 	ClearScreen();
 }
@@ -260,8 +257,6 @@ void UnlockSurface( void )
 		return;
 	}
 	SDL_UnlockSurface(primarySurface);
-
-	// TODO: render to the screen here?
 }
 
 int BestVX = 640;
@@ -358,14 +353,12 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 	//HRESULT ddrval;
 	bool success;
 	char buf[256];
-	DDError = false;
 	SDLError = false;
 	CurrentSurface = true;
 
 	if (window_mode)
 	{
 		SVSC.SetSize( RealLx, RealLy );
-		DDError = false;
 		SDLError = false;
 		SCRSizeX = MaxSizeX;
 		SCRSizeY = MaxSizeY;
@@ -443,6 +436,7 @@ SDMOD:;
 				if (ModeLX[i] == RealLx && ModeLY[i] == RealLy)
 				{
 					success = SDL_SetWindowFullscreenMode(sdlWindow, &SDLDisplayModes[i]);
+					SDL_SyncWindow(sdlWindow);
 					break;
 				}
 			}
@@ -459,7 +453,6 @@ SDMOD:;
 				//ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, nullptr );
 				if (primarySurface)
 				{
-					DDError = false;
 					SDLError = false;
 					SCRSizeX = MaxSizeX;
 					SCRSizeY = MaxSizeY;
@@ -654,17 +647,21 @@ SDMOD:;
 /*   Direct Draw palette loading*/
 void LoadPalette( LPCSTR lpFileName )
 {
-	if (!sdlPal)
+	// Palette originally was set somewhere in mdraw.dll
+	// These LoadPalette functions weren't working originally
+	if (sdlPal)
 	{
 		return;
 	}
 
-	if (window_mode)
-	{
-		return;
-	}
+	// Need to init palette in window mode as well
+	// Probably mdraw.dll somehow sets the palette itself so that code worked before
+	//if (window_mode)
+	//{
+	//	return;
+	//}
 
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
@@ -677,7 +674,7 @@ void LoadPalette( LPCSTR lpFileName )
 	{
 		for (int i = 0; i < 256; i++)
 		{
-			SDL_Color color = { 0, 0, 0, 0 };
+			SDL_Color color = { 0, 0, 0, 255 };
 			RBlockRead( pf, &color, 3 );
 			SDL_SetPaletteColors(sdlPal, &color, i, 1);
 		}
@@ -720,7 +717,7 @@ void LoadPalette( LPCSTR lpFileName )
 					bb = bb - ( ( rr*( 2 - i ) ) / 3 );
 				}
 
-				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 0 };
+				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 255 };
 				SDL_SetPaletteColors(sdlPal, &color, 0xB0 + i, 1);
 				C0 += 5;
 			}
@@ -732,20 +729,12 @@ void LoadPalette( LPCSTR lpFileName )
 			RClose( pf );
 		}
 
-		if (!window_mode)
+		if (!PalDone)
 		{
-			if (!PalDone)
-			{
-				// Already created above
-				//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, NULL );
-				PalDone = true;
-				SDL_SetSurfacePalette(primarySurface, sdlPal);
-			}
-			// Already set above
-			//else
-			//{
-			//	lpDDPal->SetEntries( 0, 0, 256, GPal );
-			//}
+			// Already created above
+			//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, NULL );
+			PalDone = true;
+			SDL_SetSurfacePalette(primarySurface, sdlPal);
 		}
 	}
 }
@@ -753,7 +742,7 @@ void CBar( int x, int y, int Lx, int Ly, byte c );
 
 void SetDarkPalette()
 {
-	if (DDError)
+	if (SDLError)
 	{
 		return;
 	}
@@ -761,25 +750,22 @@ void SetDarkPalette()
 	//memset( &GPal, 0, 1024 );
 	for (int i = 0; i < 256; i++)
 	{
-		SDL_Color color = { 0, 0, 0, 0 };
+		SDL_Color color = { 0, 0, 0, 255 };
 		SDL_SetPaletteColors(sdlPal, &color, i, 1);
 	}
 
-	if (!window_mode)
+	if (!PalDone)
 	{
-		if (!PalDone)
-		{
-			//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, nullptr );
-			PalDone = true;
-			SDL_SetSurfacePalette(primarySurface, sdlPal);
-		}
-		//else
-		//{
-		//	lpDDPal->SetEntries( 0, 0, 256, GPal );
-		//}
+		//lpDD->CreatePalette( DDPCAPS_8BIT, &GPal[0], &lpDDPal, nullptr );
+		PalDone = true;
+		SDL_SetSurfacePalette(primarySurface, sdlPal);
 	}
 }
 
+// SlowLoadPalette creates fadein effect, originally by setting the palette from black to colors
+// And it worked because changes reflected on the screen immediately
+// TODO: Rewrite SlowLoadPalette to render each palette update or to make fade-in effect different way
+// For now just rendering once after SlowLoadPalette
 __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 {
 	if (SDLError)
@@ -792,7 +778,7 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 	//memset( &GPal, 0, 1024 );
 	for (int i = 0; i < 256; i++)
 	{
-		SDL_Color color = { 0, 0, 0, 0 };
+		SDL_Color color = { 0, 0, 0, 255 };
 		SDL_SetPaletteColors(sdlPal, &color, i, 1);
 	}
 
@@ -800,7 +786,7 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 	{
 		for (int i = 0; i < 256; i++)
 		{
-			SDL_Color color = { 0, 0, 0, 0 };
+			SDL_Color color = { 0, 0, 0, 255 };
 			RBlockRead(pf, &color, 3);
 			SDL_SetPaletteColors(sdlPal, &color, i, 1);
 		}
@@ -849,7 +835,7 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 				//	gg=gg*10/11;
 				//	bb=bb*10/11;
 				//};
-				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 0 };
+				SDL_Color color = { (Uint8)rr, (Uint8)gg, (Uint8)bb, 255 };
 				SDL_SetPaletteColors(sdlPal, &color, 0xB0 + i, 1);
 				C0 += 5;
 			}
@@ -890,11 +876,12 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 							byte((int(originalColors[j].r) * mul) >> 8),
 							byte((int(originalColors[j].g) * mul) >> 8),
 							byte((int(originalColors[j].b) * mul) >> 8),
-							byte((int(originalColors[j].a) * mul) >> 8),
+							//byte((int(originalColors[j].a) * mul) >> 8),
+							255,
 						};
 						SDL_SetPaletteColors(sdlPal, &color, j, 1);
 					}
-					SDL_Color color = { 0, 0, 0, 0 };
+					SDL_Color color = { 0, 0, 0, 255 };
 					SDL_SetPaletteColors(sdlPal, &color, 255, 1);
 				}
 				mul0 = mul;
@@ -937,11 +924,12 @@ __declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
 						byte((int(originalColors[j].r) * ( 255 - mul )) >> 8),
 						byte((int(originalColors[j].g) * ( 255 - mul )) >> 8),
 						byte((int(originalColors[j].b) * ( 255 - mul )) >> 8),
-						byte((int(originalColors[j].a) * ( 255 - mul )) >> 8),
+						//byte((int(originalColors[j].a) * ( 255 - mul )) >> 8),
+						255,
 					};
 					SDL_SetPaletteColors(sdlPal, &color, j, 1);
 				}
-				SDL_Color color = { 0, 0, 0, 0 };
+				SDL_Color color = { 0, 0, 0, 255 };
 				SDL_SetPaletteColors(sdlPal, &color, 255, 1);
 			};
 			mul0 = mul;
@@ -964,6 +952,8 @@ void FreeDDObjects( void )
 	{
 		return;
 	}
+
+	free(RealScreenPtr);
 
 	if (renderer != nullptr)
 	{
@@ -1033,14 +1023,18 @@ bool CreateSDLRenderer()
 	return true;
 }
 
-bool InitSDLWindow()
+bool InitSDL()
 {
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to initialise SDL3", NULL);
 		exit(0);
 	}
+	return true;
+}
 
+bool CreateSDLWindow()
+{
 	SDL_PropertiesID props = SDL_CreateProperties();
 	SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hwnd);
 	sdlWindow = SDL_CreateWindowWithProperties(props);

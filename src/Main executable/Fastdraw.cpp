@@ -143,7 +143,7 @@ __declspec( dllexport ) void SetRLCWindow( int x, int y, int lx, int ly, int slx
 void SetScreenPtr( void )
 {
 	ScreenPtr = offScreenPtr;
-	RealScreenPtr = lpSurface;
+	//RealScreenPtr = lpSurface;
 }
 
 void ClearScreen();
