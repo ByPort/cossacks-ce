@@ -5,87 +5,146 @@
 
 //#include <stdafx.h>
 #include "cdirsnd.h"
+
+static void StreamAudioBuffer(SoundBuffer* pSoundBuffer, Sint16* destSamples, int additionalAmount)
+{
+	if (!pSoundBuffer->playing)
+	{
+		return;
+	}
+
+	int bufferSize = min(additionalAmount, pSoundBuffer->size - pSoundBuffer->pos);
+
+	// FIXME: the size in bytes should be just additionalAmount since it's the size in bytes, not words
+	Sint16* samples = (Sint16*)malloc(sizeof(Sint16) * bufferSize);
+	memcpy(samples, (byte*)pSoundBuffer->data + pSoundBuffer->pos, (size_t)bufferSize);
+	// Some fade-out effect?
+	//if (bufferSize < additionalAmount)
+	//{
+	//	float endQueue;
+	//	for (int i = 0; i < bufferSize; i += 2)
+	//	{
+	//		endQueue = clip->currentVolume - (clip->currentVolume / bufferSize) * i;
+	//		endQueue = endQueue > 0.05f ? endQueue : 0.0f;
+	//		samples[i] *= endQueue * clip->leftPan;
+	//		samples[i + 1] *= endQueue * clip->rightPan;
+	//		destSamples[i] += samples[i];
+	//		destSamples[i + 1] += samples[i + 1];
+	//	}
+	//}
+	//else
+	if (true)
+	{
+		// FIXME: bufferSize is size in bytes, and since we operate words in samples, bufferSize/2 iterations are enough
+		for (int i = 0; i < bufferSize; i += 2)
+		{
+			// TODO: calculate float volume and pans in Set functions so we don't load the CPU here
+			float volume = pow(10.0f, pSoundBuffer->volume / 2000.0f);
+			float leftPan;
+			float rightPan;
+			if (pSoundBuffer->pan < 0)
+			{
+				leftPan = 1.0f;
+				rightPan = pow(10.0f, pSoundBuffer->pan / 2000.0f);
+			}
+			else if (pSoundBuffer->pan > 0) {
+				leftPan = pow(10.0f, -pSoundBuffer->pan / 2000.0f);
+				rightPan = 1.0f;
+			}
+			else
+			{
+				leftPan = 1.0f;
+				rightPan = 1.0f;
+			}
+			if (volume < 0.0001f) volume = 0.0f;
+			else if (volume > 1.0f) volume = 1.0f;
+			if (leftPan < 0.0001) leftPan = 0;
+			else if (leftPan > 1.0f) leftPan = 1.0f;
+			if (rightPan < 0.0001) rightPan = 0;
+			else if (rightPan > 1.0f) rightPan = 1.0f;
+
+			samples[i] *= volume * leftPan;
+			samples[i + 1] *= volume * rightPan;
+			destSamples[i] += samples[i];
+			destSamples[i + 1] += samples[i + 1];
+		}
+	}
+	pSoundBuffer->pos += bufferSize;
+
+	if (pSoundBuffer->pos >= pSoundBuffer->size)
+	{
+		//if (clip->loop == SDL_TRUE)
+		//{
+		//	clip->audioLength = 0;
+		//	clip->audioPos = clip->wavBuffer;
+		//}
+		//else
+		if (true)
+		{
+			pSoundBuffer->playing = false;
+		}
+	}
+
+	free(samples);
+}
+
+static void SDLCALL AudioStreamCallback(void* userdata, SDL_AudioStream* stream, int additionalAmount, int totalAmount)
+{
+	SoundBuffer* pSoundBuffer = (SoundBuffer*)userdata;
+
+	// FIXME: the size in bytes should be just additionalAmount since it's the size in bytes, not words
+	Sint16* samples = (Sint16*)malloc(sizeof(Sint16) * additionalAmount);
+	memset(samples, '\0', additionalAmount);
+
+	StreamAudioBuffer(pSoundBuffer, samples, additionalAmount);
+
+	Sint8* copiedSamples = (Sint8*)malloc(additionalAmount);
+	memset(copiedSamples, '\0', additionalAmount);
+	memcpy(copiedSamples, ((const Sint16*)samples), (size_t)additionalAmount);
+
+	Uint8* mixBuffer = (Uint8*)malloc(additionalAmount);
+	memset(mixBuffer, '\0', additionalAmount);
+	float volume = pow(10.0f, pSoundBuffer->volume / 2000.0f);
+	if (!SDL_MixAudio(mixBuffer, (const Uint8*)copiedSamples, SDL_AUDIO_S16, additionalAmount, volume))
+	{
+		SDL_Log("Error mixing the bus samples %s", SDL_GetError());
+	}
+	if (!SDL_PutAudioStreamData(stream, mixBuffer, additionalAmount))
+	{
+		SDL_Log("Could not put data on Audio stream, %s", SDL_GetError());
+	}
+
+	free(samples);
+	free(copiedSamples);
+	free(mixBuffer);
+}
+
 ///////////////////////////////////////////////////////////
 // CDirSound::CDirSound()
 //
 // This is the class's constructor.
 ///////////////////////////////////////////////////////////
-void CDirSound::CreateDirSound(HWND hWnd)
+void CDirSound::CreateDirSound()
 {
 	// Initialize class data members.
-	m_hWindow = hWnd;
-	m_pDirectSoundObj = NULL;
 	m_currentBufferNum = 0;
 
 	for (UINT x = 0; x < MAXSND1; ++x)
 	{
 		m_bufferPointers[x] = NULL;
-		m_bufferSizes[x] = 0;
 	}
 
-	// Create the main DirectSound object.
-	HRESULT result =
-		DirectSoundCreate(NULL, &m_pDirectSoundObj, NULL);
-	if (result == DS_OK)
+	// Create the main SDL audio device.
+	bool success;
+	success = SDL_InitSubSystem(SDL_INIT_AUDIO);
+	if (success)
 	{
-		// Set the priority level.
-		result = m_pDirectSoundObj->
-			SetCooperativeLevel(m_hWindow, DSSCL_EXCLUSIVE);//NORMAL);
-		if (result != DS_OK)
-			m_pDirectSoundObj = NULL;
-		// Set up DSBUFFERDESC structure. 
-
-		DSBUFFERDESC dsbdesc;
-		memset(&dsbdesc, 0, sizeof(DSBUFFERDESC)); // Zero it out. 
-		dsbdesc.dwSize = sizeof(DSBUFFERDESC);
-		dsbdesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
-		// Buffer size is determined by sound hardware. 
-		dsbdesc.dwBufferBytes = 0;
-		dsbdesc.lpwfxFormat = NULL; // Must be NULL for primary buffers. 
-		LPDIRECTSOUNDBUFFER lpDsb = NULL;
-		HRESULT hr = m_pDirectSoundObj->CreateSoundBuffer(&dsbdesc, &lpDsb, NULL);
-		/*
-		int v;
-		switch(hr){
-		case DSERR_ALLOCATED:
-			v=0;
-			break;
-		case DSERR_BADFORMAT:
-			v=1;
-			break;
-		case DSERR_INVALIDPARAM:
-			v=2;
-			break;
-		case DSERR_NOAGGREGATION:
-			v=3;
-			break;
-		case DSERR_OUTOFMEMORY:
-			v=4;
-			break;
-		case DSERR_UNINITIALIZED:
-			v=5;
-			break;
-		case DSERR_UNSUPPORTED:
-			v=6;
-			break;
-		case DS_OK:
-			v=7;
-			break;
-		};
-		*/
-		WAVEFORMATEX FR;
-		DWORD rd;
-		hr = lpDsb->GetFormat(&FR, sizeof FR, &rd);
-		FR.wBitsPerSample = 16;
-		FR.nAvgBytesPerSec = 88200;
-		FR.nBlockAlign = 4;
-		FR.nChannels = 2;
-		FR.nSamplesPerSec = 22050;
-		hr = lpDsb->SetFormat(&FR);
-		memset(BufIsRun, 0, sizeof BufIsRun);
-
+		m_SDLAudioDeviceID = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &m_audioSpec);
+		if (m_SDLAudioDeviceID)
+		{
+			SDL_ResumeAudioDevice(m_SDLAudioDeviceID);
+		}
 	}
-
 }
 
 ///////////////////////////////////////////////////////////
@@ -95,7 +154,7 @@ void CDirSound::CreateDirSound(HWND hWnd)
 ///////////////////////////////////////////////////////////
 CDirSound::~CDirSound()
 {
-	if (m_pDirectSoundObj != NULL)
+	if (m_SDLAudioDeviceID)
 		ReleaseAll();
 }
 
@@ -109,12 +168,15 @@ void CDirSound::ReleaseAll()
 {
 	// Release all sound buffers.
 	for (UINT x = 1; x <= m_currentBufferNum; ++x)
-		m_bufferPointers[x]->Release();
+	{
+		SDL_free(m_bufferPointers[x]->data);
+		free(m_bufferPointers[x]);
+		m_bufferPointers[x] = NULL;
+	}
 
 	// Release the DirectSound object.
-	if (m_pDirectSoundObj != NULL)
-		m_pDirectSoundObj->Release();
-	memset(BufIsRun, 0, sizeof BufIsRun);
+	if (m_SDLAudioDeviceID)
+		SDL_CloseAudioDevice(m_SDLAudioDeviceID);
 }
 
 ///////////////////////////////////////////////////////////
@@ -125,9 +187,6 @@ void CDirSound::ReleaseAll()
 ///////////////////////////////////////////////////////////
 UINT CDirSound::CreateSoundBuffer(CWave* pWave)
 {
-	DSBUFFERDESC dsBufferDesc;
-	HRESULT hResult;
-
 	// Make sure there's room for another buffer.
 	if (m_currentBufferNum == MAXSND)
 		return 0;
@@ -135,22 +194,12 @@ UINT CDirSound::CreateSoundBuffer(CWave* pWave)
 	// Calculate the next available buffer number.
 	++m_currentBufferNum;
 
-	// Initialize the DSBUFFERDESC structure.
-	LPWAVEFORMATEX pWaveFormat = pWave->GetWaveFormatPtr();
-	memset(&dsBufferDesc, 0, sizeof(DSBUFFERDESC));
-	dsBufferDesc.dwSize = sizeof(DSBUFFERDESC);
-	dsBufferDesc.dwFlags = DSBCAPS_CTRLDEFAULT;
-	dsBufferDesc.dwBufferBytes = pWave->GetWaveSize();
-	dsBufferDesc.lpwfxFormat = (LPWAVEFORMATEX)pWaveFormat;
-
-	// Create the secondary sound buffer.
-	hResult = m_pDirectSoundObj->CreateSoundBuffer(&dsBufferDesc,
-		&m_bufferPointers[m_currentBufferNum], NULL);
-	if (hResult != DS_OK)
+	m_bufferPointers[m_currentBufferNum] = (SoundBuffer*)malloc(sizeof(SoundBuffer));
+	if (!m_bufferPointers[m_currentBufferNum])
+	{
 		return 0;
-
-	// Save the buffer size.
-	m_bufferSizes[m_currentBufferNum] = dsBufferDesc.dwBufferBytes;
+	}
+	memset(m_bufferPointers[m_currentBufferNum], 0, sizeof(SoundBuffer));
 
 	return m_currentBufferNum;
 }
@@ -162,18 +211,31 @@ UINT CDirSound::CreateSoundBuffer(CWave* pWave)
 ///////////////////////////////////////////////////////////
 UINT CDirSound::DuplicateSoundBuffer(UINT bufferNum)
 {
-	HRESULT hResult;
+	// TODO: maybe remove this and create different buffer for the same sound
 
 	// Make sure there's room for another buffer.
 	if (m_currentBufferNum == MAXSND)
 		return 0;
-
 	// Calculate the next available buffer number.
 	++m_currentBufferNum;
-	hResult = m_pDirectSoundObj->DuplicateSoundBuffer(m_bufferPointers[bufferNum], &m_bufferPointers[m_currentBufferNum]);
-	if (hResult != DS_OK)
+
+	m_bufferPointers[m_currentBufferNum] = (SoundBuffer*)malloc(sizeof(SoundBuffer));
+	if (!m_bufferPointers[m_currentBufferNum])
+	{
 		return 0;
-	m_bufferSizes[m_currentBufferNum] = m_bufferSizes[bufferNum];
+	}
+	memcpy(m_bufferPointers[m_currentBufferNum], m_bufferPointers[bufferNum], sizeof(SoundBuffer));
+
+	m_bufferPointers[m_currentBufferNum]->stream = SDL_OpenAudioDeviceStream(m_SDLAudioDeviceID, &m_audioSpec, AudioStreamCallback, m_bufferPointers[m_currentBufferNum]);
+	if (m_bufferPointers[m_currentBufferNum]->stream == nullptr)
+	{
+		return 0;
+	}
+	if (!SDL_ResumeAudioStreamDevice(m_bufferPointers[m_currentBufferNum]->stream))
+	{
+		SDL_DestroyAudioStream(m_bufferPointers[m_currentBufferNum]->stream);
+		return 0;
+	}
 
 	return m_currentBufferNum;
 }
@@ -184,35 +246,41 @@ UINT CDirSound::DuplicateSoundBuffer(UINT bufferNum)
 ///////////////////////////////////////////////////////////
 BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
 {
-	LPVOID pSoundBlock1;
-	LPVOID pSoundBlock2;
-	DWORD bytesSoundBlock1;
-	DWORD bytesSoundBlock2;
-	HRESULT result;
+	bool success;
 
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return FALSE;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer =
+	SoundBuffer* pSoundBuffer =
 		m_bufferPointers[bufferNum];
 
+	m_bufferPointers[m_currentBufferNum]->stream = SDL_OpenAudioDeviceStream(m_SDLAudioDeviceID, &m_audioSpec, AudioStreamCallback, m_bufferPointers[m_currentBufferNum]);
+	if (m_bufferPointers[m_currentBufferNum]->stream == nullptr)
+	{
+		return false;
+	}
+	if (!SDL_ResumeAudioStreamDevice(m_bufferPointers[m_currentBufferNum]->stream))
+	{
+		SDL_DestroyAudioStream(m_bufferPointers[m_currentBufferNum]->stream);
+		return false;
+	}
+
+
 	// Lock the buffer.
-	result = pSoundBuffer->Lock(0, m_bufferSizes[bufferNum],
-		&pSoundBlock1, &bytesSoundBlock1,
-		&pSoundBlock2, &bytesSoundBlock2, 0);
-	if (result != DS_OK)
+	success = SDL_LockAudioStream(pSoundBuffer->stream);
+	if (!success)
 		return FALSE;
 
 	// Copy the data into the buffer.
 	char* pWaveData = pWave->GetWaveDataPtr();
-	DWORD waveSize = pWave->GetWaveSize();
-	memcpy((void*)pSoundBlock1, pWaveData, waveSize);
+	pSoundBuffer->size = pWave->GetWaveSize();
+	pSoundBuffer->data = malloc(pSoundBuffer->size);
+	pSoundBuffer->spec = *pWave->GetWaveSpecPtr();
+	memcpy(pSoundBuffer->data, pWaveData, pSoundBuffer->size);
 
-	// Unlock the buffer.
-	pSoundBuffer->Unlock(pSoundBlock1, bytesSoundBlock1,
-		pSoundBlock2, bytesSoundBlock2);
+	SDL_UnlockAudioStream(pSoundBuffer->stream);
 
 	return TRUE;
 }
@@ -224,9 +292,10 @@ BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
 // object was created and initialized okay. Otherwise, it
 // returns FALSE.
 ///////////////////////////////////////////////////////////
+// TODO: rename to SDLAudioOK
 BOOL CDirSound::DirectSoundOK()
 {
-	if (m_pDirectSoundObj == NULL)
+	if (!m_SDLAudioDeviceID)
 		return FALSE;
 
 	return TRUE;
@@ -240,50 +309,37 @@ BOOL CDirSound::DirectSoundOK()
 ///////////////////////////////////////////////////////////
 BOOL CDirSound::PlaySound(UINT bufferNum)
 {
-	HRESULT result;
-
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return FALSE;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	result = pSoundBuffer->SetCurrentPosition(0);
-	if (result != DS_OK)
-		return FALSE;
-
+	pSoundBuffer->pos = 0;
 	// Play the sound.
-	result = pSoundBuffer->Play(0, 0, 0);
-	if (result != DS_OK)
-		return FALSE;
-	BufIsRun[bufferNum] = 0;
-	return TRUE;
+	pSoundBuffer->playing = true;
+
+	return true;
 }
 BOOL CDirSound::PlayCoorSound(UINT bufferNum, int x, int vx)
 {
-	HRESULT result;
-
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return FALSE;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	result = pSoundBuffer->SetCurrentPosition(0);
-	if (result != DS_OK)
-		return FALSE;
-
+	pSoundBuffer->pos = 0;
 	// Play the sound.
-	result = pSoundBuffer->Play(0, 0, 0);
-	if (result != DS_OK)
-		return FALSE;
-	BufIsRun[bufferNum] = 1;
-	SrcX[bufferNum] = x;
-	SrcY[bufferNum] = vx;
+	pSoundBuffer->playing = true;
+
+	pSoundBuffer->x = x;
+	pSoundBuffer->y = vx;
+
 	return TRUE;
 }
 
@@ -291,10 +347,10 @@ extern int CenterX;
 
 void CDirSound::ControlPan(UINT bufferNum) 
 {
-	if (BufIsRun[bufferNum]) 
+	if (m_bufferPointers[bufferNum]->playing)
 	{
-		SrcX[bufferNum] += SrcY[bufferNum];
-		int pan = (SrcX[bufferNum] - CenterX) << 1;
+		m_bufferPointers[bufferNum]->x += m_bufferPointers[bufferNum]->y;
+		int pan = (m_bufferPointers[bufferNum]->x - CenterX) << 1;
 
 		if (pan < -4000)
 		{
@@ -321,10 +377,10 @@ void CDirSound::SetVolume(UINT bufferNum, int vol) {
 		return;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	pSoundBuffer->SetVolume(vol);
+	pSoundBuffer->volume = vol;
 };
 void CDirSound::SetPan(UINT bufferNum, int pan) {
 	// Check for a valid buffer number.
@@ -332,17 +388,17 @@ void CDirSound::SetPan(UINT bufferNum, int pan) {
 		return;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	pSoundBuffer->SetPan(pan);
+	pSoundBuffer->pan;
 }
 
 void CDirSound::ProcessSoundSystem()
 {
-	for (int i = 0; i < MAXSND1; i++)
+	for (int i = 1; i < min(MAXSND1, m_currentBufferNum+1); i++)
 	{
-		if (BufIsRun[i])
+		if (m_bufferPointers[i]->playing)
 		{
 			ControlPan(i);
 		}
@@ -357,37 +413,29 @@ void CDirSound::ProcessSoundSystem()
 ///////////////////////////////////////////////////////////
 BOOL CDirSound::StopSound(UINT bufferNum)
 {
-	HRESULT result;
-
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return FALSE;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	result = pSoundBuffer->Stop();
-	if (result != DS_OK)
-		return FALSE;
+	pSoundBuffer->playing = false;
 
 	return TRUE;
 }
 int CDirSound::GetPos(UINT bufferNum)
 {
-	HRESULT result;
-
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return 0;
 
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	DWORD pos;
-	result = pSoundBuffer->GetCurrentPosition(&pos, NULL);
-	return pos;
+	return pSoundBuffer->pos;
 
 }
 
@@ -401,19 +449,11 @@ bool CDirSound::IsPlaying(UINT bufferNum)
 		return 0;
 	}
 
+	return false;
+
 	// Get a pointer to the requested buffer.
-	LPDIRECTSOUNDBUFFER pSoundBuffer = m_bufferPointers[bufferNum];
+	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
 
 	// Make sure the buffer is set to play from the beginning.
-	DWORD pos;
-	result = pSoundBuffer->GetStatus(&pos);
-	bool play = pos & DSBSTATUS_PLAYING;
-
-	if (!play)
-	{
-		BufIsRun[bufferNum] = 0;
-	}
-
-	return play;
+	return pSoundBuffer->playing;
 }
-

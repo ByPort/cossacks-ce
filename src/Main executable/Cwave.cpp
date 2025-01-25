@@ -29,7 +29,7 @@ CWave::CWave(char* fileName)
 CWave::~CWave()
 {
     // Free the memory assigned to the wave data.
-    GlobalFreePtr(m_pWave);
+    SDL_free(m_pWave);
 }
 
 ///////////////////////////////////////////////////////////
@@ -40,61 +40,62 @@ CWave::~CWave()
 ///////////////////////////////////////////////////////////
 BOOL CWave::LoadWaveFile(char* fileName)
 {
-    MMCKINFO mmCkInfoRIFF;
-    MMCKINFO mmCkInfoChunk;
-    MMRESULT result;
-    HMMIO hMMIO;
-    long bytesRead;
+	Uint8* audio_buf;
+    Uint32 audio_len;
+    bool success = SDL_LoadWAV(fileName, &m_waveSpec, &audio_buf, &audio_len);
+    if (!success)
+    {
+        return false;
+    }
 
-    // Open the wave file.
-    hMMIO = mmioOpen(fileName, NULL, MMIO_READ | MMIO_ALLOCBUF);
-    if (hMMIO == NULL)
-        return FALSE;
+    // Have to convert each buffer to a single format to not deal with different formats
 
-    // Descend into the RIFF chunk.
-    mmCkInfoRIFF.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-    result = mmioDescend(hMMIO, &mmCkInfoRIFF, NULL, MMIO_FINDRIFF);
-    if (result != MMSYSERR_NOERROR)
-        return FALSE;
+    SDL_AudioSpec destSpec = { SDL_AUDIO_S16, 2, 22050 };
+    SDL_AudioStream* conversionStream = SDL_CreateAudioStream(&m_waveSpec, &destSpec);
+    if (!conversionStream)
+    {
+        SDL_free(audio_buf);
+        return false;
+    }
+    success = SDL_PutAudioStreamData(conversionStream, audio_buf, audio_len);
+    if (!success)
+    {
+        SDL_free(audio_buf);
+        SDL_DestroyAudioStream(conversionStream);
+        return false;
+    }
+    success = SDL_FlushAudioStream(conversionStream);
+    if (!success)
+    {
+        SDL_free(audio_buf);
+        SDL_DestroyAudioStream(conversionStream);
+        return false;
+    }
 
-    // Descend into the format chunk.
-    mmCkInfoChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
-    result = mmioDescend(hMMIO, &mmCkInfoChunk,
-        &mmCkInfoRIFF, MMIO_FINDCHUNK);
-    if (result != MMSYSERR_NOERROR)
-        return FALSE;
+    // We assume that this will return the whole buffer
+    int availableBufLen = SDL_GetAudioStreamAvailable(conversionStream);
 
-    // Read the format information into the WAVEFORMATEX structure.
-    bytesRead = mmioRead(hMMIO, (char*)&m_waveFormatEx,
-        sizeof(WAVEFORMATEX));
-    if (bytesRead == -1)
-        return FALSE;
+    void* convertedData = malloc(availableBufLen);
+    int numRead = SDL_GetAudioStreamData(conversionStream, convertedData, availableBufLen);
+    if (numRead != availableBufLen)
+    {
+        SDL_free(audio_buf);
+        SDL_DestroyAudioStream(conversionStream);
+        free(convertedData);
+        return false;
+    }
 
-    // Ascend out of the format chunk.
-    result = mmioAscend(hMMIO, &mmCkInfoChunk, 0);
-    if (result != MMSYSERR_NOERROR)
-        return FALSE;
+    SDL_free(audio_buf);
+    SDL_DestroyAudioStream(conversionStream);
 
-    // Descend into the data chunk.
-    mmCkInfoChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
-    result = mmioDescend(hMMIO, &mmCkInfoChunk,
-        &mmCkInfoRIFF, MMIO_FINDCHUNK);
-    if (result != MMSYSERR_NOERROR)
-        return FALSE;
+    m_waveSpec = { SDL_AUDIO_S16, 2, 22050 };
+    m_pWave = (char*)convertedData;
+    m_waveSize = availableBufLen;
 
-    // Save the size of the wave data.
-    m_waveSize = mmCkInfoChunk.cksize;
-
-    // Allocate a buffer for the wave data.
-    m_pWave = (char*)GlobalAllocPtr(GMEM_MOVEABLE, m_waveSize);
-    if (m_pWave == NULL)
-        return FALSE;
-
-    // Read the wave data into the buffer.
-    bytesRead = mmioRead(hMMIO, (char*)m_pWave, m_waveSize);
-    if (bytesRead == -1)
-        return FALSE;
-    mmioClose(hMMIO, 0);
+ //   SDL_AudioStream* playback = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &m_waveSpec, nullptr, nullptr);
+ //   SDL_ResumeAudioStreamDevice(playback);
+	//SDL_PutAudioStreamData(playback, m_pWave, m_waveSize);
+ //   SDL_Delay(3000);
 
     return TRUE;
 }
@@ -109,15 +110,20 @@ DWORD CWave::GetWaveSize()
     return m_waveSize;
 }
 
-///////////////////////////////////////////////////////////
-// CWave::GetWaveFormatPtr()
-//
-// This function returns a pointer to the wave file's
-// WAVEFORMATEX structure.
-///////////////////////////////////////////////////////////
-LPWAVEFORMATEX CWave::GetWaveFormatPtr()
+/////////////////////////////////////////////////////////////
+//// CWave::GetWaveFormatPtr()
+////
+//// This function returns a pointer to the wave file's
+//// WAVEFORMATEX structure.
+/////////////////////////////////////////////////////////////
+//LPWAVEFORMATEX CWave::GetWaveFormatPtr()
+//{
+//    return &m_waveFormatEx;
+//}
+
+SDL_AudioSpec* CWave::GetWaveSpecPtr()
 {
-    return &m_waveFormatEx;
+    return &m_waveSpec;
 }
 
 ///////////////////////////////////////////////////////////
