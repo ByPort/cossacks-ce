@@ -907,7 +907,7 @@ long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 		break;
 
 	case MM_MCINOTIFY:
-		CD_MCINotify( wParam, lParam );
+		//CD_MCINotify( wParam, lParam );
 		break;
 
 	case WM_LBUTTONDOWN:

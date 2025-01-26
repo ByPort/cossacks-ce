@@ -314,6 +314,9 @@
     <ClCompile Include="NewCode\MapOptionsEncoder.cpp">
       <Filter>NewCode</Filter>
     </ClCompile>
+    <ClCompile Include="NewCode\stb_vorbis.c">
+      <Filter>NewCode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3DBars.h">
@@ -605,6 +608,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NewCode\UdpHolePuncher.h">
+      <Filter>NewCode</Filter>
+    </ClInclude>
+    <ClInclude Include="NewCode\stb_vorbis.h">
       <Filter>NewCode</Filter>
     </ClInclude>
   </ItemGroup>

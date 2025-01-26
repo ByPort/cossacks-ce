@@ -210,6 +210,7 @@
     <ClCompile Include="NewCode\MapOptionsEncoder.cpp" />
     <ClCompile Include="NewCode\QueueManagement.cpp" />
     <ClCompile Include="NewCode\SecureDivision.cpp" />
+    <ClCompile Include="NewCode\stb_vorbis.c" />
     <ClCompile Include="NewCode\UdpHolePuncher.cpp" />
     <ClCompile Include="NewILogin.cpp" />
     <ClCompile Include="NewMon.cpp" />
@@ -310,6 +311,7 @@
     <ClInclude Include="Multipl.h" />
     <ClInclude Include="Nature.h" />
     <ClInclude Include="Newai.h" />
+    <ClInclude Include="NewCode\stb_vorbis.h" />
     <ClInclude Include="NewCode\UdpHolePuncher.h" />
     <ClInclude Include="NewMon.h" />
     <ClInclude Include="Newupgrade.h" />

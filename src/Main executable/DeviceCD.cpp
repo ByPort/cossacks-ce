@@ -1,11 +1,12 @@
 // DeviceCD.cpp : implementation file
 //
 
-//#include "stdafx.h"
 #include "windows.h"
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_audio.h"
+#include "NewCode/stb_vorbis.h"
 #pragma pack(1)
 #include "DeviceCD.h"
-#include "TMixer.h"
 #include <stdio.h>
 #include "ResFile.h"
 #include "gFile.h"
@@ -41,59 +42,49 @@ CDeviceCD::~CDeviceCD()
 MCIDEVICEID glFDeviceID;
 bool CDeviceCD::Open()
 {
-
-
-	MCI_OPEN_PARMS OPEN_PARAMS;
-
-	OPEN_PARAMS.dwCallback = 0;
-	OPEN_PARAMS.lpstrDeviceType = "CDAudio";
-
-	FError = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE, (DWORD)(LPMCI_OPEN_PARMS)&OPEN_PARAMS);
-
-	if (!FError)
+	bool success = SDL_InitSubSystem(SDL_INIT_AUDIO);
+	if (!success)
 	{
-		FDeviceID = OPEN_PARAMS.wDeviceID;
-		glFDeviceID = FDeviceID;
-		FOpened = TRUE;
-
-		MCI_SET_PARMS SET_PARAMS;
-
-		SET_PARAMS.dwCallback = 0;
-		SET_PARAMS.dwTimeFormat = MCI_FORMAT_TMSF;
-
-		FError = mciSendCommand(FDeviceID, MCI_SET, MCI_SET_TIME_FORMAT, (DWORD)(LPMCI_SET_PARMS)&SET_PARAMS);
-
-		if (!FError) { ; };
-
-		return TRUE;
-
+		audioStream = nullptr;
+		FOpened = false;
+		audioError = true;
+		return false;
 	}
-	else
+
+	SDL_AudioSpec audioSpec = { SDL_AUDIO_S16, 2, 44100 };
+	audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audioSpec, nullptr, nullptr);
+	if (!audioStream)
 	{
-		FDeviceID = (MCIDEVICEID)-1;
-		FOpened = FALSE;
-		return FALSE;
+		audioStream = nullptr;
+		FOpened = false;
+		audioError = true;
+		return false;
 	}
+	success = SDL_ResumeAudioStreamDevice(audioStream);
+	if (!success)
+	{
+		SDL_DestroyAudioStream(audioStream);
+		audioStream = nullptr;
+		FOpened = false;
+		audioError = true;
+		return false;
+	}
+
+	FOpened = true;
+	audioError = false;
+	return true;
 }
 
 bool CDeviceCD::Close()
 {
 	if (FOpened)
 	{
-		MCI_GENERIC_PARMS CLOSE_PARAMS;
+		SDL_DestroyAudioStream(audioStream);
 
-		CLOSE_PARAMS.dwCallback = 0;
-
-		FError = mciSendCommand(FDeviceID, MCI_CLOSE, 0, (DWORD)(LPMCI_GENERIC_PARMS)&CLOSE_PARAMS);
-
-		if (!FError)
-		{
-			FOpened = FALSE;
-			FDeviceID = (MCIDEVICEID)-1;
-			return TRUE;
-		}
-		else
-			return FALSE;
+		FOpened = false;
+		audioError = false;
+		audioStream = nullptr;
+		return true;
 	}
 	else
 		return FALSE;
@@ -101,18 +92,17 @@ bool CDeviceCD::Close()
 
 bool CDeviceCD::Pause()
 {
+
+
 	if (FOpened)
 	{
-		MCI_GENERIC_PARMS PAUSE_PARAMS;
+		bool success = SDL_PauseAudioStreamDevice(audioStream);
+		audioError = !success;
 
-		PAUSE_PARAMS.dwCallback = 0;
-
-		FError = mciSendCommand(FDeviceID, MCI_PAUSE, 0, (DWORD)(LPMCI_GENERIC_PARMS)&PAUSE_PARAMS);
-
-		if (!FError)
-			return TRUE;
+		if (!audioError)
+			return true;
 		else
-			return FALSE;
+			return false;
 	}
 	else
 		return FALSE;
@@ -122,16 +112,13 @@ bool CDeviceCD::Resume()
 {
 	if (FOpened)
 	{
-		MCI_GENERIC_PARMS RESUME_PARAMS;
+		bool success = SDL_ResumeAudioStreamDevice(audioStream);
+		audioError = !success;
 
-		RESUME_PARAMS.dwCallback = 0;
-
-		FError = mciSendCommand(FDeviceID, MCI_RESUME, 0, (DWORD)(LPMCI_GENERIC_PARMS)&RESUME_PARAMS);
-
-		if (!FError)
-			return TRUE;
+		if (!audioError)
+			return true;
 		else
-			return FALSE;
+			return false;
 	}
 	else
 		return FALSE;
@@ -139,41 +126,23 @@ bool CDeviceCD::Resume()
 
 bool CDeviceCD::Stop()
 {
-	if (FOpened)
-	{
-		MCI_GENERIC_PARMS STOP_PARAMS;
-
-		STOP_PARAMS.dwCallback = 0;
-
-		FError = mciSendCommand(FDeviceID, MCI_STOP, 0, (DWORD)(LPMCI_GENERIC_PARMS)&STOP_PARAMS);
-
-		if (!FError)
-			return TRUE;
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
+	return Pause();
 }
 
 DWORD CDeviceCD::GetVolume()
 {
-	CMixer Mixer(MIXERLINE_COMPONENTTYPE_DST_SPEAKERS,
-		MIXERLINE_COMPONENTTYPE_SRC_COMPACTDISC,
-		MIXERCONTROL_CONTROLTYPE_VOLUME);
-
-
-	return Mixer.GetControlValue();
+	float gain = SDL_GetAudioStreamGain(audioStream);
+	if (gain == -1.0f)
+	{
+		gain = 0.0f;
+	}
+	return static_cast<DWORD>(round(gain * 100.0f));
 }
 
 bool CDeviceCD::SetVolume(DWORD Volume)
 {
-	CMixer Mixer(MIXERLINE_COMPONENTTYPE_DST_SPEAKERS,
-		MIXERLINE_COMPONENTTYPE_SRC_COMPACTDISC,
-		MIXERCONTROL_CONTROLTYPE_VOLUME);
-
-
-	Mixer.SetControlValue(Volume);
+	// TODO: set volume only if different from current volume to avoid calling it every frame
+	bool success = SDL_SetAudioStreamGain(audioStream, static_cast<float>(Volume / 100.0f));
 
 	return 1;
 }
@@ -182,21 +151,72 @@ bool CDeviceCD::Play(DWORD Track)
 {
 	if (FOpened)
 	{
-		MCI_PLAY_PARMS PLAY_PARAMS;
+		bool success;
+		int channels;
+		int sampleRate;
+		short* buffer;
+		int dataRead;
 
-		PLAY_PARAMS.dwCallback = (DWORD)hwnd;
-		PLAY_PARAMS.dwFrom = Track;
-		PLAY_PARAMS.dwTo = Track + 1;
+		//Uint8* audio_buf;
+		//Uint32 audio_len;
 
-		FError = mciSendCommand(FDeviceID, MCI_PLAY, MCI_NOTIFY | MCI_FROM | MCI_TO, (DWORD)(LPMCI_PLAY_PARMS)&PLAY_PARAMS);
+		char filename[30];
 
-		if (!FError) {
-			FError = mciSendCommand(FDeviceID, MCI_PLAY, MCI_NOTIFY | MCI_FROM, (DWORD)(LPMCI_PLAY_PARMS)&PLAY_PARAMS);
-			return TRUE;
+		sprintf(filename, "Tracks\\Track_%02d.ogg", Track);
+
+		dataRead = stb_vorbis_decode_filename(filename, &channels, &sampleRate, &buffer);
+		if (dataRead == -1)
+		{
+			return false;
 		}
-		else {
-			return FALSE;
-		};
+
+		SDL_AudioSpec srcSpec = { SDL_AUDIO_S16, channels, sampleRate };
+		SDL_AudioSpec destSpec = { SDL_AUDIO_S16, 2, 44100 };
+		SDL_AudioStream* conversionStream = SDL_CreateAudioStream(&srcSpec, &destSpec);
+		if (!conversionStream)
+		{
+			SDL_free(buffer);
+			return false;
+		}
+		success = SDL_PutAudioStreamData(conversionStream, buffer, dataRead);
+		if (!success)
+		{
+			SDL_free(buffer);
+			SDL_DestroyAudioStream(conversionStream);
+			return false;
+		}
+		success = SDL_FlushAudioStream(conversionStream);
+		if (!success)
+		{
+			SDL_free(buffer);
+			SDL_DestroyAudioStream(conversionStream);
+			return false;
+		}
+
+		// We assume that this will return the whole buffer
+		int availableBufLen = SDL_GetAudioStreamAvailable(conversionStream);
+
+		void* convertedData = malloc(availableBufLen);
+		int numRead = SDL_GetAudioStreamData(conversionStream, convertedData, availableBufLen);
+		if (numRead != availableBufLen)
+		{
+			SDL_free(buffer);
+			SDL_DestroyAudioStream(conversionStream);
+			free(convertedData);
+			return false;
+		}
+
+		SDL_free(buffer);
+		SDL_DestroyAudioStream(conversionStream);
+
+		success = SDL_PutAudioStreamData(audioStream, convertedData, availableBufLen);
+		if (!success)
+		{
+			SDL_free(convertedData);
+			return false;
+		}
+
+		return true;
 	}
 	else
 		return FALSE;
@@ -208,29 +228,7 @@ int NextCommand = -1;
 void PlayCDTrack(int Id);
 extern int srando();
 void PlayRandomTrack();
-LRESULT CD_MCINotify(WPARAM wFlags, LONG lDevId)
-{
-	if (MCIDEVICEID(lDevId) == glFDeviceID && wFlags == MCI_NOTIFY_SUCCESSFUL)
-	{
-		//insert here
-		if (NextCommand == -1) {
-			PlayRandomTrack();
-		}
-		else if (NextCommand >= 1000) {
-			PlayCDTrack(NextCommand - 1000);
-			PrevTrack1 = NextCommand - 1000;
-			NextCommand = -1;
-		}
-		else {
-			PlayCDTrack(NextCommand);
-			PrevTrack1 = NextCommand;
-		};
-		return 1;
-	}
-	else
-		return 0;
 
-}
 CDeviceCD CDPLAY;
 void PlayCDTrack(int Id) {
 	CDPLAY.Play(Id);
@@ -261,10 +259,10 @@ void StopPlayCD()
 
 int GetCDVolume()
 {
-	return (int(CDPLAY.GetVolume()) * 100) >> 16;
+	return static_cast<int>(CDPLAY.GetVolume());
 }
 
 void SetCDVolume(int Vol)
 {
-	CDPLAY.SetVolume(((Vol) * 65535) / 100);
+	CDPLAY.SetVolume(static_cast<DWORD>(Vol));
 }

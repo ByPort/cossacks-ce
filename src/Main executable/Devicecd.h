@@ -1,4 +1,3 @@
-#include <mmsystem.h>
 typedef void VOIDFN();
 class CDeviceCD
 {
@@ -27,7 +26,6 @@ public:
 	// Generated message map functions
 protected:
 	bool FOpened;
-	MCIDEVICEID FDeviceID;
-	MCIERROR FError;
-	LRESULT MCINotify(WPARAM wFlags, LONG lDevId);
+	SDL_AudioStream* audioStream;
+	bool audioError;
 };
