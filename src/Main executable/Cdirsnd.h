@@ -35,6 +35,7 @@ struct SoundBuffer {
     int y;
     // DirectSound value from -10000 to 10000
     long pan;
+    bool isDuplicated;
     //std::recursive_mutex mutex;
 };
 

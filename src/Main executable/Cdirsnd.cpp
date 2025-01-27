@@ -169,7 +169,10 @@ void CDirSound::ReleaseAll()
 	// Release all sound buffers.
 	for (UINT x = 1; x <= m_currentBufferNum; ++x)
 	{
-		SDL_free(m_bufferPointers[x]->data);
+		if (!m_bufferPointers[x]->isDuplicated)
+		{
+			SDL_free(m_bufferPointers[x]->data);
+		}
 		free(m_bufferPointers[x]);
 		m_bufferPointers[x] = NULL;
 	}
@@ -225,6 +228,7 @@ UINT CDirSound::DuplicateSoundBuffer(UINT bufferNum)
 		return 0;
 	}
 	memcpy(m_bufferPointers[m_currentBufferNum], m_bufferPointers[bufferNum], sizeof(SoundBuffer));
+	m_bufferPointers[m_currentBufferNum]->isDuplicated = true;
 
 	m_bufferPointers[m_currentBufferNum]->stream = SDL_OpenAudioDeviceStream(m_SDLAudioDeviceID, &m_audioSpec, AudioStreamCallback, m_bufferPointers[m_currentBufferNum]);
 	if (m_bufferPointers[m_currentBufferNum]->stream == nullptr)
