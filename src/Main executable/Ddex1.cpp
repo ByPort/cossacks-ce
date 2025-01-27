@@ -37,7 +37,6 @@ DWORD window_style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MI
 #include "3DSurf.h"
 #include "CDirSnd.h"
 #include "GSound.h"
-#include "dplay.h"
 #include "MapSprites.h"
 #include "VirtScreen.h"
 #include <crtdbg.h>
@@ -236,8 +235,6 @@ extern word rpos;
 extern BlockBars LockBars;
 extern BlockBars UnLockBars;
 extern CDirSound* CDS;
-extern DPID MyDPID;
-extern DPID ServerDPID;
 
 __declspec( dllexport ) bool KeyPressed;
 __declspec( dllexport ) int LastKey;
@@ -2776,7 +2773,6 @@ void WaitToTime( int Time )
 
 int NeedCurrentTime = 0;
 extern bool PreNoPause;
-extern EXBUFFER EBufs[MaxPL];
 void StopPlayCD();
 void ProcessUpdate();
 extern byte CaptState;

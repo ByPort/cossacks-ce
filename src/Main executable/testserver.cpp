@@ -15,8 +15,6 @@
 #include "Megapolis.h"
 #include "Dialogs.h"
 #include "fonts.h"
-#include "dpchat.h"
-#include "dplobby.h"
 #include "GSound.h"
 #include "3DGraph.h"
 #include "3DMapEd.h"
@@ -32,12 +30,10 @@
 #include "DrawForm.h"
 #include "Conststr.h"
 #include <Process.h>
-#include "MPlayer.h"
 #include "Recorder.h"
 #include "GSINC.H"
 #include "TopoGraf.h"
 
-#include "CEngine\goaceng.h"
 #include "StrategyResearch.h"
 #include "Safety.h"
 #include "EinfoClass.h"
@@ -82,7 +78,6 @@ tpStartDownloadInternetFile* StartDownloadInternetFile = nullptr;
 tpProcessDownloadInternetFiles* ProcessDownloadInternetFiles = nullptr;
 tpSendRecBuffer* SendRecBuffer = nullptr;
 
-void InitDipFunctions();
 
 __declspec( dllexport ) void StartExplorer()
 {
@@ -130,7 +125,6 @@ __declspec( dllexport ) void StartExplorer()
 		ProcessDownloadInternetFiles = (tpProcessDownloadInternetFiles*) GetProcAddress( H_Exp, "?ProcessDownloadInternetFiles@@YAXXZ" );
 		SendRecBuffer = (tpSendRecBuffer*) GetProcAddress( H_Exp, "?SendRecBuffer@@YAXPAEH_N@Z" );
 	}
-	InitDipFunctions();
 }
 
 __declspec( dllexport ) void FinExplorer()
@@ -246,23 +240,3 @@ typedef void tpLoadAllDipData( byte* ptr, int size );
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
 typedef void tpProcessDownloadInternetFiles();
 typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
-
-fnVoid* ProcessDipRelations = nullptr;
-fnVoid* InitDipForThisMap = nullptr;
-fnVoid* ClearAllDipData = nullptr;
-fnVoidLPB* FreeSaveDipData = nullptr;
-tpSaveAllDipData* SaveAllDipData = nullptr;
-tpLoadAllDipData* LoadAllDipData = nullptr;
-tpPerformDipCommand* PerformDipCommand = nullptr;
-
-void InitDipFunctions()
-{
-	HMODULE HDIP = GetModuleHandle( "DipServer.dll" );
-	ProcessDipRelations = (fnVoid*) GetProcAddress( HDIP, "?ProcessDipRelations@@YAXXZ" );
-	InitDipForThisMap = (fnVoid*) GetProcAddress( HDIP, "?InitDipForThisMap@@YAXXZ" );
-	LoadAllDipData = (tpLoadAllDipData*) GetProcAddress( HDIP, "?LoadAllDipData@@YAXPAEH@Z" );
-	ClearAllDipData = (fnVoid*) GetProcAddress( HDIP, "?ClearAllDipData@@YAXXZ" );
-	FreeSaveDipData = (fnVoidLPB*) GetProcAddress( HDIP, "?FreeSaveDipData@@YAXPAE@Z" );
-	SaveAllDipData = (tpSaveAllDipData*) GetProcAddress( HDIP, "?SaveAllDipData@@YAXPAPAEPAH@Z" );
-	PerformDipCommand = (tpPerformDipCommand*) GetProcAddress( HDIP, "?PerformDipCommand@@YAXPADH@Z" );
-}

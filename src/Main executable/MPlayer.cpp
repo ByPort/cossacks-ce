@@ -6,7 +6,9 @@
 #include "mouse.h"
 #include "menu.h"
 #include "MapDiscr.h"
+// ___MULTIPLAYER___ Chat manipulations
 #include "dpchat.h"
+// ___MULTIPLAYER___ Lobby manipulations
 #include "dplobby.h"
 #include "fonts.h"
 #include "dialogs.h"
@@ -295,38 +297,38 @@ BOOL WINAPI MPL_EnumPlayersCallback2( DPID dpId,
 	return true;
 }
 
-void MPL_CheckExistingPlayers()
-{
-	if (int( lpDirectPlay3A ) && NPlayers > 1)
-	{
-		byte StartEBF[8];
-		for (int i = 0; i < MaxPL; i++)
-		{
-			StartEBF[i] = EBufs[i].Enabled;
-			EBufs[i].Enabled = 0;
-		}
-
-		lpDirectPlay3A->EnumPlayers( (GUID*) &DPCHAT_GUID,
-			MPL_EnumPlayersCallback2, nullptr, 0 );
-
-		for (int i = 0; i < MaxPL; i++)
-		{
-			if (StartEBF[i] && !EBufs[i].Enabled)
-			{
-				if (i == MyNation)
-				{
-					CreateTimedHintEx( GetTextByID( "PLALONE" ), kSystemMessageDisplayTime, 32 );//You have been disconnected from the game!
-				}
-				else
-				{
-					char buf[200];
-					sprintf( buf, GetTextByID( "PLEXIT" ), GetPName( i ) );
-					CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//Player %s has left the game.
-				}
-			}
-		}
-	}
-}
+//void MPL_CheckExistingPlayers()
+//{
+//	if (int( lpDirectPlay3A ) && NPlayers > 1)
+//	{
+//		byte StartEBF[8];
+//		for (int i = 0; i < MaxPL; i++)
+//		{
+//			StartEBF[i] = EBufs[i].Enabled;
+//			EBufs[i].Enabled = 0;
+//		}
+//
+//		lpDirectPlay3A->EnumPlayers( (GUID*) &DPCHAT_GUID,
+//			MPL_EnumPlayersCallback2, nullptr, 0 );
+//
+//		for (int i = 0; i < MaxPL; i++)
+//		{
+//			if (StartEBF[i] && !EBufs[i].Enabled)
+//			{
+//				if (i == MyNation)
+//				{
+//					CreateTimedHintEx( GetTextByID( "PLALONE" ), kSystemMessageDisplayTime, 32 );//You have been disconnected from the game!
+//				}
+//				else
+//				{
+//					char buf[200];
+//					sprintf( buf, GetTextByID( "PLEXIT" ), GetPName( i ) );
+//					CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//Player %s has left the game.
+//				}
+//			}
+//		}
+//	}
+//}
 
 char CHATSTRING[256] = "";
 
@@ -2758,7 +2760,7 @@ void DumpDataTo( char* str, byte* Data, int Size )
 	}
 }
 
-void MPL_CheckExistingPlayers();
+//void MPL_CheckExistingPlayers();
 extern int RealPause;
 extern int CurrentStepTime;
 
@@ -4792,4 +4794,107 @@ void CreateAnswerString( char* s )
 				}
 		}
 		else sprintf( s, "@@@NORCRT" );
+};
+
+bool CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+{
+	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
+	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
+
+	if FAILED(DirectPlayLobbyCreate(nullptr, &lpDPlayLobbyA, nullptr, nullptr, 0))
+	{
+		return false;
+	}
+
+	// get ANSI DirectPlayLobby2 interface
+	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (LPVOID*)&lpDPlayLobby2A);
+	if FAILED(hr)
+	{
+		return false;
+	}
+
+	// don't need DirectPlayLobby interface anymore
+	lpDPlayLobbyA->Release();
+	lpDPlayLobbyA = nullptr;
+
+	DPCOMPOUNDADDRESSELEMENT	addressElements[3];
+	DWORD sz = 128;
+	char* cc = "";
+
+	if (selected_network_protocol == 1)
+	{
+		//TCP/IP LAN Connection
+		IPADDR[0] = 0;
+	}
+
+	addressElements[0].guidDataType = DPAID_ServiceProvider;
+	addressElements[0].dwDataSize = sizeof(GUID);
+	addressElements[0].lpData = (LPVOID)&DPSPGUID_TCPIP;
+	addressElements[1].guidDataType = DPAID_INet;
+	addressElements[1].dwDataSize = strlen(IPADDR) + 1;
+	addressElements[1].lpData = (LPVOID)IPADDR;
+
+	lpDPlayLobby2A->CreateCompoundAddress(addressElements, 2, AddrBuf, &sz);
+	lpDPlayLobby2A->Release();
+
+	return true;
+}
+
+bool CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+{
+	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
+	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
+
+	if FAILED(DirectPlayLobbyCreate(nullptr, &lpDPlayLobbyA, nullptr, nullptr, 0))
+	{
+		return false;
+	}
+
+	// get ANSI DirectPlayLobby2 interface
+	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (LPVOID*)&lpDPlayLobby2A);
+	if FAILED(hr)
+	{
+		return false;
+	}
+
+	// don't need DirectPlayLobby interface anymore
+	lpDPlayLobbyA->Release();
+	lpDPlayLobbyA = nullptr;
+	DPCOMPOUNDADDRESSELEMENT addressElements[3];
+	DWORD sz = 128;
+	char* cc = "";
+
+	switch (selected_network_protocol)
+	{
+	case 1://TCP/IP LAN Connection
+	case 2://Direct TCP/IP
+		addressElements[0].guidDataType = DPAID_ServiceProvider;
+		addressElements[0].dwDataSize = sizeof(GUID);
+		addressElements[0].lpData = (LPVOID)&DPSPGUID_TCPIP;
+		addressElements[1].guidDataType = DPAID_INet;
+		addressElements[1].dwDataSize = strlen(IPADDR) + 1;
+		addressElements[1].lpData = (LPVOID)IPADDR;
+		lpDPlayLobby2A->CreateCompoundAddress(addressElements, 2, AddrBuf, &sz);
+		break;
+	}
+
+	lpDPlayLobby2A->Release();
+
+	return true;
+}
+
+//--------------ALL GAME IS IN THIS PROCEDURE!-------------//
+BOOL FAR PASCAL EnumAddressCallback1(
+	REFGUID guidDataType,
+	DWORD dwDataSize,
+	LPCVOID lpData,
+	LPVOID lpContext
+)
+{
+	if (guidDataType == DPAID_INet)
+	{
+		strcpy(IPADDR, (char*)lpData);
+		return false;
+	}
+	return true;
 };

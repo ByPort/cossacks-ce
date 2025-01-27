@@ -19,8 +19,6 @@
 #include "Megapolis.h"
 #include "Dialogs.h"
 #include "fonts.h"
-#include "dpchat.h"
-#include "dplobby.h"
 #include "GSound.h"
 #include "3DGraph.h"
 #include "3DMapEd.h"
@@ -1060,44 +1058,10 @@ RetryConn:
 			}
 		}
 
-		LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
-		LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
-
-		if FAILED( DirectPlayLobbyCreate( nullptr, &lpDPlayLobbyA, nullptr, nullptr, 0 ) )
+		if (!CreateCompoundAddress(selected_network_protocol, AddrBuf))
 		{
 			return 0;
 		}
-
-		// get ANSI DirectPlayLobby2 interface
-		HRESULT hr = lpDPlayLobbyA->QueryInterface( IID_IDirectPlayLobby2A, (LPVOID *) &lpDPlayLobby2A );
-		if FAILED( hr )
-		{
-			return 0;
-		}
-
-		// don't need DirectPlayLobby interface anymore
-		lpDPlayLobbyA->Release();
-		lpDPlayLobbyA = nullptr;
-
-		DPCOMPOUNDADDRESSELEMENT	addressElements[3];
-		DWORD sz = 128;
-		char* cc = "";
-
-		if ( selected_network_protocol == 1 )
-		{
-			//TCP/IP LAN Connection
-			IPADDR[0] = 0;
-		}
-
-		addressElements[0].guidDataType = DPAID_ServiceProvider;
-		addressElements[0].dwDataSize = sizeof( GUID );
-		addressElements[0].lpData = (LPVOID) &DPSPGUID_TCPIP;
-		addressElements[1].guidDataType = DPAID_INet;
-		addressElements[1].dwDataSize = strlen( IPADDR ) + 1;
-		addressElements[1].lpData = (LPVOID) IPADDR;
-
-		lpDPlayLobby2A->CreateCompoundAddress( addressElements, 2, AddrBuf, &sz );
-		lpDPlayLobby2A->Release();
 
 		CloseMPL();
 		CreateMultiplaterInterface();
@@ -1291,43 +1255,10 @@ TryConnection:
 			return;
 		}
 
-		LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
-		LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
-
-		if FAILED( DirectPlayLobbyCreate( nullptr, &lpDPlayLobbyA, nullptr, nullptr, 0 ) )
+		if (!CreateBattleCompoundAddress(selected_network_protocol, AddrBuf))
 		{
 			return;
 		}
-
-		// get ANSI DirectPlayLobby2 interface
-		HRESULT hr = lpDPlayLobbyA->QueryInterface( IID_IDirectPlayLobby2A, (LPVOID *) &lpDPlayLobby2A );
-		if FAILED( hr )
-		{
-			return;
-		}
-
-		// don't need DirectPlayLobby interface anymore
-		lpDPlayLobbyA->Release();
-		lpDPlayLobbyA = nullptr;
-		DPCOMPOUNDADDRESSELEMENT addressElements[3];
-		DWORD sz = 128;
-		char* cc = "";
-
-		switch ( selected_network_protocol )
-		{
-		case 1://TCP/IP LAN Connection
-		case 2://Direct TCP/IP
-			addressElements[0].guidDataType = DPAID_ServiceProvider;
-			addressElements[0].dwDataSize = sizeof( GUID );
-			addressElements[0].lpData = (LPVOID) &DPSPGUID_TCPIP;
-			addressElements[1].guidDataType = DPAID_INet;
-			addressElements[1].dwDataSize = strlen( IPADDR ) + 1;
-			addressElements[1].lpData = (LPVOID) IPADDR;
-			lpDPlayLobby2A->CreateCompoundAddress( addressElements, 2, AddrBuf, &sz );
-			break;
-		}
-
-		lpDPlayLobby2A->Release();
 
 		if FAILED( lpDirectPlay3A->InitializeConnection( AddrBuf, 0 ) )
 		{
@@ -2661,8 +2592,6 @@ void SetStdTBL()
 int GetLogRank();
 
 void SETPLAYERDATA( DWORD ID, void* Data, int size, bool );
-
-void SETPLAYERNAME( DPNAME* lpdpName, bool );
 
 extern DPID ServerDPID;
 
@@ -9156,22 +9085,6 @@ void EditGame()
 	IgnoreSlow = false;
 }
 
-//--------------ALL GAME IS IN THIS PROCEDURE!-------------//
-BOOL FAR PASCAL EnumAddressCallback1(
-	REFGUID guidDataType,
-	DWORD dwDataSize,
-	LPCVOID lpData,
-	LPVOID lpContext
-)
-{
-	if ( guidDataType == DPAID_INet )
-	{
-		strcpy( IPADDR, (char*) lpData );
-		return false;
-	}
-	return true;
-};
-
 void ShowFailure( int CreateGame )
 {
 	ClearScreen();
@@ -9239,159 +9152,6 @@ void WaitWithMessage( char* Message );
 
 bool DPL_CreatePlayer( LPDIRECTPLAY3A lpDirectPlay3A,
 	LPGUID lpguidSessionInstance, LPDPNAME lpszPlayerName, bool Host );
-
-//Init DirectPlayLobbies, return result
-int CheckLobby()
-{
-	WindX = 0;
-	WindY = 0;
-	WindX1 = 1023;
-	WindY1 = 767;
-	WindLx = 1024;
-	WindLy = 768;
-
-	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
-	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
-
-	if FAILED( DirectPlayLobbyCreate( nullptr, &lpDPlayLobbyA, nullptr, nullptr, 0 ) )
-	{
-		return false;
-	}
-
-	// get ANSI DirectPlayLobby2 interface
-	HRESULT hr = lpDPlayLobbyA->QueryInterface( IID_IDirectPlayLobby2A, (LPVOID *) &lpDPlayLobby2A );
-	if FAILED( hr )
-	{
-		return false;
-	}
-
-	DWORD Size = 0;
-	HRESULT dpres = lpDPlayLobby2A->GetConnectionSettings( 0, nullptr, &Size );
-	if ( !Size )
-	{
-		lpDPlayLobby2A->Release();
-		return false;
-	}
-
-	LPDPLCONNECTION cset = (LPDPLCONNECTION) malloc( Size );
-	dpres = lpDPlayLobby2A->GetConnectionSettings( 0, cset, &Size );
-	if ( dpres == DP_OK )
-	{
-		LPDIRECTPLAY2A lpd2A;
-		CreateMultiplaterInterface();
-		if ( lpDirectPlay3A )
-		{
-			LoadFog( 2 );
-			LoadPalette( "2\\agew_1.pal" );
-			ShowLoading();
-
-			char cc[128] = "";
-			if ( cset->lpSessionDesc->lpszSessionNameA )
-			{
-				strcpy( cc, cset->lpSessionDesc->lpszSessionNameA );
-			}
-
-			cc[8] = 0;
-			bool BATTL = !strcmp( cc, "[BATTLE]" );
-			if ( BATTL )
-			{
-				cset->lpSessionDesc->dwMaxPlayers = 2;
-				cset->lpSessionDesc->dwUser2 = 1;
-			}
-			else
-			{
-				cset->lpSessionDesc->dwMaxPlayers = 7;
-				cset->lpSessionDesc->dwUser2 = 0;
-			}
-
-			dpres = lpDPlayLobby2A->Connect( 0, &lpd2A, nullptr );
-			lpDPlayLobby2A->EnumAddress( &EnumAddressCallback1, cset->lpAddress, cset->dwAddressSize, nullptr );
-
-			if ( dpres != DP_OK )
-			{
-				if ( BATTL )
-				{
-					if ( cset->lpSessionDesc->dwFlags == DPLCONNECTION_CREATESESSION )
-					{
-						ShowFailure( 1 );
-					}
-					else
-					{
-						ShowFailure( 2 );
-					}
-				}
-				else
-				{
-					ShowFailure( cset->lpSessionDesc->dwFlags == DPLCONNECTION_CREATESESSION );
-				}
-				lpDPlayLobby2A->Release();
-				return false;
-			}
-
-			lpDPlayLobby2A->Release();
-			dpres = lpd2A->QueryInterface( IID_IDirectPlay3A, (LPVOID*) &lpDirectPlay3A );
-
-			if ( dpres != DP_OK )
-				return false;
-
-			ClearScreen();
-			LoadFog( 2 );
-			LoadPalette( "2\\agew_1.pal" );
-
-			if ( dpres == DP_OK )
-			{
-				if ( cset->dwFlags == DPLCONNECTION_CREATESESSION )
-				{
-					DPL_CreatePlayer( lpDirectPlay3A, &cset->guidSP, cset->lpPlayerName, 1 );
-					if ( !BATTL )
-					{
-						if ( !MPL_WaitingGame( true, 0 ) )
-						{
-							return false;
-						}
-					}
-					else
-					{
-						int BTLID = 1;
-						if ( !MPL_WaitingBattleGame( true, 1 ) )
-						{
-							return false;
-						}
-					}
-					StopConnectionToSession( lpDirectPlay3A );
-					StartIGame( 0 );
-				}
-				else
-				{
-					DPL_CreatePlayer( lpDirectPlay3A, &cset->guidSP, cset->lpPlayerName, 1 );
-					if ( !BATTL )
-					{
-						if ( !MPL_WaitingGame( false, 0 ) )
-							return false;
-					}
-					else
-					{
-						if ( !MPL_WaitingBattleGame( false, 1 ) )
-							return false;
-					}
-				}
-				return 1;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
-}
 
 int prevVid = -1;
 int prevVid1 = -1;

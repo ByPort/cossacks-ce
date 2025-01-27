@@ -1492,7 +1492,6 @@ extern int BrigPnX;
 extern int BrigPnY;
 void ShowAbout();
 void DrawShar( Nation* NT );
-extern PingSumm PSUMM;
 int GetMaxRealPing();
 int GetAveragePing();
 void CreateDiffStr( char* str );

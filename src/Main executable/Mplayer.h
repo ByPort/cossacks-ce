@@ -1,3 +1,5 @@
+#include "dplay.h"
+
 #define MaxPL 8
 
 struct EXBUFFER
@@ -122,3 +124,20 @@ struct OnePlayerReport
 
 __declspec( dllimport ) void ReportGSCGame( int time, int NPlayers, OnePlayerReport* OPR );
 __declspec( dllimport ) void ReportAliveState( int NPlayers, int* Profiles );
+
+void SETPLAYERNAME(DPNAME* lpdpName, bool);
+
+bool CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+bool CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+
+BOOL FAR PASCAL EnumAddressCallback1(
+	REFGUID guidDataType,
+	DWORD dwDataSize,
+	LPCVOID lpData,
+	LPVOID lpContext
+);
+
+extern DPID MyDPID;
+extern PingSumm PSUMM;
+extern EXBUFFER EBufs[MaxPL];
+extern EXBUFFER EBufs1[MaxPL];

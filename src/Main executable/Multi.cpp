@@ -21,7 +21,6 @@
 #include "Recorder.h"
 #include "Graphs.h"
 
-#include "Graphs.h"
 #include "Fonts.h"
 #include "DrawForm.h"
 
@@ -1272,7 +1271,6 @@ extern bool EnterChatMode;
 extern bool KeyPressed;
 extern int LastKey;
 void UnPress();
-extern EXBUFFER EBufs[MaxPL];
 extern byte SpecCmd;
 void ExplorerOpenRef( int Index, char* ref );
 void ProcessVotingKeys()
@@ -1494,7 +1492,6 @@ void DoCmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount )
 }
 
 extern word NPlayers;
-extern EXBUFFER EBufs[MaxPL];
 int WaitState = 0;
 extern int FogMode;
 bool PreNoPause = 0;
@@ -2981,7 +2978,6 @@ int FindNetGame( int ID, char* name )
 void IAmLeft();
 extern bool NoWinner;
 extern char SaveFileName[128];
-extern EXBUFFER EBufs1[MaxPL];
 extern word PrevRpos;
 extern DWORD RealTime;
 unsigned long GetRealTime();

@@ -15,8 +15,6 @@
 #include "Megapolis.h"
 #include "Dialogs.h"
 #include "fonts.h"
-#include "dpchat.h"
-#include "dplobby.h"
 #include "GSound.h"
 #include "3DGraph.h"
 #include "3DMapEd.h"
