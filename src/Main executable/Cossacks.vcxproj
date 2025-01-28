@@ -309,6 +309,7 @@
     <ClInclude Include="Mode.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Mplayer.h" />
+    <ClInclude Include="Multi.h" />
     <ClInclude Include="Multipl.h" />
     <ClInclude Include="Nature.h" />
     <ClInclude Include="Newai.h" />

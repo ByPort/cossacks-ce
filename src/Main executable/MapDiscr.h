@@ -1,3 +1,5 @@
+#pragma once
+
 /*                    Map discription
  *
  * This file describes map cells, animations, monsters, buildings,

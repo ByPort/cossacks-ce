@@ -106,6 +106,7 @@ extern RoomInfo GlobalRIF;
 
 extern bool use_gsc_network_protocol;
 
+// IChat library exports these
 __declspec( dllimport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF );
 __declspec( dllimport ) void LeaveGSCRoom();
 __declspec( dllimport ) void StartGSCGame( char* Options, char* Map,
@@ -122,6 +123,7 @@ struct OnePlayerReport
 	word NBornUnits;
 };
 
+// IChat library exports these
 __declspec( dllimport ) void ReportGSCGame( int time, int NPlayers, OnePlayerReport* OPR );
 __declspec( dllimport ) void ReportAliveState( int NPlayers, int* Profiles );
 

@@ -24,15 +24,6 @@
     <ClCompile Include="GSC_ChatWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IChat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StdAfx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\IntExplorer library\ParseRQ.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="darray.c">
       <Filter>Chat</Filter>
     </ClCompile>
@@ -63,12 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cs_chat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\IntExplorer library\ParseRQ.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="darray.h">
@@ -104,5 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Temp\dmcr.lib" />
+    <Library Include="..\Temp\IntExplorer.lib" />
   </ItemGroup>
 </Project>

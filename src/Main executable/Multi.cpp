@@ -907,6 +907,7 @@ void CmdSelAllShips( byte NI )
 
 extern word NPlayers;
 
+// IChat library exports this
 __declspec( dllimport ) void SendVictoryState( int ID, byte State );
 
 bool ProcessMessages();

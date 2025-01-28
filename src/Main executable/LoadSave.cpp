@@ -2875,8 +2875,8 @@ extern int MaxPeaceTime;
 
 extern int PeaceTimeStage;
 
-__declspec( dllimport )
-void GetGameID( char* s );
+// IChat library exports this
+__declspec( dllimport ) void GetGameID( char* s );
 
 void PreSaveGame( SaveBuf* SB, char* Messtr, int ID )
 {

@@ -1,10 +1,12 @@
 // IntExplorer.cpp : Defines the entry point for the DLL application.
 //
 
-#include "stdafx.h"
+#include "windows.h"
 #include <stdio.h>
 void EraseSXP();
 extern bool LOGMODE;
+
+// TODO: replace with STD init/deinit functions so we can make SO/DLL
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
                        LPVOID lpReserved

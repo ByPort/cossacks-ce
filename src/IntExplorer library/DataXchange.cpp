@@ -1,11 +1,9 @@
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
-#include <crtdbg.h>
 #include <assert.h>
 #include "GameOnMap.h"
 #include <sys\utime.h>
-#include <process.h>
 #include <stdarg.h>
 __declspec( dllimport ) void SetCurPtr( int v );
 extern __declspec( dllimport ) bool GameInProgress;

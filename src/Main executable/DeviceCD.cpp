@@ -149,6 +149,8 @@ bool CDeviceCD::SetVolume(DWORD Volume)
 extern HWND hwnd;
 bool CDeviceCD::Play(DWORD Track)
 {
+	// TODO: FREE BUFFER IF NEEDED, CLEAN STREAM (to stop the current music) and PLAY NEXT
+	// TODO: Music stops after ~30 sec
 	if (FOpened)
 	{
 		bool success;

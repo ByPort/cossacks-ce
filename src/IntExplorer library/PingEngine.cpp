@@ -1,4 +1,3 @@
-
 #include <winsock2.h> 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -235,6 +234,7 @@ bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time) {
 	return true;
 }
 PingEngine PE;
+// The only function used outsize
 int GETPING(DWORD IP){
 	if(!PE.IsInit)PE.Setup();
 	PE.Process();

@@ -1,7 +1,6 @@
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include <assert.h>
-#include <crtdbg.h>
 #include "GameOnMap.h"
 #include <sys/stat.h>
 #include <sys/types.h>

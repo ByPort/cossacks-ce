@@ -140,7 +140,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\IntExplorer library\ParseRQ.cpp" />
     <ClCompile Include="Chat\chatCallbacks.c" />
     <ClCompile Include="Chat\chatChannel.c" />
     <ClCompile Include="Chat\chatHandlers.c" />
@@ -150,13 +149,10 @@
     <ClCompile Include="darray.c" />
     <ClCompile Include="GSC_ChatWindow.cpp" />
     <ClCompile Include="hashtable.c" />
-    <ClCompile Include="IChat.cpp" />
     <ClCompile Include="md5c.c" />
     <ClCompile Include="nonport.c" />
-    <ClCompile Include="StdAfx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\IntExplorer library\ParseRQ.h" />
     <ClInclude Include="Chat\chat.h" />
     <ClInclude Include="Chat\chatCallbacks.h" />
     <ClInclude Include="Chat\chatChannel.h" />
@@ -168,10 +164,10 @@
     <ClInclude Include="hashtable.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="nonport.h" />
-    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Temp\dmcr.lib" />
+    <Library Include="..\Temp\IntExplorer.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

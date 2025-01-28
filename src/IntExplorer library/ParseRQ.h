@@ -1,3 +1,9 @@
+#ifndef PARSERQ_USER
+#define PARSERQ_API __declspec(dllexport)
+#else
+#define PARSERQ_API __declspec(dllimport)
+#endif
+
 void* ie_malloc(int size,char* File,int Line);
 void* ie_realloc(void* data,int size,char* File,int Line);
 void ie_free(void* data);
@@ -12,7 +18,7 @@ struct OneComm{
 	char** Params;
 	int* ParamSize;
 };
-class ParsedRQ{
+class PARSERQ_API ParsedRQ{
 public:
 	char DevName[16];
 	OneComm* Comm;

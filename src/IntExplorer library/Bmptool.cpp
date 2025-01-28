@@ -1,7 +1,6 @@
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
-#include <crtdbg.h>
 #include <assert.h>
 #include "bmptool.h"
 void SaveToBMP24(char* Name, int Lx, int Ly, byte* data) {

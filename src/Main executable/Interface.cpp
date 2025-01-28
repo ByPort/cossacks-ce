@@ -37,7 +37,6 @@
 #include "Recorder.h"
 #include "GSINC.H"
 #include "TopoGraf.h"
-#include "CEngine\goaceng.h"
 #include "StrategyResearch.h"
 #include "Safety.h"
 #include "EinfoClass.h"
@@ -2491,6 +2490,7 @@ extern bool RejectThisPlayer;
 
 bool INSIDE1 = 0;
 
+// IChat library exports this
 __declspec( dllimport ) void SendPrivateMessage( char* Nick, char* MESSAGE );
 
 bool CheckForPersonalChat( char* STR )
@@ -2624,6 +2624,7 @@ void DeepDeletePeer( DWORD ID );
 
 int GetMyProfile();
 
+// IChat library exports this
 __declspec( dllimport ) void ChatProcess();
 
 //Shows lobby interface for multiplayer deathmatch and single player random map
@@ -5938,6 +5939,7 @@ bool SingleOptions()
 int ProcessWars();
 void processBattleMultiplayer();
 
+// IChat library exports this
 __declspec( dllimport ) void GoHomeAnyway();
 
 int MM_ProcessMultiPlayer()

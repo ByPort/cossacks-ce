@@ -19,7 +19,6 @@ typedef unsigned short word;
 #include "gp_draw.h"
 #include "dialogs.h"
 #include "fonts.h"
-#include "arc\gscarch.h"
 #include "resfile.h"
 #include "gfile.h"
 

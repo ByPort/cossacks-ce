@@ -32,7 +32,7 @@ struct TGSCfile
 
 typedef TGSCfile* LPGSCfile;
 
-class GFILE_API CGSCarch  
+class GFILE_API CGSCarch	
 {
 public:
 	BOOL NextFile(LPGSCFindData gFindData);

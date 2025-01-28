@@ -151,23 +151,19 @@
   <ItemGroup>
     <ClInclude Include="..\Main executable\common.h" />
     <ClInclude Include="Bmptool.h" />
-    <ClInclude Include="DString.h" />
     <ClInclude Include="GameOnMap.h" />
     <ClInclude Include="IntExplorer.h" />
     <ClInclude Include="ParseRQ.h" />
-    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bmptool.cpp" />
     <ClCompile Include="DataXchange.cpp" />
-    <ClCompile Include="DString.cpp" />
     <ClCompile Include="Explore.cpp" />
     <ClCompile Include="FnDefine.cpp" />
     <ClCompile Include="GameOnMap.cpp" />
     <ClCompile Include="IntExplorer.cpp" />
     <ClCompile Include="ParseRQ.cpp" />
     <ClCompile Include="PingEngine.cpp" />
-    <ClCompile Include="StdAfx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Temp\dmcr.lib" />

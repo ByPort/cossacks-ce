@@ -27,5 +27,5 @@ private:
 	sockaddr_in server_addr_;
 };
 
-//IntExplorer.dll
+// IntExplorer library exports this
 __declspec( dllimport ) char* GetAccessKey( int Index );
