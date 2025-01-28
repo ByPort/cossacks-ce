@@ -183,18 +183,22 @@ bool GameNeedToDraw;
 extern bool ChoosePosition;
 extern word NPlayers;
 void CloseMPL();
-void IBEnumeratePlayers( InputBox** IB );
 void LBEnumerateSessions( ListBox* LB, int );
 void AnalyseMessages();
 bool CreateNamedSession( char* Name, DWORD User2, int Max );
 bool InGame;
 bool InEditor;
+#ifndef NODPLAY
 bool JoinNameToSession( int ns, char* Name );
+#endif
 void FreeDDObjects( void );
 bool StartIGame( bool );
 extern bool GameInProgress;
 byte MyRace;
+#ifndef NODPLAY
+// TODO: remove all refs to this from Interface
 extern LPDIRECTPLAY3A		lpDirectPlay3A;
+#endif
 extern word PlayerMenuMode;
 extern LPVOID lplpConnectionBuffer[16];
 extern bool SHOWSLIDE;
@@ -940,6 +944,7 @@ StartJoin:;
 					goto StartJoin;
 				}
 			}
+#ifndef NODPLAY
 			if ( JoinNameToSession( LB->CurItem, PlName ) )
 			{
 				if ( WaitingJoinGame( LB->GetItem( LB->CurItem )->Param1 >> 16 ) )
@@ -951,6 +956,7 @@ StartJoin:;
 					ItemChoose = mcmCancel;
 				}
 			}
+#endif
 		}
 	} while ( ItemChoose != mcmCancel );
 	SlowUnLoadPalette( "2\\agew_1.pal" );
@@ -966,8 +972,8 @@ void WaitWithMessage( char* Message );
 void NoWaitWithMessage( char* Message );
 
 int ProcessInternetConnection( bool Active );
-bool FindSessionAndJoin( char* Name, char* Nick, bool Style, unsigned short port );
-bool CreateSession( char* SessName, char* Name, DWORD User2, bool Style, int MaxPlayers );
+bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port );
+bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers );
 extern int GMTYPE;
 
 bool historical_battle_over_gsc_network = false;
@@ -1041,14 +1047,20 @@ RetryConn:
 		}
 	}
 
+#ifndef NODPLAY
 	DoNewInet = 0;
 	if ( selected_network_protocol > 2 )//Not TCP/IP
 	{
 		DoNewInet = 1;
 	}
+#else
+	// TODO: test this
+	DoNewInet = 1;
+#endif
 
 	if ( !DoNewInet )
 	{
+#ifndef NODPLAY
 		if ( !lpDirectPlay3A )
 		{
 			CreateMultiplaterInterface();
@@ -1058,7 +1070,7 @@ RetryConn:
 			}
 		}
 
-		if (!CreateCompoundAddress(selected_network_protocol, AddrBuf))
+		if (!MLP_CreateCompoundAddress(selected_network_protocol, AddrBuf))
 		{
 			return 0;
 		}
@@ -1071,6 +1083,10 @@ RetryConn:
 		{
 			goto RetryConn;
 		}
+#else
+		CreateMultiplaterInterface();
+		return 0;
+#endif
 	}
 	else
 	{
@@ -1093,7 +1109,7 @@ RetryConn:
 
 	case 11://Inet Host(Deathmatch)
 		PlayerMenuMode = 1;
-		if ( CreateSession( GlobalRIF.Name, GlobalRIF.Nick, 0, DoNewInet, GlobalRIF.MaxPlayers ) )
+		if ( CreateSession( GlobalRIF.Name, GlobalRIF.Nick, 0, GlobalRIF.MaxPlayers ) )
 		{
 			NeedToPerformGSC_Report = 1;
 
@@ -1146,7 +1162,7 @@ RetryConn:
 	case 10://Inet Join(Deathmatch)
 		PlayerMenuMode = 1;
 		strcpy( IPADDR, GlobalRIF.RoomIP );
-		if ( !FindSessionAndJoin( ROOMNAMETOCONNECT, GlobalRIF.Nick, DoNewInet, GlobalRIF.port ) )
+		if ( !FindSessionAndJoin( ROOMNAMETOCONNECT, GlobalRIF.Nick, GlobalRIF.port ) )
 		{
 			LeaveGSCRoom();
 			WaitWithMessage( GetTextByID( "ICUNJ" ) );
@@ -1246,6 +1262,7 @@ TryConnection:
 		goto TryConnection;
 	}
 
+#ifndef NODPLAY
 	if ( !lpDirectPlay3A )
 	{
 		CreateMultiplaterInterface();
@@ -1255,7 +1272,7 @@ TryConnection:
 			return;
 		}
 
-		if (!CreateBattleCompoundAddress(selected_network_protocol, AddrBuf))
+		if (!MLP_CreateBattleCompoundAddress(selected_network_protocol, AddrBuf))
 		{
 			return;
 		}
@@ -1265,6 +1282,10 @@ TryConnection:
 			return;
 		}
 	}
+#else
+	CreateMultiplaterInterface();
+	return;
+#endif
 
 	switch ( connection_menu_result )
 	{
@@ -1902,7 +1923,7 @@ int MPL_ChooseConnection()
 	return ItemChoose;
 }
 
-extern DPID MyDPID;
+extern CDPID MyDPID;
 bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg );
 
 __declspec( dllexport ) bool EnumPlr()
@@ -2001,7 +2022,7 @@ void ControlLingvo( char* str )
 	};
 }
 
-void StopConnectionToSession( LPDIRECTPLAY3A lpDirectPlay3A );
+void StopConnectionToSession();
 
 extern int GLOBALTIME;
 extern int PGLOBALTIME;
@@ -2593,7 +2614,7 @@ int GetLogRank();
 
 void SETPLAYERDATA( DWORD ID, void* Data, int size, bool );
 
-extern DPID ServerDPID;
+extern CDPID ServerDPID;
 
 void ClearLPACK();
 
@@ -4141,20 +4162,14 @@ ffe2:
 						PSUMM.ClearPingInfo();
 					}
 
-					DPNAME dpName;
-					ZeroMemory( &dpName, sizeof( DPNAME ) );
-					dpName.dwSize = sizeof( DPNAME );
-					dpName.lpszShortNameA = MNAME[i]->Str;
-					dpName.lpszLongNameA = nullptr;
-
-					if ( strcmp( dpName.lpszShortNameA, oldname ) || GetTickCount() - PREVCNAME > 3000 )
+					if ( strcmp( MNAME[i]->Str, oldname ) || GetTickCount() - PREVCNAME > 3000 )
 					{
 						if ( !SINGLE )
 						{
-							bool change = ( strcmp( dpName.lpszShortNameA, oldname ) != 0 );
-							SETPLAYERNAME( &dpName, change );
+							bool change = ( strcmp( MNAME[i]->Str, oldname ) != 0 );
+							SETPLAYERNAME( MNAME[i]->Str, change );
 						}
-						strcpy( oldname, dpName.lpszShortNameA );
+						strcpy( oldname, MNAME[i]->Str );
 						PREVCNAME = GetTickCount();
 					}
 
@@ -5646,15 +5661,10 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 					{
 						PSUMM.ClearPingInfo();
 					}
-					DPNAME dpName;
-					ZeroMemory( &dpName, sizeof( DPNAME ) );
-					dpName.dwSize = sizeof( DPNAME );
-					dpName.lpszShortNameA = MNAME[i]->Str;
-					dpName.lpszLongNameA = nullptr;
-					if ( strcmp( dpName.lpszShortNameA, oldname ) )
+					if ( strcmp( MNAME[i]->Str, oldname ) )
 					{
-						SETPLAYERNAME( &dpName, strcmp( dpName.lpszShortNameA, oldname ) != 0 );
-						strcpy( oldname, dpName.lpszShortNameA );
+						SETPLAYERNAME( MNAME[i]->Str, strcmp(MNAME[i]->Str, oldname ) != 0 );
+						strcpy( oldname, MNAME[i]->Str );
 					};
 					//MNATION[i]->Enabled=true;
 					//MGRP[i]->Enabled=true;
@@ -9150,9 +9160,6 @@ void ShowFailure( int CreateGame )
 };
 void WaitWithMessage( char* Message );
 
-bool DPL_CreatePlayer( LPDIRECTPLAY3A lpDirectPlay3A,
-	LPGUID lpguidSessionInstance, LPDPNAME lpszPlayerName, bool Host );
-
 int prevVid = -1;
 int prevVid1 = -1;
 int prevVid2 = -1;
@@ -11127,6 +11134,7 @@ bool WaitingGame( bool Host )
 				{
 					PINFO[i].NationID = MNATION[i]->CurLine;
 					PINFO[i].ColorID = MCOLOR[i]->color - 0x80;
+#ifndef NODPLAY
 					lpDirectPlay3A->SetPlayerData( MyDPID, (void*) &PINFO[i].NationID, 4, DPSET_REMOTE );
 					DPNAME dpName;
 					ZeroMemory( &dpName, sizeof( DPNAME ) );
@@ -11134,6 +11142,7 @@ bool WaitingGame( bool Host )
 					dpName.lpszShortNameA = MNAME[i]->Str;
 					dpName.lpszLongNameA = nullptr;
 					lpDirectPlay3A->SetPlayerName( MyDPID, &dpName, DPSET_REMOTE );
+#endif
 					MNATION[i]->Enabled = true;
 					MCOLOR[i]->Enabled = true;
 					MGRP[i]->Enabled = true;
@@ -11235,7 +11244,7 @@ bool WaitingHostGame( int ID )
 	{
 		if ( ItemChoose == mcmOk )
 		{
-			StopConnectionToSession( lpDirectPlay3A );
+			StopConnectionToSession();
 			StartIGame( 0 );
 			return true;
 		}

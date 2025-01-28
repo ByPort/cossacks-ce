@@ -1,3 +1,5 @@
+#ifndef NODPLAY
+
 /*==========================================================================
  *
  *  Copyright (C) 1996-1997 Microsoft Corporation.  All Rights Reserved.
@@ -30,4 +32,6 @@ DEFINE_GUID(DPCHAT_GUID,
 //extern HRESULT	ConnectUsingLobby(LPDPLAYINFO lpDPInfo);
 //extern HRESULT	ConnectUsingDialog(HINSTANCE hInstance, LPDPLAYINFO lpDPInfo);
 //extern void		ErrorBox(LPSTR lpszErrorStr, HRESULT hr);
+
+#endif
 

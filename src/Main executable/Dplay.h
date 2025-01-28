@@ -1,3 +1,5 @@
+#ifndef NODPLAY
+
 /*==========================================================================;
  *
  *  Copyright (C) 1994-1997 Microsoft Corporation.  All Rights Reserved.
@@ -1705,6 +1707,8 @@ DEFINE_GUID(IID_IDirectPlay, 0x5454e9a0, 0xdb65, 0x11ce, 0x92, 0x1c, 0x00, 0xaa,
 
 #ifdef __cplusplus
 };
+#endif
+
 #endif
 
 #endif

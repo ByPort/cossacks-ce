@@ -1,4 +1,4 @@
 bool CreateMultiplaterInterface();
 void InitMultiDialogs();
-void SetupMultiplayer(HINSTANCE hInstance);
+void SetupMultiplayer();
 void ShutdownMultiplayer(bool Final);

@@ -6,10 +6,12 @@
 #include "mouse.h"
 #include "menu.h"
 #include "MapDiscr.h"
+#ifndef NODPLAY
 // ___MULTIPLAYER___ Chat manipulations
 #include "dpchat.h"
 // ___MULTIPLAYER___ Lobby manipulations
 #include "dplobby.h"
+#endif
 #include "fonts.h"
 #include "dialogs.h"
 #include <assert.h>
@@ -71,8 +73,10 @@ bool NetworkGame;
 
 __declspec( dllexport ) bool GameInProgress;
 
+#ifndef NODPLAY
 LPDIRECTPLAY3A lpDirectPlay3A;
 static LPDPLAYINFO lpDPInfo = 0;
+#endif
 const DWORD APPMSG_CHATSTRING = 0; // message type for chat string
 const DWORD MAXNAMELEN = 200; // max size of a session or player name
 char szSessionName[MAXNAMELEN];
@@ -104,7 +108,7 @@ DWORD CurrentPitchTicks;
 
 LPVOID lplpConnectionBuffer[16];
 GUID SessionsGUID[32];
-DPID PlayersID[32];
+CDPID PlayersID[32];
 byte* PData[32];
 DWORD PDSize[32];
 bool PUsed[32];
@@ -113,8 +117,8 @@ extern byte ExBuf[8192];
 extern byte MyRace;
 extern char CurrentMap[64];
 extern int EBPos;
-DPID MyDPID;
-DPID ServerDPID;
+CDPID MyDPID;
+CDPID ServerDPID;
 DWORD MyDSize;
 byte* MyData;
 char ProvidersList[512];
@@ -132,13 +136,15 @@ typedef struct
 	char szMsg[1]; // message string (variable length)
 } MSG_CHATSTRING, *LPMSG_CHATSTRING;
 void IAmLeft();
-HRESULT ShutdownConnection( LPDPLAYINFO lpDPInfo );
+bool ShutdownConnection();
 // globals
 HANDLE ghReceiveThread = nullptr; // handle of receive thread
 DWORD gidReceiveThread = 0; // id of receive thread
 HANDLE ghKillReceiveEvent = nullptr; // event used to kill receive thread
 HWND ghChatWnd = nullptr; // main chat window
+#ifndef NODPLAY
 DPLAYINFO DPInfo;
+#endif
 //execute bufferisation
 
 EXBUFFER EBufs[MaxPL];
@@ -231,43 +237,12 @@ bool PresentEmptyBuf()
 	return retval;
 }
 
-BOOL WINAPI EnumPlayersCallback2( DPID dpId,
-	DWORD dwPlayerType, LPCDPNAME lpName,
-	DWORD dwFlags, LPVOID lpContext )
-{
-	PlayersID[NPlayers] = dpId;
-	strcat( PlayersList, lpName->lpszShortNameA );
-	strcat( PlayersList, "|" );
-	NPlayers++;
-	return true;
-}
 
 InputBox** IBBX;
-BOOL WINAPI IBEnumPlayersCallback2( DPID dpId,
-	DWORD dwPlayerType, LPCDPNAME lpName,
-	DWORD dwFlags, LPVOID lpContext )
-{
-	PlayersID[NPlayers] = dpId;
-	strcpy( IBBX[NPlayers]->Str, lpName->lpszShortNameA );
-	NPlayers++;
-	return true;
-};
-void SortPLIDS();
-void IBEnumeratePlayers( InputBox** IB )
-{
-	for (int i = 0; i < 8; i++)IB[i]->Str[0] = 0;
-	IBBX = IB;
-	NPlayers = 0;
-	PlayersList[0] = 0;
-	if (int( lpDirectPlay3A ))
-	{
-		lpDirectPlay3A->EnumPlayers( (GUID*) &DPCHAT_GUID,
-			IBEnumPlayersCallback2, nullptr, 0 );
-	};
-	SortPLIDS();
-}
 
-int GetPIndex( DPID PD )
+void SortPLIDS();
+
+int GetPIndex( CDPID PD )
 {
 	int i = 0;
 	while (i < NPlayers && PD != PlayersID[i])
@@ -284,56 +259,11 @@ int GetPIndex( DPID PD )
 	}
 }
 
-BOOL WINAPI MPL_EnumPlayersCallback2( DPID dpId,
-	DWORD dwPlayerType, LPCDPNAME lpName,
-	DWORD dwFlags, LPVOID lpContext )
-{
-	int pid = GetPIndex( dpId );
-	if (pid != -1)
-	{
-		EBufs[pid].Enabled = 1;
-	}
-
-	return true;
-}
-
-//void MPL_CheckExistingPlayers()
-//{
-//	if (int( lpDirectPlay3A ) && NPlayers > 1)
-//	{
-//		byte StartEBF[8];
-//		for (int i = 0; i < MaxPL; i++)
-//		{
-//			StartEBF[i] = EBufs[i].Enabled;
-//			EBufs[i].Enabled = 0;
-//		}
-//
-//		lpDirectPlay3A->EnumPlayers( (GUID*) &DPCHAT_GUID,
-//			MPL_EnumPlayersCallback2, nullptr, 0 );
-//
-//		for (int i = 0; i < MaxPL; i++)
-//		{
-//			if (StartEBF[i] && !EBufs[i].Enabled)
-//			{
-//				if (i == MyNation)
-//				{
-//					CreateTimedHintEx( GetTextByID( "PLALONE" ), kSystemMessageDisplayTime, 32 );//You have been disconnected from the game!
-//				}
-//				else
-//				{
-//					char buf[200];
-//					sprintf( buf, GetTextByID( "PLEXIT" ), GetPName( i ) );
-//					CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//Player %s has left the game.
-//				}
-//			}
-//		}
-//	}
-//}
-
 char CHATSTRING[256] = "";
 
 DWORD CHATDPID = 0;
 PlayerInfo* PINFLOC;
+#ifndef NODPLAY
 BOOL WINAPI PIEnumPlayersCallback2( DPID dpId,
 	DWORD dwPlayerType, LPCDPNAME lpName,
 	DWORD dwFlags, LPVOID lpContext )
@@ -349,7 +279,8 @@ BOOL WINAPI PIEnumPlayersCallback2( DPID dpId,
 	NPlayers++;
 	return true;
 };
-DPID PLIDS[8];
+#endif
+CDPID PLIDS[8];
 int PLFRQ[8];
 void ClearPLIDS()
 {
@@ -363,7 +294,7 @@ void SortPLIDS()
 	memset( plprs, 0, sizeof plprs );
 	for (int i = 0; i < NPlayers; i++)
 	{
-		DPID pid = PINFO[i].PlayerID;
+		CDPID pid = PINFO[i].PlayerID;
 		bool pinfn = 1;
 		for (int j = 0; j < 10 && pinfn; j++)if (PLIDS[j] == pid)
 		{
@@ -493,6 +424,7 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 		IPCORE.lpEnumProc = &IPCORE_EnumProc;
 		IPCORE.EnumPeers();
 	}
+#ifndef NODPLAY
 	else
 	{
 		if (int( lpDirectPlay3A ))
@@ -501,6 +433,7 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 				PIEnumPlayersCallback2, nullptr, 0 );
 		}
 	}
+#endif
 
 	SortPLIDS();
 	DelBADPL();
@@ -558,10 +491,10 @@ void ClearFAILS()
 
 int ExitNI = -1;
 
-void HandleApplicationMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWORD dwMsgSize,
-	DPID idFrom, DPID idTo )
+void HandleApplicationMessage(void* lpMsg, DWORD dwMsgSize,
+	CDPID idFrom, CDPID idTo )
 {
-	DWORD SDP = idTo == DPID_ALLPLAYERS ? MyDPID : idTo;
+	DWORD SDP = idTo == 0 /* DPID_ALLPLAYERS */ ? MyDPID : idTo;
 	if (SDP == MyDPID)
 	{
 		int player_index = GetPIndex( idFrom );
@@ -576,7 +509,7 @@ void HandleApplicationMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWOR
 		byte* BUF = (byte*) (LPMSG_CHATSTRING) lpMsg;
 
 		bool CheckRetrans = 0;
-		DPID RealIDFROM = idFrom;
+		CDPID RealIDFROM = idFrom;
 
 		if (lp[0] == 'SIAP')
 		{
@@ -829,7 +762,7 @@ STAGENEXT:
 											{
 												if (lp[0] == 'ALIA' && lp[3] == lp[0] + lp[1] + lp[2])
 												{//Answer to alive request
-													const DPID sender_id = lp[1];
+													const CDPID sender_id = lp[1];
 													for (int i = 0; i < NPlayers; i++)
 													{
 														if (sender_id == PINFO[i].PlayerID)
@@ -893,18 +826,18 @@ STAGENEXT:
 	}
 }
 
-void HandleSystemMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWORD dwMsgSize,
-	DPID idFrom, DPID idTo )
+void HandleSystemMessage(void* lpMsg, DWORD dwMsgSize,
+	CDPID idFrom, CDPID idTo )
 {
 	LPSTR lpszStr = nullptr;
 
 	// The body of each case is there so you can set a breakpoint and examine
 	// the contents of the message received.
-	switch (lpMsg->dwType)
+	switch (*(DWORD*)lpMsg)
 	{
-	case DPSYS_CREATEPLAYERORGROUP:
+	case 0x0003 /*DPSYS_CREATEPLAYERORGROUP*/:
 	{
-		LPDPMSG_CREATEPLAYERORGROUP lp = (LPDPMSG_CREATEPLAYERORGROUP) lpMsg;
+		CLPDPMSG_CREATEPLAYERORGROUP lp = (CLPDPMSG_CREATEPLAYERORGROUP) lpMsg;
 		LPSTR lpszPlayerName;
 		LPSTR szDisplayFormat = "\"%s\" has joined\r\n";
 
@@ -925,9 +858,9 @@ void HandleSystemMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWORD dwM
 	}
 	break;
 
-	case DPSYS_DESTROYPLAYERORGROUP:
+	case 0x0005 /*DPSYS_DESTROYPLAYERORGROUP*/:
 	{
-		LPDPMSG_DESTROYPLAYERORGROUP lp = (LPDPMSG_DESTROYPLAYERORGROUP) lpMsg;
+		CLPDPMSG_DESTROYPLAYERORGROUP lp = (CLPDPMSG_DESTROYPLAYERORGROUP) lpMsg;
 		LPSTR lpszPlayerName;
 		LPSTR szDisplayFormat = "\"%s\" has left\r\n";
 
@@ -948,27 +881,8 @@ void HandleSystemMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWORD dwM
 	}
 	break;
 
-	case DPSYS_ADDPLAYERTOGROUP:
+	case 0x0101 /*DPSYS_HOST*/:
 	{
-		LPDPMSG_ADDPLAYERTOGROUP lp = (LPDPMSG_ADDPLAYERTOGROUP) lpMsg;
-	}
-	break;
-
-	case DPSYS_DELETEPLAYERFROMGROUP:
-	{
-		LPDPMSG_DELETEPLAYERFROMGROUP lp = (LPDPMSG_DELETEPLAYERFROMGROUP) lpMsg;
-	}
-	break;
-
-	case DPSYS_SESSIONLOST:
-	{
-		LPDPMSG_SESSIONLOST lp = (LPDPMSG_SESSIONLOST) lpMsg;
-	}
-	break;
-
-	case DPSYS_HOST:
-	{
-		LPDPMSG_HOST lp = (LPDPMSG_HOST) lpMsg;
 		LPSTR szDisplayFormat = "You have become the host\r\n";
 
 		// allocate space for string
@@ -979,20 +893,10 @@ void HandleSystemMessage( LPDPLAYINFO lpDPInfo, LPDPMSG_GENERIC lpMsg, DWORD dwM
 		// build string
 		lstrcpy( lpszStr, szDisplayFormat );
 
+#ifndef NODPLAY
 		// we are now the host
 		lpDPInfo->bIsHost = TRUE;
-	}
-	break;
-
-	case DPSYS_SETPLAYERORGROUPDATA:
-	{
-		LPDPMSG_SETPLAYERORGROUPDATA lp = (LPDPMSG_SETPLAYERORGROUPDATA) lpMsg;
-	}
-	break;
-
-	case DPSYS_SETPLAYERORGROUPNAME:
-	{
-		LPDPMSG_SETPLAYERORGROUPNAME lp = (LPDPMSG_SETPLAYERORGROUPNAME) lpMsg;
+#endif
 	}
 	break;
 	}
@@ -1029,21 +933,29 @@ int NSENDP = 0;
 unsigned long MAXSENDP = 0;
 int PREVTIME = 0;
 
-HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
+void ReceiveMessage()
 {
-	DPID idFrom, idTo;
+	CDPID idFrom, idTo;
 	LPVOID lpvMsgBuffer;
 	DWORD dwMsgBufferSize;
-	HRESULT hr;
+	bool success;
+	bool bufferTooSmall = false;
 
 	if (!PREVTIME)
 	{
 		PREVTIME = GetRealTime();
 	}
 
-	if (!( lpDPInfo->lpDirectPlay3A || DoNewInet ))
+	if (
+		!(
+#ifndef NODPLAY
+			lpDPInfo->lpDirectPlay3A ||
+#endif
+			DoNewInet
+		)
+	)
 	{
-		return 0;
+		return;
 	}
 
 	lpvMsgBuffer = BUFFERX;
@@ -1064,15 +976,9 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 			idFrom = peer;
 			idTo = MyDPID;
 
-			if (!dwMsgBufferSize)
-			{
-				hr = DPERR_NOMESSAGES;
-			}
-			else
-			{
-				hr = DP_OK;
-			}
+			success = !dwMsgBufferSize;
 		}
+#ifndef NODPLAY
 		else
 		{
 			if (!dwMsgBufferSize)
@@ -1085,7 +991,15 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 				hr = lpDPInfo->lpDirectPlay3A->Receive( &idFrom, &idTo, DPRECEIVE_ALL,
 					lpvMsgBuffer, &dwMsgBufferSize );
 			}
+			success = SUCCEEDED(hr);
+			bufferTooSmall = (hr == DPERR_BUFFERTOOSMALL);
 		}
+#else
+		else
+		{
+			success = false;
+		}
+#endif
 
 		if (dwMsgBufferSize != 40000 && NMessM < 64)
 		{
@@ -1104,10 +1018,10 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 				NSysM++;
 			}
 		}
-	} while (hr == DPERR_BUFFERTOOSMALL);
+	} while (bufferTooSmall);
 
-	if (( SUCCEEDED( hr ) ) && // successfully read a message
-		( dwMsgBufferSize >= sizeof( DPMSG_GENERIC ) )) // and it is big enough
+	if (( success ) && // successfully read a message
+		( dwMsgBufferSize >= sizeof( DWORD ) )) // and it is big enough
 	{
 		// check for system message
 		int tt = GetTickCount();
@@ -1117,16 +1031,16 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 
 		}
 
-		if (idFrom == DPID_SYSMSG)
+		if (idFrom == 0 /* DPID_SYSMSG */)
 		{
 			PREVGRAPHRSZS += dwMsgBufferSize + 32;
-			HandleSystemMessage( lpDPInfo, (LPDPMSG_GENERIC) lpvMsgBuffer,
+			HandleSystemMessage( lpvMsgBuffer,
 				dwMsgBufferSize, idFrom, idTo );
 		}
 		else
 		{
 			PREVGRAPHRSZA += dwMsgBufferSize + 32;
-			HandleApplicationMessage( lpDPInfo, (LPDPMSG_GENERIC) lpvMsgBuffer,
+			HandleApplicationMessage( lpvMsgBuffer,
 				dwMsgBufferSize, idFrom, idTo );
 		}
 
@@ -1145,7 +1059,7 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 		}
 	}
 
-	if (SUCCEEDED( hr ))
+	if (success)
 	{
 		NeedMoreReceive = true;
 	}
@@ -1154,17 +1068,19 @@ HRESULT ReceiveMessage( LPDPLAYINFO lpDPInfo )
 		NeedMoreReceive = false;
 	}
 
-	return ( DP_OK );
+	return;
 }
 
 void AnalyseMessages();
 
 void ProcessReceive()
 {
+#ifndef NODPLAY
 	if (lpDPInfo && lpDPInfo->lpDirectPlay3A)
 	{
 		AnalyseMessages();
 	}
+#endif
 
 	if (DoNewInet)
 	{
@@ -1178,13 +1094,15 @@ void ReceiveAll()
 	PREVTIME = GetRealTime();
 	do
 	{
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 	} while (NeedMoreReceive);
 }
 
-HRESULT SetupConnection( HINSTANCE hInstance, LPDPLAYINFO lpDPInfo )
+void SetupConnection()
 {
+#ifndef NODPLAY
 	ZeroMemory( lpDPInfo, sizeof( DPLAYINFO ) );
+#endif
 	ZeroMemory( PData, sizeof( PData ) );
 	ZeroMemory( PlayersID, sizeof( PlayersID ) );
 	ZeroMemory( &MyData, sizeof( 4 * 32 ) );
@@ -1195,14 +1113,16 @@ HRESULT SetupConnection( HINSTANCE hInstance, LPDPLAYINFO lpDPInfo )
 	GameInProgress = false;
 
 	// create event used by DirectPlay to signal a message has arrived
-	return ( DP_OK );
+	return;
 }
 
 //Init DirectPlay and DPInfo structure
-void SetupMultiplayer( HINSTANCE hInstance )
+void SetupMultiplayer()
 {
-	SetupConnection( hInstance, &DPInfo );
+	SetupConnection();
+#ifndef NODPLAY
 	lpDPInfo = &DPInfo;
+#endif
 }
 
 extern bool IPCORE_INIT;
@@ -1210,7 +1130,7 @@ extern bool NETWORK_INIT;
 void ShutdownMultiplayer( bool Final )
 {
 	IAmLeft();
-	ShutdownConnection( lpDPInfo );
+	ShutdownConnection();
 	if (DoNewInet&&IPCORE_INIT)
 	{
 		if (IPCORE.IsServer())IPCORE.DoneServer();
@@ -1224,8 +1144,9 @@ void ShutdownMultiplayer( bool Final )
 	InternetProto = 0;
 }
 
-HRESULT ShutdownConnection( LPDPLAYINFO lpDPInfo )
+bool ShutdownConnection()
 {
+#ifndef NODPLAY
 	if (lpDPInfo->lpDirectPlay3A)
 	{
 		if (lpDPInfo->dpidPlayer)
@@ -1238,6 +1159,7 @@ HRESULT ShutdownConnection( LPDPLAYINFO lpDPInfo )
 		lpDPInfo->lpDirectPlay3A = nullptr;
 		lpDirectPlay3A = nullptr;
 	}
+#endif
 
 	if (DoNewInet&&IPCORE_INIT)
 	{
@@ -1252,13 +1174,15 @@ HRESULT ShutdownConnection( LPDPLAYINFO lpDPInfo )
 	}
 	InternetProto = 0;
 
-	return ( DP_OK );
+	return true;
 }
 
 void InitMultiDialogs()
 {
 	NetworkGame = false;
+#ifndef NODPLAY
 	lpDirectPlay3A = nullptr;
+#endif
 	NProviders = 0;
 	PlayerMenuMode = 1;
 	NPlayers = 0;
@@ -1266,20 +1190,22 @@ void InitMultiDialogs()
 	InternetProto = 0;
 }
 
-HRESULT CreateDirectPlayInterface( LPDIRECTPLAY3A *lplpDirectPlay3A )
+#ifndef NODPLAY
+HRESULT CreateDirectPlayInterface()
 {
 	HRESULT hr;
-	LPDIRECTPLAY3A lpDirectPlay3A = nullptr;
+	LPDIRECTPLAY3A lpDirectPlay3Alocal = nullptr;
 	hr = CoInitialize( nullptr );
 	// Create an IDirectPlay3 interface
 	hr = CoCreateInstance( CLSID_DirectPlay, nullptr, CLSCTX_INPROC_SERVER,
-		IID_IDirectPlay3A, (LPVOID*) &lpDirectPlay3A );
+		IID_IDirectPlay3A, (LPVOID*) &lpDirectPlay3Alocal );
 
 	// return interface created
-	*lplpDirectPlay3A = lpDirectPlay3A;
+	*lpDirectPlay3A = lpDirectPlay3Alocal;
 
 	return ( hr );
 }
+#endif
 
 /*HRESULT DestroyDirectPlayInterface(HWND hWnd, LPDIRECTPLAY3A lpDirectPlay3A)
 {
@@ -1296,6 +1222,7 @@ HRESULT CreateDirectPlayInterface( LPDIRECTPLAY3A *lplpDirectPlay3A )
  return (hr);
 };*/
 
+#ifndef NODPLAY
 BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(
 	LPCGUID lpguidSP,
 	LPVOID lpConnection,
@@ -1324,6 +1251,7 @@ BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(
 
 	return ( TRUE );
 }
+#endif
 
 __declspec( dllexport ) void CloseMPL();
 
@@ -1356,7 +1284,8 @@ bool CreateMultiplaterInterface()
 		}
 	}
 
-	if FAILED( CreateDirectPlayInterface( &lpDirectPlay3A ) )
+#ifndef NODPLAY
+	if FAILED( CreateDirectPlayInterface() )
 	{
 		return false;
 	}
@@ -1376,28 +1305,13 @@ bool CreateMultiplaterInterface()
 	lpDirectPlay3A->EnumConnections( &DPCHAT_GUID,
 		DirectPlayEnumConnectionsCallback, hwnd, 0 );
 	return true;
+#else
+	return false;
+#endif
 }
 
-BOOL FAR PASCAL EnumSessionsCallback(
-	LPCDPSESSIONDESC2 lpSessionDesc,
-	LPDWORD lpdwTimeOut,
-	DWORD dwFlags,
-	LPVOID lpContext )
-{
-	HWND hWnd = (HWND) lpContext;
-
-	// see if last session has been enumerated
-	if (dwFlags & DPESC_TIMEDOUT)
-		return ( FALSE );
-
-	// store session name in list
-	strcat( SessionsList, lpSessionDesc->lpszSessionNameA );
-	strcat( SessionsList, "|" );
-	SessionsGUID[NSessions] = lpSessionDesc->guidInstance;
-	NSessions++;
-	return ( TRUE );
-}
 ListBox* LBBX;
+#ifndef NODPLAY
 BOOL FAR PASCAL LBEnumSessionsCallback(
 	LPCDPSESSIONDESC2 lpSessionDesc,
 	LPDWORD lpdwTimeOut,
@@ -1435,8 +1349,10 @@ BOOL FAR PASCAL LBEnumSessionsCallback(
 	NSessions++;
 	return ( TRUE );
 };
+#endif
 int GMTYPE = 0;
 int SSMAXPL = 0;
+#ifndef NODPLAY
 BOOL FAR PASCAL SR_EnumSessionsCallback(
 	LPCDPSESSIONDESC2 lpSessionDesc,
 	LPDWORD lpdwTimeOut,
@@ -1469,9 +1385,11 @@ BOOL FAR PASCAL SR_EnumSessionsCallback(
 	}
 	return ( TRUE );
 }
+#endif
 
-HRESULT JoinSession( LPDIRECTPLAY3A lpDirectPlay3A, LPGUID lpguidSessionInstance,
-	LPSTR lpszPlayerName, LPDPLAYINFO lpDPInfo );
+#ifndef NODPLAY
+HRESULT JoinSession( LPGUID lpguidSessionInstance, LPSTR lpszPlayerName );
+#endif
 
 extern char IPADDR[128];
 
@@ -1487,10 +1405,10 @@ void NORMNICK1( char* Nick )
 	}
 }
 
-bool FindSessionAndJoin( char* Name, char* Nick, bool Style, unsigned short port )
+bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port )
 {
 	NORMNICK1( Nick );
-	if (Style)
+	if (DoNewInet)
 	{
 		if (!NETWORK_INIT)
 		{
@@ -1510,6 +1428,7 @@ bool FindSessionAndJoin( char* Name, char* Nick, bool Style, unsigned short port
 		return false;
 	}
 
+#ifndef NODPLAY
 	DPSESSIONDESC2 sessionDesc;
 	SessionsList[0] = 0;
 	NSessions = 0;
@@ -1529,9 +1448,7 @@ bool FindSessionAndJoin( char* Name, char* Nick, bool Style, unsigned short port
 
 	if (NSessions)
 	{
-		if FAILED( JoinSession( lpDirectPlay3A,
-			SessionsGUID, Nick,
-			lpDPInfo ) )
+		if FAILED( JoinSession( SessionsGUID, Nick ) )
 		{
 			lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
 				SR_EnumSessionsCallback, LPVOID( Name ),
@@ -1557,18 +1474,25 @@ bool FindSessionAndJoin( char* Name, char* Nick, bool Style, unsigned short port
 		return false;
 	}
 	return true;
+#else
+	return false;
+#endif
 }
 
 void LBEnumerateSessions( ListBox* LB, int ID )
 {
-	if (!lpDirectPlay3A)CreateMultiplaterInterface();
+#ifndef NODPLAY
+	if (!lpDirectPlay3A)
+#endif
+		CreateMultiplaterInterface();
 	LBBX = LB;
 	LB->ClearItems();
-	DPSESSIONDESC2 sessionDesc;
 	PlayersList[0] = 0;
 	NPlayers = 0;
 	SessionsList[0] = 0;
 	NSessions = 0;
+#ifndef NODPLAY
+	DPSESSIONDESC2 sessionDesc;
 	// add sessions to session list
 	ZeroMemory( &sessionDesc, sizeof( DPSESSIONDESC2 ) );
 	sessionDesc.dwSize = sizeof( DPSESSIONDESC2 );
@@ -1577,10 +1501,10 @@ void LBEnumerateSessions( ListBox* LB, int ID )
 	lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
 		LBEnumSessionsCallback, LPVOID( ID ),
 		DPENUMSESSIONS_AVAILABLE );
+#endif
 };
-HRESULT HostSession( LPDIRECTPLAY3A lpDirectPlay3A,
-	LPSTR lpszSessionName, LPSTR lpszPlayerName,
-	LPDPLAYINFO lpDPInfo, DWORD User2 )
+#ifndef NODPLAY
+HRESULT HostSession( LPSTR lpszSessionName, LPSTR lpszPlayerName, DWORD User2 )
 {
 	DPID dpidPlayer;
 	DPNAME dpName;
@@ -1629,27 +1553,14 @@ OPEN_FAILURE:
 	lpDirectPlay3A = nullptr;
 	return ( hr );
 }
-bool DPL_CreatePlayer( LPDIRECTPLAY3A lpDirectPlay3A,
-	LPGUID lpguidSessionInstance, LPDPNAME lpdpName, bool Host )
-{
-	DPID dpidPlayer;
-	HRESULT hr = lpDirectPlay3A->CreatePlayer( &dpidPlayer, lpdpName, 0, nullptr, 0, 0 );
-	if FAILED( hr )
-		return false;
-
-	// return connection info
-	MyDPID = dpidPlayer;
-	lpDPInfo->lpDirectPlay3A = lpDirectPlay3A;
-	lpDPInfo->dpidPlayer = dpidPlayer;
-	lpDPInfo->bIsHost = Host;
-	return 1;
-};
-void StopConnectionToSession( LPDIRECTPLAY3A lpDirectPlay3A )
+#endif
+void StopConnectionToSession()
 {
 	if (DoNewInet)
 	{
 		IPCORE.CloseSession();
 	};
+#ifndef NODPLAY
 	if (!lpDirectPlay3A)return;
 	DPSESSIONDESC2 sessionDesc[4];
 	DWORD SDSize = sizeof( sessionDesc );
@@ -1673,10 +1584,12 @@ void StopConnectionToSession( LPDIRECTPLAY3A lpDirectPlay3A )
 	 break;
 	};
 	*/
+#else
+	return;
+#endif
 };
-HRESULT JoinSession( LPDIRECTPLAY3A lpDirectPlay3A,
-	LPGUID lpguidSessionInstance, LPSTR lpszPlayerName,
-	LPDPLAYINFO lpDPInfo )
+#ifndef NODPLAY
+HRESULT JoinSession( LPGUID lpguidSessionInstance, LPSTR lpszPlayerName )
 {
 	DPID dpidPlayer;
 	DPNAME dpName;
@@ -1721,7 +1634,8 @@ OPEN_FAILURE:
 	lpDirectPlay3A = nullptr;
 	return ( hr );
 };
-bool CreateSession( char* SessName, char* Name, DWORD User2, bool Style, int MaxPlayers )
+#endif
+bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers )
 {
 	NORMNICK1( Name );
 	// use computer name for session name
@@ -1732,7 +1646,7 @@ bool CreateSession( char* SessName, char* Name, DWORD User2, bool Style, int Max
 		IPCORE.InitNetwork();
 		NETWORK_INIT = 1;
 	};
-	if (Style)
+	if (DoNewInet)
 	{
 		IPCORE.SetOptions( User2 );
 		char SESS[256];
@@ -1749,12 +1663,16 @@ bool CreateSession( char* SessName, char* Name, DWORD User2, bool Style, int Max
 		};
 		return res;
 	}
+#ifndef NODPLAY
 	else
 	{
-		HRESULT hr = HostSession( lpDirectPlay3A, SessName, Name, lpDPInfo, User2 );
+		HRESULT hr = HostSession( SessName, Name, lpDPInfo, User2 );
 		if FAILED( hr )return false;
 		else return true;
 	}
+#else
+	else return false;
+#endif
 }
 
 bool CreateNamedSession( char* Name, DWORD User2, int Max )
@@ -1777,29 +1695,33 @@ bool CreateNamedSession( char* Name, DWORD User2, int Max )
 		if (r)IPCORE_INIT = 1;
 		return r;
 	}
+#ifndef NODPLAY
 	else
 	{
-		HRESULT hr = HostSession( lpDirectPlay3A, szSessionName, Name, lpDPInfo, User2 );
+		HRESULT hr = HostSession( szSessionName, Name, User2 );
 		if FAILED( hr )return false;
 		else return true;
 	}
+#else
+	else return false;
+#endif
 }
 
+#ifndef NODPLAY
 bool JoinNameToSession( int ns, char* Name )
 {
 	if (ns >= NSessions)return false;
-	if FAILED( JoinSession( lpDirectPlay3A,
-		&SessionsGUID[ns], Name,
-		lpDPInfo ) )return false;
+	if FAILED( JoinSession( &SessionsGUID[ns], Name ) )return false;
 	else return true;
 }
+#endif
 
 struct NetCell
 {
 	byte* Data;
 	int size;
 	DWORD SendTime;
-	DPID idTo;
+	CDPID idTo;
 };
 
 class NetCash
@@ -1810,9 +1732,9 @@ public:
 	NetCell* CELLS;
 	NetCash();
 	~NetCash();
-	void Add( byte* Data, int size, DPID idTo );
-	void AddOne( byte* Data, int size, DPID idTo );
-	void AddWithDelay( byte* Data, int size, DPID idTo, int TimeDelay );
+	void Add( byte* Data, int size, CDPID idTo );
+	void AddOne( byte* Data, int size, CDPID idTo );
+	void AddWithDelay( byte* Data, int size, CDPID idTo, int TimeDelay );
 	void Process();
 };
 
@@ -1833,24 +1755,34 @@ bool ProcessMessagesEx();
 
 bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))return false;
+	if (( !DoNewInet ) && ( ( !int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+	) ) || NPlayers < 2 ))return false;
 	int count = 0;
-	HRESULT hr;
+	bool success;
 	int ttt = GetRealTime();
 	do
 	{
 		if (DoNewInet)
 		{
-			hr = IPCORE.SendToAll( (byte*) lpData, Size, G );
-			if (hr)hr = DP_OK;
-			else hr = 1;
+			success = IPCORE.SendToAll( (byte*) lpData, Size, G );
 		}
+#ifndef NODPLAY
 		else
 		{
 			if (G)hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, DPSEND_GUARANTEED, lpData, Size );
 			else hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, 0, lpData, Size );
+
+			success = (hr == DP_OK);
 		};
-		if (hr == DP_OK)
+#else
+		else success = false;
+#endif
+		if (success)
 		{
 			int tt = GetTickCount();
 			if (!PREVGRAPHST)
@@ -1874,14 +1806,19 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 		};
 		ProcessMessagesEx();
 		count++;
-	} while (hr != DP_OK&&count < 1);
-	if (hr != DP_OK)return false;
-	return true;
+	} while (!success && count < 1);
+	return success;
 }
 
 bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 	//-------
 	int Type = 0;
 	if (Size >= 7)
@@ -1894,20 +1831,26 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	};
 	//-------
 	int count = 0;
-	HRESULT hr;
+	bool success;
+	bool busy = false;
 	int ttt = GetRealTime();
 	if (DoNewInet)
 	{
-		hr = IPCORE.SendToAll( (byte*) lpData, Size, G );
-		if (hr)hr = DP_OK;
-		else hr = 1;
+		success = IPCORE.SendToAll((byte*)lpData, Size, G);
 	}
+#ifndef NODPLAY
 	else
 	{
-		if (G)hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, DPSEND_GUARANTEED, lpData, Size );
-		else hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, 0, lpData, Size );
+		if (G)hr = lpDirectPlay3A->Send(MyDPID, DPID_ALLPLAYERS, DPSEND_GUARANTEED, lpData, Size);
+		else hr = lpDirectPlay3A->Send(MyDPID, DPID_ALLPLAYERS, 0, lpData, Size);
+
+		success = (hr == DP_OK);
+		busy = (hr == DPERR_BUSY);
 	};
-	if (hr == DP_OK)
+#else
+	else success = false;
+#endif
+	if (success)
 	{
 		if (Type == 1)NSEN1++;
 		if (Type == 2)NSEN2++;
@@ -1936,7 +1879,7 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	}
 	else
 	{
-		if (hr == DPERR_BUSY)
+		if (busy)
 		{
 			if (Type == 1)NSENB1++;
 			if (Type == 2)NSENB2++;
@@ -1949,25 +1892,36 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	};
 	ProcessMessagesEx();
 	count++;
-	if (hr == DPERR_BUSY)return false;
-	else return true;
+	return !busy;
 }
 
 bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 	int count = 0;
-	HRESULT hr;
+	bool success;
 	do
 	{
 		if (DoNewInet)
 		{
-			hr = IPCORE.SendToPeer( DPID, (byte*) lpData, Size, 0 );
-			if (hr)hr = DP_OK;
-			else hr = 1;
+			success = IPCORE.SendToPeer(DPID, (byte*)lpData, Size, 0);
 		}
-		else hr = lpDirectPlay3A->Send( MyDPID, DPID, 0, lpData, Size );
-		if (hr == DP_OK)
+#ifndef NODPLAY
+		else
+		{
+			hr = lpDirectPlay3A->Send(MyDPID, DPID, 0, lpData, Size);
+			success = (hr == DP_OK);
+		}
+#else
+		else success = false;
+#endif
+		if (success)
 		{
 			int tt = GetTickCount();
 			if (!PREVGRAPHST)
@@ -1990,24 +1944,37 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 		};
 		count++;
 		ProcessMessagesEx();
-	} while (hr != DP_OK&&count < 1);
-	if (hr != DP_OK)return false;
-	return true;
+	} while (!success && count < 1);
+	return success;
 }
 
 bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 	int count = 0;
-	HRESULT hr;
+	bool success;
+	bool busy = false;
 	if (DoNewInet)
 	{
-		hr = IPCORE.SendToPeer( DPID, (byte*) lpData, Size, 0 );
-		if (hr)hr = DP_OK;
-		else hr = 1;
+		success = IPCORE.SendToPeer(DPID, (byte*)lpData, Size, 0);
 	}
-	else hr = lpDirectPlay3A->Send( MyDPID, DPID, 0, lpData, Size );
-	if (hr == DP_OK)
+#ifndef NODPLAY
+	else
+	{
+		hr = lpDirectPlay3A->Send(MyDPID, DPID, 0, lpData, Size);
+		success = (hr == DP_OK);
+		busy = (hr == DPERR_BUSY);
+	}
+#else
+	else success = false;
+#endif
+	if (success)
 	{
 		int tt = GetTickCount();
 		if (!PREVGRAPHST)
@@ -2030,15 +1997,12 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 	};
 	ProcessMessagesEx();
 	count++;
-	if (hr == DPERR_BUSY)
-		return false;
-	else
-		return true;
+	return !busy;
 }
 
 int srando();
 
-void NetCash::AddOne( byte* Data, int size, DPID idTo )
+void NetCash::AddOne( byte* Data, int size, CDPID idTo )
 {
 	int idf = 0;
 	int idt = 0;
@@ -2068,7 +2032,7 @@ void NetCash::AddOne( byte* Data, int size, DPID idTo )
 	NCells++;
 }
 
-void NetCash::AddWithDelay( byte* Data, int size, DPID idTo, int dt )
+void NetCash::AddWithDelay( byte* Data, int size, CDPID idTo, int dt )
 {
 	if (NCells >= MaxCells)
 	{
@@ -2084,9 +2048,9 @@ void NetCash::AddWithDelay( byte* Data, int size, DPID idTo, int dt )
 	NCells++;
 }
 
-void NetCash::Add( byte* Data, int size, DPID idTo )
+void NetCash::Add( byte* Data, int size, CDPID idTo )
 {
-	if (idTo == DPID_ALLPLAYERS)
+	if (idTo == 0 /* DPID_ALLPLAYERS */)
 	{
 		for (int i = 0; i < NPlayers; i++)
 		{
@@ -2141,12 +2105,17 @@ void ProcessNetCash()
 
 bool SendToAllPlayers( DWORD Size, LPVOID lpData )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))
-		return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 
 	if (!SendToAllPlayersExNew( Size, lpData, 0 ))
 	{
-		NCASH.AddWithDelay( (byte*) lpData, Size, DPID_ALLPLAYERS, 0 );
+		NCASH.AddWithDelay( (byte*) lpData, Size, 0 /* DPID_ALLPLAYERS */, 0);
 	}
 
 	return true;
@@ -2154,8 +2123,13 @@ bool SendToAllPlayers( DWORD Size, LPVOID lpData )
 
 bool SendToAllPlayersWithDelay( DWORD Size, LPVOID lpData, int dt )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))
-		return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 
 	NCASH.AddWithDelay( (byte*) lpData, Size, 0, dt );
 	//SendToAllPlayersEx(Size,lpData,0);
@@ -2165,8 +2139,13 @@ bool SendToAllPlayersWithDelay( DWORD Size, LPVOID lpData, int dt )
 
 bool SendToAllPlayers( DWORD Size, LPVOID lpData, bool G )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))
-		return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 
 	SendToAllPlayersEx( Size, lpData, G );
 
@@ -2175,8 +2154,13 @@ bool SendToAllPlayers( DWORD Size, LPVOID lpData, bool G )
 
 bool SendToPlayer( DWORD Size, LPVOID lpData, DWORD DPID )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))
-		return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 
 	SendToPlayerEx( Size, lpData, DPID );
 
@@ -2185,39 +2169,36 @@ bool SendToPlayer( DWORD Size, LPVOID lpData, DWORD DPID )
 
 bool SendToServer( DWORD Size, LPVOID lpData )
 {
-	if (( !DoNewInet ) && ( ( !int( lpDirectPlay3A ) ) || NPlayers < 2 ))
-		return false;
+	if ((!DoNewInet) && ((!int(
+#ifndef NODPLAY
+		lpDirectPlay3A
+#else
+		0
+#endif
+		)) || NPlayers < 2))return false;
 
 	int count = 0;
-	HRESULT hr;
+	bool success;
 	do
 	{
 		if (DoNewInet)
 		{
-			hr = IPCORE.SendToPeer( ServerDPID, (byte*) lpData, Size, 1 );
-			if (hr)
-			{
-				hr = DP_OK;
-			}
-			else
-			{
-				hr = 1;
-			}
+			success = IPCORE.SendToPeer(ServerDPID, (byte*)lpData, Size, 1);
 		}
+#ifndef NODPLAY
 		else
 		{
-			hr = lpDirectPlay3A->Send( MyDPID, ServerDPID,
-				DPSEND_GUARANTEED, lpData, Size );
+			hr = lpDirectPlay3A->Send(MyDPID, ServerDPID,
+				DPSEND_GUARANTEED, lpData, Size);
+			success = (hr == DP_OK);
 		}
+#else
+		else success = false;
+#endif
 		count++;
-	} while (hr != DP_OK&&count < 1);
+	} while (!success && count < 1);
 
-	if (hr != DP_OK)
-	{
-		return false;
-	}
-
-	return true;
+	return success;
 }
 
 void FreePDatas()
@@ -2325,10 +2306,12 @@ void ComeInGame()
 
 	rpos = 0;
 
+#ifndef NODPLAY
 	if (lpDirectPlay3A)
 	{
 		SendToAllPlayers( 12, ExBuf1, 1 );
 	}
+#endif
 
 	memcpy( PrevEB, ExBuf1, 12 );
 	PrevEBSize = 12;
@@ -2459,7 +2442,7 @@ bool CheckSender()
 	{
 		return 0;
 	}
-	DPID MINVAL = 0xFFFFFFFF;
+	CDPID MINVAL = 0xFFFFFFFF;
 	int MINC = 9;
 	for (int i = 0; i < NPlayers; i++)
 	{
@@ -2621,7 +2604,7 @@ void AnalyseMessages()
 	do
 	{
 		CC++;
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 		if (MyDPID != ServerDPID)
 		{
 			DWORD* lp = (DWORD*) MyData;
@@ -2663,7 +2646,7 @@ void AnalyseMessages()
 						int crr = 0;
 						for (int j = 0; j < NPlayers; j++)
 						{
-							DPID id = PlayersID[j];
+							CDPID id = PlayersID[j];
 							for (int i = 0; i < NPlayers&&id; i++)if (PINFO2[i].PlayerID == id)
 							{
 								memcpy( PINFO + j, PINFO2 + i, sizeof PlayerInfo );
@@ -2699,7 +2682,7 @@ void AnalyseMessages()
 
 void xAnalyseMessages()
 {
-	ReceiveMessage( lpDPInfo );
+	ReceiveMessage();
 	if (MyDPID != ServerDPID)
 	{
 		DWORD* lp = (DWORD*) MyData;
@@ -2732,6 +2715,7 @@ void IAmLeft()
 			SendToAllPlayers( 4, (void*) &PlExitID, 1 );
 		}
 	}
+#ifndef NODPLAY
 	else
 	{
 		if (lpDirectPlay3A)
@@ -2740,6 +2724,7 @@ void IAmLeft()
 			SendToAllPlayers( 4, (void*) &PlExitID, 1 );
 		}
 	}
+#endif
 }
 
 int GetRLen( char* s, RLCFont* font );
@@ -2856,7 +2841,11 @@ void HandleMultiplayer()
 		}
 	}
 
-	if (!( lpDirectPlay3A || DoNewInet ))
+	if (!(
+#ifndef NODPLAY
+		lpDirectPlay3A ||
+#endif
+		DoNewInet ))
 	{
 		return;
 	}
@@ -2982,7 +2971,7 @@ void HandleMultiplayer()
 				}
 			}
 
-			ReceiveMessage( lpDPInfo );
+			ReceiveMessage();
 
 			mpl_time_1 = ( GetRealTime() - mpl_time_4 ) >> 6;
 			mpl_time_2 = ( GetRealTime() - mpl_time_3 ) >> 6;
@@ -3405,12 +3394,14 @@ void SendChat( char* str, bool Ally )
 
 __declspec( dllexport ) void CloseMPL()
 {
+#ifndef NODPLAY
 	if (int( lpDirectPlay3A ))
 	{
 		lpDirectPlay3A->Close();
 	}
 
 	lpDirectPlay3A = nullptr;
+#endif
 
 	if (DoNewInet&&IPCORE_INIT)
 	{
@@ -3466,13 +3457,15 @@ void SETPLAYERDATA( DWORD ID, void* Data, int size, bool change )
 		}
 		PS1_change = 0;
 	}
+#ifndef NODPLAY
 	else
 	{
 		lpDirectPlay3A->SetPlayerData( ID, Data, size, DPSET_REMOTE );
 	}
+#endif
 }
 
-void SETPLAYERNAME( DPNAME* lpdpName, bool change )
+void SETPLAYERNAME( char* name, bool change )
 {
 	if (change)
 	{
@@ -3487,7 +3480,7 @@ void SETPLAYERNAME( DPNAME* lpdpName, bool change )
 
 	if (DoNewInet)
 	{
-		IPCORE.SetUserName( lpdpName->lpszShortNameA );
+		IPCORE.SetUserName( name );
 		if (PS2_change)
 		{
 			if (TT - PS_TIME2 > 10000)
@@ -3506,10 +3499,12 @@ void SETPLAYERNAME( DPNAME* lpdpName, bool change )
 		}
 		PS2_change = 0;
 	}
+#ifndef NODPLAY
 	else
 	{
 		lpDirectPlay3A->SetPlayerName( MyDPID, lpdpName, DPSET_REMOTE );
 	}
+#endif
 }
 
 //Calls IPCORE.QueueProcess()
@@ -3537,7 +3532,7 @@ bool ProcessSyncroMain( SaveBuf* SB )
 	do
 	{
 		ProcessMessagesEx();
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 		if (MyData)
 		{
 			DWORD* MDTI = (DWORD*) MyData;
@@ -3578,7 +3573,7 @@ bool ProcessSyncroMain( SaveBuf* SB )
 	PREVTIME = GetRealTime();
 	do
 	{
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 	} while (NeedMoreReceive);
 	//All OK. They are ready to receive syncro.
 	SB->Pos = 0;
@@ -3637,7 +3632,7 @@ bool ProcessSyncroMain( SaveBuf* SB )
 		{
 			ProcessMessagesEx();
 
-			ReceiveMessage( lpDPInfo );
+			ReceiveMessage();
 
 			if (MyData)
 			{
@@ -3707,7 +3702,7 @@ bool ProcessSyncroChild( SaveBuf* SB )
 	{
 		ProcessMessagesEx();
 
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 
 		if (MyData)
 		{
@@ -3736,7 +3731,7 @@ bool ProcessSyncroChild( SaveBuf* SB )
 			time = GetRealTime();
 		}
 
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 
 		if (MyData)
 		{
@@ -3768,7 +3763,7 @@ bool ProcessSyncroChild( SaveBuf* SB )
 	do
 	{
 		ProcessMessagesEx();
-		ReceiveMessage( lpDPInfo );
+		ReceiveMessage();
 		if (MyData)
 		{
 			int* INDA = (int*) MyData;
@@ -3980,7 +3975,7 @@ int PingSumm::GetTimeDifference( DWORD DPID )
 	};
 	return 0;
 };
-int GetPing( DPID pid );
+int GetPing( CDPID pid );
 void StartPing( DWORD DPID, int ID );
 void EndPing( int ID );
 char* GetLString( DWORD DPID );
@@ -4256,7 +4251,7 @@ int GetMaxRealPing()
 	return maxsp;
 }
 
-int GetPing( DPID pid )
+int GetPing( CDPID pid )
 {
 	int nn = 0;
 	int sp = 0;
@@ -4410,7 +4405,7 @@ void PLAYERSBACKUP::Clear()
 	};
 	NBDATA = 0;
 };
-void PLAYERSBACKUP::AddInf( byte* BUF, int L, DPID ID, int RT )
+void PLAYERSBACKUP::AddInf( byte* BUF, int L, CDPID ID, int RT )
 {
 	if (!L)
 	{
@@ -4437,7 +4432,7 @@ void PLAYERSBACKUP::AddInf( byte* BUF, int L, DPID ID, int RT )
 	NBDATA++;
 }
 
-void PLAYERSBACKUP::SendInfoAboutTo( DPID ID, DPID TO, DWORD RT )
+void PLAYERSBACKUP::SendInfoAboutTo( CDPID ID, CDPID TO, DWORD RT )
 {
 	for (int i = 0; i < NBDATA; i++)if (BSTR[i].ID == ID&&BSTR[i].RealTime == RT)
 	{
@@ -4796,7 +4791,8 @@ void CreateAnswerString( char* s )
 		else sprintf( s, "@@@NORCRT" );
 };
 
-bool CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+#ifndef NODPLAY
+bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 {
 	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
 	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
@@ -4839,8 +4835,10 @@ bool CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 
 	return true;
 }
+#endif
 
-bool CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+#ifndef NODPLAY
+bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 {
 	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
 	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
@@ -4882,7 +4880,9 @@ bool CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 
 	return true;
 }
+#endif
 
+#ifndef NODPLAY
 //--------------ALL GAME IS IN THIS PROCEDURE!-------------//
 BOOL FAR PASCAL EnumAddressCallback1(
 	REFGUID guidDataType,
@@ -4898,3 +4898,4 @@ BOOL FAR PASCAL EnumAddressCallback1(
 	}
 	return true;
 };
+#endif

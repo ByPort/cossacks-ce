@@ -1,3 +1,5 @@
+#ifndef NODPLAY
+
 /*==========================================================================;
  *
  *  Copyright (C) 1996-1997 Microsoft Corporation.  All Rights Reserved.
@@ -625,3 +627,5 @@ DEFINE_GUID(DPAID_ComPort,
 #endif /* __cplusplus */
 
 #endif /* __DPLOBBY_INCLUDED__ */
+
+#endif

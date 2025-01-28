@@ -125,19 +125,84 @@ struct OnePlayerReport
 __declspec( dllimport ) void ReportGSCGame( int time, int NPlayers, OnePlayerReport* OPR );
 __declspec( dllimport ) void ReportAliveState( int NPlayers, int* Profiles );
 
-void SETPLAYERNAME(DPNAME* lpdpName, bool);
+void SETPLAYERNAME(char* name, bool);
 
-bool CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf);
-bool CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+#ifndef NODPLAY
+bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+#endif
 
+#ifndef NODPLAY
 BOOL FAR PASCAL EnumAddressCallback1(
 	REFGUID guidDataType,
 	DWORD dwDataSize,
 	LPCVOID lpData,
 	LPVOID lpContext
 );
+#endif
 
-extern DPID MyDPID;
+// Custom DPID and two message types from dplay.h
+// TODO: remove or make light structures
+#ifndef NODPLAY
+typedef DPID CDPID;
+
+typedef LPDPMSG_CREATEPLAYERORGROUP CLPDPMSG_CREATEPLAYERORGROUP;
+typedef LPDPMSG_DESTROYPLAYERORGROUP CLPDPMSG_DESTROYPLAYERORGROUP;
+
+#else
+
+typedef unsigned long CDPID;
+
+typedef struct
+{
+	DWORD   dwSize;             // Size of structure
+	DWORD   dwFlags;            // Not used. Must be zero.
+	union
+	{                           // The short or friendly name
+		LPWSTR  lpszShortName;  // Unicode
+		LPSTR   lpszShortNameA; // ANSI
+	};
+	union
+	{                           // The long or formal name
+		LPWSTR  lpszLongName;   // Unicode
+		LPSTR   lpszLongNameA;  // ANSI
+	};
+
+} CDPNAME;
+
+typedef struct
+{
+	DWORD       dwType;         // Message type
+	DWORD       dwPlayerType;   // Is it a player or group
+	CDPID        dpId;           // ID of the player or group
+	DWORD       dwCurrentPlayers;   // current # players & groups in session
+	LPVOID      lpData;         // pointer to remote data
+	DWORD       dwDataSize;     // size of remote data
+	CDPNAME      dpnName;        // structure with name info
+	// the following fields are only available when using
+	// the IDirectPlay3 interface or greater
+	CDPID	    dpIdParent;     // id of parent group
+	DWORD		dwFlags;		// player or group flags
+} * CLPDPMSG_CREATEPLAYERORGROUP;
+
+typedef struct
+{
+	DWORD       dwType;         // Message type
+	DWORD       dwPlayerType;   // Is it a player or group
+	CDPID        dpId;           // player ID being deleted
+	LPVOID      lpLocalData;    // copy of players local data
+	DWORD       dwLocalDataSize; // sizeof local data
+	LPVOID      lpRemoteData;   // copy of players remote data
+	DWORD       dwRemoteDataSize; // sizeof remote data
+	// the following fields are only available when using
+	// the IDirectPlay3 interface or greater
+	CDPNAME      dpnName;        // structure with name info
+	CDPID	    dpIdParent;     // id of parent group	
+	DWORD		dwFlags;		// player or group flags
+} * CLPDPMSG_DESTROYPLAYERORGROUP;
+#endif
+
+extern CDPID MyDPID;
 extern PingSumm PSUMM;
 extern EXBUFFER EBufs[MaxPL];
 extern EXBUFFER EBufs1[MaxPL];

@@ -3488,7 +3488,7 @@ int PASCAL WinMain(
 	LoadPalette( "2\\agew_1.pal" );
 
 	//Init DirectPlay and DPInfo structure
-	SetupMultiplayer( hInstance );
+	SetupMultiplayer();
 
 	//Init variables
 	InitMultiDialogs();
