@@ -618,16 +618,7 @@
     <Library Include="..\Temp\CommCore.lib">
       <Filter>Libraries</Filter>
     </Library>
-    <Library Include="libraries\Ddraw.lib">
-      <Filter>Libraries</Filter>
-    </Library>
     <Library Include="libraries\dplayx.lib">
-      <Filter>Libraries</Filter>
-    </Library>
-    <Library Include="libraries\dsound.lib">
-      <Filter>Libraries</Filter>
-    </Library>
-    <Library Include="..\Temp\IChat.lib">
       <Filter>Libraries</Filter>
     </Library>
     <Library Include="libraries\Pinger.lib">
@@ -637,9 +628,6 @@
       <Filter>Libraries</Filter>
     </Library>
     <Library Include="libraries\tntFileIO.lib">
-      <Filter>Libraries</Filter>
-    </Library>
-    <Library Include="libraries\Winmm.lib">
       <Filter>Libraries</Filter>
     </Library>
   </ItemGroup>

@@ -87,8 +87,4 @@
       <Filter>Chat</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\Temp\dmcr.lib" />
-    <Library Include="..\Temp\IntExplorer.lib" />
-  </ItemGroup>
 </Project>

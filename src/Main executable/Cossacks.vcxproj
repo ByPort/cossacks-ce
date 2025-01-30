@@ -350,13 +350,10 @@
   <ItemGroup>
     <Library Include="..\Temp\CommCore.lib" />
     <Library Include="..\Temp\IChat.lib" />
-    <Library Include="libraries\Ddraw.lib" />
     <Library Include="libraries\dplayx.lib" />
-    <Library Include="libraries\dsound.lib" />
     <Library Include="libraries\Pinger.lib" />
     <Library Include="libraries\ProTest.lib" />
     <Library Include="libraries\tntFileIO.lib" />
-    <Library Include="libraries\Winmm.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Script1.rc" />
