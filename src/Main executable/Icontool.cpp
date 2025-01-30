@@ -21,12 +21,12 @@ extern int IconLx;
 extern int IconLy;
 extern int AddIconLx;
 extern int AddIconLy;
-extern byte GraySet[256];
-void CBar( int x, int y, int Lx, int Ly, byte c );
-extern byte KeyCodes[512][2];
+extern unsigned char GraySet[256];
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
+extern unsigned char KeyCodes[512][2];
 #define NKEYS 61
 extern char* KeyNames[NKEYS];
-extern byte ScanKeys[NKEYS];
+extern unsigned char ScanKeys[NKEYS];
 void OneIcon::InitIcon()
 {
 	FileID = 0xFFFF;
@@ -42,7 +42,7 @@ void OneIcon::InitIcon()
 	Selected = false;
 	MoreSprite = 0xFFFF;
 };
-void OneIcon::AssignIcon( word FID, word SID )
+void OneIcon::AssignIcon( unsigned short FID, unsigned short SID )
 {
 	Type = 0;
 	Disabled = false;
@@ -85,8 +85,8 @@ void OneIcon::CreateHint( char* str )
 	if (( !EditMapMode ) && SpriteID != -1 && KeyCodes[SpriteID][0])
 	{
 		strcat( Hint, " (" );
-		byte Code = KeyCodes[SpriteID][0];
-		byte State = KeyCodes[SpriteID][1];
+		unsigned char Code = KeyCodes[SpriteID][0];
+		unsigned char State = KeyCodes[SpriteID][1];
 		if (State & 1)strcat( Hint + strlen( Hint ), "CTRL+" );
 		if (State & 2)strcat( Hint + strlen( Hint ), "ALT+" );
 		if (State & 4)strcat( Hint + strlen( Hint ), "SHIFT+" );
@@ -107,7 +107,7 @@ void OneIcon::CreateHintLo( char* str )
 	strcpy( HintLo, str );
 
 };
-void OneIcon::AssignColor( byte c )
+void OneIcon::AssignColor( unsigned char c )
 {
 	Type |= 1;
 	Color = c;
@@ -169,15 +169,15 @@ void OneIcon::Disable()
 	RPro = NULL;
 	MoveOver = NULL;
 };
-void OneIcon::AssignLevel( byte L )
+void OneIcon::AssignLevel( unsigned char L )
 {
 	Level = L;
 };
-extern byte graysc[256];
+extern unsigned char graysc[256];
 extern bool realLpressed;
 bool CheckSpritePressed( int sp );
-void xLine( int x, int y, int x1, int y1, byte c );
-void DrawInf( int x0, int y0, byte c )
+void xLine( int x, int y, int x1, int y1, unsigned char c );
+void DrawInf( int x0, int y0, unsigned char c )
 {
 	xLine( x0 + 2, y0, x0 + 4, y0, c );
 	xLine( x0 + 4, y0, x0 + 10, y0 + 6, c );
@@ -259,7 +259,7 @@ void OneIcon::Draw( int x, int y )
 	{//integer value
 		if (IntVal >= 1200)
 		{
-			byte c = 0xA5;
+			unsigned char c = 0xA5;
 			int x0 = x + 3;
 			int y0 = y + 3;
 			DrawInf( x0 + 2, y0 + 2, 0 );
@@ -339,7 +339,7 @@ void IconSet::ClearIconSet()
 	NIcons = 0;
 }
 
-OneIcon* IconSet::AddIcon( word FileID, word SpriteID )
+OneIcon* IconSet::AddIcon( unsigned short FileID, unsigned short SpriteID )
 {
 	int Index = -1;
 	for (int i = 0; i < NIcons; i++)
@@ -373,7 +373,7 @@ OneIcon* IconSet::AddIcon( word FileID, word SpriteID )
 	return OI;
 }
 
-OneIcon* IconSet::AddIconFixed( word FileID, word SpriteID, int Index )
+OneIcon* IconSet::AddIconFixed( unsigned short FileID, unsigned short SpriteID, int Index )
 {
 	if (Index == -1)
 	{
@@ -392,27 +392,27 @@ OneIcon* IconSet::AddIconFixed( word FileID, word SpriteID, int Index )
 	return OI;
 }
 
-OneIcon* IconSet::AddIcon( word FileID, word SpriteID, char* Hint )
+OneIcon* IconSet::AddIcon( unsigned short FileID, unsigned short SpriteID, char* Hint )
 {
 	OneIcon* OI = AddIcon( FileID, SpriteID );
 	OI->CreateHint( Hint );
 	return OI;
 }
 
-OneIcon* IconSet::AddIcon( word FileID, word SpriteID, char* Hint, byte Color )
+OneIcon* IconSet::AddIcon( unsigned short FileID, unsigned short SpriteID, char* Hint, unsigned char Color )
 {
 	OneIcon* OI = AddIcon( FileID, SpriteID, Hint );
 	OI->AssignColor( Color );
 	return OI;
 };
-OneIcon* IconSet::AddIcon( word FileID, word SpriteID, byte Color, char* Hint )
+OneIcon* IconSet::AddIcon( unsigned short FileID, unsigned short SpriteID, unsigned char Color, char* Hint )
 {
 	OneIcon* OI = AddIcon( FileID, SpriteID, Hint );
 	OI->AssignColor( Color );
 	return OI;
 };
 void AssignMovePro( int i, HandlePro* HPro, int id );
-void AssignKeys( int i, byte Scan, byte State );
+void AssignKeys( int i, unsigned char Scan, unsigned char State );
 extern IconSet PrpPanel;
 void IconSet::DrawIconSet( int x, int y, int Nx, int Ny, int NyStart )
 {

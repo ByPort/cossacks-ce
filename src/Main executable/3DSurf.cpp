@@ -17,7 +17,6 @@
 #include "dialogs.h"
 #include <assert.h>
 #include <math.h>
-#include <crtdbg.h>
 
 #define MediaMax 8
 #define CompoMax 8
@@ -27,10 +26,10 @@
 static int StackSize = 8192;
 
 short HiMap[256][256];//Height of surface
-word RefMap[256][256];//Reference to cell being rendered
+unsigned short RefMap[256][256];//Reference to cell being rendered
 
-byte RXCoor[MaxStackSize];
-byte RYCoor[MaxStackSize];
+unsigned char RXCoor[MaxStackSize];
+unsigned char RYCoor[MaxStackSize];
 
 static int Theta = 20;
 static int Phi = 100;
@@ -129,7 +128,7 @@ int GetLight(int x, int y)
 }
 
 int mul3(int);
-extern byte mtiles[16][4096];
+extern unsigned char mtiles[16][4096];
 
 void AddHeight(int x, int y, int dh)
 {

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "Cdirsnd.h"
 #include "ddini.h"
 #include "ResFile.h"
@@ -8,7 +9,6 @@
 #include "Dialogs.h"
 #include "fonts.h"
 #include <assert.h>
-#include <crtdbg.h>
 #include "GP_Draw.h"
 #include "bmptool.h"
 #include "DrawForm.h"
@@ -29,24 +29,25 @@ extern bool MUSTDRAW;
 extern int RealLx;
 extern int RealLy;
 extern char* SoundID[MaxSnd];
-extern byte LastAsciiKey;
-void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCFont lpr );
+extern unsigned char LastAsciiKey;
+void ShowCharUNICODE( int x, int y, unsigned char* strptr, lpRLCFont lpr );
 void ShowChar( int x, int y, char c, lpRLCFont lpf );
 void ClearKeyStack();
 int ReadKey();
-void AddKey( byte Key, byte Ascii );
+void AddKey( unsigned char Key, unsigned char Ascii );
 extern int CurPalette;
 
-void ErrD( LPCSTR s )
+void ErrD( const char* s )
 {
 	char pal[128];
 	sprintf( pal, "%d\\agew_1.pal", CurPalette );
 	LoadPalette( pal );
-	MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
 	assert( false );
 }
 
-void ShowString( int x, int y, LPCSTR lps, lpRLCFont lpf );
+void ShowString( int x, int y, const char* lps, lpRLCFont lpf );
 
 extern int curptr;
 
@@ -63,7 +64,7 @@ __declspec( dllexport ) int GetSound( char* Name )
 	{
 		char cc[128];
 		sprintf( cc, "Unknown sound ID: %s", Name );
-		MessageBox( nullptr, cc, "ERROR!", 0 );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "ERROR!", cc, nullptr);
 		ErrM( cc );
 		return -1;
 	};
@@ -177,8 +178,8 @@ bool CanvasDestroy( SimpleDialog* SD )
 };
 #define CV_INT(x) (*(int*)(CAN->DrawData+pos+x))
 #define CV_BYTE(x) CAN->DrawData[pos+x]
-__declspec( dllexport ) void CBar( int x, int y, int Lx, int Ly, byte c );
-void xLine( int x, int y, int x1, int y1, byte c );
+__declspec( dllexport ) void CBar( int x, int y, int Lx, int Ly, unsigned char c );
+void xLine( int x, int y, int x1, int y1, unsigned char c );
 bool CanvasDraw( SimpleDialog* SD )
 {
 	if (!SD->Visible)return false;
@@ -208,7 +209,7 @@ bool CanvasDraw( SimpleDialog* SD )
 			CAN->VS->Enabled = 0;
 		};
 	};
-	byte* data = CAN->DrawData;
+	unsigned char* data = CAN->DrawData;
 	int YY;
 	do
 	{
@@ -271,13 +272,13 @@ void Canvas::CheckSize( int sz )
 	if (sz > MaxL - 100)
 	{
 		MaxL += 1024;
-		DrawData = (byte*) realloc( DrawData, MaxL );
+		DrawData = (unsigned char*) realloc( DrawData, MaxL );
 	};
 };
 #define CN_INT(x) (*(int*)(DrawData+L))=x;L+=4;
 #define CN_SHORT(x) (*(int*)(DrawData+L))=x;L+=2;
 #define CN_BYTE(x) DrawData[L]=x;L++;
-void Canvas::AddBar( int px, int py, int Lx, int Ly, byte c )
+void Canvas::AddBar( int px, int py, int Lx, int Ly, unsigned char c )
 {
 	CheckSize( L + 100 );
 	CN_BYTE( 0 );
@@ -287,7 +288,7 @@ void Canvas::AddBar( int px, int py, int Lx, int Ly, byte c )
 	CN_INT( Ly );
 	CN_BYTE( c );
 };
-void Canvas::AddLine( int px, int py, int px1, int py1, byte c )
+void Canvas::AddLine( int px, int py, int px1, int py1, unsigned char c )
 {
 	CheckSize( L + 100 );
 	CN_BYTE( 1 );
@@ -297,7 +298,7 @@ void Canvas::AddLine( int px, int py, int px1, int py1, byte c )
 	CN_INT( py1 );
 	CN_BYTE( c );
 };
-void Canvas::AddRect( int px, int py, int Lx, int Ly, byte c )
+void Canvas::AddRect( int px, int py, int Lx, int Ly, unsigned char c )
 {
 	CheckSize( L + 100 );
 	CN_BYTE( 2 );
@@ -448,9 +449,9 @@ bool RLCPicture_OnDraw( SimpleDialog* SD )
 
 RLCPicture* DialogsSystem::addRLCPicture(
 	SimpleDialog* Parent, int x, int y,
-	RLCTable* pActive, byte apic,
-	RLCTable* pPassive, byte ppic,
-	RLCTable* pDisabled, byte dpic
+	RLCTable* pActive, unsigned char apic,
+	RLCTable* pPassive, unsigned char ppic,
+	RLCTable* pDisabled, unsigned char dpic
 )
 {
 	int i;
@@ -495,12 +496,12 @@ int GetRLen( char* s, RLCFont* font )
 	int L;
 	for (int i = 0; s[i] != 0;)
 	{
-		x += GetRLCWidthUNICODE( font->RLC, (byte*) ( s + i ), &L );
+		x += GetRLCWidthUNICODE( font->RLC, (unsigned char*) ( s + i ), &L );
 		i += L;
 	};
 	return x;
 };
-void DrawString( int x, int y, char* str, RLCFont* fnt, byte Align )
+void DrawString( int x, int y, char* str, RLCFont* fnt, unsigned char Align )
 {
 	int xx;
 	if (!str)return;
@@ -564,7 +565,7 @@ TextButton* DialogsSystem::addTextButton(
 	RLCFont* pActive,
 	RLCFont* pPassive,
 	RLCFont* pDisabled,
-	byte Align )
+	unsigned char Align )
 {
 	int i;
 	for (i = 0; i < MAXDLG&&DSS[i] != nullptr; i++);
@@ -1364,8 +1365,8 @@ VScrollBar* DialogsSystem::addVScrollBar( SimpleDialog* Parent,
 		tb->y = BaseY + y;
 		tb->sblx = sbar0->PicPtr[0];
 		tb->sbly = sbar0->PicPtr[1];
-		tb->mkly = byte( marker->PicPtr[1] );
-		tb->btnly = byte( btn_dn1->PicPtr[1] );
+		tb->mkly = unsigned char( marker->PicPtr[1] );
+		tb->btnly = unsigned char( btn_dn1->PicPtr[1] );
 		tb->y1 = tb->y + tb->sbly + ( tb->btnly << 1 ) - 1;
 		tb->x1 = tb->x + tb->sblx - 1;
 		tb->sby = tb->y + tb->btnly;
@@ -1506,7 +1507,7 @@ VScrollBar* DialogsSystem::addHScrollBar( SimpleDialog* Parent,
 		tb->y = BaseY + y;
 		tb->sblx = sbar0->PicPtr[1];
 		tb->sbly = sbar0->PicPtr[0];
-		tb->mkly = byte( marker->PicPtr[0] );
+		tb->mkly = unsigned char( marker->PicPtr[0] );
 		tb->btnly = btn_dn1->PicPtr[0] - 2;
 		tb->x1 = tb->x + tb->sbly + ( tb->btnly << 1 ) - 1;
 		tb->y1 = tb->y + tb->sblx - 1;
@@ -1854,7 +1855,7 @@ bool ComplexBox_OnDraw( SimpleDialog* SD )
 		{
 			int xx = LB->x;
 			int yy = LB->y + LB->OneLy*i;
-			byte state = 0;
+			unsigned char state = 0;
 			if (LB->M_OvrItem == cp)
 			{
 				if (LB->GP_Index != -1)GPS.ShowGP( xx, yy, LB->GP_Index, LB->StSprite + 3 + ( cp % 3 ), 0 );
@@ -2235,7 +2236,7 @@ ListBox* DialogsSystem::addListBox( SimpleDialog* Parent,
 		LB->ItemPic = ItemPic;
 		LB->x = x + BaseX;
 		LB->y = y + BaseY;
-		LB->oneLy = byte( ItemPic->PicPtr[1] );
+		LB->oneLy = unsigned char( ItemPic->PicPtr[1] );
 		LB->oneLx = ItemPic->PicPtr[0];
 		LB->NItems = 0;
 		LB->FirstItem = nullptr;
@@ -2508,7 +2509,7 @@ bool InputBox_OnKeyDown( SimpleDialog* SD )
 								char xx[2];
 								xx[1] = 0;
 								xx[0] = char( LastKey );
-								if (strlen( IB->Str ) + 1 < DWORD( IB->StrMaxLen ))
+								if (strlen( IB->Str ) + 1 < unsigned long( IB->StrMaxLen ))
 								{
 									char ccc[2048];
 									strcpy( ccc, IB->Str );
@@ -2842,7 +2843,7 @@ CheckBox* DialogsSystem::addGP_CheckBox( SimpleDialog* Parent,
 //--------end of CheckBox--------------------//
 
 //-----------colored bar---------------------//
-__declspec( dllexport ) void CBar( int x0, int y0, int Lx0, int Ly0, byte c )
+__declspec( dllexport ) void CBar( int x0, int y0, int Lx0, int Ly0, unsigned char c )
 {
 	if (Lx0 <= 0 || Ly0 <= 0 || x0<0 || y0<0 || x0 + Lx0>ScrWidth || y0 + Ly0>SCRSizeY)
 	{
@@ -2910,7 +2911,7 @@ bool ColoredBar_OnDraw( SimpleDialog* SD )
 	else CBar( SD->x, SD->y, SD->x1 - SD->x + 1, SD->y1 - SD->y + 1, PIC->color );
 	return true;
 };
-ColoredBar* DialogsSystem::addColoredBar( int x, int y, int Lx, int Ly, byte c )
+ColoredBar* DialogsSystem::addColoredBar( int x, int y, int Lx, int Ly, unsigned char c )
 {
 	int i;
 	for (i = 0; i < MAXDLG&&DSS[i] != nullptr; i++);
@@ -2937,7 +2938,7 @@ bool ColoredBar_OnDraw2( SimpleDialog* SD )
 	Xbar( SD->x, SD->y, SD->x1 - SD->x + 1, SD->y1 - SD->y + 1, PIC->color );
 	return true;
 };
-ColoredBar* DialogsSystem::addViewPort2( int x, int y, int Lx, int Ly, byte c )
+ColoredBar* DialogsSystem::addViewPort2( int x, int y, int Lx, int Ly, unsigned char c )
 {
 	int i;
 	for (i = 0; i < MAXDLG&&DSS[i] != nullptr; i++);
@@ -2969,9 +2970,9 @@ void TextViewer::AssignScroll( VScrollBar* SB )
 void TextViewer::GetNextLine( LineInfo* inf )
 {
 	int offs = inf->Offset;
-	word LS = 0;
-	word LW = 0;
-	word NS = 0;
+	unsigned short LS = 0;
+	unsigned short LW = 0;
+	unsigned short NS = 0;
 	//char tms[128];
 	char c;
 	int tmsp = 0;
@@ -2983,7 +2984,7 @@ void TextViewer::GetNextLine( LineInfo* inf )
 	{
 		//char c=TextPtr[offs];
 		//if(c==' '){
-			//reading next word
+			//reading next unsigned short
 		tmsp = 0;//length of string
 		nlsp = 0;//amount of spaces
 		wid = 0;
@@ -3004,7 +3005,7 @@ void TextViewer::GetNextLine( LineInfo* inf )
 					//tms[tmsp]=c;
 					//tmsp++;
 					int L = 1;
-					if (c != '~')wid += GetRLCWidthUNICODE( Font->RLC, (byte*) ( TextPtr + ofs ), &L );
+					if (c != '~')wid += GetRLCWidthUNICODE( Font->RLC, (unsigned char*) ( TextPtr + ofs ), &L );
 					tmsp += L;
 				};
 			};
@@ -3053,7 +3054,7 @@ void TextViewer::GetNextLine( LineInfo* inf )
 						if (c != ' '&&c != 0x0D)
 						{
 							int L = 1;
-							if (c != '~')wid += GetRLCWidthUNICODE( Font->RLC, (byte*) ( TextPtr + ofs ), &L );
+							if (c != '~')wid += GetRLCWidthUNICODE( Font->RLC, (unsigned char*) ( TextPtr + ofs ), &L );
 							tmsp += L;
 						};
 					};
@@ -3105,10 +3106,10 @@ void TextViewer::CreateLinesList()
 		LINF.Offset = LINF.NextOffset;
 	} while (LINF.NextOffset < TextSize);
 	LinePtrs = new char*[NLines];
-	LineSize = new word[NLines];
-	LineWidth = new word[NLines];
+	LineSize = new unsigned short[NLines];
+	LineWidth = new unsigned short[NLines];
 	NeedFormat = new bool[NLines];
-	NSpaces = new word[NLines];
+	NSpaces = new unsigned short[NLines];
 	LINF.Offset = 0;
 	NLines = 0;
 	do
@@ -3188,8 +3189,8 @@ bool TextViewer_OnDraw( SimpleDialog* SD )
 					if (c != '~')
 					{
 						int L = 1;
-						ShowCharUNICODE( TV->x + x, yy, (byte*) ( off + j ), TV->Font );
-						int Lx = GetRLCWidthUNICODE( TV->Font->RLC, (byte*) ( off + j ), &L );
+						ShowCharUNICODE( TV->x + x, yy, (unsigned char*) ( off + j ), TV->Font );
+						int Lx = GetRLCWidthUNICODE( TV->Font->RLC, (unsigned char*) ( off + j ), &L );
 						j += L - 1;
 						if (Cross)
 						{
@@ -3209,9 +3210,9 @@ bool TextViewer_OnDraw( SimpleDialog* SD )
 					c = off[j];
 					if (c != '~')
 					{
-						ShowCharUNICODE( TV->x + x, yy, (byte*) ( off + j ), TV->Font );
+						ShowCharUNICODE( TV->x + x, yy, (unsigned char*) ( off + j ), TV->Font );
 						int L = 1;
-						int Lx = GetRLCWidthUNICODE( TV->Font->RLC, (byte*) ( off + j ), &L );
+						int Lx = GetRLCWidthUNICODE( TV->Font->RLC, (unsigned char*) ( off + j ), &L );
 						j += L - 1;
 						if (Cross)
 						{
@@ -3517,7 +3518,7 @@ bool BPXView_OnDraw( SimpleDialog* SD )
 		{
 			if (BV->Choosed[ix + ( iy + BV->PosY )*BV->Nx])
 			{
-				Xbar( BV->x + ix*BV->OneLx, BV->y + iy*BV->OneLy, BV->OneLx - 1, BV->OneLy - 1, (byte) 254 );
+				Xbar( BV->x + ix*BV->OneLx, BV->y + iy*BV->OneLy, BV->OneLx - 1, BV->OneLy - 1, (unsigned char) 254 );
 				char ccc[16];
 				if (BV->Nx > 1)
 				{
@@ -3589,7 +3590,7 @@ bool BPXView_OnDestroy( SimpleDialog* SD )
 BPXView* DialogsSystem::addBPXView(
 	SimpleDialog* Parent,
 	int x, int y, int OneLx, int OneLy, int Nx, int Ny, int RealNy,
-	byte* Ptr, VScrollBar* VSC
+	unsigned char* Ptr, VScrollBar* VSC
 )
 {
 	int i;
@@ -3614,7 +3615,7 @@ BPXView* DialogsSystem::addBPXView(
 		BV->OneLy = OneLy;
 		BV->Nx = Nx;
 		BV->Ny = Ny;
-		BV->Choosed = new byte[Nx*RealNy];
+		BV->Choosed = new unsigned char[Nx*RealNy];
 		memset( BV->Choosed, 0, Nx*RealNy );
 		BV->Done = false;
 		BV->RealNy = RealNy;
@@ -3711,7 +3712,7 @@ bool RLCListBox_OnDestroy( SimpleDialog* SD )
 };
 RLCListBox* DialogsSystem::addRLCListBox( SimpleDialog* Parent,
 	int x, int y, int Lx, int Ly,
-	int GPIndex, byte BGColor, byte SelColor )
+	int GPIndex, unsigned char BGColor, unsigned char SelColor )
 {
 	int i;
 	for (i = 0; i < MAXDLG&&DSS[i] != nullptr; i++);
@@ -3745,7 +3746,7 @@ RLCListBox* DialogsSystem::addRLCListBox( SimpleDialog* Parent,
 			//GetRLCWidth(Pictures,i);
 		};
 		RB->MaxXpos = MAXX - Lx;
-		RB->Choosed = new byte[RB->NItems];
+		RB->Choosed = new unsigned char[RB->NItems];
 		memset( RB->Choosed, 0, RB->NItems );
 		RB->XPos = 0;
 		return RB;
@@ -4222,7 +4223,7 @@ void ComboBox::CreateRuler( int Min, int NDeals )
 	rulermode = 1;
 };
 ComboBox* DialogsSystem::addComboBox( SimpleDialog* Parent, int x, int y, int Lx, int Ly, int LineLy,
-	byte BackColor, byte BorderColor,
+	unsigned char BackColor, unsigned char BorderColor,
 	RLCFont* ActiveFont, RLCFont* PassiveFont,
 	char* Contence )
 {
@@ -4723,7 +4724,7 @@ bool BorderEx_OnDraw( SimpleDialog* SD )
 	};
 	return true;
 };
-BorderEx* DialogsSystem::addBorder( int x, int y, int x1, int y1, int Ymid, byte Style )
+BorderEx* DialogsSystem::addBorder( int x, int y, int x1, int y1, int Ymid, unsigned char Style )
 {
 	int i;
 	for (i = 0; i < MAXDLG&&DSS[i] != nullptr; i++);
@@ -4952,7 +4953,7 @@ void CopyToScreen( int zx, int zy, int zLx, int zLy )
 
 void CopyToOffScreen( int zx, int zy,
 	int srLx, int srLy,
-	byte* data )
+	unsigned char* data )
 {
 	if (!bActive)return;
 	int x = zx;
@@ -5008,10 +5009,10 @@ void CopyToOffScreen( int zx, int zy,
 };
 void CopyToRealScreenMMX( int zx, int zy,
 	int srLx, int srLy,
-	byte* data );
+	unsigned char* data );
 void CopyToRealScreen( int zx, int zy,
 	int srLx, int srLy,
-	byte* data )
+	unsigned char* data )
 {
 	if (!bActive)return;
 	//CopyToRealScreenMMX(zx,zy,srLx,srLy,data);
@@ -5069,7 +5070,7 @@ void CopyToRealScreen( int zx, int zy,
 };
 void CopyToRealScreenMMX( int zx, int zy,
 	int srLx, int srLy,
-	byte* data )
+	unsigned char* data )
 {
 	int x = zx;
 	int y = zy;
@@ -5214,7 +5215,7 @@ void SQPicture::LoadPicture( char* name )
 
 	if (strstr( name, ".bmp" ) || strstr( name, ".BMP" ))
 	{
-		if (!ReadBMP8TOBPX( name, (byte**) ( &this->PicPtr ) ))
+		if (!ReadBMP8TOBPX( name, (unsigned char**) ( &this->PicPtr ) ))
 		{
 			PicPtr = nullptr;
 			if (!SafeLoad)
@@ -5235,7 +5236,7 @@ void SQPicture::LoadPicture( char* name )
 		RBlockRead( ff1, &Ly, 2 );
 		if (Lx > 0 && Ly > 0)
 		{
-			PicPtr = (word*) ( new char[Lx*Ly + 4] );
+			PicPtr = (unsigned short*) ( new char[Lx*Ly + 4] );
 			RBlockRead( ff1, PicPtr + 2, Lx*Ly );
 			PicPtr[0] = Lx;
 			PicPtr[1] = Ly;
@@ -5535,7 +5536,7 @@ void DialogsSystem::ProcessDialogs()
 			int Dy = GetRLCHeight( HintFont->RLC, 'y' );
 			Dy += UNI_HINTDLY2;
 
-			byte c = ' ';
+			unsigned char c = ' ';
 			int x1 = 0;
 			int pos = 0;
 			do
@@ -5557,7 +5558,7 @@ void DialogsSystem::ProcessDialogs()
 					else
 					{
 						int L = 1;
-						x1 += GetRLCWidthUNICODE( HintFont->RLC, (byte*) ( Hint + pos ), &L );
+						x1 += GetRLCWidthUNICODE( HintFont->RLC, (unsigned char*) ( Hint + pos ), &L );
 						pos += L;
 					};
 				}
@@ -5617,9 +5618,9 @@ void DialogsSystem::ProcessDialogs()
 					}
 					else
 					{
-						ShowCharUNICODE( x1, y0, (byte*) ( Hint + pos ), HintFont );
+						ShowCharUNICODE( x1, y0, (unsigned char*) ( Hint + pos ), HintFont );
 						int L = 1;
-						x1 += GetRLCWidthUNICODE( HintFont->RLC, (byte*) ( Hint + pos ), &L );
+						x1 += GetRLCWidthUNICODE( HintFont->RLC, (unsigned char*) ( Hint + pos ), &L );
 						pos += L;
 					};
 				}
@@ -5642,15 +5643,15 @@ void DialogsSystem::ProcessDialogs()
 			int x1 = HintX;
 			CheckFontColor( HintFont );
 			int Dy = GetRLCHeight( HintFont->RLC, 'y' ) + UNI_HINTDLY1;
-			byte c = ' ';
+			unsigned char c = ' ';
 			do
 			{
 				c = Hint[pos];
 				if (c != 0 && c != '/'&&c != '\\')
 				{
-					ShowCharUNICODE( x1, y0, (byte*) ( Hint + pos ), HintFont );
+					ShowCharUNICODE( x1, y0, (unsigned char*) ( Hint + pos ), HintFont );
 					int L = 1;
-					x1 += GetRLCWidthUNICODE( HintFont->RLC, (byte*) ( Hint + pos ), &L );
+					x1 += GetRLCWidthUNICODE( HintFont->RLC, (unsigned char*) ( Hint + pos ), &L );
 					pos += L;
 				}
 				else
@@ -5761,20 +5762,20 @@ DialogsSystem::~DialogsSystem()
 };
 //transparency effect
 
-byte* TransPtr = nullptr;
+unsigned char* TransPtr = nullptr;
 int TransLx = 0;
 int TransLy = 0;
 void MakeTranspSnapshot()
 {
 	if (RealLx != TransLx || RealLy != TransLy)
 	{
-		TransPtr = (byte*) realloc( TransPtr, RealLx*RealLy );
+		TransPtr = (unsigned char*) realloc( TransPtr, RealLx*RealLy );
 		TransLx = RealLx;
 		TransLy = RealLy;
 	};
 	for (int i = 0; i < RealLy; i++)
 	{
-		memcpy( TransPtr + i*RealLx, (byte*) ScreenPtr + i*ScrWidth, RealLx );
+		memcpy( TransPtr + i*RealLx, (unsigned char*) ScreenPtr + i*ScrWidth, RealLx );
 	};
 };
 void FreeTransBuffer()
@@ -5784,7 +5785,7 @@ void FreeTransBuffer()
 	TransLx = 0;
 	TransLy = 0;
 };
-void EncodeLine( byte* src, byte* dst, byte* scr, byte* tbl, byte* oddtbl )
+void EncodeLine( unsigned char* src, unsigned char* dst, unsigned char* scr, unsigned char* tbl, unsigned char* oddtbl )
 {
 	int N = TransLx >> 1;
 	__asm {
@@ -5819,7 +5820,7 @@ void EncodeLine( byte* src, byte* dst, byte* scr, byte* tbl, byte* oddtbl )
 			pop  esi
 	};
 };
-void EncodeLine1( byte* src, byte* dst, byte* scr, byte* tbl )
+void EncodeLine1( unsigned char* src, unsigned char* dst, unsigned char* scr, unsigned char* tbl )
 {
 	int N = TransLx >> 1;
 	__asm {
@@ -5852,7 +5853,7 @@ void EncodeLine1( byte* src, byte* dst, byte* scr, byte* tbl )
 			pop  esi
 	};
 };
-void EncodeLine2( byte* src, byte* dst, byte* scr, byte* tbl )
+void EncodeLine2( unsigned char* src, unsigned char* dst, unsigned char* scr, unsigned char* tbl )
 {
 	int N = TransLx >> 1;
 	__asm {
@@ -5885,8 +5886,8 @@ void EncodeLine2( byte* src, byte* dst, byte* scr, byte* tbl )
 			pop  esi
 	};
 };
-extern byte trans4[65536];
-extern byte trans8[65536];
+extern unsigned char trans4[65536];
+extern unsigned char trans8[65536];
 void PerformTransMix( int degree )
 {
 	int N = TransLy >> 1;
@@ -5896,8 +5897,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine1( transp, screen, screen, trans4 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5909,8 +5910,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine( transp, screen, screen, trans4, trans4 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5922,8 +5923,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine( transp, screen, screen, trans8, trans4 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5935,8 +5936,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine( transp, screen, screen, trans8, trans8 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5948,8 +5949,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine( screen, transp, screen, trans4, trans8 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5961,8 +5962,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine( screen, transp, screen, trans4, trans4 );
 			screen += ScrWidth;
 			transp += TransLx;
@@ -5974,8 +5975,8 @@ void PerformTransMix( int degree )
 	{
 		for (int i = 0; i < N; i++)
 		{
-			byte* screen = (byte*) ScreenPtr + i * 2 * ScrWidth;
-			byte* transp = (byte*) TransPtr + i * 2 * TransLx;
+			unsigned char* screen = (unsigned char*) ScreenPtr + i * 2 * ScrWidth;
+			unsigned char* transp = (unsigned char*) TransPtr + i * 2 * TransLx;
 			EncodeLine1( screen, transp, screen, trans4 );
 			screen += ScrWidth;
 			transp += TransLx;

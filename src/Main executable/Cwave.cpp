@@ -2,11 +2,6 @@
 // CWAVE.CPP: Implementation file for the WAVE class.
 ///////////////////////////////////////////////////////////
 
-//#include <stdafx.h>
-//#include <afx.h>
-#include <windows.h>
-#include "windowsx.h"
-//#include "stdafx.h"
 #include "cwave.h"
 
 ///////////////////////////////////////////////////////////
@@ -16,7 +11,7 @@ CWave::CWave(char* fileName)
 {
     // Initialize the class's members.
     m_waveSize = 0;
-    m_waveOK = FALSE;
+    m_waveOK = false;
     m_pWave= NULL;
 
     // Load the wave file.
@@ -38,7 +33,7 @@ CWave::~CWave()
 // This function loads a wave from disk into memory. It
 // also initializes various class data members.
 ///////////////////////////////////////////////////////////
-BOOL CWave::LoadWaveFile(char* fileName)
+bool CWave::LoadWaveFile(char* fileName)
 {
 	Uint8* audio_buf;
     Uint32 audio_len;
@@ -97,7 +92,7 @@ BOOL CWave::LoadWaveFile(char* fileName)
 	//SDL_PutAudioStreamData(playback, m_pWave, m_waveSize);
  //   SDL_Delay(3000);
 
-    return TRUE;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////
@@ -105,7 +100,7 @@ BOOL CWave::LoadWaveFile(char* fileName)
 //
 // This returns the size in bytes of the wave data.
 ///////////////////////////////////////////////////////////
-DWORD CWave::GetWaveSize()
+unsigned long CWave::GetWaveSize()
 {
     return m_waveSize;
 }
@@ -143,7 +138,7 @@ char* CWave::GetWaveDataPtr()
 // This function returns a Boolean value indicating whether
 // the wave file object was set up successfully.
 ///////////////////////////////////////////////////////////
-BOOL CWave::WaveOK()
+bool CWave::WaveOK()
 {
     return m_waveOK;
 }

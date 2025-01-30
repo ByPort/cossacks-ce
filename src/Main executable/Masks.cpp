@@ -18,10 +18,10 @@
 #include <assert.h>
 #include <math.h>
 #include "Masks.h"
-byte ResultMask[MaskLx*256];
-extern byte trans4[65536];
-extern byte trans8[65536];
-void CopyMaskedBitmap64(byte* Bits,int x,int y,void* Mask){
+unsigned char ResultMask[MaskLx*256];
+extern unsigned char trans4[65536];
+extern unsigned char trans8[65536];
+void CopyMaskedBitmap64(unsigned char* Bits,int x,int y,void* Mask){
 	__asm{
 		push	esi
 		push	edi
@@ -65,8 +65,8 @@ endrlclop:
 		pop		esi
 	};
 };
-void CopyMaskedTransparentBitmap_8(byte* Bits,int x,int y,void* Mask){
-	byte nstr;
+void CopyMaskedTransparentBitmap_8(unsigned char* Bits,int x,int y,void* Mask){
+	unsigned char nstr;
 	__asm{
 		push	esi
 		push	edi
@@ -115,8 +115,8 @@ endrlclop:
 		pop		esi
 	};
 };
-void CopyMaskedTransparentBitmap_4(byte* Bits,int x,int y,void* Mask){
-	byte nstr;
+void CopyMaskedTransparentBitmap_4(unsigned char* Bits,int x,int y,void* Mask){
+	unsigned char nstr;
 	__asm{
 		push	esi
 		push	edi
@@ -165,8 +165,8 @@ endrlclop:
 		pop		esi
 	};
 };
-void CopyMaskedTransparentBitmap_12(byte* Bits,int x,int y,void* Mask){
-	byte nstr;
+void CopyMaskedTransparentBitmap_12(unsigned char* Bits,int x,int y,void* Mask){
+	unsigned char nstr;
 	__asm{
 		push	esi
 		push	edi
@@ -219,7 +219,7 @@ extern RLCTable SimpleMaskA;
 extern RLCTable SimpleMaskB;
 extern RLCTable SimpleMaskC;
 extern RLCTable SimpleMaskD;
-void CopyMaskedBitmap(byte* Bits,int x,int y,int MaskID){
+void CopyMaskedBitmap(unsigned char* Bits,int x,int y,int MaskID){
 	CopyMaskedBitmap64(Bits,x,y,   (void*)(SimpleMaskA->OfsTable[MaskID]));
 	CopyMaskedTransparentBitmap_4(Bits,x,y,(void*)(SimpleMaskB->OfsTable[MaskID]));
 	CopyMaskedTransparentBitmap_8(Bits,x,y, (void*)(SimpleMaskC->OfsTable[MaskID]));
@@ -233,7 +233,7 @@ void CopyMaskedBitmap(byte* Bits,int x,int y,int MaskID){
 //	|  /
 //	|/ 
 //Creates triangle (Type1) with bitmap
-void FastCreateMaskedBitmap64_1(byte* Bits,int x,int y){
+void FastCreateMaskedBitmap64_1(unsigned char* Bits,int x,int y){
 	int tmedi;
 	__asm{
 		push	esi
@@ -347,7 +347,7 @@ EndTrapezoid:
 //  \    |
 //    \  |
 //      \|
-void FastCreateMaskedBitmap64_2(byte* Bits,int x,int y){
+void FastCreateMaskedBitmap64_2(unsigned char* Bits,int x,int y){
 	int tmedi;
 	__asm{
 		push	esi
@@ -527,7 +527,7 @@ int GetBmOfst(int i){
 /*void PrepareIntersection1(int bm1,int bm2,int bm3,
 						  int x0,int y0,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray){
+						  RLCTable Masks,unsigned char* BitmapsArray){
 	if(bm1==bm2){
 		if(bm3<bm2){
 			//1,2 over 3 - inverse mask
@@ -608,7 +608,7 @@ int GetBmOfst(int i){
 void PrepareIntersection2(int bm1,int bm2,int bm3,
 						  int x0,int y01,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray){
+						  RLCTable Masks,unsigned char* BitmapsArray){
 	int y0=y01-31;
 	if(bm1==bm2){
 		if(bm3<bm2){
@@ -695,7 +695,7 @@ void PrepareIntersection2(int bm1,int bm2,int bm3,
 void PrepareIntersection1(int bm1,int bm2,int bm3,
 						  int x0,int y0,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray){
+						  RLCTable Masks,unsigned char* BitmapsArray){
 	if(bm1==bm2){
 		if(bm3<bm2){
 			//1,2 over 3 - inverse mask
@@ -765,7 +765,7 @@ void PrepareIntersection1(int bm1,int bm2,int bm3,
 void PrepareIntersection2(int bm1,int bm2,int bm3,
 						  int x0,int y01,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray){
+						  RLCTable Masks,unsigned char* BitmapsArray){
 	int y0=y01-31;
 	if(bm1==bm2){
 		if(bm3<bm2){

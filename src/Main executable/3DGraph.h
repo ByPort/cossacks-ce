@@ -25,8 +25,8 @@ int GetHi(int i);
 int GetTriX(int i);
 int GetTriY(int i);
 extern bool Mode3D;
-extern byte TexColors[256];
-extern word RoadTex[256];
+extern unsigned char TexColors[256];
+extern unsigned short RoadTex[256];
 typedef int HiCallback(int x,int y,int Hig);
 void CreateEffect(int x,int y,int r,HiCallback* HCB);
 void DirectRenderTriangle64(int xs1,int ys1,
@@ -36,7 +36,7 @@ void DirectRenderTriangle64(int xs1,int ys1,
 						   int xb2,int yb2,
 						   int xb3,int yb3,
 						   int f1,int f2,int f3,
-						   byte * Dest,byte* Bitm,
+						   unsigned char * Dest,unsigned char* Bitm,
 						   int StartLine,int EndLine,int ScanSize);
 int GetVTex(int i);
 //-----------------------------------------------------------------------------------//
@@ -54,7 +54,7 @@ inline int GetTHMap(int v){
 		return THMap[v];
 	}else return 0;
 };
-inline void SetTexMap(int v,byte t){
+inline void SetTexMap(int v,unsigned char t){
 	if(v>=0&&v<MaxPointIndex){
 		TexMap[v]=t;
 	};
@@ -69,7 +69,7 @@ inline int GetSectMap(int v){
 		return SECTMAP(v);
 	}else return 0;
 };
-inline void SetSectMap(int v,byte s){
+inline void SetSectMap(int v,unsigned char s){
 	if(SectMap&&v>=0&&v<MaxLineIndex){
 		SectMap[v]=s;
 	};

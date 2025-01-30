@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -24,9 +25,9 @@ extern const int kMinorMessageDisplayTime = 1500;
 
 
 extern bool RecordMode;
-extern byte PlayGameMode;
-extern byte PlayGameMode;
-extern byte CHOPT;
+extern unsigned char PlayGameMode;
+extern unsigned char PlayGameMode;
+extern unsigned char CHOPT;
 extern char LASTCHATSTR[512];
 
 //Ensures that ProcessHints() does not run more frequently than every ... ms
@@ -51,7 +52,7 @@ static unsigned int  additional_hints_times[kMaxHintCount];
 
 //Hint or chat messages design
 //0: normal; 16-23: national color border; 32: red
-byte HintOpt[kMaxHintCount];
+unsigned char HintOpt[kMaxHintCount];
 
 //Calculates coordinates for primary hint field
 void SetupHint()
@@ -84,8 +85,8 @@ void ShowHints()
 		if (additional_hints_times[i])
 		{
 			ShowString( HintX + 2, yy + 2, additional_hints[i], &BlackFont );
-			byte opt = HintOpt[i];
-			byte opp = opt >> 4;
+			unsigned char opt = HintOpt[i];
+			unsigned char opp = opt >> 4;
 			if (opp == 2)
 			{//Red blinking hint
 				int tt = ( GetTickCount() / 300 ) & 1;
@@ -164,7 +165,7 @@ void CreateTimedHint( char* s, int time )
 }
 
 //Adds secondary hint or chat message with special design option for [time] ms
-void CreateTimedHintEx( char* s, int time, byte opt )
+void CreateTimedHintEx( char* s, int time, unsigned char opt )
 {
 	if (opt >= 16)
 	{//National color masking requested

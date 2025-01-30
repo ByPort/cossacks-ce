@@ -21,7 +21,7 @@ Upgrade::Upgrade()
 };
 void PerformUpgradeLink( OneObject* OBJ );
 
-void OneObject::PerformUpgrade( word NewU, word MakerID )
+void OneObject::PerformUpgrade( unsigned short NewU, unsigned short MakerID )
 {
 	if (CheckOrderAbility())
 		return;
@@ -32,8 +32,8 @@ void OneObject::PerformUpgrade( word NewU, word MakerID )
 	if (Nat->NUpgrades <= NewU || !Ready)
 		return;
 
-	word NUP = Ref.General->NUpgrades;
-	word* UPL = Ref.General->Upg;
+	unsigned short NUP = Ref.General->NUpgrades;
+	unsigned short* UPL = Ref.General->Upg;
 	bool canU = false;
 
 	for (int pp = 0; pp < NUP; pp++)
@@ -110,9 +110,9 @@ extern int tmtmt;
 extern int StartTmtmt;
 void PerformUpgradeLink( OneObject* OBJ )
 {
-	word OI = OBJ->LocalOrder->info.PUpgrade.NewUpgrade;
+	unsigned short OI = OBJ->LocalOrder->info.PUpgrade.NewUpgrade;
 	Nation* NT = OBJ->Nat;
-	byte NI = NT->NNUM;
+	unsigned char NI = NT->NNUM;
 	NewUpgrade* NUP = NT->UPGRADE[OI];
 	OBJ->LocalOrder->info.PUpgrade.Stage += FrmDec;
 	OBJ->Ustage = OBJ->LocalOrder->info.PUpgrade.Stage;
@@ -122,7 +122,7 @@ void PerformUpgradeLink( OneObject* OBJ )
 	{
 		OBJ->Ready = true;
 		OneObject* OBU = NULL;
-		word MID = OBJ->LocalOrder->info.PUpgrade.OldUpgrade;
+		unsigned short MID = OBJ->LocalOrder->info.PUpgrade.OldUpgrade;
 		if (MID != 0xFFFF)
 		{
 			OBU = Group[MID];

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -25,7 +26,6 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 #include "Conststr.h"
@@ -60,7 +60,7 @@ bool MCHOOSE( SimpleDialog* SD )
 }
 
 char ACCESS[16] = "";
-void SlowLoadPalette( LPCSTR lpFileName );
+void SlowLoadPalette( const char* lpFileName );
 void ExplorerOpenRef( int Index, char* ref );
 void ShowCentralMessage( char* Message, int GPIDX );
 void DarkScreen();

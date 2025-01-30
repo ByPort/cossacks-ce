@@ -1,7 +1,7 @@
 class SortClass{
 public:
-    word* Uids;
-    //word* Usn;
+    unsigned short* Uids;
+    //unsigned short* Usn;
     int*  Parms;
     int NUids;
     int MaxUID;
@@ -9,37 +9,37 @@ public:
     ~SortClass();
     void Sort();
     void CheckSize(int Size); 
-    word CreateByX(word* UIDS,int NUIDS,bool Direction);
-    word CreateByY(word* UIDS,int NUIDS,bool Direction);
-    word CreateByR(word* UIDS,int NUIDS,bool Direction,int x,int y);
-	word CreateByLine(word* UIDS,int NUIDS,int dx,int dy);
-	word CreateByLineForShips(word* UIDS,int NUIDS,int dx,int dy);
-    void CopyToDst(word* Dst,word* Sns);
-    void Copy(word* Dst);
+    unsigned short CreateByX(unsigned short* UIDS,int NUIDS,bool Direction);
+    unsigned short CreateByY(unsigned short* UIDS,int NUIDS,bool Direction);
+    unsigned short CreateByR(unsigned short* UIDS,int NUIDS,bool Direction,int x,int y);
+	unsigned short CreateByLine(unsigned short* UIDS,int NUIDS,int dx,int dy);
+	unsigned short CreateByLineForShips(unsigned short* UIDS,int NUIDS,int dx,int dy);
+    void CopyToDst(unsigned short* Dst,unsigned short* Sns);
+    void Copy(unsigned short* Dst);
 };
 extern SortClass UNISORT;
-word SortUnitsByR(word* urefs,word* usn,int nu,int x,int y);
+unsigned short SortUnitsByR(unsigned short* urefs,unsigned short* usn,int nu,int x,int y);
 class PositionOrder{
 public:
     int NUnits;
     int MaxUnit;
 	int CenterX;
 	int CenterY;
-    word* Ids;
+    unsigned short* Ids;
     int* px;
     int* py;
     PositionOrder();
     ~PositionOrder();
     void CheckSize(int Size);
-    void Create(word* IDS,int NIDS);
-    word CreatePositions(int x,int y,word* IDS,int NIDS);
-	word CreateLinearPositions(int x,int y,word* IDS,int NIDS,int dx,int dy);
-	word CreateRotatedPositions(int x,int y,word* IDS,int NIDS,int dx,int dy);
-	word CreateRotatedPositions2(int x,int y,word* IDS,int NIDS,int dx,int dy);
-	word CreateOrdPos(int x,int y,byte dir,int NIDS,word* IDS,OrderDescription* ODS);
-	word CreateSimpleOrdPos(int x,int y,byte dir,int NIDS,word* IDS,OrderDescription* ODS);
-    void SendToPosition(byte Prio,byte OrdType);
+    void Create(unsigned short* IDS,int NIDS);
+    unsigned short CreatePositions(int x,int y,unsigned short* IDS,int NIDS);
+	unsigned short CreateLinearPositions(int x,int y,unsigned short* IDS,int NIDS,int dx,int dy);
+	unsigned short CreateRotatedPositions(int x,int y,unsigned short* IDS,int NIDS,int dx,int dy);
+	unsigned short CreateRotatedPositions2(int x,int y,unsigned short* IDS,int NIDS,int dx,int dy);
+	unsigned short CreateOrdPos(int x,int y,unsigned char dir,int NIDS,unsigned short* IDS,OrderDescription* ODS);
+	unsigned short CreateSimpleOrdPos(int x,int y,unsigned char dir,int NIDS,unsigned short* IDS,OrderDescription* ODS);
+    void SendToPosition(unsigned char Prio,unsigned char OrdType);
 	void Patrol();
 };
-void GroupSendSelectedTo(byte NI,int x,int y,byte Prio,byte OrdType);
+void GroupSendSelectedTo(unsigned char NI,int x,int y,unsigned char Prio,unsigned char OrdType);
 extern PositionOrder PORD;

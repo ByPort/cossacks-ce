@@ -5,15 +5,14 @@
 #ifndef __CWAVE_H
 #define __CWAVE_H
 
-#include <mmsystem.h>
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_audio.h"
 
 class CWave //: public CObject
 {
 protected:
-    DWORD m_waveSize;
-    BOOL m_waveOK;
+    unsigned long m_waveSize;
+    bool m_waveOK;
     char* m_pWave;
     //WAVEFORMATEX m_waveFormatEx;
     SDL_AudioSpec m_waveSpec;
@@ -22,14 +21,14 @@ public:
     CWave(char* fileName);
     ~CWave();
 
-    DWORD GetWaveSize();
+    unsigned long GetWaveSize();
     //LPWAVEFORMATEX GetWaveFormatPtr();
 	SDL_AudioSpec* GetWaveSpecPtr();
     char* GetWaveDataPtr();
-    BOOL WaveOK();
+    bool WaveOK();
 
 protected:
-    BOOL LoadWaveFile(char* fileName);
+    bool LoadWaveFile(char* fileName);
 };
 
 #endif

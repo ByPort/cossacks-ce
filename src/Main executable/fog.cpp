@@ -15,30 +15,30 @@ const int kFogOffset = 3;
 int FMSX;
 int FMSX2;
 
-word* fmap;
-word* fmap1;
+unsigned short* fmap;
+unsigned short* fmap1;
 
 #define MaxShad 4528
 
-byte fog[8192 + 1024];
-byte wfog[8192];
-byte yfog1[8192];
-byte rfog[8192];
+unsigned char fog[8192 + 1024];
+unsigned char wfog[8192];
+unsigned char yfog1[8192];
+unsigned char rfog[8192];
 
-byte Optional1[8192];
-byte Optional2[8192];
-byte Optional3[8192];
+unsigned char Optional1[8192];
+unsigned char Optional2[8192];
+unsigned char Optional3[8192];
 
-byte darkfog[40960];
-byte yfog[8192];
-byte trans4[65536];
-byte trans8[65536];
-byte AlphaR[65536];
-byte AlphaW[65536];
-byte refl[3072];
-byte WaterCost[65536];
-byte GraySet[256];
-byte Bright[8192];
+unsigned char darkfog[40960];
+unsigned char yfog[8192];
+unsigned char trans4[65536];
+unsigned char trans8[65536];
+unsigned char AlphaR[65536];
+unsigned char AlphaW[65536];
+unsigned char refl[3072];
+unsigned char WaterCost[65536];
+unsigned char GraySet[256];
+unsigned char Bright[8192];
 
 void ClearFog()
 {
@@ -82,7 +82,7 @@ void ProcessFog1_1()
 	int fDV = ( mlx*mly ) << 1;
 	int fDH = ( mlx << 1 ) - 2;
 
-	byte z = 1;
+	unsigned char z = 1;
 
 	__asm
 	{
@@ -136,7 +136,7 @@ void ProcessFog1_2()
 	int mly = ( msy >> 2 ) + kFogOffset + kFogOffset;
 	int fDV = ( mlx*mly ) << 1;
 	int fDH = ( mlx << 1 ) - 2;
-	byte z = 1;
+	unsigned char z = 1;
 	__asm {
 		push	esi
 		push	edi
@@ -191,7 +191,7 @@ void ProcessFog1_3()
 	int mly = ( msy >> 2 ) + kFogOffset + kFogOffset;
 	int fDV = ( mlx*mly ) << 1;
 	int fDH = ( mlx << 1 ) - 2;
-	byte z = 1;
+	unsigned char z = 1;
 	__asm {
 		push	esi
 		push	edi
@@ -252,7 +252,7 @@ void LoadBlobs();
 
 __declspec( dllexport ) int CurPalette = 0;
 extern int CurrentCursorGP;
-byte graysc[256];
+unsigned char graysc[256];
 
 __declspec( dllexport ) void LoadFog( int set )
 {
@@ -332,7 +332,7 @@ void SetupFog()
 
 #define Shifter 7
 
-static byte BFog[64][64];
+static unsigned char BFog[64][64];
 
 void SetScreenFog16x16()
 {
@@ -341,7 +341,7 @@ void SetScreenFog16x16()
 	int fofs = int( fmap ) + ( ( ( ( mapy - 1 ) << 8 ) + ( mapx - 1 ) ) << 1 );
 	int Saddy = ( 256 - smaplx ) << 1;
 	int Daddy = ( 64 - smaplx ) << 1;
-	word MinShad = ( MaxShad - ( 32 << Shifter ) );
+	unsigned short MinShad = ( MaxShad - ( 32 << Shifter ) );
 	//filling
 	__asm
 	{
@@ -1109,7 +1109,7 @@ void ShowSuperFluentFog12_160( int x, int y, int z1x, int z2x, int z3x, int z4x 
 };
 #define shf 300
 #define fmin 1500
-byte fden[8192];
+unsigned char fden[8192];
 
 void makeFden()
 {
@@ -1122,7 +1122,7 @@ void makeFden()
 	}
 }
 
-int GetF( word k )
+int GetF( unsigned short k )
 {
 	if ( k >= fmin )
 	{
@@ -1264,11 +1264,11 @@ void UnitLight( OneObject* OB )
 }
 
 //New fog of war
-word WFSC[128 * 128];
+unsigned short WFSC[128 * 128];
 int maxWFX;
 int maxWFY;
 
-void SetWF( int x, int y, word w )
+void SetWF( int x, int y, unsigned short w )
 {
 	if ( x<0 || y<0 || x>maxWFX || y>maxWFY )
 	{
@@ -1311,7 +1311,7 @@ void CreateFogImage()
 		my1 /= 4;
 	}
 
-	word* FMAP = (word*) fmap;
+	unsigned short* FMAP = (unsigned short*) fmap;
 	int fogof0 = ( my0 + kFogOffset ) * FMSX + mx0 + kFogOffset;
 
 	for ( int myy = my0; myy <= my1; myy++ )
@@ -1428,7 +1428,7 @@ void FogSpot( int x, int y )
 //Return value < 900 means 'fogged', everything above - 'visible'
 //Beware: y coordinate must be multiplied by 2?
 //Example: if (GetFog(x, y << 1) < 900 && FogMode) //true if fogged
-word GetFog( int x, int y )
+unsigned short GetFog( int x, int y )
 {
 	int fx = ( ( x + 64 ) / 128 ) + kFogOffset;
 	int fy = ( ( y + 64 ) / 128 ) + kFogOffset;

@@ -1,20 +1,20 @@
 struct GAMEOBJ{
-	word Index;
-	word Serial;
+	unsigned short Index;
+	unsigned short Serial;
 	int  Type;
 };
 struct UnitsGroup{
-	word* IDS;
-	word* SNS;
+	unsigned short* IDS;
+	unsigned short* SNS;
 	int N;
 };
 struct UnitsPosition{
-	word* Type;
+	unsigned short* Type;
 	int*  coor;
 	int N;
 };
 struct ZonesGroup{
-	word* ZoneID;
+	unsigned short* ZoneID;
 	int N;
 };
 typedef void StdVoid();
@@ -32,7 +32,7 @@ public:
 	int *  SaveSize;
 	int    NSaves;
 	int    MaxSaves;
-	HINSTANCE hLib;
+	void* hLib;
 	char*  DLLName;
 
 	UnitsGroup* UGRP;
@@ -80,7 +80,7 @@ public:
 	int CTextTime;
 
 	GTimer TIME[32];
-	word   TRIGGER[512];
+	unsigned short   TRIGGER[512];
 	LightSpot LSpot[64];
 	StdVoid* ScenaryHandler;
 	ScenaryInterface();
@@ -117,7 +117,7 @@ struct SingleCampagin{
 	char* CampBmp;
 	int NMiss;
 	int* Miss;
-	DWORD* OpenIndex;
+	unsigned long* OpenIndex;
 };
 class CampaginPack{
 public:
@@ -164,7 +164,7 @@ extern WarPack WARS;
 extern MissPack MISSLIST;
 extern CampaginPack CAMPAGINS;
 
-extern byte CurAINation;
+extern unsigned char CurAINation;
 extern City* CCIT;
 extern Nation* CNAT;
 extern bool AiIsRunNow;

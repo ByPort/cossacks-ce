@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -18,7 +19,7 @@
 int prevrtime = 0;
 FILE* FX = nullptr;
 extern bool RecordMode;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 char CURLOG[32];
 
 void WriteRec( char* s )
@@ -63,7 +64,7 @@ void WriteRec( char* s )
 }
 
 extern int tmtmt;
-extern DWORD RealTime;
+extern unsigned long RealTime;
 
 void Syncro::Copy( Syncro* Syn )
 {

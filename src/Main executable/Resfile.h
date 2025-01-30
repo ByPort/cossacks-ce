@@ -7,20 +7,20 @@
  */
 //#include "Arc\GSCSet.h"
 //typedef LPGSCfile ResFile;
-typedef HANDLE ResFile;
+typedef void* ResFile;
 //Opening the resource file
-ResFile RReset(LPCSTR lpFileName);
+ResFile RReset(const char* lpFileName);
 //Rewriting file
-ResFile RRewrite(LPCSTR lpFileName);
+ResFile RRewrite(const char* lpFileName);
 //Getting size of the resource file
-DWORD RFileSize(ResFile hFile);
+unsigned long RFileSize(ResFile hFile);
 // Setting file position 
-DWORD RSeek(ResFile hFile,int pos);
+unsigned long RSeek(ResFile hFile,int pos);
 //Reading the file
-DWORD RBlockRead(ResFile hFile,LPVOID lpBuffer,DWORD BytesToRead);
+unsigned long RBlockRead(ResFile hFile,void* lpBuffer,unsigned long BytesToRead);
 //Writing the file
-DWORD RBlockWrite(ResFile hFile,LPVOID lpBuffer,DWORD BytesToWrite);
+unsigned long RBlockWrite(ResFile hFile,void* lpBuffer,unsigned long BytesToWrite);
 //Returns last error
-DWORD IOresult(void);
+unsigned long IOresult(void);
 //Close the file
 void RClose(ResFile hFile);

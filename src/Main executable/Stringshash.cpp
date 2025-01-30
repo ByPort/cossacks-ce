@@ -1,10 +1,8 @@
 #include <stdlib.h>
-#include <memory.h>
 #include <string.h>
-typedef unsigned char byte;
 #include "StringHash.h"
 
-__forceinline byte CalcHash(char* s){
+__forceinline unsigned char CalcHash(char* s){
 	__asm{
 		mov esi,s
 		cld
@@ -35,7 +33,7 @@ StrHash::~StrHash(){
 	Clear();
 };
 void StrHash::AddString(char* s){
-	byte hv=CalcHash(s);
+	unsigned char hv=CalcHash(s);
 	StrHashItem* lpSHI=SHI+hv;
 	int nv=lpSHI->NStr;
 	if(lpSHI->NStr>=lpSHI->MaxStr){
@@ -50,7 +48,7 @@ void StrHash::AddString(char* s){
 	lpSHI->NStr++;
 };
 int StrHash::SearchString(char* s){
-	byte hv=CalcHash(s);
+	unsigned char hv=CalcHash(s);
 	StrHashItem* lpSHI=SHI+hv;
 	int nv=lpSHI->NStr;
 	for(int i=0;i<nv;i++)if(!strcmp(lpSHI->Str[i],s)){

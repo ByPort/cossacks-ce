@@ -4,7 +4,7 @@
 
 // ---------------------------------------------------------------------------------------------
 #ifdef CC_DEBUG
-VOID CCommCore::DebugMessage( LPCSTR lpcszMessage )
+VOID CCommCore::DebugMessage( const char* lpcszMessage )
 {
 	SYSTEMTIME		SysTime;
 	GetLocalTime( &SysTime );
@@ -28,13 +28,13 @@ CCommCore::CCommCore()
 	m_uFrameCount = 0;
 	m_lStamp = 0;
 	m_uPeerCount = 0;
-	m_bServer = TRUE;
+	m_bServer = 1;
 	m_piNumber = 0;
 	m_ssState = ssNone;
 	m_csState = csNone;
-	m_bBlockingCall = FALSE;
+	m_bBlockingCall = 0;
 	m_piAutoInc = 0;
-	m_lpbRecvBuffer = (LPBYTE) malloc( RECV_BUFFER_LENGTH );
+	m_lpbRecvBuffer = (unsigned char*) malloc( RECV_BUFFER_LENGTH );
 	assert( m_lpbRecvBuffer );
 	m_uMaxMsgSize = 0;
 	lpIdleProc = NULL;
@@ -45,7 +45,7 @@ CCommCore::CCommCore()
 	m_paServPort = 0;
 	m_lpbUserData = NULL;
 	m_uUserDataSize = 0;
-	m_bBlockingCall = FALSE;
+	m_bBlockingCall = 0;
 	m_uMaxPeers = MAX_PEERS;
 	GetCommCoreUID( m_szCCUID );
 	m_uAddrCount = 0;
@@ -72,7 +72,7 @@ CCommCore::~CCommCore()
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::InitServer( LPCSTR lpcszSessionName, LPCSTR lpcszUserName )
+int CCommCore::InitServer( const char* lpcszSessionName, const char* lpcszUserName )
 {
 	_log_message( "InitServer()" );
 
@@ -82,16 +82,16 @@ BOOL CCommCore::InitServer( LPCSTR lpcszSessionName, LPCSTR lpcszUserName )
 
 	strcpy( m_szUserName, lpcszUserName );
 
-	m_bServer = TRUE;
+	m_bServer = 1;
 
 	m_piNumber = 1;
 	m_piAutoInc = 1;
 	m_uPeerCount = 1;
 
-	m_PeerList[0].m_bAlive = TRUE;
+	m_PeerList[0].m_bAlive = 1;
 	m_PeerList[0].m_Id = 1;
 	m_PeerList[0].m_uLatency = 0;
-	m_PeerList[0].m_bOverNAT = FALSE;
+	m_PeerList[0].m_bOverNAT = 0;
 	m_PeerList[0].m_ex_Addr.s_addr = m_dwAddrList[0];//??
 	m_PeerList[0].m_ex_Port = htons( DATA_PORT );
 	m_PeerList[0].m_lpbUserData = m_lpbUserData;
@@ -104,12 +104,12 @@ BOOL CCommCore::InitServer( LPCSTR lpcszSessionName, LPCSTR lpcszUserName )
 
 	m_uMaxPeers = MAX_PEERS;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned short port )
+int CCommCore::InitClient( const char* lpcszServerIP, const char* lpcszUserName, unsigned short port )
 {
 	_log_message( "InitClient()" );
 
@@ -124,9 +124,9 @@ BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned
 
 	LPCC_PK_TRY_CONNECT	lpConnectPacket;
 
-	lpConnectPacket = (LPCC_PK_TRY_CONNECT) malloc( sizeof( CC_PK_TRY_CONNECT ) + ( m_uAddrCount * sizeof( DWORD ) ) );
+	lpConnectPacket = (LPCC_PK_TRY_CONNECT) malloc( sizeof( CC_PK_TRY_CONNECT ) + ( m_uAddrCount * sizeof( unsigned long ) ) );
 
-	m_bServer = FALSE;
+	m_bServer = 0;
 
 	m_piNumber = BAD_PEER_ID;
 
@@ -134,7 +134,7 @@ BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned
 	lpConnectPacket->m_uAddrCount = m_uAddrCount;
 	strcpy( lpConnectPacket->m_szUserName, m_szUserName );
 	memcpy( lpConnectPacket->m_szCCUID, m_szCCUID, 22 );
-	memcpy( lpConnectPacket->m_dwAddrList, m_dwAddrList, ( m_uAddrCount * sizeof( DWORD ) ) );
+	memcpy( lpConnectPacket->m_dwAddrList, m_dwAddrList, ( m_uAddrCount * sizeof( unsigned long ) ) );
 
 	m_paServAddr.s_addr = inet_addr( lpcszServerIP );
 	if (0 != port)
@@ -150,18 +150,18 @@ BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned
 
 	if (!SendRawPacket( m_paServAddr, m_paServPort,
 		CC_PT_TRY_CONNECT,
-		(LPBYTE) lpConnectPacket,
-		sizeof( CC_PK_TRY_CONNECT ) + ( m_uAddrCount * sizeof( DWORD ) ),
-		TRUE,
-		FALSE ))
+		(unsigned char*) lpConnectPacket,
+		sizeof( CC_PK_TRY_CONNECT ) + ( m_uAddrCount * sizeof( unsigned long ) ),
+		1,
+		0 ))
 	{
 		free( lpConnectPacket );
-		return FALSE;
+		return 0;
 	};
 
 	free( lpConnectPacket );
 
-	DWORD dwTime = GetTickCount();
+	unsigned long dwTime = GetTickCount();
 
 	while (( ( GetTickCount() - dwTime ) < ( RETRY_TIME*( RETRY_COUNT + 3 ) ) ) && m_csState == csWait)
 	{
@@ -173,16 +173,16 @@ BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned
 	};
 
 	if (m_csState != csConnected)
-		return FALSE;
+		return 0;
 
 	m_ssState = ssOpen;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::DoneClient()
+int CCommCore::DoneClient()
 {
 	_log_message( "DoneClient()" );
 
@@ -193,21 +193,21 @@ BOOL CCommCore::DoneClient()
 	SendRawPacket( m_paServAddr,
 		m_paServPort,
 		CC_PT_HOST_EXIT,
-		(LPBYTE) &HostExitPacket,
+		(unsigned char*) &HostExitPacket,
 		sizeof( CC_PK_HOST_EXIT ),
-		TRUE,
-		FALSE );
+		1,
+		0 );
 
 	QueueClearAll();
 
 	Cleanup();
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::DoneServer()
+int CCommCore::DoneServer()
 {
 	_log_message( "DoneServer()" );
 
@@ -228,12 +228,12 @@ BOOL CCommCore::DoneServer()
 
 	Cleanup();
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-VOID CCommCore::Cleanup()
+void CCommCore::Cleanup()
 {
 	_log_message( "Cleanup()" );
 

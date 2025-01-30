@@ -7,8 +7,8 @@
 #define SafeSize (SafeLX*SafeLX)
 extern int CurRStage;
 struct SafeCellInfo{
-	word Index,SN;
-	word Prio,BusyIndex,BusySN;
+	unsigned short Index,SN;
+	unsigned short Prio,BusyIndex,BusySN;
 };
 void ResearchSafeCells(int MinR,int MaxR);
 void InitResearchSafeCell();

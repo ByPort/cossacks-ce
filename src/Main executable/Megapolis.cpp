@@ -28,7 +28,6 @@
 #include "Sort.h"
 #include "ConstStr.h"
 #include "EinfoClass.h"
-#include <crtdbg.h>
 
 extern const int kImportantMessageDisplayTime;
 
@@ -40,7 +39,7 @@ void CheckArmies( City* CT );
 int CheckPositionForDanger( int x, int y, int z );
 int GetTopology( int x, int y );
 void A_BitvaLink( AI_Army* ARM );
-void BuildWithSelected( byte NI, word ObjID, byte OrdType );
+void BuildWithSelected( unsigned char NI, unsigned short ObjID, unsigned char OrdType );
 bool FindPortPlace( Nation* NT, int *xx, int *yy );
 bool FindOilSpot( int *x, int *y, int r );
 void SmartGamer( City* CT );
@@ -61,30 +60,30 @@ void SmartGamer( City* CT );
 int BestForce;
 int BestNat;
 int NextBest;
-byte NLocks[64][64];
+unsigned char NLocks[64][64];
 Cell8x8::Cell8x8()
 {
 	for ( int i = 0; i < 5; i++ )UnitsAmount[i] = 0;
 	Neighbor = 0;
 };
-word FindTerrEnemy( int xCell, int yCell, int mx, int my, int dist, byte Mask );
+unsigned short FindTerrEnemy( int xCell, int yCell, int mx, int my, int dist, unsigned char Mask );
 //TotalCInfo  TCInf;
 
 int Trx;
 int Try;
 int Trx1;
 int Try1;
-byte TerrMap[64][64];
-int wer( byte x )
+unsigned char TerrMap[64][64];
+int wer( unsigned char x )
 {
 	if ( x )return 1;
 	else return 0;
 };
-void TerrSpot( int x, int y, byte c )
+void TerrSpot( int x, int y, unsigned char c )
 {
 	if ( x > 0 && y > 0 )TerrMap[y][x] += c;
 };
-void CreateTerrMap( byte NN )
+void CreateTerrMap( unsigned char NN )
 {
 };
 //Блок оценки сил противника
@@ -110,44 +109,44 @@ void GetForces()
 
 //Функционалы для определения места для здания
 //1-место для стандартного здания (ферма, барак,...)
-int FUNC1( int* x, int* y, int Lx, int Ly, byte NI )
+int FUNC1( int* x, int* y, int Lx, int Ly, unsigned char NI )
 {
 	return 0;
 };
-int FUNC3( int* x, int* y, int Lx, int Ly, byte NI )
+int FUNC3( int* x, int* y, int Lx, int Ly, unsigned char NI )
 {
 	return 0;
 };
 //for Towers
-int FUNC2( int* x, int* y, int Lx, int Ly, byte NI )
+int FUNC2( int* x, int* y, int Lx, int Ly, unsigned char NI )
 {
 	return 0;
 };
-void OccupyCell( int x, int y, byte NI )
+void OccupyCell( int x, int y, unsigned char NI )
 {
 
 };
-word FindPeasantInCell( int x, int y, byte NI )
+unsigned short FindPeasantInCell( int x, int y, unsigned char NI )
 {
 	return 0xFFFF;
 };
-word FindPeasant( int x, int y, byte NI )
+unsigned short FindPeasant( int x, int y, unsigned char NI )
 {
 	return 0xFFFF;
 };
-word FindWPeasantInCell( int x, int y, byte NI )
+unsigned short FindWPeasantInCell( int x, int y, unsigned char NI )
 {
 	return 0xFFFF;
 };
-word FindWPeasant( int x, int y, byte NI )
+unsigned short FindWPeasant( int x, int y, unsigned char NI )
 {
 	return 0xFFFF;
 };
-void FreeCell( int x, int y, byte NI )
+void FreeCell( int x, int y, unsigned char NI )
 {
 
 };
-void City::CreateCity( byte N )
+void City::CreateCity( unsigned char N )
 {
 	memset( this, 0, sizeof City );
 	NATIONS[N].CITY = this;
@@ -355,13 +354,13 @@ void City::AddInform( Inform* Inf, I_Clear* ICL )
 	};
 	INFORM = Inf;
 };
-Inform* City::SearchInform( word ID, word Essence, Inform* Inf )
+Inform* City::SearchInform( unsigned short ID, unsigned short Essence, Inform* Inf )
 {
 	if ( !Inf )Inf = INFORM;
 	while ( Inf && ( Inf->ID != ID || Essence != Inf->Essence ) )Inf = Inf->Next;
 	return Inf;
 };
-Inform* City::SearchInform( word ID, Inform* Inf )
+Inform* City::SearchInform( unsigned short ID, Inform* Inf )
 {
 	if ( !Inf )Inf = INFORM;
 	else Inf = Inf->Next;
@@ -390,7 +389,7 @@ void City::DelInform()
 		INFORM = INFORM->Next;
 	};
 };
-Inform* SearchInform( word ID, word Essence, Inform* inf );
+Inform* SearchInform( unsigned short ID, unsigned short Essence, Inform* inf );
 
 void TakeResLink( OneObject* OBJ );
 void BuildObjLink( OneObject* OBJ );
@@ -469,7 +468,7 @@ Area* GetAr( int rx, int ry )
 	int ofst = tx + ( ty << TopSH );
 	if ( ofst >= 0 && ofst < MaxTop )
 	{
-		word ti = TopRef[ofst];
+		unsigned short ti = TopRef[ofst];
 		Area* AR = nullptr;
 		bool OurZone = false;
 		if ( ti != 0xFFFF )
@@ -691,7 +690,7 @@ void City::CloseCity()
 	NGroupsInSet = NULL;
 	NGroups = 0;
 };
-bool City::TryToFindPlace( int* x, int* y, int Lx, int Ly, byte Kind )
+bool City::TryToFindPlace( int* x, int* y, int Lx, int Ly, unsigned char Kind )
 {
 	return true;
 };
@@ -736,7 +735,7 @@ void City::RegisterNewUnit( OneObject* OB )
 			{
 				if ( PUSE( OB ) )return;
 				OB->Borg = 1;
-				byte use = OB->newMons->Usage;
+				unsigned char use = OB->newMons->Usage;
 				bool AGRES = false;
 				if ( use == PushkaID || use == MortiraID || use == FastHorseID || use == SupMortID
 					|| use == GrenaderID || use == HardHorceID || use == StrelokID || use == ArcherID
@@ -777,7 +776,7 @@ void City::RegisterNewUnit( OneObject* OB )
 			};
 			if ( OB->newMons->LockType&&AI_WATER_BATTLE )
 			{
-				byte use = OB->newMons->Usage;
+				unsigned char use = OB->newMons->Usage;
 				if ( use != FisherID )
 				{
 					int id = GetFreeBrigade();
@@ -813,8 +812,8 @@ void City::UnRegisterNewUnit( OneObject* OB )
 			OB->InArmy = false;
 			return;
 		};
-		word* Memb = BR->Memb;
-		word* MembSN = BR->MembSN;
+		unsigned short* Memb = BR->Memb;
+		unsigned short* MembSN = BR->MembSN;
 		int NMemb = BR->NMemb;
 		int Index = OB->BrIndex;
 		//assert(BR->NMemb<8000);
@@ -973,7 +972,7 @@ void City::EnumUnits()
 			}
 
 			Nat->ResSpeed[NM->ResConsID] += NM->ResConsumer;
-			word NIND = OB->NIndex;
+			unsigned short NIND = OB->NIndex;
 
 			if ( OB->Ready && !int( OB->LocalOrder ) )
 			{
@@ -1022,7 +1021,7 @@ void City::EnumUnits()
 		}
 	}
 
-	word PID = Nat->UID_PEASANT;
+	unsigned short PID = Nat->UID_PEASANT;
 	int NPS = UnitAmount[PID];
 	int NEEDBLD = 12;
 
@@ -1047,7 +1046,7 @@ void City::EnumUnits()
 	}
 }
 
-void City::AddProp( word NIN, GeneralObject* GO, word prod, word per )
+void City::AddProp( unsigned short NIN, GeneralObject* GO, unsigned short prod, unsigned short per )
 {
 	if ( NProp >= 100 )return;
 	//if(GO->MaxAutoAmount<=UnitAmount[NIN])return;
@@ -1061,7 +1060,7 @@ void City::AddProp( word NIN, GeneralObject* GO, word prod, word per )
 	PR->ProducerIndex = prod;
 };
 
-void City::AddUpgr( word UIN, word prod, word per )
+void City::AddUpgr( unsigned short UIN, unsigned short prod, unsigned short per )
 {
 	if ( NProp >= 100 )return;
 	for ( int i = 0; i < NProp; i++ )
@@ -1078,7 +1077,7 @@ void City::AddUpgr( word UIN, word prod, word per )
 	PR->ProducerIndex = prod;
 };
 
-void GetUnitCost( byte NI, word NIndex, int* Cost );
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost );
 void City::EnumProp()
 {
 	NProp = 0;
@@ -1105,7 +1104,7 @@ void City::EnumProp()
 		}
 		for ( int j = 0; j < PC; j++ )
 		{
-			word s = Nat->PAble[i][j];
+			unsigned short s = Nat->PAble[i][j];
 			//проверить возможность производства
 			GeneralObject* GO = Nat->Mon[s];
 			bool Able = true;
@@ -1156,7 +1155,7 @@ void City::EnumProp()
 		else PC = 0;
 		for ( int j = 0; j < PC; j++ )
 		{
-			word s = GO->Upg[j];
+			unsigned short s = GO->Upg[j];
 			//проверить возможность производства
 			NewUpgrade* NU = Nat->UPGRADE[s];
 			bool OKK = false;
@@ -1166,7 +1165,7 @@ void City::EnumProp()
 #ifdef CONQUEST
 				if ( NU->StageUp )
 				{
-					byte st = ( POB->StageState >> ( NU->Level * 3 ) ) & 7;
+					unsigned char st = ( POB->StageState >> ( NU->Level * 3 ) ) & 7;
 					OKK = POB->Ready&&st != 2 && NU->Enabled;
 				};
 #endif
@@ -1178,7 +1177,7 @@ void City::EnumProp()
 			};
 			if ( OKK )
 			{
-				word* COST = NU->Cost;
+				unsigned short* COST = NU->Cost;
 				int j;
 				for ( j = 0; j < 8 && COST[j] <= XRESRC( Nat->NNUM, j ); j++ );
 				if ( j == 8 )
@@ -1208,7 +1207,7 @@ void City::EnumProp()
 };
 
 #define FARMID 20
-word City::FindNeedProject()
+unsigned short City::FindNeedProject()
 {
 	//Groups calculating
 	Nation* NT = Nat;
@@ -1265,7 +1264,7 @@ word City::FindNeedProject()
 	if(NFNeed>10)NFNeed++;
 	int NF=NT->NFarms;
 	if(NFNeed>UnitAmount[FARMID]){
-		word FPR=PRPIndex[FARMID];
+		unsigned short FPR=PRPIndex[FARMID];
 		if(FPR!=0xFFFF)return FPR;
 	};
 	*/
@@ -1295,7 +1294,7 @@ word City::FindNeedProject()
 	};
 	//----Checking other units by script
 	sAI_Devlp* SAD = NT->AI_Devlp[MaxAI];
-	word ndev = NT->N_AI_Devlp[MaxAI];
+	unsigned short ndev = NT->N_AI_Devlp[MaxAI];
 	int npro = 0;
 	for ( int i = 0; i < ndev; i++ )
 	{
@@ -1307,7 +1306,7 @@ word City::FindNeedProject()
 			GO->Branch = sad->Source;
 			if ( sad->Amount > UnitAmount[sad->ObjID] )
 			{
-				word prid = PRPIndex[sad->ObjID];
+				unsigned short prid = PRPIndex[sad->ObjID];
 				if ( prid != 0xFFFF )
 				{
 					//random checking,money checking 
@@ -1336,11 +1335,11 @@ word City::FindNeedProject()
 		{
 
 			//upgrades
-			word UpgID = sad->ObjID;
+			unsigned short UpgID = sad->ObjID;
 			NewUpgrade* NUP = Nat->UPGRADE[UpgID];
 			NUP->Branch = sad->Source;
 			//random condition checking
-			word PropInd = UPGIndex[UpgID];
+			unsigned short PropInd = UPGIndex[UpgID];
 			ProposedProject* PRP = &Prop[PropInd];
 			if ( sad->AtnPercent > rando() && sad->GoldPercent >= PRP->Percent )
 			{
@@ -1366,7 +1365,7 @@ void City::RefreshAbility()
 	//Let's disable all checked units/upgrades 
 	for ( int i = 0; i < Nat->NCOND; i++ )
 	{
-		word MID = Nat->CLRef[i][0];
+		unsigned short MID = Nat->CLRef[i][0];
 		if ( MID < 8192 )
 		{
 			//Monster
@@ -1382,12 +1381,12 @@ void City::RefreshAbility()
 	//Let us check it now and enable all allowed monsters/upgrades
 	for ( int i = 0; i < Nat->NCOND; i++ )
 	{
-		word MID = Nat->CLRef[i][0];
-		word NC = Nat->CLSize[i];
+		unsigned short MID = Nat->CLRef[i][0];
+		unsigned short NC = Nat->CLSize[i];
 		bool enab = true;
 		for ( int j = 0; j < NC; j++ )
 		{
-			word uc = Nat->CLRef[i][j + 1];
+			unsigned short uc = Nat->CLRef[i][j + 1];
 			if ( uc < 8192 )
 			{
 				//Monster
@@ -1443,8 +1442,8 @@ void City::RefreshAbility()
 
 void RepairControl( City* CT )
 {
-	byte NI = CT->NI;
-	word PS;
+	unsigned char NI = CT->NI;
+	unsigned short PS;
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		OneObject* OB = Group[i];
@@ -1484,7 +1483,7 @@ void RepairControl( City* CT )
 		};
 	};
 };
-extern byte NPORTS;
+extern unsigned char NPORTS;
 extern short PORTSX[32];
 extern short PORTSY[32];
 bool SearchTowerPlace( int* xx1, int* yy1, SearchFunction* SFN, int r, int xc, int yc, int xe, int ye );
@@ -1632,7 +1631,7 @@ void City::MarkUnusablePlace()
 		SetUnusable( BPR.NearX, BPR.NearY, CB_Building );
 	};
 };
-int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD, int NBLD );
+int CheckCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i, unsigned short* BLD, int NBLD );
 bool City::FindPreciseBuildingPlace( GeneralObject* GO )
 {
 	BPR.AttemptsToStand++;
@@ -1648,7 +1647,7 @@ bool City::FindPreciseBuildingPlace( GeneralObject* GO )
 };
 
 void GoToMineLink( OneObject* OB );
-int SearchPeasants( int x, int y, bool Workers, byte NI, word* AddTo, int maxpos )
+int SearchPeasants( int x, int y, bool Workers, unsigned char NI, unsigned short* AddTo, int maxpos )
 {
 	if ( x < 0 || y < 0 || x >= VAL_MAXCX - 1 || y >= VAL_MAXCX - 1 )return 0;
 	int cell = ( x + 1 ) + ( ( y + 1 ) << VAL_SHFCX );
@@ -1656,7 +1655,7 @@ int SearchPeasants( int x, int y, bool Workers, byte NI, word* AddTo, int maxpos
 	int NMon = MCount[cell];
 	if ( !NMon )return NULL;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	int BRID = 0x5432;
 	if ( !Workers )BRID = NATIONS[NI].CITY->Builders.ID;
 	for ( int i = 0; i < NMon; i++ )
@@ -1682,7 +1681,7 @@ int SearchPeasants( int x, int y, bool Workers, byte NI, word* AddTo, int maxpos
 	};
 	return pos;
 };
-int SearchPeasantsInSquare( int x, int y, int r, byte NI, bool Workers, word* AddOn, int max )
+int SearchPeasantsInSquare( int x, int y, int r, unsigned char NI, bool Workers, unsigned short* AddOn, int max )
 {
 	int pos = 0;
 	for ( int i = 0; i <= r; i++ )
@@ -1745,9 +1744,9 @@ int SearchPeasantsInSquare( int x, int y, int r, byte NI, bool Workers, word* Ad
 	};
 	return pos;
 };
-int CreateTeamOfPeasants( byte NNUM, int x, int y, int MinP, int MaxP )
+int CreateTeamOfPeasants( unsigned char NNUM, int x, int y, int MinP, int MaxP )
 {
-	word pids[128];
+	unsigned short pids[128];
 	int npids = 0;
 	if ( MaxP > 120 )MaxP = 120;
 	int xc = x >> 11;
@@ -1764,11 +1763,11 @@ int CreateTeamOfPeasants( byte NNUM, int x, int y, int MinP, int MaxP )
 		if ( Selm[NNUM] )
 		{
 			int ns = NSL[NNUM];
-			word* smn = Selm[NNUM];
-			word* ssn = SerN[NNUM];
+			unsigned short* smn = Selm[NNUM];
+			unsigned short* ssn = SerN[NNUM];
 			for ( int j = 0; j < ns; j++ )
 			{
-				word MID = smn[j];
+				unsigned short MID = smn[j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -1778,8 +1777,8 @@ int CreateTeamOfPeasants( byte NNUM, int x, int y, int MinP, int MaxP )
 			free( Selm[NNUM] );
 		};
 		if ( SerN[NNUM] )free( SerN[NNUM] );
-		Selm[NNUM] = new word[pos];
-		SerN[NNUM] = new word[pos];
+		Selm[NNUM] = new unsigned short[pos];
+		SerN[NNUM] = new unsigned short[pos];
 		int ps1 = 0;
 		for ( int i = 0; i < pos; i++ )
 		{
@@ -1810,8 +1809,8 @@ void City::HandleConstructions()
 {
 	for ( int i = 0; i < NConstructions; i++ )
 	{
-		word Idx = Construction[i];
-		word tim = ConstructionTime[i];
+		unsigned short Idx = Construction[i];
+		unsigned short tim = ConstructionTime[i];
 		OneObject* OB = Group[Idx];
 		bool DeleteThis = false;
 		if ( OB )
@@ -1856,7 +1855,7 @@ void City::HandleConstructions()
 		{
 			if ( ConstructionTime[i]++ > 100 )
 			{
-				word MID = Construction[i];
+				unsigned short MID = Construction[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -1938,7 +1937,7 @@ void City::MakeZasev()
 	for ( i = 0; i < N&&Nat->Mon[i]->newMons->Usage != FieldID; i++ );
 	if ( i < N )
 	{
-		word FGID = i;
+		unsigned short FGID = i;
 		bool FDone = false;
 		for ( int i = 0; i < NMeln && !FDone; i++ )
 		{
@@ -1974,7 +1973,7 @@ void City::MakeZasev()
 		};
 	};
 };
-word FIELDID = 0xFFFF;
+unsigned short FIELDID = 0xFFFF;
 void City::MakeSlowZasev()
 {
 	int FieldR = FieldR1;
@@ -1987,7 +1986,7 @@ void City::MakeSlowZasev()
 		if ( i >= N )return;
 		FIELDID = i;
 	};
-	word FGID = FIELDID;
+	unsigned short FGID = FIELDID;
 	bool FDone = false;
 	for ( int i = 0; i < NMeln && !FDone; i++ )
 	{
@@ -2170,14 +2169,14 @@ void City::HandleBrigades( int pNP )
 	Builders.CheckMembers( this );
 }
 
-void ProduceByAI( byte nat, word Producer, word ID );
-void CmdAddBuildObj( byte NI, word ObjID );
-int SmartCreationUnit( byte NI, int NIndex, int x, int y );
+void ProduceByAI( unsigned char nat, unsigned short Producer, unsigned short ID );
+void CmdAddBuildObj( unsigned char NI, unsigned short ObjID );
+int SmartCreationUnit( unsigned char NI, int NIndex, int x, int y );
 
 extern int tmtmt;
 int CURRENTAINATION;
-byte DefPreBDef[6] = { TowerID,5,6 };
-byte* PreBDef = DefPreBDef;
+unsigned char DefPreBDef[6] = { TowerID,5,6 };
+unsigned char* PreBDef = DefPreBDef;
 int NPreBDef = 1;
 
 //Process production queues, upgrades, farm growing etc
@@ -2236,7 +2235,7 @@ void City::ProcessCreation()
 		SendAgressors();
 		HandleDefending();
 		EnumProp();
-		word proj = 0xFFFF;
+		unsigned short proj = 0xFFFF;
 		int NGID = Nat->NGidot;
 		int NF = Nat->NFarms + FarmsUnderConstruction;
 		bool NeedFarm = false;
@@ -2425,7 +2424,7 @@ void City::ProcessCreation()
 										bool UnFND = true;
 										for ( int i = 0; i < 8 && UnFND; i++ )
 										{
-											word ID = WoodSkladID[i];
+											unsigned short ID = WoodSkladID[i];
 											if ( ID != 0xFFFF )
 											{
 												OneObject* OBJ = Group[ID];
@@ -2452,7 +2451,7 @@ void City::ProcessCreation()
 											bool UnFND = true;
 											for ( int i = 0; i < 8 && UnFND; i++ )
 											{
-												word ID = StoneSkladID[i];
+												unsigned short ID = StoneSkladID[i];
 												if ( ID != 0xFFFF )
 												{
 													OneObject* OBJ = Group[ID];
@@ -2481,13 +2480,13 @@ void City::ProcessCreation()
 							AdvCharacter* IDC = IGO->MoreCharacter;
 							if ( IDC->ProduceStages > 800 || INM->Usage == MelnicaID || INM->Usage == CenterID )
 							{
-								BPR.MaxPeasants = byte( INM->NBuildPt );
-								if ( INM->NBuildPt > 7 )BPR.MinPeasants = byte( INM->NBuildPt - 5 );
+								BPR.MaxPeasants = unsigned char( INM->NBuildPt );
+								if ( INM->NBuildPt > 7 )BPR.MinPeasants = unsigned char( INM->NBuildPt - 5 );
 								else BPR.MinPeasants = BPR.MaxPeasants - 1;
 							}
 							else
 							{
-								byte USAGE = IGO->newMons->Usage;
+								unsigned char USAGE = IGO->newMons->Usage;
 								bool used = 1;
 								for ( int p = 0; p < NPreBDef; p++ )if ( USAGE == PreBDef[p + p + p] )
 								{
@@ -2599,7 +2598,7 @@ void City::ProcessCreation()
 
 bool CINFMOD;
 
-void City::HelpMe( word ID )
+void City::HelpMe( unsigned short ID )
 {
 	for ( int i = 0; i < 32; i++ )
 	{
@@ -2615,7 +2614,7 @@ void City::HelpMe( word ID )
 	};
 	EnemyList[rando() & 31] = ID;
 };
-word FindObjToAtt()
+unsigned short FindObjToAtt()
 {
 	return 0xFFFF;
 };
@@ -2626,13 +2625,13 @@ void City::HandleFly()
 		OneObject* OB = Group[i];
 		if ( rando() < 4096 && OB&&OB->NNUM == NI&&OB->Kind == 5 && !OB->LocalOrder )
 		{
-			word ww = FindObjToAtt();
+			unsigned short ww = FindObjToAtt();
 			if ( ww != 0xFFFF )
 				OB->AttackObj( ww, 0 );
 		};
 	};
 };
-void Branch::AddTo( byte ResID, int Amount )
+void Branch::AddTo( unsigned char ResID, int Amount )
 {
 	RESRM[ResID] += Amount*RESP[ResID];
 	div_t r = div( RESRM[ResID], 100 );
@@ -2643,7 +2642,7 @@ void Branch::AddTo( byte ResID, int Amount )
 		RESRM[ResID] = 0;
 	};
 };
-void Branch::AddPerc( byte ResID, int Amount, int perc )
+void Branch::AddPerc( unsigned char ResID, int Amount, int perc )
 {
 	RESRM[ResID] += Amount*perc;
 	div_t r = div( RESRM[ResID], 100 );
@@ -2654,12 +2653,12 @@ void Branch::AddPerc( byte ResID, int Amount, int perc )
 		RESRM[ResID] = 0;
 	};
 };
-void Branch::AddEntire( byte ResID, int Amount )
+void Branch::AddEntire( unsigned char ResID, int Amount )
 {
 	if ( ( RESAM[ResID] += Amount ) < 0 )RESAM[ResID] = 0;
 
 };
-void Branch::Check( byte NI )
+void Branch::Check( unsigned char NI )
 {
 	//int* RS=&RESRC[NI][0];
 	for ( int i = 0; i < 8; i++ )if ( RESAM[i] > XRESRC( NI, i ) )RESAM[i] = XRESRC( NI, i );
@@ -2668,7 +2667,7 @@ void Branch::Init()
 {
 	memset( this, 0, sizeof Branch );
 };
-int Branch::GetMonsterCostPercent( byte NI, word NIndex )
+int Branch::GetMonsterCostPercent( unsigned char NI, unsigned short NIndex )
 {
 	int COST[8];
 	GetUnitCost( NI, NIndex, COST );
@@ -2687,10 +2686,10 @@ int Branch::GetMonsterCostPercent( byte NI, word NIndex )
 	if ( !maxp )return 101;
 	return maxp;
 };
-int Branch::GetUpgradeCostPercent( byte NI, word NIndex )
+int Branch::GetUpgradeCostPercent( unsigned char NI, unsigned short NIndex )
 {
-	byte* LSTATE = CITY[NI].LockUpgrade;
-	word *COST = NATIONS[NI].UPGRADE[NIndex]->Cost;
+	unsigned char* LSTATE = CITY[NI].LockUpgrade;
+	unsigned short *COST = NATIONS[NI].UPGRADE[NIndex]->Cost;
 	int maxp = 0;
 	//int* RSS=RESRC[NI];
 	for ( int i = 0; i < 8; i++ )
@@ -2707,7 +2706,7 @@ int Branch::GetUpgradeCostPercent( byte NI, word NIndex )
 	if ( !maxp )return 101;
 	return maxp;
 };
-void Nation::AddResource( byte Rid, int Amount )
+void Nation::AddResource( unsigned char Rid, int Amount )
 {
 	SELO.AddTo( Rid, Amount );
 	ARMY.AddTo( Rid, Amount );
@@ -2715,7 +2714,7 @@ void Nation::AddResource( byte Rid, int Amount )
 	GENERAL.AddTo( Rid, Amount );
 
 };
-void Nation::ControlProduce( byte Branch, byte ResID, int Amount )
+void Nation::ControlProduce( unsigned char Branch, unsigned char ResID, int Amount )
 {
 	switch ( Branch )
 	{
@@ -2823,13 +2822,13 @@ void City::HandleIdeas()
 	}
 }
 
-const byte BMIND[40] = { 6,6,6,6,6,6,6,6,1,3,
+const unsigned char BMIND[40] = { 6,6,6,6,6,6,6,6,1,3,
 					  4,5,6,6,6,6,6,6,6,6,
 					  1,2,1,0,2,6,6,6,6,6,
 					  6,6,5,6,6,6,6,6,6,6 };
 int GetBMIndex( OneObject* OB )
 {
-	byte Use = OB->newMons->Usage;
+	unsigned char Use = OB->newMons->Usage;
 	if ( Use < 40 )return BMIND[Use];
 	else return 6;
 };
@@ -2866,7 +2865,7 @@ void City::ExecuteBrigades()
 			Brigade* BRIG = Brigs + i;
 			if ( BRIG->Enabled )
 			{
-				word* BMM = (word*) &BRIG->BM;
+				unsigned short* BMM = (unsigned short*) &BRIG->BM;
 				if ( BRIG->WarType )
 				{
 					OrderDescription* ODE = ElementaryOrders + BRIG->WarType - 1;
@@ -2964,7 +2963,7 @@ int DefaultResTBL[12] = {
 int* ResTBL = DefaultResTBL;
 int  NInResTBL = 6;
 extern int tmtmt;
-bool CheckBuildPossibility( byte NI, int x, int y );
+bool CheckBuildPossibility( unsigned char NI, int x, int y );
 void TakeNewMineBrain( Idea* ID )
 {
 	City* CT = ID->CT;
@@ -3042,10 +3041,10 @@ BeginMine:
 			return;
 		};
 		*/
-		word Npeons = CT->Nat->MIN_PBRIG;
-		word Ninf = 2;
-		word Nstrel = 0;
-		word MinWar = 0;
+		unsigned short Npeons = CT->Nat->MIN_PBRIG;
+		unsigned short Ninf = 2;
+		unsigned short Nstrel = 0;
+		unsigned short MinWar = 0;
 		SendPInform* INF = (SendPInform*) CT->SearchInform( 0x1256, SID, NULL );
 		if ( INF&&tmtmt - INF->time > SendPTime )
 		{
@@ -3155,10 +3154,10 @@ void City::BuildTower()
 class UM_Data :public Inform
 {
 public:
-	word N;
+	unsigned short N;
 	bool Gold;
-	byte Ulevel;
-	word Sids[10];
+	unsigned char Ulevel;
+	unsigned short Sids[10];
 };
 void PerformUpgradeLink( OneObject* OBJ );
 void UpgradeMineBrain( Idea* ID )
@@ -3173,11 +3172,11 @@ void UpgradeMineBrain( Idea* ID )
 	//if(CT->UnitAmount[CT->Nat->UID_PEASANT]<320)return;
 	int cx = CT->CenterX << 7;
 	int cy = CT->CenterY << 7;
-	byte Lev = UM->Ulevel;
+	unsigned char Lev = UM->Ulevel;
 	int udst = CT->Nat->MINE_UPGRADE1_RADIUS << 5;
 	for ( int i = 0; i < N; i++ )
 	{
-		word ess = UM->Sids[i];
+		unsigned short ess = UM->Sids[i];
 		if ( ess != 0xFFFF )
 		{
 			MineBase* MB = (MineBase*) CT->SearchInform( 0x4519, ess, NULL );
@@ -3223,7 +3222,7 @@ int GetMineMult( int n )
 	if ( n < 10 )return MUtbl[n];
 	else return MUtbl[9];
 }
-int GetMaxCostPercent( byte Nat, word* Cost )
+int GetMaxCostPercent( unsigned char Nat, unsigned short* Cost )
 {
 	int maxp = 0;
 	//int * res=RESRC[Nat];
@@ -3248,11 +3247,11 @@ void City::UpgradeMines()
 	int cx = CenterX << 11;
 	int cy = CenterY << 11;
 	int udst = Nat->MINE_UPGRADE1_RADIUS << 9;
-	word TotMines[32];
-	word MIDX[32];
+	unsigned short TotMines[32];
+	unsigned short MIDX[32];
 	int DST[32];
-	byte Level[32];
-	byte Type[32];
+	unsigned char Level[32];
+	unsigned char Type[32];
 	int NMin = 0;
 	//----------------------------//
 	while ( MBS )
@@ -3281,10 +3280,10 @@ void City::UpgradeMines()
 	int NU1 = 0;
 	int TotM = 0;
 
-	word* L1PERCENT = Nat->MU1G_PERCENT;
-	word* L2PERCENT = Nat->MU2G_PERCENT;
-	word* L3PERCENT = Nat->MU3G_PERCENT;
-	byte CurRes = GoldID;
+	unsigned short* L1PERCENT = Nat->MU1G_PERCENT;
+	unsigned short* L2PERCENT = Nat->MU2G_PERCENT;
+	unsigned short* L3PERCENT = Nat->MU3G_PERCENT;
+	unsigned char CurRes = GoldID;
 	int MaxULevel = 0;
 	U_Grp* MUP = &Nat->UGRP_MINEUP;
 	for ( int q = 0; q < MUP->N; q++ )if ( Nat->UPGRADE[MUP->UIDS[q]]->Enabled )MaxULevel = q;
@@ -3394,7 +3393,7 @@ void City::UpgradeMines()
 
 
 
-bool FindNearestWall( int* x, int* y, byte NI )
+bool FindNearestWall( int* x, int* y, unsigned char NI )
 {
 	int xx = ( *x ) >> 6;
 	int yy = ( *y ) >> 6;
@@ -3410,10 +3409,10 @@ bool FindNearestWall( int* x, int* y, byte NI )
 		int xw = EIN->WallsX[i];
 		int yw = EIN->WallsY[i];
 		int Ofs0 = xw + ( yw << TopSH );
-		word Tp_U = 0xFFFF;
-		word Tp_D = 0xFFFF;
-		word Tp_L = 0xFFFF;
-		word Tp_R = 0xFFFF;
+		unsigned short Tp_U = 0xFFFF;
+		unsigned short Tp_D = 0xFFFF;
+		unsigned short Tp_L = 0xFFFF;
+		unsigned short Tp_R = 0xFFFF;
 		if ( xw > 0 && yw > 0 && xw < TopLx - 1 && yw < TopLy - 1 )
 		{
 			Tp_U = TopRef[Ofs0 - TopLx];
@@ -3605,16 +3604,16 @@ void City::CalculateBalance()
 
 	if ( Nat->hLibAI&&Nat->PBL&&tot )
 	{
-		word nn = Nat->NPBal;
-		word* pp = Nat->PBL;
+		unsigned short nn = Nat->NPBal;
+		unsigned short* pp = Nat->PBL;
 		for ( int i = 0; i < nn, pp[0] <= NPeas; pp += 2, i++ );
 		int NeedOnRes = pp[-1] + ( int( NPeas - pp[-2] )*int( pp[1] - pp[-1] ) ) / ( pp[0] - pp[-2] );
 		NeedPW = ( POnWood*NeedOnRes ) / tot;
 		NeedPS = ( POnStone*NeedOnRes ) / tot;
 		NeedPF = NeedOnRes - NeedPW - NeedPS;
 	};/*else{
-		word nn=Nat->NPBal;
-		word* pp=Nat->PBalance;
+		unsigned short nn=Nat->NPBal;
+		unsigned short* pp=Nat->PBalance;
 		for(int i=0;i<nn,pp[0]<=NPeas;pp+=4,i++);
 		int nF=pp[1];
 		int nW=pp[2];
@@ -3629,7 +3628,7 @@ void City::CalculateBalance()
 class BWM_Idea
 {
 public:
-	word SID;
+	unsigned short SID;
 	MineBase MBAS;
 	int Over;
 	bool Ready;
@@ -3723,8 +3722,8 @@ void City::HandleDefending()
 				int Miny = int( DI->y ) << 12;
 				int Maxx = Minx + 4096;
 				int Maxy = Miny + 4096;
-				word* IDS = DI->Def;
-				word* USN = DI->DefSN;
+				unsigned short* IDS = DI->Def;
+				unsigned short* USN = DI->DefSN;
 				int N = DI->NDefenders;
 				for ( int j = 0; j < N; j++ )
 				{
@@ -3754,8 +3753,8 @@ void City::HandleDefending()
 	if ( Defenders.NMemb )
 	{
 		int N = Defenders.NMemb;
-		word* IDS = Defenders.Memb;
-		word* MSN = Defenders.MembSN;
+		unsigned short* IDS = Defenders.Memb;
+		unsigned short* MSN = Defenders.MembSN;
 		for ( int i = 0; i < N; i++ )
 		{
 			OneObject* OB = Group[IDS[i]];
@@ -3767,7 +3766,7 @@ void City::HandleDefending()
 		MSN = Guards.MembSN;
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = IDS[i];
+			unsigned short MID = IDS[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3778,7 +3777,7 @@ void City::HandleDefending()
 	};
 	//scanning the territory
 	int N = NtNUnits[NI];
-	word* UIDS = NatList[NI];
+	unsigned short* UIDS = NatList[NI];
 	if ( rando() < 300 )
 	{
 		for ( int i = 0; i < N; i++ )
@@ -3796,7 +3795,7 @@ void City::HandleDefending()
 		};
 	};
 };
-int City::CheckDefending( byte x, byte y )
+int City::CheckDefending( unsigned char x, unsigned char y )
 {
 	for ( int i = 0; i < NDefn; i++ )
 	{
@@ -3804,7 +3803,7 @@ int City::CheckDefending( byte x, byte y )
 	};
 	return -1;
 };
-void City::AddDefending( byte x, byte y, byte Imp )
+void City::AddDefending( unsigned char x, unsigned char y, unsigned char Imp )
 {
 	if ( NDefn >= MaxDefn )
 	{
@@ -3841,8 +3840,8 @@ void DefendInfo::AddUnit( OneObject* OB )
 	if ( NDefenders >= MaxDefs )
 	{
 		MaxDefs += 8;
-		Def = (word*) realloc( Def, MaxDefs * 2 );
-		DefSN = (word*) realloc( DefSN, MaxDefs * 2 );
+		Def = (unsigned short*) realloc( Def, MaxDefs * 2 );
+		DefSN = (unsigned short*) realloc( DefSN, MaxDefs * 2 );
 	};
 	OB->NoBuilder = true;
 	OB->DoNotCall = true;
@@ -3853,12 +3852,12 @@ void DefendInfo::AddUnit( OneObject* OB )
 };
 //------------------------------------ARMY--------------------------------//
 
-byte ArmType[34] = { 0xFF,
+unsigned char ArmType[34] = { 0xFF,
 				  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,   2,   5,   5,
 					 6,0xFF,0xFF,0xFF,   8,0xFF,0xFF,   9,0xFF,   0,
 					 1,   3,   7,   4,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 					 1,   1,   1 };
-byte ArmSpec[34] = { 0,
+unsigned char ArmSpec[34] = { 0,
 				  0,0,0,0,0,2,0,0,0,0,
 				  0,0,0,0,0,0,0,0,0,0,
 				  0,0,0,0,0,0,0,0,0,0,
@@ -3875,10 +3874,10 @@ byte ArmSpec[34] = { 0,
 //7-peasant
 //8-weak units
 //9-supermortira
-//word BriMax[MaxBT]={36,16,16,16,16,36,16,16,25,36};
-word BriMax[MaxBT] = { 256,256,256,256,256,36,256,16,256,256 };
-word BriMin[MaxBT] = { 36 ,16 , 16, 16, 16, 1, 16,16, 25,  4 };
-word DefBriMin[MaxBT] = { 4 ,16 , 16, 16, 16, 1, 16,16, 25,  4 };
+//unsigned short BriMax[MaxBT]={36,16,16,16,16,36,16,16,25,36};
+unsigned short BriMax[MaxBT] = { 256,256,256,256,256,36,256,16,256,256 };
+unsigned short BriMin[MaxBT] = { 36 ,16 , 16, 16, 16, 1, 16,16, 25,  4 };
+unsigned short DefBriMin[MaxBT] = { 4 ,16 , 16, 16, 16, 1, 16,16, 25,  4 };
 
 void AI_Army::InitArmy( City* C )
 {
@@ -3903,13 +3902,13 @@ void AI_Army::ClearArmy()
 int CheckMinArmyCreationAbility( Brigade* BR )
 {
 	int N = BR->NMemb;
-	word* Mem = BR->Memb;
-	word NBMEM[MaxBT + 4];
+	unsigned short* Mem = BR->Memb;
+	unsigned short NBMEM[MaxBT + 4];
 	memset( NBMEM, 0, sizeof NBMEM );
 
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Mem[i];
+		unsigned short MID = Mem[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3945,12 +3944,12 @@ int CheckMinArmyCreationAbility( Brigade* BR )
 int CheckSuperMinArmyCreationAbility( Brigade* BR )
 {
 	int N = BR->NMemb;
-	word* Mem = BR->Memb;
-	word NBMEM[MaxBT + 4];
+	unsigned short* Mem = BR->Memb;
+	unsigned short NBMEM[MaxBT + 4];
 	memset( NBMEM, 0, sizeof NBMEM );
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Mem[i];
+		unsigned short MID = Mem[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3975,9 +3974,9 @@ int CheckSuperMinArmyCreationAbility( Brigade* BR )
 void AI_Army::CreateMinimalArmyFromBrigade( Brigade* BR, int Type )
 {
 	int N = BR->NMemb;
-	word IDS[2048];
+	unsigned short IDS[2048];
 	memcpy( IDS, BR->Memb, N << 1 );
-	word BriInd[MaxBT];
+	unsigned short BriInd[MaxBT];
 	memset( BriInd, 0xFF, MaxBT << 1 );
 	int Nu = 0;
 	int NuMax = BriMax[Type];
@@ -3985,7 +3984,7 @@ void AI_Army::CreateMinimalArmyFromBrigade( Brigade* BR, int Type )
 	int N0 = 0;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = IDS[i];
+		unsigned short MID = IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4075,13 +4074,13 @@ void AI_Army::AddBrigade( Brigade* BR )
 		return;
 	};
 	int N = BR->NMemb;
-	word IDS[1024];
+	unsigned short IDS[1024];
 	memcpy( IDS, BR->Memb, N << 1 );
-	word BriInd[MaxBT];
+	unsigned short BriInd[MaxBT];
 	memset( BriInd, 0xFF, MaxBT << 1 );
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = IDS[i];
+		unsigned short MID = IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4136,7 +4135,7 @@ void AI_Army::AddBrigade( Brigade* BR )
 		};
 	};
 };
-ArmyOrder* AI_Army::CreateOrder( byte OrdType, int Size )
+ArmyOrder* AI_Army::CreateOrder( unsigned char OrdType, int Size )
 {
 	ArmyOrder* OR1 = (ArmyOrder*) malloc( Size );
 	ArmyOrder* OR2;
@@ -4200,7 +4199,7 @@ class ALST_Order :public ArmyOrder
 {
 public:
 	int N;
-	word pos[15];//[xi][yi][BrigID][SN][done]
+	unsigned short pos[15];//[xi][yi][BrigID][SN][done]
 };
 __forceinline bool ValidTXY( int x, int y )
 {
@@ -4292,7 +4291,7 @@ void ArmyLocalSendToLink( AI_Army* ARM )
 
 	rando();
 	ALST_Order* AOR = (ALST_Order*) ARM->AOrder;
-	word* pos = AOR->pos;
+	unsigned short* pos = AOR->pos;
 	int N = AOR->N;
 	int ps = 0;
 	City* CT = ARM->CT;
@@ -4322,7 +4321,7 @@ void ArmyLocalSendToLink( AI_Army* ARM )
 	};
 }
 
-void AI_Army::LocalSendTo( int px, int py, byte Prio, byte OrdType )
+void AI_Army::LocalSendTo( int px, int py, unsigned char Prio, unsigned char OrdType )
 {
 	if ( !NExBrigs )
 		return;
@@ -4404,7 +4403,7 @@ void AI_Army::LocalSendTo( int px, int py, byte Prio, byte OrdType )
 	AOR->ALink = &ArmyLocalSendToLink;
 }
 
-void AI_Army::WideLocalSendTo( int px, int py, byte Prio, byte OrdType )
+void AI_Army::WideLocalSendTo( int px, int py, unsigned char Prio, unsigned char OrdType )
 {
 	if ( !NExBrigs )
 		return;
@@ -4518,7 +4517,7 @@ void ArmyConnectToArmyLink( AI_Army* ARM )
 		};
 	};
 };
-void AI_Army::ConnectToArmy( int ID, byte Prio, byte OrdType )
+void AI_Army::ConnectToArmy( int ID, unsigned char Prio, unsigned char OrdType )
 {
 	ACTA_Order* AOR = (ACTA_Order*) CreateOrder( OrdType, sizeof ACTA_Order );
 	AOR->Message = ACTA_Message;
@@ -4585,7 +4584,7 @@ public:
 	int ydest;
 	int time;
 };
-int GetTopDanger( int Top, byte NI )
+int GetTopDanger( int Top, unsigned char NI )
 {
 	if ( GNFO.EINF[NI] )return 0;
 	Area* AR = TopMap + Top;
@@ -4637,9 +4636,9 @@ int GetTopDanger( int Top, int r, int NI )
 #define AS_SHIPS     0x20000
 #define AS_TOWERS    0x40000
 #define AS_BATTLE    0x80000
-byte GetDangValue(int x,int y);
+unsigned char GetDangValue(int x,int y);
 int FastCheckPosDanger(int x,int y);
-DWORD AnalyseArmyPosition(City* CT,AI_Army* ARM,int xp,int yp){
+unsigned long AnalyseArmyPosition(City* CT,AI_Army* ARM,int xp,int yp){
 	int MaxDang=0;
 	int x=xp>>6;
 	int y=yp>>6;
@@ -4654,14 +4653,14 @@ DWORD AnalyseArmyPosition(City* CT,AI_Army* ARM,int xp,int yp){
 	int ps=0;
 	int nn=0;
 	int Dang=0;
-	DWORD State=0;
+	unsigned long State=0;
 	for(int ix=0;ix<Nx;ix++){
 		for(int iy=0;iy<Ny;iy++){
 			if(nn<NExBrigs){
 				int x1=x0+ix*odis;
 				int y1=y0+iy*odis;
 				CheckTopPos(x,y,&x1,&y1);
-				byte D=GetDangValue(x1>>1,y1>>1);
+				unsigned char D=GetDangValue(x1>>1,y1>>1);
 				if(D>128)State|=AS_SHIPS;
 				else
 				if(D)State|=AS_ARTILLERY;
@@ -4694,8 +4693,8 @@ DWORD AnalyseArmyPosition(City* CT,AI_Army* ARM,int xp,int yp){
 		Endst=4;
 		rmin=2;
 	};
-	DWORD DNG0=GetEnemyForce(MyX,MyY,0,rmin);
-	DWORD DNG=DNG0+GetEnemyForce(MyX,MyY,rmin+1,Endst);
+	unsigned long DNG0=GetEnemyForce(MyX,MyY,0,rmin);
+	unsigned long DNG=DNG0+GetEnemyForce(MyX,MyY,rmin+1,Endst);
 	if(DNG0)State|=AS_BATTLE;
 	int cx=CT->CenterX>>1;
 	int cy=CT->CenterY>>1;
@@ -4707,8 +4706,8 @@ DWORD AnalyseArmyPosition(City* CT,AI_Army* ARM,int xp,int yp){
 	return State|DNG|(MaxDang<<24);
 };
 */
-word GetNextGreCell( byte NI, int F, int Start );
-word GetNextDivCell( byte NI, int F, int Start );
+unsigned short GetNextGreCell( unsigned char NI, int F, int Start );
+unsigned short GetNextDivCell( unsigned char NI, int F, int Start );
 bool HandleArchers( AI_Army* ARM, int R );
 bool CheckArmyDanger( AI_Army* ARM )
 {
@@ -4782,7 +4781,7 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 	//check near army to connect
 	City* CT = ARM->CT;
 	int Na = CT->NDefArms;
-	word *Amid = CT->DefArms;
+	unsigned short *Amid = CT->DefArms;
 	int MyTop = ARM->TopPos;
 	int MTPM = MyTop*NAreas;
 	int NearestGreatArmyTop = -1;
@@ -4850,11 +4849,11 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 		if ( BR&&BR->NMemb )
 		{
 			int N = BR->NMemb;
-			word* Mem = BR->Memb;
-			word* MemSN = BR->MembSN;
+			unsigned short* Mem = BR->Memb;
+			unsigned short* MemSN = BR->MembSN;
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Mem[i];
+				unsigned short MID = Mem[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4940,7 +4939,7 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 		};
 		if ( FinTop != 0xFFFF )
 		{
-			word NextTop = MotionLinks[MyTop*NAreas + FinTop];
+			unsigned short NextTop = MotionLinks[MyTop*NAreas + FinTop];
 			if ( NextTop != 0xFFFF )
 			{
 				Area* AR = TopMap + NextTop;
@@ -4960,7 +4959,7 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 		//if(!FindNearestWall(&Dsx,&Dsy)){
 		//	if(!FindNearestEnemy(0,&Dsx,&Dsy,true))FastExit=true;
 		//};
-		word FTop = GetNextGreCell( ARM->NI, ARM->NExBrigs * 16, MyTop );
+		unsigned short FTop = GetNextGreCell( ARM->NI, ARM->NExBrigs * 16, MyTop );
 		if ( FTop != 0xFFFF )
 		{
 			Area* AR = TopMap + FTop;
@@ -4979,7 +4978,7 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 	{
 		if ( ARM->Spec == 1 )
 		{
-			word FTop = GetNextDivCell( ARM->NI, ARM->NExBrigs * 16, MyTop );
+			unsigned short FTop = GetNextDivCell( ARM->NI, ARM->NExBrigs * 16, MyTop );
 			if ( FTop != 0xFFFF )
 			{
 				Area* AR = TopMap + FTop;
@@ -5013,19 +5012,19 @@ void ArmyMakeBattleLink( AI_Army* ARM )
 		};
 		return;
 	};
-	word Top = GetTopology( Dsx, Dsy );
+	unsigned short Top = GetTopology( Dsx, Dsy );
 	if ( Top == 0xFFFF )
 	{
 		//BR->DeleteBOrder();
 		return;
 	};
-	word Top1 = ARM->TopPos;
+	unsigned short Top1 = ARM->TopPos;
 	if ( Top1 == 0xFFFF )
 	{
 		ARM->DeleteAOrder();
 		return;
 	};
-	word NextTop = MotionLinks[Top1*NAreas + Top];
+	unsigned short NextTop = MotionLinks[Top1*NAreas + Top];
 	if ( NextTop == 0xFFFF )
 	{
 		Area* AR = TopMap + MyTop;;
@@ -5104,7 +5103,7 @@ void ArmyMakeDiversiaLink( AI_Army* ARM )
 	//check near army to connect
 	City* CT = ARM->CT;
 	int Na = CT->NDefArms;
-	word *Amid = CT->DefArms;
+	unsigned short *Amid = CT->DefArms;
 	int MyTop = ARM->TopPos;
 	int HisTop = 0xFFFF;
 	int HisMinDis = 0xFFFF;
@@ -5208,7 +5207,7 @@ void ArmyMakeDiversiaLink( AI_Army* ARM )
 		};
 		return;
 	};
-	word Top;
+	unsigned short Top;
 	if ( HisTop == 0xFFFF )Top = GetTopology( Dsx, Dsy );
 	else Top = HisTop;
 
@@ -5217,13 +5216,13 @@ void ArmyMakeDiversiaLink( AI_Army* ARM )
 		//BR->DeleteBOrder();
 		return;
 	};
-	word Top1 = ARM->TopPos;
+	unsigned short Top1 = ARM->TopPos;
 	if ( Top1 == 0xFFFF )
 	{
 		ARM->DeleteAOrder();
 		return;
 	};
-	word NextTop = MotionLinks[Top1*NAreas + Top];
+	unsigned short NextTop = MotionLinks[Top1*NAreas + Top];
 	if ( NextTop == 0xFFFF || NextTop == MyTop )
 	{
 		Area* AR = TopMap + MyTop;;
@@ -5267,7 +5266,7 @@ void AI_Army::MakeBattle()
 	return;
 }
 
-int  AI_Army::GetAmountOfBrigs( byte Type )
+int  AI_Army::GetAmountOfBrigs( unsigned char Type )
 {
 	int N = 0;
 	for ( int i = 0; i < NExBrigs; i++ )
@@ -5294,7 +5293,7 @@ void SHIP_DIVERSIA( AI_Army* ARM )
 	return;
 }
 
-bool FastSearchGreAttObject( int* x, int* y, int r, byte NI );
+bool FastSearchGreAttObject( int* x, int* y, int r, unsigned char NI );
 
 void AI_Army::SendGrenaders()
 {
@@ -5308,11 +5307,11 @@ void AI_Army::SendGrenaders()
 			{
 				Brigade* BR = ExBrigs[i].Brig;
 				int N = BR->NMemb;
-				word* Mem = BR->Memb;
-				word* MSN = BR->MembSN;
+				unsigned short* Mem = BR->Memb;
+				unsigned short* MSN = BR->MembSN;
 				for ( int j = 0; j < N; j++ )
 				{
-					word MID = Mem[j];
+					unsigned short MID = Mem[j];
 					if ( MID != 0xFFFF )
 					{
 						OneObject* OB = Group[MID];
@@ -5333,18 +5332,18 @@ char* ABIT_Message = "[Army::Bitva]";
 class Army_Bitva :public ArmyOrder
 {
 public:
-	byte BitMask[1024];
-	word Enm[512];
-	word EnSN[512];
-	byte NDang[512];
+	unsigned char BitMask[1024];
+	unsigned short Enm[512];
+	unsigned short EnSN[512];
+	unsigned char NDang[512];
 	int  NEn;
 	int MinX;
 	int MinY;
 	int MaxX;
 	int MaxY;
-	void AddEnemXY( int x, int y, int MyTop, byte msk );
+	void AddEnemXY( int x, int y, int MyTop, unsigned char msk );
 };
-word GetTopFast( int x, int y )
+unsigned short GetTopFast( int x, int y )
 {
 	if ( x >= 0 && y >= 0 && x < TopLx&&y < TopLy )
 	{
@@ -5352,7 +5351,7 @@ word GetTopFast( int x, int y )
 	}
 	else return 0xFFFF;
 };
-void Army_Bitva::AddEnemXY( int x, int y, int MyTop, byte msk )
+void Army_Bitva::AddEnemXY( int x, int y, int MyTop, unsigned char msk )
 {
 	if ( NEn >= 512 || MyTop < 0 || MyTop >= NAreas )return;
 	int x0 = x << 1;
@@ -5386,7 +5385,7 @@ void Army_Bitva::AddEnemXY( int x, int y, int MyTop, byte msk )
 		int NMon = MCount[cell];
 		if ( !NMon )return;
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		for ( int i = 0; i < NMon; i++ )
 		{
 			MID = GetNMSL( ofs1 + i );
@@ -5408,7 +5407,7 @@ void Army_Bitva::AddEnemXY( int x, int y, int MyTop, byte msk )
 						if ( xx > 0 && yy > 0 )
 						{
 							int off = xx + ( yy << TopSH );
-							NDang[NEn] = 0;//byte(((InflMap[off-1]&255)+(InflMap[off+1]&255)+(InflMap[off+TopLx]&255)+(InflMap[off-TopLx]&255))>>2);
+							NDang[NEn] = 0;//unsigned char(((InflMap[off-1]&255)+(InflMap[off+1]&255)+(InflMap[off+TopLx]&255)+(InflMap[off-TopLx]&255))>>2);
 						}
 						else NDang[NEn] = 0;
 						NEn++;
@@ -5419,7 +5418,7 @@ void Army_Bitva::AddEnemXY( int x, int y, int MyTop, byte msk )
 		};
 	};
 };
-word GetDir( int dx, int dy );
+unsigned short GetDir( int dx, int dy );
 void AttackObjLink( OneObject* OBJ );
 void A_BitvaLink( AI_Army* ARM )
 {
@@ -5438,11 +5437,11 @@ void A_BitvaLink( AI_Army* ARM )
 		{
 			Brigade* BR = ARM->ExBrigs[i].Brig;
 			int N = BR->NMemb;
-			word* Mem = BR->Memb;
-			word* MSN = BR->MembSN;
+			unsigned short* Mem = BR->Memb;
+			unsigned short* MSN = BR->MembSN;
 			for ( int j = 0; j < N; j++ )
 			{
-				word MID = Mem[j];
+				unsigned short MID = Mem[j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -5481,9 +5480,9 @@ void A_BitvaLink( AI_Army* ARM )
 	if ( rando() < 2048 )
 	{
 		int N = OR1->NEn;
-		word* Mem = OR1->Enm;
-		word* MSN = OR1->EnSN;
-		byte* ATT = OR1->NDang;
+		unsigned short* Mem = OR1->Enm;
+		unsigned short* MSN = OR1->EnSN;
+		unsigned char* ATT = OR1->NDang;
 		for ( int i = 0; i < N; i++ )
 		{
 			OneObject* OB = Group[Mem[i]];
@@ -5509,7 +5508,7 @@ void A_BitvaLink( AI_Army* ARM )
 	int MinY = OR1->MinY;
 	int Dx = OR1->MaxX - OR1->MinX + 1;
 	int Dy = OR1->MaxY - OR1->MinY + 1;
-	byte msk = 1 << ARM->CT->NI;
+	unsigned char msk = 1 << ARM->CT->NI;
 	for ( int p = 0; p < 25; p++ )
 	{
 		int xx = ( ( int( rando() )*Dx ) >> 15 ) + MinX;
@@ -5522,11 +5521,11 @@ void A_BitvaLink( AI_Army* ARM )
 	{
 		Brigade* BR = ARM->ExBrigs[i].Brig;
 		int N = BR->NMemb;
-		word* Mem = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* Mem = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 		for ( int j = 0; j < N; j++ )
 		{
-			word MID = Mem[j];
+			unsigned short MID = Mem[j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -5537,7 +5536,7 @@ void A_BitvaLink( AI_Army* ARM )
 						//need to find enemy
 						NewMonster* NM = OB->newMons;
 						AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
-						byte mms = NM->KillMask;
+						unsigned char mms = NM->KillMask;
 						int MinR = ADC->MinR_Attack;
 						int MaxR = ADC->MaxR_Attack;
 						int myx = OB->RealX;
@@ -5547,16 +5546,16 @@ void A_BitvaLink( AI_Army* ARM )
 							//search best enemy
 							int NearDist = 1000000;
 							int ReadyDist = 1000000;
-							word NearMID = 0xFFFF;
-							word ReadyMID = 0xFFFF;
+							unsigned short NearMID = 0xFFFF;
+							unsigned short ReadyMID = 0xFFFF;
 							int NEn = OR1->NEn;
-							word* Mem = OR1->Enm;
-							word* MSN = OR1->EnSN;
-							byte* DANG = OR1->NDang;
+							unsigned short* Mem = OR1->Enm;
+							unsigned short* MSN = OR1->EnSN;
+							unsigned char* DANG = OR1->NDang;
 							char mdr = OB->RealDir;
 							for ( int t = 0; t < NEn; t++ )
 							{
-								word MID = Mem[t];
+								unsigned short MID = Mem[t];
 								OneObject* EOB = Group[MID];
 								int dan = DANG[t];
 								NewMonster* ENM = NULL;
@@ -5681,11 +5680,11 @@ void AI_Army::Bitva()
 	{
 		Brigade* BR = ExBrigs[i].Brig;
 		int N = BR->NMemb;
-		word* Mem = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* Mem = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 		for ( int j = 0; j < N; j++ )
 		{
-			word MID = Mem[j];
+			unsigned short MID = Mem[j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -5701,7 +5700,7 @@ void AI_Army::Bitva()
 			};
 		};
 	};
-	byte msk = 1 << CT->NI;
+	unsigned char msk = 1 << CT->NI;
 	if ( MaxX >= MinX )
 	{
 		MinX -= 6;
@@ -5735,15 +5734,15 @@ void AI_Army::Bitva()
 //1.Erase mines of enemy
 //2.Erase small groups of units
 //3.Erase any capturable objects
-int FindStrongestUnitInCell( int cell, int* MinStrength, byte NAT )
+int FindStrongestUnitInCell( int cell, int* MinStrength, unsigned char NAT )
 {
 	cell += VAL_MAXCX + 1;
 	int strength = *MinStrength;
 	int NMon = MCount[cell];
 	if ( !NMon )return 0xFFFF;
 	int ofs1 = cell << SHFCELL;
-	word MID;
-	word BestMID = 0xFFFF;
+	unsigned short MID;
+	unsigned short BestMID = 0xFFFF;
 	int N = 0;
 	for ( int i = 0; i < NMon; i++ )
 	{
@@ -5765,10 +5764,10 @@ int FindStrongestUnitInCell( int cell, int* MinStrength, byte NAT )
 	*MinStrength = strength;
 	return BestMID;
 };
-int FindStrongestUnit( int x, int y, byte NAT )
+int FindStrongestUnit( int x, int y, unsigned char NAT )
 {
 	int cell = ( y << ( VAL_SHFCX + 1 ) ) + x + x;
-	word MID = 0xFFFF;
+	unsigned short MID = 0xFFFF;
 	if ( cell >= 0 )
 	{
 		int Stren = 0;
@@ -5787,17 +5786,17 @@ char* ADIV_Message = "[AI_Army::Diversion]";
 class DiversionOrder :public ArmyOrder
 {
 public:
-	word EnMID;
-	byte MotionMethod;
-	word NextTop;
-	word Prev1Top;
-	word Prev2Top;
-	word Prev3Top;
+	unsigned short EnMID;
+	unsigned char MotionMethod;
+	unsigned short NextTop;
+	unsigned short Prev1Top;
+	unsigned short Prev2Top;
+	unsigned short Prev3Top;
 	int  LastEnemyTime;
 };
 int GetAmountOfProtectors( OneObject* OBJ );
-word GetNearestDefender( OneObject* OB );
-word GetNextSafeCell( byte NI, int F, int start, int Fin );
+unsigned short GetNearestDefender( OneObject* OB );
+unsigned short GetNextSafeCell( unsigned char NI, int F, int start, int Fin );
 int LastRND = 0;
 void A_DiversiaLink( AI_Army* ARM )
 {
@@ -5805,8 +5804,8 @@ void A_DiversiaLink( AI_Army* ARM )
 	LastRND = rando();
 	//assert(LastRND!=5021);
 	DiversionOrder* OR1 = (DiversionOrder*) ARM->AOrder;
-	word EnMID = OR1->EnMID;
-	byte MMet = OR1->MotionMethod;
+	unsigned short EnMID = OR1->EnMID;
+	unsigned char MMet = OR1->MotionMethod;
 	if ( !ARM->NExBrigs )
 	{
 		ARM->ClearArmy();
@@ -5825,9 +5824,9 @@ void A_DiversiaLink( AI_Army* ARM )
 		int Enx = 0, Eny = 0;
 		if ( EnMID == 0xFFFF || tmtmt - OR1->LastEnemyTime > 100 )
 		{
-			word BestMid = 0xFFFF;
+			unsigned short BestMid = 0xFFFF;
 
-			word Mid[5];
+			unsigned short Mid[5];
 			int  RMid[5];
 			for ( int i = 0; i < 5; i++ )
 			{
@@ -5868,11 +5867,11 @@ void A_DiversiaLink( AI_Army* ARM )
 				//2.Search units to capture
 				int N = NtNUnits[0];
 				int NZero = 0;
-				byte mask = 1 << ARM->NI;
-				word* EnMids = NatList[0];
+				unsigned char mask = 1 << ARM->NI;
+				unsigned short* EnMids = NatList[0];
 				for ( int MID = 0; MID < MAXOBJECT; MID++ )
 				{
-					//word MID=EnMids[i];
+					//unsigned short MID=EnMids[i];
 					OneObject* OB = Group[MID];
 					if ( OB && ( !OB->Sdoxlo ) && ( !OB->NMask&mask ) && ( OB->newMons->Capture || !OB->Ready ) )
 					{
@@ -5949,7 +5948,7 @@ void A_DiversiaLink( AI_Army* ARM )
 					if ( HimTop == MyTop )NextTop = MyTop;
 					if ( NextTop == MyTop )
 					{
-						word MID = GetNearestDefender( EOB );
+						unsigned short MID = GetNearestDefender( EOB );
 						if ( MID == 0xFFFF )
 						{
 							//now we can capture object
@@ -5959,8 +5958,8 @@ void A_DiversiaLink( AI_Army* ARM )
 							{
 								Brigade* BR = ARM->ExBrigs[i].Brig;
 								int N = BR->NMemb;
-								word* Memb = BR->Memb;
-								word* MSN = BR->MembSN;
+								unsigned short* Memb = BR->Memb;
+								unsigned short* MSN = BR->MembSN;
 								for ( int j = 0; j < N&&NoSent; j++ )
 								{
 									OneObject* OB = Group[Memb[j]];
@@ -5980,8 +5979,8 @@ void A_DiversiaLink( AI_Army* ARM )
 							{
 								Brigade* BR = ARM->ExBrigs[i].Brig;
 								int N = BR->NMemb;
-								word* Memb = BR->Memb;
-								word* MSN = BR->MembSN;
+								unsigned short* Memb = BR->Memb;
+								unsigned short* MSN = BR->MembSN;
 								for ( int j = 0; j < N; j++ )
 								{
 									OneObject* OB = Group[Memb[j]];
@@ -6036,10 +6035,10 @@ void A_DiversiaLink( AI_Army* ARM )
 						int NL = AR->NLinks;
 						int MaxDis = 0;
 						int BestTop = 0xFFFF;
-						word* LINKS = AR->Link;
+						unsigned short* LINKS = AR->Link;
 						for ( int k = 0; k < NL; k++ )
 						{
-							word AIID = LINKS[k + k];
+							unsigned short AIID = LINKS[k + k];
 							int ds1 = LinksDist[AIID + ThemTop*NAreas];
 							if ( ds1 != 0xFFFF && ds1 > MaxDis )
 							{
@@ -6071,8 +6070,8 @@ void A_DiversiaLink( AI_Army* ARM )
 		{
 			Brigade* BR = ARM->ExBrigs[i].Brig;
 			int N = BR->NMemb;
-			word* Memb = BR->Memb;
-			word* MSN = BR->MembSN;
+			unsigned short* Memb = BR->Memb;
+			unsigned short* MSN = BR->MembSN;
 			for ( int j = 0; j < N; j++ )
 			{
 				OneObject* OB = Group[Memb[j]];
@@ -6102,7 +6101,7 @@ void AI_Army::Diversia()
 	SpecialOrder = true;
 };
 
-byte MaxDiver[18] = { 5,8,12,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15 };
+unsigned char MaxDiver[18] = { 5,8,12,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15 };
 void CheckDiversants( City* CT )
 {
 	if ( !CT->Difficulty )return;
@@ -6110,8 +6109,8 @@ void CheckDiversants( City* CT )
 	if ( CT->MyIsland != CITY[0].MyIsland )AGRESS = &CT->Settlers;
 	int NDivers = 0;
 	int N = CT->Agressors.NMemb;
-	word* Mem = CT->Agressors.Memb;
-	word* MSN = CT->Agressors.MembSN;
+	unsigned short* Mem = CT->Agressors.Memb;
+	unsigned short* MSN = CT->Agressors.MembSN;
 	for ( int i = 0; i < N; i++ )
 	{
 		OneObject* OB = Group[Mem[i]];
@@ -6170,7 +6169,7 @@ void SmartGamer( City* CT )
 				if ( CT->NDefArms >= CT->MaxDefArms )
 				{
 					CT->MaxDefArms += 64;
-					CT->DefArms = (word*) realloc( CT->DefArms, CT->MaxDefArms << 1 );
+					CT->DefArms = (unsigned short*) realloc( CT->DefArms, CT->MaxDefArms << 1 );
 				};
 				CT->DefArms[CT->NDefArms] = Aind;
 				CT->NDefArms++;
@@ -6191,7 +6190,7 @@ void SmartGamer( City* CT )
 				if ( CT->NDefArms >= CT->MaxDefArms )
 				{
 					CT->MaxDefArms += 64;
-					CT->DefArms = (word*) realloc( CT->DefArms, CT->MaxDefArms << 1 );
+					CT->DefArms = (unsigned short*) realloc( CT->DefArms, CT->MaxDefArms << 1 );
 				};
 				CT->DefArms[CT->NDefArms] = Aind;
 				CT->NDefArms++;
@@ -6213,16 +6212,16 @@ void SmartGamer( City* CT )
 		int N = NtNUnits[NNUM];
 		int NArm = GNFO.EINF[NNUM]->GAINF.NArmy;
 		ArmyInfo* AIN = GNFO.EINF[NNUM]->GAINF.AINF;
-		word* units = NatList[NNUM];
+		unsigned short* units = NatList[NNUM];
 		int NDanger = 0;
-		byte UseFlags[512];
+		unsigned char UseFlags[512];
 		memset( UseFlags, 0, sizeof UseFlags );
-		word Danger[128];
+		unsigned short Danger[128];
 		if ( N )
 		{
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = units[i];
+				unsigned short MID = units[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -6271,12 +6270,12 @@ void AI_Army::ClearZombi()
 	for ( int i = 0; i < NExBrigs; i++ )
 	{
 		Brigade* BR = ExBrigs[i].Brig;
-		word* Mem = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* Mem = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 		int N = BR->NMemb;
 		for ( int j = 0; j < N; j++ )
 		{
-			word MID = Mem[j];
+			unsigned short MID = Mem[j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -6290,12 +6289,12 @@ void AI_Army::SetZombi()
 	for ( int i = 0; i < NExBrigs; i++ )
 	{
 		Brigade* BR = ExBrigs[i].Brig;
-		word* Mem = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* Mem = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 		int N = BR->NMemb;
 		for ( int j = 0; j < N; j++ )
 		{
-			word MID = Mem[j];
+			unsigned short MID = Mem[j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -6325,7 +6324,7 @@ int CheckPositionForDanger( int x, int y, int z )
 	};
 	return 0;
 };
-byte GetDangValue( int x, int y );
+unsigned char GetDangValue( int x, int y );
 int FastCheckPosDanger( int x, int y )
 {
 	if ( x > 0 && y > 0 && x < TopLx&&y < TopLx )
@@ -6426,7 +6425,7 @@ int GetTopDistance( int xa, int ya, int xb, int yb )
 };
 
 
-bool SearchGreAttObject( int* x, int* y, int count, byte NI )
+bool SearchGreAttObject( int* x, int* y, int count, unsigned char NI )
 {
 	int MinTopR = 10000000;
 	int xb = 0, yb = 0;
@@ -6477,7 +6476,7 @@ bool SearchGreAttObject( int* x, int* y, int count, byte NI )
 	}
 }
 
-bool FastSearchGreAttObject( int* x, int* y, int count, byte NI )
+bool FastSearchGreAttObject( int* x, int* y, int count, unsigned char NI )
 {
 	int rr = tmtmt % count;
 	int MinTopR = 10000000;
@@ -6555,11 +6554,11 @@ AI_Army* GetNearestArmy( int x, int y, City* CT )
 	}
 }
 
-word SearchVictim( OneObject* OBJ, int R0, int R1 );
+unsigned short SearchVictim( OneObject* OBJ, int R0, int R1 );
 
 void GrenaderSupermanLink( OneObject* OBJ )
 {
-	word vic = SearchVictim( OBJ, 0, 250 );
+	unsigned short vic = SearchVictim( OBJ, 0, 250 );
 	EnemyInfo* EIN = GNFO.EINF[OBJ->NNUM];
 
 	if ( !EIN )
@@ -6672,7 +6671,7 @@ void GrenaderSuperman( OneObject* OB )
 		return;
 	}
 
-	byte use = OB->newMons->Usage;
+	unsigned char use = OB->newMons->Usage;
 
 	if ( use != GrenaderID || use != ArcherID )
 	{
@@ -6717,13 +6716,13 @@ void GrenaderSuperman( OneObject* OB )
 	}
 }
 
-void DeleteFromGroups( byte NI, word ID )
+void DeleteFromGroups( unsigned char NI, unsigned short ID )
 {
 	City* CT = CITY + NI;
 	int N = CT->NGroups;
 	for ( int i = 0; i < N; i++ )
 	{
-		word* GRP = CT->GroupsSet[i];
+		unsigned short* GRP = CT->GroupsSet[i];
 		int NG = CT->NGroupsInSet[i];
 		for ( int j = 0; j < NG; j++ )
 		{
@@ -6756,23 +6755,23 @@ void DeleteFromGroups( byte NI, word ID )
 	}
 }
 
-void UnGroupSelectedUnits( byte NI )
+void UnGroupSelectedUnits( unsigned char NI )
 {
-	word FormsIDS[256];
+	unsigned short FormsIDS[256];
 	int NForms = 0;
 	int N = NSL[NI];
-	word* SID = Selm[NI];
-	word* SNS = SerN[NI];
+	unsigned short* SID = Selm[NI];
+	unsigned short* SNS = SerN[NI];
 	City* CT = CITY + NatRefTBL[NI];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SID[i];
+		unsigned short MID = SID[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SNS[i] && OB->BrigadeID != 0xFFFF && !OB->Sdoxlo )
 			{
-				word BID = OB->BrigadeID;
+				unsigned short BID = OB->BrigadeID;
 				for ( int p = 0; p < NForms; p++ )
 				{
 					if ( FormsIDS[p] == BID )BID = 0xFFFF;
@@ -6793,23 +6792,23 @@ void UnGroupSelectedUnits( byte NI )
 	}
 }
 
-void GroupSelectedFormations( byte NI )
+void GroupSelectedFormations( unsigned char NI )
 {
-	word FormsIDS[256];
+	unsigned short FormsIDS[256];
 	int NForms = 0;
 	int N = NSL[NI];
-	word* SID = Selm[NI];
-	word* SNS = SerN[NI];
+	unsigned short* SID = Selm[NI];
+	unsigned short* SNS = SerN[NI];
 	City* CT = CITY + NatRefTBL[NI];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SID[i];
+		unsigned short MID = SID[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SNS[i] && OB->BrigadeID != 0xFFFF && !OB->Sdoxlo )
 			{
-				word BID = OB->BrigadeID;
+				unsigned short BID = OB->BrigadeID;
 				for ( int p = 0; p < NForms; p++ )
 				{
 					if ( FormsIDS[p] == BID )
@@ -6834,34 +6833,34 @@ void GroupSelectedFormations( byte NI )
 
 	if ( NForms )
 	{
-		CT->GroupsSet = (word**) realloc( CT->GroupsSet, CT->NGroups * 4 + 4 );
-		CT->NGroupsInSet = (word*) realloc( CT->NGroupsInSet, CT->NGroups * 2 + 2 );
-		CT->GroupsSet[CT->NGroups] = new word[NForms];
+		CT->GroupsSet = (unsigned short**) realloc( CT->GroupsSet, CT->NGroups * 4 + 4 );
+		CT->NGroupsInSet = (unsigned short*) realloc( CT->NGroupsInSet, CT->NGroups * 2 + 2 );
+		CT->GroupsSet[CT->NGroups] = new unsigned short[NForms];
 		memcpy( CT->GroupsSet[CT->NGroups], FormsIDS, NForms * 2 );
 		CT->NGroupsInSet[CT->NGroups] = NForms;
 		CT->NGroups++;
 	}
 }
 
-void ImSelBrigade( byte NI, byte Type, int ID );
+void ImSelBrigade( unsigned char NI, unsigned char Type, int ID );
 
-void CorrectImSelectionInGroups( byte NI )
+void CorrectImSelectionInGroups( unsigned char NI )
 {
-	word FormsIDS[256];
+	unsigned short FormsIDS[256];
 	int NForms = 0;
 	int N = ImNSL[NI];
-	word* SID = ImSelm[NI];
-	word* SNS = ImSerN[NI];
+	unsigned short* SID = ImSelm[NI];
+	unsigned short* SNS = ImSerN[NI];
 	City* CT = CITY + NatRefTBL[NI];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SID[i];
+		unsigned short MID = SID[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SNS[i] && OB->BrigadeID != 0xFFFF && !OB->Sdoxlo )
 			{
-				word BID = OB->BrigadeID;
+				unsigned short BID = OB->BrigadeID;
 
 				for ( int p = 0; p < NForms; p++ )
 				{
@@ -6880,16 +6879,16 @@ void CorrectImSelectionInGroups( byte NI )
 	int N3 = NForms;
 	for ( int i = 0; i < N3; i++ )
 	{
-		word ID = FormsIDS[i];
+		unsigned short ID = FormsIDS[i];
 		for ( int j = 0; j < CT->NGroups; j++ )
 		{
 			int N1 = CT->NGroupsInSet[j];
-			word* IDS = CT->GroupsSet[j];
+			unsigned short* IDS = CT->GroupsSet[j];
 			for ( int p = 0; p < N1; p++ )if ( IDS[p] == ID )
 			{
 				for ( int v = 0; v < N1; v++ )
 				{
-					word ID1 = IDS[v];
+					unsigned short ID1 = IDS[v];
 
 					for ( int z = 0; z < NForms; z++ )
 					{
@@ -6912,14 +6911,14 @@ void CorrectImSelectionInGroups( byte NI )
 	}
 }
 
-bool CheckGroupPossibility( byte NI )
+bool CheckGroupPossibility( unsigned char NI )
 {
-	word* SID = ImSelm[NI];
-	word* SNS = ImSerN[NI];
+	unsigned short* SID = ImSelm[NI];
+	unsigned short* SNS = ImSerN[NI];
 	int N = ImNSL[NI];
 	for ( int j = 0; j < N; j++ )
 	{
-		word MID = SID[j];
+		unsigned short MID = SID[j];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -6936,23 +6935,23 @@ bool CheckGroupPossibility( byte NI )
 	return true;
 }
 
-bool CheckUnGroupPossibility( byte NI )
+bool CheckUnGroupPossibility( unsigned char NI )
 {
-	word FormsIDS[256];
+	unsigned short FormsIDS[256];
 	int NForms = 0;
 	int N = ImNSL[NI];
-	word* SID = ImSelm[NI];
-	word* SNS = ImSerN[NI];
+	unsigned short* SID = ImSelm[NI];
+	unsigned short* SNS = ImSerN[NI];
 	City* CT = CITY + NatRefTBL[NI];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SID[i];
+		unsigned short MID = SID[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SNS[i] && OB->BrigadeID != 0xFFFF && !OB->Sdoxlo )
 			{
-				word BID = OB->BrigadeID;
+				unsigned short BID = OB->BrigadeID;
 				for ( int p = 0; p < NForms; p++ )if ( FormsIDS[p] == BID )BID = 0xFFFF;
 				if ( BID != 0xFFFF && NForms < 256 )
 				{
@@ -6968,8 +6967,8 @@ bool CheckUnGroupPossibility( byte NI )
 		bool FOUND = 1;
 		for ( int j = 0; j < NForms; j++ )
 		{
-			word ID = FormsIDS[j];
-			word* CIDS = CT->GroupsSet[i];
+			unsigned short ID = FormsIDS[j];
+			unsigned short* CIDS = CT->GroupsSet[i];
 			int N2 = CT->NGroupsInSet[i];
 			bool OK = false;
 			for ( int p = 0; p < N2; p++ )if ( CIDS[p] == ID )OK = true;
@@ -7025,13 +7024,13 @@ bool CheckWallForKilling( OneObject* OB )
 	else return false;
 }
 
-int GetBestVictimForArchers( byte NI, int x, int y, int R, int MyTop )
+int GetBestVictimForArchers( unsigned char NI, int x, int y, int R, int MyTop )
 {
 	if ( MyTop < 0 || MyTop >= NAreas )
 		return 0xFFFF;
 
 	char ARRAY[64 * 64];
-	word BESTID[64 * 64];
+	unsigned short BESTID[64 * 64];
 
 	memset( ARRAY, 0, sizeof ARRAY );
 	memset( BESTID, 0xFF, sizeof BESTID );
@@ -7042,7 +7041,7 @@ int GetBestVictimForArchers( byte NI, int x, int y, int R, int MyTop )
 	int maxy = ( y + 1024 - 64 ) << 4;
 	int x0 = ( x - 1024 ) << 4;
 	int y0 = ( y - 1024 ) << 4;
-	byte Mask = 1 << NI;
+	unsigned char Mask = 1 << NI;
 
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
@@ -7082,7 +7081,7 @@ int GetBestVictimForArchers( byte NI, int x, int y, int R, int MyTop )
 						{
 							if ( !( OB->NMask&Mask ) )
 							{
-								byte use = OB->newMons->Usage;
+								unsigned char use = OB->newMons->Usage;
 								if ( use == TowerID || use == MineID || use == CenterID )
 								{
 									ARRAY[ofs] += 50;
@@ -7204,7 +7203,7 @@ int GetBestVictimForArchers( byte NI, int x, int y, int R, int MyTop )
 
 bool HandleArchers( AI_Army* ARM, int R )
 {
-	word ARCHID[512];
+	unsigned short ARCHID[512];
 	int NARCH = 0;
 	int N = ARM->NExBrigs;
 	int xc = 0;
@@ -7217,12 +7216,12 @@ bool HandleArchers( AI_Army* ARM, int R )
 	{
 		Brigade* BR = ARM->ExBrigs[i].Brig;
 		int NM = BR->NMemb;
-		word* MEM = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* MEM = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 
 		for ( int v = 0; v < NM; v++ )
 		{
-			word MID = MEM[v];
+			unsigned short MID = MEM[v];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -7256,7 +7255,7 @@ bool HandleArchers( AI_Army* ARM, int R )
 	{
 		XCT /= NCT;
 		YCT /= NCT;
-		word ID = GetBestVictimForArchers( ARM->NI, XCT, YCT, R, ARM->TopPos );
+		unsigned short ID = GetBestVictimForArchers( ARM->NI, XCT, YCT, R, ARM->TopPos );
 		if ( ID != 0xFFFF )
 		{
 			for ( int i = 0; i < NARCH; i++ )

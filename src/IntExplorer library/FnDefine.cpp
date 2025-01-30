@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include <assert.h>
@@ -424,9 +425,9 @@ bool ADI_Edit( sicExplorer* SXP, DialogsSystem* DSS, int* x, int* y, int* x1, in
 struct PingST
 {
 	TextButton* TB;
-	DWORD IP;
+	unsigned long IP;
 };
-int GETPING( DWORD IP );
+int GETPING( unsigned long IP );
 //#ping[%...](%...[...],IP_DWORD)
 void ProcPing( sicExplorer* SXP, void* PData, int size )
 {
@@ -1292,7 +1293,7 @@ void ShowPixString( sicExplorer* SXP, int x, int y, int x1, int Ly, RLCFont* F, 
 	PopWindow( &TW );
 }
 
-int GETPING( DWORD IP );
+int GETPING( unsigned long IP );
 void Draw_DBTBL( int x, int y, int Lx, int Ly, int Index, byte Active, int param )
 {
 	ADI_DBTBL* TBL = (ADI_DBTBL*) param;
@@ -2025,7 +2026,7 @@ bool ADI_Time( sicExplorer* SXP, DialogsSystem* DSS, int* x, int* y, int* x1, in
 };
 //-----------------------------MAP CONTROL------------------------//
 //#map[...](%...[...],{MAPID}{sendcom})
-void DrawMap( int x, int y, int Lx, int Ly, int Index, byte Active, int param )
+void DrawMap( int x, int y, int Lx, int Ly, int Index, unsigned char Active, int param )
 {
 	BIGMAP.WX = x;
 	BIGMAP.WY = y;
@@ -2138,10 +2139,10 @@ bool ADI_ftxt( sicExplorer* SXP, DialogsSystem* DSS, int* x, int* y, int* x1, in
 	{
 		RClose( F );
 		TextViewer* TV = DSS->addTextViewer( nullptr, *x, *y, ( *x1 ) - ( *x ) + 1, 100000, ccc, PFONT );
-		word SSIZE = TV->SymSize;
+		unsigned short SSIZE = TV->SymSize;
 		if (NParam > 1)
 		{
-			SSIZE += (word) atoi( Param[1] );
+			SSIZE += (unsigned short) atoi( Param[1] );
 			TV->SymSize = SSIZE;
 		};
 		*y1 = *y + TV->NLines*SSIZE;
@@ -2222,7 +2223,7 @@ void FileClickProc( char** strs, int nstr )
 				strcpy( FL, strs[1] );
 			};
 };
-#define ADDFL(name,com) if(cstr)fprintf(F,mask,cstr,BoxID,cstr-1,DWORD(FileClickProc),com,name);else fprintf(F,mask0,BoxID,DWORD(FileClickProc),com,name);
+#define ADDFL(name,com) if(cstr)fprintf(F,mask,cstr,BoxID,cstr-1,(unsigned long)(FileClickProc),com,name);else fprintf(F,mask0,BoxID,(unsigned long)(FileClickProc),com,name);
 void EnumFilesInDirectory( char* Dir, char** Mask, int NMasks, char* FrameID, char* BoxID )
 {
 	char tmp[512];
@@ -2243,7 +2244,7 @@ void EnumFilesInDirectory( char* Dir, char** Mask, int NMasks, char* FrameID, ch
 	{
 		sprintf( way, "%s\\%s", tmp, Mask[i] );
 		WIN32_FIND_DATA FD;
-		HANDLE H = FindFirstFile( way, &FD );
+		void* H = FindFirstFile( way, &FD );
 		if (H != INVALID_HANDLE_VALUE)
 		{
 			do

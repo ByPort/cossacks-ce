@@ -50,7 +50,7 @@ void GlobalEnemyInfo::Setup() {
 
 	for (int i = 0;i < MAXPLAY; i++)if (NATIONS[i].ThereWasUnit || NtNUnits[i]) {
 		if (!EINF[i]) {
-			byte ms = NATIONS[i].NMask;
+			unsigned char ms = NATIONS[i].NMask;
 			EnemyInfo* EIN = new EnemyInfo;
 			EIN->ALLOCATE();
 			EIN->Mask = ms;
@@ -123,9 +123,9 @@ void GlobalEnemyInfo::Process() {
 };
 int GetTopology(int x, int y);
 extern City CITY[8];
-bool GlobalEnemyInfo::FindNearestEnemy(byte NNUM, int* x, int* y, bool TowerFear, int Min, bool Defence) {
+bool GlobalEnemyInfo::FindNearestEnemy(unsigned char NNUM, int* x, int* y, bool TowerFear, int Min, bool Defence) {
 	if (PeaceTimeLeft || !(EINF[NNUM] && CITY[NNUM].CenterFound))return false;
-	byte ms = EINF[NNUM]->Mask;
+	unsigned char ms = EINF[NNUM]->Mask;
 	int xx = *x;
 	int yy = *y;
 	int MyTop = GetTopology(xx, yy);
@@ -221,7 +221,7 @@ GlobalEnemyInfo GNFO;
 void EnemyInfo::CreateListOfDangerObjects() {
 	CreateWallsList();
 	NDINF = 0;
-	byte msk = Mask;
+	unsigned char msk = Mask;
 	DangerInfo* DF = DINF;
 	for (int MID = 0; MID < MAXOBJECT; MID++) {
 		OneObject* OB = Group[MID];
@@ -250,20 +250,20 @@ void EnemyInfo::InitSuperMortiraCells() {
 	memset(SupMortBestID, 0xFF, MAXCIOFS * 2);
 	memset(SupMortLastTime, 0, MAXCIOFS * 2);
 };
-word EnemyInfo::ResearchCellForSupermortira(int cell, int MinDistance, int MaxDistance) {
-	word ct = word(tmtmt);
+unsigned short EnemyInfo::ResearchCellForSupermortira(int cell, int MinDistance, int MaxDistance) {
+	unsigned short ct = unsigned short(tmtmt);
 	MinDistance <<= 4;
 	MaxDistance <<= 4;
 	int x0 = (int(cell&(VAL_MAXCX - 1)) << 11) + (64 * 16);
 	int y0 = (int(cell >> VAL_SHFCX) << 11) + (64 * 16);
 	int BESTR = 100000 * 16;
-	word BESTMID = 0xFFFF;
+	unsigned short BESTMID = 0xFFFF;
 	if (ct - SupMortLastTime[cell] > 129) {
 		//need the new research
 		//search the tower
 		for (int i = 0; i < NDINF; i++) {
-			word MID = DINF[i].ID;
-			word SN = DINF[i].SN;
+			unsigned short MID = DINF[i].ID;
+			unsigned short SN = DINF[i].SN;
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB&&OB->Serial == SN && !OB->Sdoxlo) {
@@ -278,12 +278,12 @@ word EnemyInfo::ResearchCellForSupermortira(int cell, int MinDistance, int MaxDi
 		if (BESTMID == 0xFFFF) {
 			//search other building
 			for (int i = 0; i < NEnmBuild; i++) {
-				word MID = EnmBuildList[i];
-				word SN = EnmBuildSN[i];
+				unsigned short MID = EnmBuildList[i];
+				unsigned short SN = EnmBuildSN[i];
 				if (MID != 0xFFFF) {
 					OneObject* OB = Group[MID];
 					if (OB&&OB->Serial == SN && !OB->Sdoxlo) {
-						byte use = OB->newMons->Usage;
+						unsigned char use = OB->newMons->Usage;
 						if (use != SkladID&&use != MelnicaID) {
 							int R = Norma(OB->RealX - x0, OB->RealY - y0);
 							if (R > MinDistance&&R < MaxDistance&&R < BESTR) {
@@ -326,7 +326,7 @@ word EnemyInfo::ResearchCellForSupermortira(int cell, int MinDistance, int MaxDi
 	};
 };
 int GetTopDistance(int xa, int ya, int xb, int yb);
-word EnemyInfo::SearchDangerousPlaceForEnemy(int* utx, int* uty, int MINR, int MAXR) {
+unsigned short EnemyInfo::SearchDangerousPlaceForEnemy(int* utx, int* uty, int MINR, int MAXR) {
 	if (!NAreas)return 0xFFFF;
 	int tx = *utx;
 	int ty = *uty;
@@ -345,7 +345,7 @@ word EnemyInfo::SearchDangerousPlaceForEnemy(int* utx, int* uty, int MINR, int M
 				int cell1 = xx + (yy << VAL_SHFCX);
 				if (ProtectionMap[cell1] & 128) {
 					//it is safe for me
-					word MID = ResearchCellForSupermortira(cell1, MINR, MAXR);
+					unsigned short MID = ResearchCellForSupermortira(cell1, MINR, MAXR);
 					if (MID != 0xFFFF) {
 						//checking blocking
 						int cx2 = xx << 3;
@@ -452,7 +452,7 @@ bool EnemyInfo::FindSafePlace(int* utx, int* uty) {
 	};
 	return false;
 };
-word EnemyInfo::SearchBestEnemyAndPlaceForSupermortira(OneObject* OB, int* BestX, int* BestY) {
+unsigned short EnemyInfo::SearchBestEnemyAndPlaceForSupermortira(OneObject* OB, int* BestX, int* BestY) {
 	int cx = OB->RealX >> 11;
 	int cy = OB->RealY >> 11;
 	if (cx < 0 || cx >= VAL_MAXCX || cy < 0 || cy >= VAL_MAXCX) {
@@ -469,7 +469,7 @@ word EnemyInfo::SearchBestEnemyAndPlaceForSupermortira(OneObject* OB, int* BestX
 	int MAXR = ADC->AttackRadius2[0];
 	//Can I shot now?
 	if (SAFETY) {
-		word MID = ResearchCellForSupermortira(cell, MINR, MAXR - 64);
+		unsigned short MID = ResearchCellForSupermortira(cell, MINR, MAXR - 64);
 		if (MID != 0xFFFF) {
 			*BestX = OB->RealX;
 			*BestY = OB->RealY;
@@ -479,7 +479,7 @@ word EnemyInfo::SearchBestEnemyAndPlaceForSupermortira(OneObject* OB, int* BestX
 	int tx = OB->RealX >> 10;
 	int ty = OB->RealY >> 10;
 	//need to search safe for me and dangerous for the enemy position
-	word MID = SearchDangerousPlaceForEnemy(&tx, &ty, MINR, MAXR - 64);
+	unsigned short MID = SearchDangerousPlaceForEnemy(&tx, &ty, MINR, MAXR - 64);
 	if (MID != 0xFFFF) {
 		*BestX = (tx << 10) + (rando() & 1023);
 		*BestY = (ty << 10) + (rando() & 1023);
@@ -491,7 +491,7 @@ word EnemyInfo::SearchBestEnemyAndPlaceForSupermortira(OneObject* OB, int* BestX
 };
 void EnemyInfo::CreateEnmBuildList() {
 	NEnmBuild = 0;
-	byte msk = Mask;
+	unsigned char msk = Mask;
 	for (int MID = 0; MID < MAXOBJECT&&NEnmBuild < 128; MID++) {
 		OneObject* OB = Group[MID];
 		if (OB && (!(OB->NMask&msk)) && OB->NewBuilding && !OB->Wall) {
@@ -505,7 +505,7 @@ void EnemyInfo::CreateEnmBuildList() {
 	};
 };
 void EnemyInfo::CreateProtectionMap() {
-	byte MASK = 0xFE;
+	unsigned char MASK = 0xFE;
 	memset(ProtectionMap, 0, MAXCIOFS);
 	for (int i = 0; i < MAXOBJECT; i++) {
 		OneObject* OB = Group[i];
@@ -600,15 +600,15 @@ void EnemyInfo::InitInflMap() {
 };
 void EnemyInfo::ClearTow(OneObject* OB) {
 	//return;
-	word MID = OB->Index;
+	unsigned short MID = OB->Index;
 	int maxtx = msx >> 1;
 	int maxty = msy >> 1;
 	for (int i = 0; i < NTows; i++) {
 		if (TowsID[i] == MID&&TowsSN[i] == OB->Serial) {
 			int cx = OB->RealX >> 10;
 			int cy = OB->RealY >> 10;
-			DWORD msk = 1 << (i + 8);
-			DWORD amsk = ~msk;
+			unsigned long msk = 1 << (i + 8);
+			unsigned long amsk = ~msk;
 			amsk &= 0xFFFFFF00;
 			/*
 			int LL=TopLx*TopLx;
@@ -627,7 +627,7 @@ void EnemyInfo::ClearTow(OneObject* OB) {
 					int y1 = cy + yi[p];
 					if (x1 >= 0 && y1 >= 0 && x1 < maxtx&&y1 < maxty) {
 						int ofst = x1 + (y1 << TopSH);
-						DWORD dat = InflMap[ofst];
+						unsigned long dat = InflMap[ofst];
 						if (dat&msk) {
 							InflMap[ofst] = ((dat & 255) - ddang) + (dat&amsk);
 						};
@@ -656,7 +656,7 @@ void EnemyInfo::AddTow(OneObject* OB) {
 			TowsMaxR[i] = 0;
 			TowDanger[i] = 0;
 			//checking for existance
-			word idx = OB->Index;
+			unsigned short idx = OB->Index;
 			int N = 0;
 			for (int j = 0; j < NTows; j++) {
 				if (TowsID[i] == idx)N++;
@@ -688,8 +688,8 @@ void EnemyInfo::ProcessTow() {
 	int maxtx = msx >> 1;
 	int maxty = msy >> 1;
 
-	DWORD msk = 1 << (CurTow + 8);
-	DWORD amsk = (~msk) & 0xFFFFFF00;
+	unsigned long msk = 1 << (CurTow + 8);
+	unsigned long amsk = (~msk) & 0xFFFFFF00;
 	int ddam = TowDanger[CurTow];
 	int ncp = 0;
 	do {
@@ -739,7 +739,7 @@ void EnemyInfo::ProcessTow() {
 				int y1 = yc + yi[p];
 				if (x1 >= 0 && y1 >= 0 && x1 < maxtx&&y1 < maxty) {
 					int ofst = x1 + (y1 << TopSH);
-					DWORD dat = InflMap[ofst];
+					unsigned long dat = InflMap[ofst];
 					if (dat&msk) {
 						InflMap[ofst] = ((dat & 255) + CurDang - ddam) + (dat & 0xFFFFFF00);
 					};
@@ -755,7 +755,7 @@ void EnemyInfo::ProcessTow() {
 	if (rando() < 512) {
 		int N = TopLx*TopLx;
 		for (int i = 0; i < N; i++) {
-			DWORD C = InflMap[i];
+			unsigned long C = InflMap[i];
 			if ((C & 255) == C)InflMap[i] = 0;
 		};
 	};
@@ -777,7 +777,7 @@ void EnemyInfo::InitBuildSafety() {
 };
 void EnemyInfo::CreateBuildSafetyMap() {
 	memset(SafeMAP, 0, SafeMLx*SafeMLx);
-	byte msk = Mask;
+	unsigned char msk = Mask;
 	for (int i = 0; i < MAXOBJECT; i++) {
 		OneObject* OB = Group[i];
 		if (OB && (!(OB->Sdoxlo || OB->NMask&msk || OB->Wall))) {
@@ -813,7 +813,7 @@ void EnemyInfo::RefreshSafeMap() {
 		CreateBuildSafetyMap();
 	};
 };
-byte EnemyInfo::GetSafeVal(int x, int y) {
+unsigned char EnemyInfo::GetSafeVal(int x, int y) {
 	int x0 = x;
 	int y0 = y;
 	x >>= 3;
@@ -829,7 +829,7 @@ void EnemyInfo::ShowSafetyInfo(int x, int y) {
 
 
 
-void EnemyInfo::AddSafePoint(int x, int y, word Index, word SN, word Prio) {
+void EnemyInfo::AddSafePoint(int x, int y, unsigned short Index, unsigned short SN, unsigned short Prio) {
 	if (x > 0 && y > 0 && x < TopLx&&y < TopLx) {
 		int idx = (x >> SafeCellSH) + ((y >> SafeCellSH) << SafeSX);
 		SafeCellInfo* SCI = SCINF[idx];
@@ -846,7 +846,7 @@ void EnemyInfo::AddSafePoint(int x, int y, word Index, word SN, word Prio) {
 		};
 	};
 };
-void EnemyInfo::ClearSafePoint(int x, int y, word Index) {
+void EnemyInfo::ClearSafePoint(int x, int y, unsigned short Index) {
 	if (x > 0 && y > 0 && x < TopLx&&y < TopLx) {
 		int idx = (x >> SafeCellSH) + ((y >> SafeCellSH) << SafeSX);
 		SafeCellInfo* SCI = SCINF[idx];
@@ -1042,7 +1042,7 @@ void EnemyInfo::ResearchSafeCells(int MinR, int MaxR) {
 	//COUNTER=GetTickCount()-COUNTER;
 };
 void EnemyInfo::ResearchHumanAttackPlaces() {
-	byte MASK = Mask;
+	unsigned char MASK = Mask;
 	memset(TMAP, 0, TSX*TSX);
 	memset(NUN, 0, TSX*TSX);
 	for (int MID = 0; MID < MAXOBJECT; MID++) {
@@ -1059,7 +1059,7 @@ void EnemyInfo::ResearchHumanAttackPlaces() {
 	for (int MID = 0; MID < MAXOBJECT; MID++) {
 		OneObject* OB = Group[MID];
 		if (OB&&OB->NewBuilding && !(OB->Sdoxlo || OB->NMask&MASK)) {
-			byte USE = OB->newMons->Usage;
+			unsigned char USE = OB->newMons->Usage;
 			if (USE == TowerID) {
 				int ofs = (OB->RealX >> TSSHIFT) + ((OB->RealY >> TSSHIFT) << TSH);
 				if (ofs >= 0 && ofs < TSX*TSX) {
@@ -1121,10 +1121,10 @@ void EnemyInfo::ResearchHumanAttackPlaces() {
 	};
 };
 
-int GetWTopology(int x, int y, byte LTP);
+int GetWTopology(int x, int y, unsigned char LTP);
 
 
-int GetShipForce(byte Usage) {
+int GetShipForce(unsigned char Usage) {
 	switch (Usage) {
 	case IaxtaID:
 		return 2;
@@ -1151,7 +1151,7 @@ void EnemyInfo::RegisterHumanShips() {
 	for (int MID = 0; MID < MAXOBJECT&&NHSHIPS < 128; MID++) {
 		OneObject* OB = Group[MID];
 		if (OB && (!OB->Sdoxlo) && (!(OB->NMask&Mask)) && OB->LockType) {
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			int F = GetShipForce(Usage);
 			if (OB->Transport&&OB->NInside > 10)F = 10;
 			if (F) {

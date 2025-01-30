@@ -1,8 +1,6 @@
 #ifndef _INC_GSC_TYPES
 #define _INC_GSC_TYPES
 
-#include <windows.h>
-
 #ifndef GFILE_USER
 #define GFILE_API __declspec(dllexport)
 #else
@@ -13,40 +11,40 @@
 
 struct TGSCFindData
 {
- CHAR	m_Mask[64];
- CHAR	m_FileName[64];
+ char	m_Mask[64];
+ char	m_FileName[64];
  int	m_Found;
 };
 
 struct TGSCFileList
 {
- CHAR			m_FileName[64];
+ char			m_FileName[64];
  TGSCFileList*	m_NextEntry;
 };
 
 struct TGSCFindInfo
 {
- CHAR			m_FileName[64];
+ char			m_FileName[64];
  TGSCFileList*	m_Pos;
  TGSCFileList*	m_FileList;
 };
 
 struct TGSCarchHDR
 {
- BYTE		m_Descriptor[6];
- WORD		m_Version;
- WORD		m_Key;
- DWORD		m_Entries;
+ unsigned char	m_Descriptor[6]; // unsigned char
+ unsigned short	m_Version;
+ unsigned short	m_Key;
+ unsigned long	m_Entries;
 };
 
 struct TGSCarchFAT
 {
- DWORD		m_Hash;
- BYTE		m_FileName[64];
- DWORD		m_Offset;
- DWORD		m_Size;
- DWORD		m_Reserved;
- BYTE		m_Flags;
+ unsigned long	m_Hash;
+ unsigned char	m_FileName[64];
+ unsigned long	m_Offset;
+ unsigned long	m_Size;
+ unsigned long	m_Reserved;
+ unsigned char	m_Flags;
 };
 
 typedef TGSCFindData* LPGSCFindData;

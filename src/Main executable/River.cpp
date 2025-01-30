@@ -24,8 +24,8 @@
 extern int RivNX;
 extern int RivSH;
 
-byte* RivDir = nullptr;
-byte* RivVol = nullptr;
+unsigned char* RivDir = nullptr;
+unsigned char* RivVol = nullptr;
 
 void InitRiv()
 {
@@ -36,11 +36,11 @@ void InitRiv()
 extern int RealLx;
 extern int RealLy;
 
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 
-void xLine(int x, int y, int x1, int y1, byte c);
+void xLine(int x, int y, int x1, int y1, unsigned char c);
 
-word GetDir(int dx, int dy);
+unsigned short GetDir(int dx, int dy);
 
 bool RiverEditMode = 0;
 
@@ -79,7 +79,7 @@ void ProcessRivEditor()
 				int ofs = ix + vx0 + ((iy + vy0) << RivSH);
 				if (RivVol[ofs]) 
 				{
-					byte dir = RivDir[ofs];
+					unsigned char dir = RivDir[ofs];
 					int vol = RivVol[ofs];
 					int dx = (int(TCos[dir])*vol) >> 8;
 					int dy = (int(TSin[dir])*vol) >> 9;
@@ -101,7 +101,7 @@ void ProcessRivEditor()
 			{
 				px -= (nx << 7) + 64;
 				py -= (ny << 7) + 64;
-				byte dir = GetDir(px, py);
+				unsigned char dir = GetDir(px, py);
 				int vol;
 
 				if (Rpressed)

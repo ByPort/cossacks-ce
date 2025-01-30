@@ -6,7 +6,7 @@
 #include "mouse.h"
 #include "menu.h"
 #include "MapDiscr.h"
-void Hline(int x,int y,int xend,byte c){
+void Hline(int x,int y,int xend,unsigned char c){
 	if(y<WindY||y>WindY1)return;
 	int xr;
 	int Lxr;
@@ -29,7 +29,7 @@ void Hline(int x,int y,int xend,byte c){
 		rep		stosb
 	};
 };
-void Vline(int x,int y,int yend,byte c){
+void Vline(int x,int y,int yend,unsigned char c){
 	if(x<WindX||x>WindX1)return;
 	int yr;
 	int Lyr;
@@ -57,7 +57,7 @@ uuuuu:	stosb
 		loop	uuuuu
 	};
 };
-void Xbar(int x,int y,int lx,int ly,byte c){
+void Xbar(int x,int y,int lx,int ly,unsigned char c){
 	Hline(x,y,x+lx-1,c);
 	Hline(x,y+ly-1,x+lx-1,c);
 	Vline(x,y,y+ly-1,c);
@@ -73,7 +73,7 @@ int GetYKind(int y){
 	else if(y>WindY1)return 1;
 	else return 0;
 };
-void DrawLine(int x,int y,int x1,int y1,byte c){
+void DrawLine(int x,int y,int x1,int y1,unsigned char c){
 	if(x==x1&&y==y1){
 		Hline(x,y,x,c);
 		return;

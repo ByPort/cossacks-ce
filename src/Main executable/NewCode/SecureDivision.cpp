@@ -1,4 +1,4 @@
-#include <Windows.h>
+#include <cstdlib>
 
 /*
 	Catch division by zero by "overloading" div() via #define

@@ -125,7 +125,7 @@ void GetWeaponKind( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 			sprintf( gx, "%s,Line %d :%s:Invalid GRP directive format for the list of weapon.", Name, Line, Sect );
 			ErrM( gx );
 		};
-		NU->CtgGroup = new word[ngrp];
+		NU->CtgGroup = new unsigned short[ngrp];
 		NU->NCtg = ngrp;
 		for (int i = 0; i < ngrp; i++)
 		{
@@ -163,7 +163,7 @@ void GetAttIndex( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 	{
 		z = Gscanf( f, "%d", &p1 );
 		if (z != 1)IncPar( Name, Line, Sect );
-		NU->CtgGroup = new word[p1];
+		NU->CtgGroup = new unsigned short[p1];
 		NU->NCtg = p1;
 		for (int i = 0; i < p1; i++)
 		{
@@ -176,7 +176,7 @@ void GetAttIndex( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 	{
 		if (!strcmp( gx, "ALL" ))
 		{
-			NU->CtgGroup = new word[NAttTypes];
+			NU->CtgGroup = new unsigned short[NAttTypes];
 			for (int i = 0; i < NAttTypes; i++)
 			{
 				NU->CtgGroup[i] = i;
@@ -226,7 +226,7 @@ void GetUnits( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 			sprintf( gx, "%s,Line %d :%s:Invalid GRP directive format for the list of units.", Name, Line, Sect );
 			ErrM( gx );
 		};
-		NU->UnitGroup = new word[ngrp];
+		NU->UnitGroup = new unsigned short[ngrp];
 		NU->NUnits = ngrp;
 		NU->UnitType = 0;
 		for (int i = 0; i < ngrp; i++)
@@ -256,7 +256,7 @@ void GetUnits( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 					sprintf( gx, "%s,Line %d :%s:Invalid GRP directive format for UNITKIND.", Name, Line, Sect );
 					ErrM( gx );
 				};
-				NU->UnitGroup = new word[ngrp];
+				NU->UnitGroup = new unsigned short[ngrp];
 				NU->NUnits = ngrp;
 				NU->UnitType = 1;
 				for (int i = 0; i < ngrp; i++)
@@ -314,7 +314,7 @@ void GetUnitsAndUpgrades( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int 
 			sprintf( gx, "%s,Line %d :%s:Invalid GRP directive format for the list of units.", Name, Line, Sect );
 			ErrM( gx );
 		};
-		NU->UnitGroup = new word[ngrp];
+		NU->UnitGroup = new unsigned short[ngrp];
 		NU->NUnits = ngrp;
 		for (int i = 0; i < ngrp; i++)
 		{
@@ -539,7 +539,7 @@ void GetWeapon( GFILE* f, NewUpgrade* NU, Nation* NT, char* Name, int Line )
 
 StrHash UPGS;
 
-bool UnderstandUpgrade( GFILE* f, char* UpgName, Nation* NT, char* name, int* lpLine, byte NID )
+bool UnderstandUpgrade( GFILE* f, char* UpgName, Nation* NT, char* name, int* lpLine, unsigned char NID )
 {
 	if (NT->NNUM == 0 && NT->NUpgrades == 0)
 	{
@@ -900,7 +900,7 @@ bool UnderstandUpgrade( GFILE* f, char* UpgName, Nation* NT, char* name, int* lp
 }
 
 //performs upgrade immediately
-void UseValue( int *Value, byte Type, int NewValue )
+void UseValue( int *Value, unsigned char Type, int NewValue )
 {
 	switch (Type)
 	{
@@ -925,8 +925,8 @@ void UseValue( int *Value, byte Type, int NewValue )
 	}
 }
 
-typedef void UpgradeFN( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB );
-void UpgradeSpeed( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+typedef void UpgradeFN( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB );
+void UpgradeSpeed( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	for (int i = 0; i < NAttTypes; i++)
@@ -937,7 +937,7 @@ void UpgradeSpeed( GeneralObject* GO, word CtgValue, byte ValueType, int Value, 
 	};
 	AC->Changed = true;
 };
-void UpgradeShield( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeShield( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->Shield;
@@ -945,7 +945,7 @@ void UpgradeShield( GeneralObject* GO, word CtgValue, byte ValueType, int Value,
 	AC->Shield = val;
 	AC->Changed = true;
 };
-void UpgradeProtection( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeProtection( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->Protection[CtgValue];
@@ -953,7 +953,7 @@ void UpgradeProtection( GeneralObject* GO, word CtgValue, byte ValueType, int Va
 	AC->Protection[CtgValue] = val;
 	AC->Changed = true;
 };
-void UpgradeAttPause( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeAttPause( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->AttackPause[CtgValue];
@@ -961,14 +961,14 @@ void UpgradeAttPause( GeneralObject* GO, word CtgValue, byte ValueType, int Valu
 	AC->AttackPause[CtgValue] = val;
 	AC->Changed = true;
 };
-void UpgradeWeapon( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeWeapon( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	//AC->DamWeap[CtgValue]=WPLIST[Value&65535];
 	//AC->WeaponKind[CtgValue]=Value>>16;
 	AC->Changed = true;
 };
-void UpgradeBuild( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* param_object )
+void UpgradeBuild( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* param_object )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->ProduceStages;
@@ -1004,7 +1004,7 @@ void UpgradeBuild( GeneralObject* GO, word CtgValue, byte ValueType, int Value, 
 		}
 	}
 }
-void UpgradeLife( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* param_object )
+void UpgradeLife( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* param_object )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->Life;
@@ -1022,7 +1022,7 @@ void UpgradeLife( GeneralObject* GO, word CtgValue, byte ValueType, int Value, O
 	}
 	AC->Changed = true;
 };
-void UpgradeAttRange( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeAttRange( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->AttackRadius2[CtgValue];
@@ -1045,7 +1045,7 @@ void UpgradeAttRange( GeneralObject* GO, word CtgValue, byte ValueType, int Valu
 	UpdateAttackR( AC );
 };
 void InviteAI_Peasants( OneObject* Mine );
-void UpgradeInside( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeInside( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->MaxInside;
@@ -1053,11 +1053,11 @@ void UpgradeInside( GeneralObject* GO, word CtgValue, byte ValueType, int Value,
 	AC->MaxInside = val;
 	AC->Changed = true;
 };
-void UpgradeCost( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeCost( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
-	byte VT = ( Value >> 26 ) & 7;
-	byte ResID = byte( DWORD( Value ) >> 29 );
+	unsigned char VT = ( Value >> 26 ) & 7;
+	unsigned char ResID = unsigned char( unsigned long( Value ) >> 29 );
 	Value &= 0xFFFFFF;
 	int val = AC->NeedRes[ResID];
 	UseValue( &val, VT, Value );
@@ -1066,7 +1066,7 @@ void UpgradeCost( GeneralObject* GO, word CtgValue, byte ValueType, int Value, O
 };
 extern City CITY[8];
 
-void UpgradeEnable( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeEnable( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	GO->Enabled = true;
 	GO->CondEnabled = true;
@@ -1078,7 +1078,7 @@ void UpgradeEnable( GeneralObject* GO, word CtgValue, byte ValueType, int Value,
 	GO->MoreCharacter->Changed = true;
 }
 
-void UpgradeDamage( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeDamage( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->MaxDamage[CtgValue];
@@ -1088,7 +1088,7 @@ void UpgradeDamage( GeneralObject* GO, word CtgValue, byte ValueType, int Value,
 	AC->Changed = true;
 	UpdateAttackR( AC );
 };
-void UpgradeGetRes( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeGetRes( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->ResEff;
@@ -1096,7 +1096,7 @@ void UpgradeGetRes( GeneralObject* GO, word CtgValue, byte ValueType, int Value,
 	AC->ResEff = val;
 	AC->Changed = true;
 };
-void ApplyToOneUnitAndOneCategory( GeneralObject* GO, word Category, NewUpgrade* NU, UpgradeFN* UFN, OneObject* OB )
+void ApplyToOneUnitAndOneCategory( GeneralObject* GO, unsigned short Category, NewUpgrade* NU, UpgradeFN* UFN, OneObject* OB )
 {
 	if (NU->ValGroup)
 	{
@@ -1108,14 +1108,14 @@ void ApplyToOneUnitAndOneCategory( GeneralObject* GO, word Category, NewUpgrade*
 		UFN( GO, Category, NU->ValueType, NU->Value, OB );
 	};
 };
-void UpgradeSingleAttPause( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeSingleAttPause( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	if (!OB)return;
 	int val = OB->PersonalDelay;
 	UseValue( &val, ValueType, Value );
 	OB->PersonalDelay = val;
 };
-void UpgradeSingleInside( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeSingleInside( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	if (!OB)return;
 	int val = OB->AddInside;
@@ -1126,7 +1126,7 @@ void UpgradeSingleInside( GeneralObject* GO, word CtgValue, byte ValueType, int 
 		InviteAI_Peasants( OB );
 	};
 };
-void UpgradeFishing( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeFishing( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->FishAmount;
@@ -1137,7 +1137,7 @@ void UpgradeFishing( GeneralObject* GO, word CtgValue, byte ValueType, int Value
 	AC->FishSpeed = val;
 	AC->Changed = true;
 };
-void UpgradeRazbros( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeRazbros( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	AdvCharacter* AC = GO->MoreCharacter;
 	int val = AC->Razbros;
@@ -1146,7 +1146,7 @@ void UpgradeRazbros( GeneralObject* GO, word CtgValue, byte ValueType, int Value
 	AC->Changed = true;
 }
 
-void UpgradeShar( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void UpgradeShar( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	NATIONS[OB->NNUM].SharAllowed = true;
 	NATIONS[OB->NNUM].SharX = OB->RealX;
@@ -1154,13 +1154,13 @@ void UpgradeShar( GeneralObject* GO, word CtgValue, byte ValueType, int Value, O
 	NATIONS[OB->NNUM].SearchRadius = 180;
 }
 
-void HealUnits( GeneralObject* GO, word CtgValue, byte ValueType, int Value, OneObject* OB )
+void HealUnits( GeneralObject* GO, unsigned short CtgValue, unsigned char ValueType, int Value, OneObject* OB )
 {
 	int N = NtNUnits[OB->NNUM];
-	word* units = NatList[OB->NNUM];
+	unsigned short* units = NatList[OB->NNUM];
 	for (int i = 0; i < N; i++)
 	{
-		word MID = units[i];
+		unsigned short MID = units[i];
 		if (MID != 0xFFFF)
 		{
 			OneObject* OBJ = Group[MID];
@@ -1264,7 +1264,7 @@ void ApplyToUnits( Nation* NT, NewUpgrade* NU, UpgradeFN* UFN, OneObject* OB )
 		{
 			for (int i = 0; i < NU->NUnits; i++)
 			{
-				word val = NU->UnitGroup[i];
+				unsigned short val = NU->UnitGroup[i];
 				//assert(val<NT->NMon);
 				ApplyToOneUnit( NT->Mon[NU->UnitGroup[i]], NU, UFN, OB );
 			};
@@ -1299,7 +1299,7 @@ void EraseUnitsInPoint( int x, int y )
 		int cell = ( ( yc >> 7 ) << VAL_SHFCX ) + ( xc >> 7 ) + VAL_MAXCX + 1;
 		int NMon = MCount[cell];
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		for (int i = 0; i < NMon; i++)
 		{
 			MID = GetNMSL( ofs1 + i );
@@ -1459,7 +1459,7 @@ void CreateAdvCharacter( AdvCharacter* AC, NewMonster* NM )
 		AC->FishAmount = NM->FishAmount;
 		AC->Razbros = NM->Razbros;
 	};
-	for (int i = 0; i < 32; i++)AC->Protection[i] = byte( NM->Protection[i] );
+	for (int i = 0; i < 32; i++)AC->Protection[i] = unsigned char( NM->Protection[i] );
 	for (int i = 0; i < 8; i++)AC->NeedRes[i] = NM->NeedRes[i];
 	AC->Life = NM->Life;
 	AC->ProduceStages = NM->ProduceStages;

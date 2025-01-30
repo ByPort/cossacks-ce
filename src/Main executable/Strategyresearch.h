@@ -3,36 +3,36 @@ extern int StratLy;
 extern int StratSH;
 class CellInfo{
 public:
-	word NSword;
-	word NStrel;
-	word NCaval;
-	word NPush;
-	word NMort;
-	word NTow;
-	word Total;
-	byte x;
-	byte y;
-	word ArmyID;
-	byte Changed;
+	unsigned short NSword;
+	unsigned short NStrel;
+	unsigned short NCaval;
+	unsigned short NPush;
+	unsigned short NMort;
+	unsigned short NTow;
+	unsigned short Total;
+	unsigned char x;
+	unsigned char y;
+	unsigned short ArmyID;
+	unsigned char Changed;
 };
 class ArmyInfo{
 public:
-	word NSword;
-	word NStrel;
-	word NCaval;
-	word NPush;
-	word NMort;
-	word NTow;
-	//word NPeon;
-	byte MinX;
-	byte MinY;
-	byte MaxX;
-	byte MaxY;
-	word N;
+	unsigned short NSword;
+	unsigned short NStrel;
+	unsigned short NCaval;
+	unsigned short NPush;
+	unsigned short NMort;
+	unsigned short NTow;
+	//unsigned short NPeon;
+	unsigned char MinX;
+	unsigned char MinY;
+	unsigned char MaxX;
+	unsigned char MaxY;
+	unsigned short N;
 };
 class GlobalArmyInfo{
 public:
-	word* ArmDistr;
+	unsigned short* ArmDistr;
 	CellInfo* CIN;
 	int NCIN;
 	int MaxCIN;
@@ -42,6 +42,6 @@ public:
 	GlobalArmyInfo();
 	~GlobalArmyInfo();
 	void Clear();
-	void ResearchArmyDistribution(byte NI);
+	void ResearchArmyDistribution(unsigned char NI);
 	void Show(int x,int y);
 };

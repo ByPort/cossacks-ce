@@ -29,4 +29,4 @@ public:
 
 extern Syncro SYN;
 extern Syncro SYN1;
-extern word rpos;
+extern unsigned short rpos;

@@ -13,9 +13,9 @@ public:
 
 // Implementation
 public:
-	bool Play(DWORD Track);
-	bool SetVolume(DWORD Volume);
-	DWORD GetVolume();
+	bool Play(unsigned long Track);
+	bool SetVolume(unsigned long Volume);
+	unsigned long GetVolume();
 	bool Stop();
 	bool Resume();
 	bool Pause();

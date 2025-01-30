@@ -24,9 +24,9 @@ typedef CGSCarch* LPGSCarch;
 
 struct TGSCfile
 {
- DWORD	m_FileHandle;
- BYTE	m_Flags;
- DWORD	m_Position;
+ unsigned long	m_FileHandle;
+ unsigned char	m_Flags;
+ unsigned long	m_Position;
  LPGSCarch	m_Arch;
 };
 
@@ -35,36 +35,36 @@ typedef TGSCfile* LPGSCfile;
 class GFILE_API CGSCarch	
 {
 public:
-	BOOL NextFile(LPGSCFindData gFindData);
-	LPGSCFindData FindFile(LPCSTR lpcsMask);
-	LPBYTE GetFileData(LPGSCfile lpFileHandle);
+	int NextFile(LPGSCFindData gFindData);
+	LPGSCFindData FindFile(const char* lpcsMask);
+	unsigned char* GetFileData(LPGSCfile lpFileHandle);
 	
-	BOOL Open(LPCSTR lpcsArchFileName);
-	BOOL Close();
+	int Open(const char* lpcsArchFileName);
+	int Close();
 
-	VOID ReadFile(LPGSCfile lpFileHandle, LPBYTE lpbBuffer, DWORD dwSize);
+	void ReadFile(LPGSCfile lpFileHandle, unsigned char* lpbBuffer, unsigned long dwSize);
 	
-	VOID SetFilePos(LPGSCfile lpFileHandle, DWORD dwPosition);
-	DWORD GetFilePos(LPGSCfile lpFileHandle);
+	void SetFilePos(LPGSCfile lpFileHandle, unsigned long dwPosition);
+	unsigned long GetFilePos(LPGSCfile lpFileHandle);
 	
-	DWORD GetFileSize(LPGSCfile lpFileHandle);
+	unsigned long GetFileSize(LPGSCfile lpFileHandle);
 	
-	LPGSCfile GetFileHandle(LPCSTR lpcsFileName);
-	VOID CloseFileHandle(LPGSCfile lpFileHandle);
+	LPGSCfile GetFileHandle(const char* lpcsFileName);
+	void CloseFileHandle(LPGSCfile lpFileHandle);
 	
 	CGSCarch();
 	virtual ~CGSCarch();
 
 private:
-	LPBYTE m_pViewOfFile;
-	HANDLE m_hMapping;
-	HANDLE m_hMapFile;
-	CHAR m_ArchName[128];
+	unsigned char* m_pViewOfFile;
+	void* m_hMapping;
+	void* m_hMapFile;
+	char m_ArchName[128];
 	
 	
-	VOID MemDecrypt(LPBYTE lpbDestination, DWORD dwSize);
+	void MemDecrypt(unsigned char* lpbDestination, unsigned long dwSize);
 	
-	LPBYTE m_Data;
+	unsigned char* m_Data;
 	TGSCarchFAT* m_FAT;
 	TGSCarchHDR* m_Header;
 };

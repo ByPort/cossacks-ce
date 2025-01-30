@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-void isiDecryptMem(LPBYTE lpbBuffer, DWORD dwSize, BYTE dbKey)
+void isiDecryptMem(unsigned char* lpbBuffer, unsigned long dwSize, BYTE dbKey)
 {
 _asm
 	{
@@ -22,7 +22,7 @@ next_byte:
 	}
 }
 
-void isiEncryptMem(LPBYTE lpbBuffer, DWORD dwSize, BYTE dbKey)
+void isiEncryptMem(unsigned char* lpbBuffer, unsigned long dwSize, BYTE dbKey)
 {
 _asm
 	{
@@ -43,7 +43,7 @@ next_byte:
 	}
 }
 
-DWORD isiCalcHash(LPSTR lpszFileName)
+unsigned long isiCalcHash(LPSTR lpszFileName)
 {
 	char	szFileName[64];
 
@@ -140,7 +140,7 @@ _asm
 BOOL isiFileExists(LPSTR lpszFileName)
 {
 	WIN32_FIND_DATA	FindData;
-	HANDLE			hFindFile;
+	void*			hFindFile;
 	
 	if((hFindFile=FindFirstFile(lpszFileName,&FindData))!=INVALID_HANDLE_VALUE)
 		{

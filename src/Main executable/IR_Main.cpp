@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -24,7 +25,7 @@ public:
 	bool Connected;
 	bool Logged;
 	bool Error;
-	byte Rank;
+	unsigned char Rank;
 	char Nick[64];
 	char EMail[128];
 	char Password[64];
@@ -40,7 +41,7 @@ extern int ItemChoose;
 extern bool KeyPressed;
 extern int ShowGameScreen;
 
-byte INSIDE4 = 0;
+unsigned char INSIDE4 = 0;
 
 void CheckExistingSaves();
 
@@ -105,7 +106,7 @@ void GetAllPar3( int LXMAX, int* N, int* LMaxX, char* Message )
 		else
 		{
 			int DX;
-			L0 += GetRLCWidthUNICODE( YellowFont.RLC, (byte*) ( Message + pos ), &DX );
+			L0 += GetRLCWidthUNICODE( YellowFont.RLC, (unsigned char*) ( Message + pos ), &DX );
 			pos += DX;
 		};
 		if (L0 > LM)LM = L0;
@@ -176,7 +177,7 @@ void ShowCentralMessage4( char* Message, int GPIDX, int DX )
 		else
 		{
 			int length;
-			L0 += GetRLCWidthUNICODE( YellowFont.RLC, (byte*) ( Message + pos ), &length );
+			L0 += GetRLCWidthUNICODE( YellowFont.RLC, (unsigned char*) ( Message + pos ), &length );
 			memcpy( ccx + pos1, Message + pos, length );
 			pos += length;
 			pos1 += length;
@@ -231,27 +232,27 @@ void CheckOriginalNick( int ProfileID )
 //----------------------Personal user data--------------------//
 struct OneRatedPlayer
 {
-	byte Rank;
-	byte State;
-	byte Mask;
-	byte Color;
-	byte NationID;
+	unsigned char Rank;
+	unsigned char State;
+	unsigned char Mask;
+	unsigned char Color;
+	unsigned char NationID;
 	int  Profile;
 	int  Score;
 	char Nick[32];
-	word MaxScore;
-	word MaxPopul;
-	byte ScoreG[32];
-	byte Popul[32];
+	unsigned short MaxScore;
+	unsigned short MaxPopul;
+	unsigned char ScoreG[32];
+	unsigned char Popul[32];
 };
 struct SysTime
 {
-	word Year;
-	word Month;
-	word Day;
-	word DayOfWeek;
-	word Hour;
-	word Min;
+	unsigned short Year;
+	unsigned short Month;
+	unsigned short Day;
+	unsigned short DayOfWeek;
+	unsigned short Hour;
+	unsigned short Min;
 };
 class CurrentGame
 {
@@ -273,7 +274,7 @@ public:
 
 	int PlayingTime;
 	int  NPL;
-	byte GameType;
+	unsigned char GameType;
 	OneRatedPlayer PLAYERS[8];
 	//-----------------------------//
 	void CreateGame(
@@ -290,10 +291,10 @@ public:
 	void AssignKick( char* Nick );
 	int GetAddScore();
 };
-extern word NPlayers;
+extern unsigned short NPlayers;
 extern City CITY[8];
-extern DWORD MyDPID;
-int SortPlayers( byte* Res, int* par );
+extern unsigned long MyDPID;
+int SortPlayers( unsigned char* Res, int* par );
 
 void CurrentGame::CreateGame( char* pGameName, char* pMap, char* pNick )
 {
@@ -307,10 +308,10 @@ void CurrentGame::UpdateGame()
 	if (Active)
 	{
 		PlayingTime = GameTime;
-		byte ord[8];
+		unsigned char ord[8];
 		int  par[8];
 		int no = SortPlayers( ord, par );
-		byte prevms = 0;
+		unsigned char prevms = 0;
 		int CurTm = 0;
 		SYSTEMTIME SYSTM;
 		GetSystemTime( &SYSTM );
@@ -325,14 +326,14 @@ void CurrentGame::UpdateGame()
 		{
 			for (int q = 0; q < no; q++)
 			{
-				byte ms = NATIONS[NatRefTBL[ord[q]]].NMask;
+				unsigned char ms = NATIONS[NatRefTBL[ord[q]]].NMask;
 				if (NATIONS[NatRefTBL[ord[q]]].AI_Enabled)
 				{
 					Active = 0;
 					DeleteThisGameFromFile();
 					return;
 				};
-				byte c = NatRefTBL[ord[q]];
+				unsigned char c = NatRefTBL[ord[q]];
 				int v = ord[q];
 				if (!( ms&prevms ))
 				{
@@ -423,7 +424,7 @@ void CurrentGame::UpdateGame()
 
 void CurrentGame::AssignVictory( char* pNick )
 {
-	byte MyMask = 0;
+	unsigned char MyMask = 0;
 	for (int i = 0; i < NPL; i++)if (!strcmp( PLAYERS[i].Nick, pNick ))
 	{
 		PLAYERS[i].State = 0;
@@ -446,7 +447,7 @@ void CurrentGame::AssignVictory( char* pNick )
 void CurrentGame::AssignDefeat( char* pNick )
 {
 	bool ALLMYLOOSE = 1;
-	byte MyMask = 0;
+	unsigned char MyMask = 0;
 	for (int i = 0; i < NPL; i++)
 	{
 		if (!strcmp( PLAYERS[i].Nick, pNick ))
@@ -458,8 +459,8 @@ void CurrentGame::AssignDefeat( char* pNick )
 
 	if (MyMask)
 	{
-		byte HimMask1 = 0;
-		byte HimMask2 = 0;
+		unsigned char HimMask1 = 0;
+		unsigned char HimMask2 = 0;
 		for (int i = 0; i < NPL; i++)
 		{
 			if (PLAYERS[i].Mask&MyMask)
@@ -538,8 +539,8 @@ void CurrentGame::SaveGameToFile()
 
 	CurrentGame XXX;
 	XXX = *this;
-	byte* DATA = (byte*) ( &XXX );
-	byte* Key = (byte*) randoma;
+	unsigned char* DATA = (unsigned char*) ( &XXX );
+	unsigned char* Key = (unsigned char*) randoma;
 	for (int i = 0; i < sizeof XXX; i++)
 	{
 		DATA[i] ^= Key[i];
@@ -577,7 +578,7 @@ void CurrentGame::LoadGameFromFile()
 	}
 
 	int NMAX = 0;
-	byte HEADR[200];
+	unsigned char HEADR[200];
 	RBlockRead( F, HEADR, 200 );
 
 NEXTFILE:
@@ -595,8 +596,8 @@ NEXTFILE:
 		RBlockRead( F, this, sizeof CurrentGame );
 		int S;
 		RBlockRead( F, &S, 4 );
-		byte* Key = (byte*) randoma;
-		byte* xx = ( byte* ) this;
+		unsigned char* Key = (unsigned char*) randoma;
+		unsigned char* xx = ( unsigned char* ) this;
 
 		int S1 = 0;
 		for (int i = 0; i < sizeof CurrentGame; i++)
@@ -631,11 +632,11 @@ NEXTFILE:
 			ST0.wYear = StartTime.Year;
 			FILETIME FT0;
 			SystemTimeToFileTime( &ST0, &FT0 );
-			LARGE_INTEGER LI0;
-			LARGE_INTEGER LI;
+			long long LI0;
+			long long LI;
 			memcpy( &LI0, &FT0, 8 );
 			memcpy( &LI, &FT, 8 );
-			LI.QuadPart -= LI0.QuadPart;
+			LI -= LI0;
 			memcpy( &FT, &LI, 8 );
 
 			int dt = 10000000;
@@ -682,10 +683,10 @@ void CurrentGame::DeleteThisGameFromFile()
 
 struct OneIChunk
 {
-	byte Index;
-	word size;
-	word Summ;
-	byte Data[64];
+	unsigned char Index;
+	unsigned short size;
+	unsigned short Summ;
+	unsigned char Data[64];
 };
 
 struct CurUpload
@@ -722,8 +723,8 @@ public:
 	InternetStatsChunks();
 	void Init();
 	void Clear();
-	int ReadChunkFrom( byte* Sourse );
-	void WriteChunk( byte* Src, int L, byte Type );
+	int ReadChunkFrom( unsigned char* Sourse );
+	void WriteChunk( unsigned char* Src, int L, unsigned char Type );
 	//----downloading process----//
 	void StartDownload( int ProfileID, int Page );
 	void ProcessDownload();
@@ -784,14 +785,14 @@ void PersAuthCallback( int localid, int profileid, int authenticated,
 
 
 
-void InternetStatsChunks::WriteChunk( byte* Src, int L, byte Type )
+void InternetStatsChunks::WriteChunk( unsigned char* Src, int L, unsigned char Type )
 {
 	if (!L)return;
 	Chunks = (OneIChunk**) realloc( Chunks, 4 * N + 4 );
 	Chunks[N] = (OneIChunk*) malloc( 5 + L );
 	Chunks[N]->Index = Type;
 	Chunks[N]->size = L;
-	word S = 0;
+	unsigned short S = 0;
 	for (int i = 0; i < L; i++)
 	{
 		S += Src[i];
@@ -822,10 +823,10 @@ void EncodeGS_Password( char* pass, char* result )
 		int vo2 = v2 >> 3;
 		int p1 = v1 & 7;
 		int p2 = v2 & 7;
-		byte b1 = cc3[vo1];
-		byte b2 = cc3[vo2];
-		byte mb1 = b1&( 1 << p1 );
-		byte mb2 = b2&( 1 << p2 );
+		unsigned char b1 = cc3[vo1];
+		unsigned char b2 = cc3[vo2];
+		unsigned char mb1 = b1&( 1 << p1 );
+		unsigned char mb2 = b2&( 1 << p2 );
 		b1 &= ~( 1 << p1 );
 		b2 &= ~( 1 << p2 );
 		if (mb1)b2 |= 1 << p2;
@@ -837,7 +838,7 @@ void EncodeGS_Password( char* pass, char* result )
 };
 void DecodeGS_Password( char* pass, char* result )
 {
-	byte Len = result[0];
+	unsigned char Len = result[0];
 	char* cc3 = result + 1;
 	for (int i = 1023; i >= 0; i--)
 	{
@@ -847,10 +848,10 @@ void DecodeGS_Password( char* pass, char* result )
 		int vo2 = v2 >> 3;
 		int p1 = v1 & 7;
 		int p2 = v2 & 7;
-		byte b1 = cc3[vo1];
-		byte b2 = cc3[vo2];
-		byte mb1 = b1&( 1 << p1 );
-		byte mb2 = b2&( 1 << p2 );
+		unsigned char b1 = cc3[vo1];
+		unsigned char b2 = cc3[vo2];
+		unsigned char mb1 = b1&( 1 << p1 );
+		unsigned char mb2 = b2&( 1 << p2 );
 		b1 &= ~( 1 << p1 );
 		b2 &= ~( 1 << p2 );
 		if (mb1)b2 |= 1 << p2;
@@ -946,7 +947,7 @@ char WinScoreTable[162] =
 
 int CurrentGame::GetAddScore()
 {
-	byte MyMask = 0;
+	unsigned char MyMask = 0;
 	int MyIndex = -1;
 	for (int i = 0; i < NPL; i++)
 	{
@@ -1099,14 +1100,14 @@ int SECCOD1 = 0;
 int SECCOD2 = 0;
 int SECCOD3 = 0;
 
-void AddStrToURL( char* url, char* var, char* value, DWORD* HASH )
+void AddStrToURL( char* url, char* var, char* value, unsigned long* HASH )
 {
 	char VAL[512];
 	strcpy( VAL, value );
 	int CODE = 0;
 	for (size_t i = 0; i < strlen( VAL ); i++)
 	{
-		byte c = VAL[i];
+		unsigned char c = VAL[i];
 		if (c <= 32 || c == 34 || c == '%' || c == '&' || c == '*'
 			|| c == 39 || c == '+' || c == '\\' || c == '/'
 			|| c == '<' || c == '>' || c == '?' || c == 0xA0 || c == 0xAD)c = '_';
@@ -1123,14 +1124,14 @@ void AddStrToURL( char* url, char* var, char* value, DWORD* HASH )
 	sprintf( url + strlen( url ), "%s=%s&", var, VAL );
 }
 
-void AddIntToURL( char* url, char* var, int value, DWORD* HASH )
+void AddIntToURL( char* url, char* var, int value, unsigned long* HASH )
 {
 	char cc2[32];
 	sprintf( cc2, "%d", value );
 	AddStrToURL( url, var, cc2, HASH );
 }
 
-void AddIntIdxToURL( char* url, char* var, int value, DWORD* HASH, int idx )
+void AddIntIdxToURL( char* url, char* var, int value, unsigned long* HASH, int idx )
 {
 	char cc2[32];
 	char cc3[32];
@@ -1139,7 +1140,7 @@ void AddIntIdxToURL( char* url, char* var, int value, DWORD* HASH, int idx )
 	AddStrToURL( url, cc3, cc2, HASH );
 }
 
-void AddStrIdxToURL( char* url, char* var, char* value, DWORD* HASH, int idx )
+void AddStrIdxToURL( char* url, char* var, char* value, unsigned long* HASH, int idx )
 {
 	char cc3[32];
 	sprintf( cc3, "%s%d", var, idx );
@@ -1169,7 +1170,7 @@ void SendPHPString( CurrentGame* CGM )
 	char MODE[128];
 	bool r1, r2, r3;
 	bool unfound = 1;
-	DWORD HASH = 0;
+	unsigned long HASH = 0;
 	do
 	{
 		r1 = ReadWinString( F, ABBREV, 256 );
@@ -1239,7 +1240,7 @@ void SendPHPString( CurrentGame* CGM )
 	AddStrToURL( ccc, "GSTART", cc5, &HASH );
 	AddIntToURL( ccc, "NPLR", CGM->NPL, &HASH );
 	int NTM = 0;
-	byte TML[8];
+	unsigned char TML[8];
 	for (int i = 0; i < CGM->NPL; i++)
 	{
 		AddStrIdxToURL( ccc, "PL", CGM->PLAYERS[i].Nick, &HASH, i );
@@ -1258,7 +1259,7 @@ void SendPHPString( CurrentGame* CGM )
 			break;
 		};
 		int mtm = -1;
-		byte ms = CGM->PLAYERS[i].Mask;
+		unsigned char ms = CGM->PLAYERS[i].Mask;
 		for (int j = 0; j < NTM&&mtm == -1; j++)if (TML[j] & ms)mtm = j;
 		if (mtm == -1)
 		{
@@ -1309,9 +1310,9 @@ bool IsGameActive()
 	return CURIGAME.Active;
 }
 
-int GetCurGamePtr( byte** Ptr )
+int GetCurGamePtr( unsigned char** Ptr )
 {
-	*Ptr = (byte*) &CURIGAME;
+	*Ptr = (unsigned char*) &CURIGAME;
 	return sizeof CURIGAME;
 }
 
@@ -1358,11 +1359,11 @@ bool CheckGameTime()
 		ST0.wYear = CURIGAME.LastLoadTime.Year;
 		FILETIME FT0;
 		SystemTimeToFileTime( &ST0, &FT0 );
-		LARGE_INTEGER LI0;
-		LARGE_INTEGER LI;
+		long long LI0;
+		long long LI;
 		memcpy( &LI0, &FT0, 8 );
 		memcpy( &LI, &FT, 8 );
-		LI.QuadPart -= LI0.QuadPart;
+		LI -= LI0;
 		memcpy( &FT, &LI, 8 );
 
 		int dt = 0;
@@ -1411,10 +1412,10 @@ bool TestHash1( char* s )
 	cc++;
 	char VAR[48];
 	char VALUE[256];
-	DWORD HASH = 0;
+	unsigned long HASH = 0;
 	char URL[4096] = "";
 	bool FINAL = 0;
-	DWORD FINHASH;
+	unsigned long FINHASH;
 	do
 	{
 		char* cc3 = strstr( cc, "=" );
@@ -1466,12 +1467,12 @@ char PLNICK[32] = "";
 
 CHttpComm HTTPC;
 
-DWORD SendHTTPRequest( char* URL )
+unsigned long SendHTTPRequest( char* URL )
 {
 	return HTTPC.AddRequest( URL );
 }
 
-bool CheckHTTPAnswer( DWORD Handle, int* size, byte* Data )
+bool CheckHTTPAnswer( unsigned long Handle, int* size, unsigned char* Data )
 {
 	*size = 0;
 	try
@@ -1487,11 +1488,11 @@ bool CheckHTTPAnswer( DWORD Handle, int* size, byte* Data )
 }
 
 bool RejectThisPlayer = 0;
-DWORD CHECK_HANDLE = 0;
-DWORD SERV_HANDLES[6];
+unsigned long CHECK_HANDLE = 0;
+unsigned long SERV_HANDLES[6];
 int NSERV = 0;
 
-DWORD SendOneRequest( char* serv, char* param )
+unsigned long SendOneRequest( char* serv, char* param )
 {
 	char ccc[512];
 	sprintf( ccc, "%s?%s", serv, param );
@@ -1508,7 +1509,7 @@ DWORD SendOneRequest( char* serv, char* param )
 int GetStrHASH1( char* s )
 {
 	int L = strlen( s );
-	DWORD S = 0;
+	unsigned long S = 0;
 	for (int i = 0; i < L; i++)
 	{
 		S += s[i];
@@ -1592,7 +1593,7 @@ bool CheckPlayerToExit()
 			char STR[4096];
 			int sz = 4096;
 			if (!T0)T0 = GetTickCount();
-			if (CheckHTTPAnswer( SERV_HANDLES[i], &sz, (byte*) STR ))
+			if (CheckHTTPAnswer( SERV_HANDLES[i], &sz, (unsigned char*) STR ))
 			{
 				STR[255] = 0;
 				int HC1 = 0;

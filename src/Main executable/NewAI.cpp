@@ -33,8 +33,8 @@
 class BuildingAI
 {
 public:
-	word ID;
-	word SN;
+	unsigned short ID;
+	unsigned short SN;
 	short sx;
 	short sy;
 	int MoreInfo;
@@ -44,7 +44,7 @@ class BuildingProject
 public:
 	short apprX;
 	short apprY;
-	byte Stage;//0-search place,1-removing units,2-search for builders
+	unsigned char Stage;//0-search place,1-removing units,2-search for builders
 	int Time;
 	int PrecX;
 	int PrecY;
@@ -54,13 +54,13 @@ public:
 class Kingdom
 {
 public:
-	word NSklad;
-	word MaxSklad;
+	unsigned short NSklad;
+	unsigned short MaxSklad;
 	BuildingAI* Sklads;
-	word NFarms;
-	word MaxFarm;
-	word OnLandPeasants[1024];
-	word NPeasants;
+	unsigned short NFarms;
+	unsigned short MaxFarm;
+	unsigned short OnLandPeasants[1024];
+	unsigned short NPeasants;
 	bool BuildProjectPresent;
 	BuildingProject BPR;
 };
@@ -70,17 +70,17 @@ public:
 //08-empty from locking
 //16-plane zone
 //32-high plate
-byte* InfoMap;
+unsigned char* InfoMap;
 //01-sklad
 //02-farm
 //04-tower
 //08-building
 //16-melnica
-byte* CantBuild;
+unsigned char* CantBuild;
 
 int* MineList;
-word NMines;
-word MaxMine;
+unsigned short NMines;
+unsigned short MaxMine;
 void CreateInfoMap()
 {
 	memset( CantBuild, 0, VAL_SPRNX*VAL_SPRNX );
@@ -90,7 +90,7 @@ void CreateInfoMap()
 	{
 		for (int x = 0; x <= mmax; x++)
 		{
-			byte ms = 0;
+			unsigned char ms = 0;
 			if (!CheckBar( x << 3, y << 3, 8, 8 ))ms |= 8;
 			int x0 = x << 7;
 			int y0 = y << 7;
@@ -109,7 +109,7 @@ void CreateInfoMap()
 			int* spr = SpRefs[ofst];
 			for (int i = 0; i < N; i++)
 			{
-				word SID = spr[i];
+				unsigned short SID = spr[i];
 				OneSprite* OS = &Sprites[SID];
 				SprGroup* SG = OS->SG;
 				ObjCharacter* OC = &SG->ObjChar[OS->SGIndex];
@@ -161,7 +161,7 @@ void RenewInfoMap( int x, int y )
 			if (sx >= 0 && sy >= 0)
 			{
 				int ofst = sx + sy*VAL_SPRNX;
-				byte ms = InfoMap[ofst];
+				unsigned char ms = InfoMap[ofst];
 				ms &= 16;
 				if (!CheckBar( sx << 3, sy << 3, 8, 8 ))ms |= 8;
 				int N = NSpri[ofst];
@@ -171,7 +171,7 @@ void RenewInfoMap( int x, int y )
 				int* spr = SpRefs[ofst];
 				for (int i = 0; i < N; i++)
 				{
-					word SID = spr[i];
+					unsigned short SID = spr[i];
 					OneSprite* OS = &Sprites[SID];
 					SprGroup* SG = OS->SG;
 					ObjCharacter* OC = &SG->ObjChar[OS->SGIndex];
@@ -295,7 +295,7 @@ bool CheckBuilding( int x, int y )
 	return ( InfoMap[ofst] & 4 ) && ( InfoMap[ofst + 1] & 4 ) && ( InfoMap[ofst + VAL_SPRNX] & 4 ) && ( InfoMap[ofst + VAL_SPRNX + 1] & 4 );
 }
 
-byte NPORTS;
+unsigned char NPORTS;
 short PORTSX[32];
 short PORTSY[32];
 bool CheckTower( int x, int y )
@@ -429,7 +429,7 @@ bool SearchTowerPlace( int* xx1, int* yy1, SearchFunction* SFN, int r, int xc, i
 	};
 	return false;
 };
-bool FindCenter( int* xx, int *yy, byte NI )
+bool FindCenter( int* xx, int *yy, unsigned char NI )
 {
 	int N = 0;
 	int x = 0;
@@ -454,7 +454,7 @@ bool FindCenter( int* xx, int *yy, byte NI )
 	}
 	else return false;
 };
-void SetUnusable( int x, int y, byte Mask )
+void SetUnusable( int x, int y, unsigned char Mask )
 {
 	if (x < 0 || y < 0 || x >= SsMaxX || y >= SsMaxY)return;
 	CantBuild[x + y*VAL_SPRNX] |= Mask;

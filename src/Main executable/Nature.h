@@ -8,7 +8,7 @@ public:
 void LoadRDS();
 //extern int RESRC[8][8];
 extern int RESADD[8][8];
-//bool CheckCost(byte NI,byte ResID,word Amount);
+//bool CheckCost(unsigned char NI,unsigned char ResID,unsigned short Amount);
 extern ResDiscr RDS[8];
 extern int OrderIcon[4];
 extern int FREE_ORDER_ICON;

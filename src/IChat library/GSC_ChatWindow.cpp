@@ -1,6 +1,8 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "Chat\chat.h"
 #include "cs_chat.h"
+// TODO: investigate who uses and who provides ParseRQ API
 #define PARSERQ_USER
 #include "../IntExplorer library/ParseRQ.h"
 #include <stdarg.h>
@@ -126,7 +128,7 @@ __declspec( dllimport ) void ExplorerRefresh( int Index );
 __declspec( dllimport ) void ExplorerSetVar( int Index, char* Name, char* value );
 __declspec( dllimport ) char* ExplorerGetVar( int Index, char* Name );
 __declspec( dllimport ) char LobbyVersion[32];
-__declspec( dllimport ) word dwVersion;
+__declspec( dllimport ) unsigned short dwVersion;
 __declspec( dllimport ) void RunExplorer( int Index, char* ref, int x, int y, int x1, int y1 );
 __declspec( dllimport ) void ProcessExplorer( int Index );
 __declspec( dllimport ) void ProcessExplorerDSS( int Index, DialogsSystem* DSS );
@@ -135,9 +137,9 @@ __declspec( dllimport ) void ExplorerResize( int Index, int x, int y, int x1, in
 
 ChatSystem CSYS;
 
-__declspec( dllimport ) byte GetPaletteColor( int r, int g, int b );
+__declspec( dllimport ) unsigned char GetPaletteColor( int r, int g, int b );
 
-__declspec( dllimport ) void xLine( int x, int y, int x1, int y1, byte c );
+__declspec( dllimport ) void xLine( int x, int y, int x1, int y1, unsigned char c );
 
 int NCHATS[3] = { 0,0,0 };
 int MAXCHATS[3] = { 0,0,0 };
@@ -284,18 +286,18 @@ void IntersectWindows( int x0, int y0, int x1, int y1 )
 	WindLy = WindY1 - WindY + 1;
 }
 
-__declspec( dllimport ) void ShowClanString( int x, int y, char* s, byte State, RLCFont* Fn, RLCFont* Fn1, int DY );
+__declspec( dllimport ) void ShowClanString( int x, int y, char* s, unsigned char State, RLCFont* Fn, RLCFont* Fn1, int DY );
 
 CustomBorder* CUBM;
 CustomBorder* CUBC;
 bool CM_Vis = 0;
 bool CC_Vis = 0;
-byte RCOLOR = 0;
+unsigned char RCOLOR = 0;
 
 __declspec( dllimport ) int menu_x_off;
 __declspec( dllimport ) int menu_y_off;
 
-void Draw_PLIST( int x, int y, int Lx, int Ly, int Index, byte Active, int param )
+void Draw_PLIST( int x, int y, int Lx, int Ly, int Index, unsigned char Active, int param )
 {
 	if (!RCOLOR)
 	{
@@ -357,7 +359,7 @@ void Draw_PLIST( int x, int y, int Lx, int Ly, int Index, byte Active, int param
 
 __declspec( dllimport ) void DrawStdBar2( int x0, int y0, int x1, int y1, int GP );
 
-void DRAWBOX( int x, int y, int Lx, int Ly, int Idx, byte Active, int param )
+void DRAWBOX( int x, int y, int Lx, int Ly, int Idx, unsigned char Active, int param )
 {
 	DrawStdBar2( x, y, x + Lx - 1, y + Ly - 1, param );
 }
@@ -546,7 +548,7 @@ struct RoomInfo
 	char Name[128];
 	char Nick[64];
 	char RoomIP[32];
-	DWORD Profile;
+	unsigned long Profile;
 	char GameID[64];
 	int MaxPlayers;
 
@@ -1700,13 +1702,13 @@ __declspec( dllexport ) void StartGSCGame( char* Options, char* Map,
 
 struct OnePlayerReport
 {
-	DWORD Profile;
-	byte State;
-	word Score;
-	word Population;
-	DWORD ReachRes[6];
-	word NBornP;
-	word NBornUnits;
+	unsigned long Profile;
+	unsigned char State;
+	unsigned short Score;
+	unsigned short Population;
+	unsigned long ReachRes[6];
+	unsigned short NBornP;
+	unsigned short NBornUnits;
 };
 
 __declspec( dllexport ) void ReportGSCGame( int time, int NPlayers, OnePlayerReport* OPR )
@@ -1728,7 +1730,7 @@ __declspec( dllexport ) void ReportGSCGame( int time, int NPlayers, OnePlayerRep
 	strcpy( P1.DevName, "GW" );
 	P1.AddComm( "stats" );
 	memcpy( DATA, &time, 4 );
-	DATA[4] = (byte) NPlayers;
+	DATA[4] = (unsigned char) NPlayers;
 	memcpy( DATA + 5, OPR, sizeof OnePlayerReport );
 	P1.AddParam( (char*) DATA, 5 + sizeof OnePlayerReport );
 	P1.AddParam( GRIF->GameID, strlen( GRIF->GameID ) + 1 );
@@ -1739,7 +1741,7 @@ __declspec( dllexport )
 void ReportAliveState( int NPlayers, int* Profiles )
 {
 	ParsedRQ P1;
-	byte DATA[4096];
+	unsigned char DATA[4096];
 	char REQ[4096];
 	strcpy( P1.DevName, "GW" );
 	P1.AddComm( "alive" );
@@ -1751,10 +1753,10 @@ void ReportAliveState( int NPlayers, int* Profiles )
 };
 int LastSVS_Time = 0;
 int LastPID;
-byte LastState;
+unsigned char LastState;
 __declspec( dllexport )
 
-void SendVictoryState( int PlayerID, byte State )
+void SendVictoryState( int PlayerID, unsigned char State )
 {
 	int T = GetTickCount();
 	if (LastSVS_Time && T - LastSVS_Time < 3000 && LastPID == PlayerID && State == LastState)

@@ -1,12 +1,7 @@
-#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory.h>
 #include <time.h>
 #include <string.h>
-
-typedef unsigned short word;
-
 
 #define GP_USER
 #define DIALOGS_USER
@@ -55,7 +50,7 @@ extern __declspec(dllimport) int selected_network_protocol;
 extern __declspec(dllimport) bool TOTALEXIT;
 extern __declspec(dllimport) int LastKey;
 
-__declspec(dllimport) void CBar(int x0,int y0,int Lx0,int Ly0,byte c);
+__declspec(dllimport) void CBar(int x0,int y0,int Lx0,int Ly0,unsigned char c);
 __declspec(dllimport) bool MMItemChoose(SimpleDialog* SD);
 __declspec(dllimport) int GETV(char* Name);
 __declspec(dllimport) char* GETS(char* Name);
@@ -63,8 +58,8 @@ __declspec(dllimport) void LoadFog(int set);
 __declspec(dllimport) bool MMChooseName(SimpleDialog* SD);
 __declspec(dllimport) bool ProcessMessages();
 __declspec(dllimport) void StdKeys();
-__declspec(dllimport) void SlowLoadPalette(LPCSTR lpFileName);
-__declspec(dllimport) void SlowUnLoadPalette(LPCSTR lpFileName);
+__declspec(dllimport) void SlowLoadPalette(const char* lpFileName);
+__declspec(dllimport) void SlowUnLoadPalette(const char* lpFileName);
 __declspec(dllimport) void SavePlayerData();
 __declspec(dllimport) void LoadPlayerData();
 __declspec(dllimport) int CurPalette;

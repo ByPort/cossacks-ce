@@ -2,11 +2,11 @@ class WallCharacter
 {
 public:
 	char* Name;
-	word RIndex;
-	word NBuild;
-	word Ndamage;
+	unsigned short RIndex;
+	unsigned short NBuild;
+	unsigned short Ndamage;
 	short dx, dy;
-	word GateFile;
+	unsigned short GateFile;
 	short GateDx;
 	short GateDy;
 	short UpgradeGateIcon;
@@ -14,15 +14,15 @@ public:
 	short CloseGateIcon;
 	short UpgradeTower1;
 	short UpgradeTower2;
-	word  GateCost[8];
+	unsigned short  GateCost[8];
 	short TexRadius;
 	short NTex;
 	short TexPrec;
 	short* Tex;
 	short OpenGateSoundID;
 	short CloseGateSoundID;
-	byte  OpenKeyFrame;
-	byte  CloseKeyFrame;
+	unsigned char  OpenKeyFrame;
+	unsigned char  CloseKeyFrame;
 };
 
 class WallCluster;
@@ -32,18 +32,18 @@ class WallCell
 public:
 	short x;
 	short y;
-	byte DirMask;
-	byte Type;
-	byte NI;
-	byte Stage;
-	byte MaxStage;
-	word Health;
-	word MaxHealth;
-	byte Sprite;
-	byte SprBase;
-	word ClusterIndex;
-	word OIndex;
-	word GateIndex;
+	unsigned char DirMask;
+	unsigned char Type;
+	unsigned char NI;
+	unsigned char Stage;
+	unsigned char MaxStage;
+	unsigned short Health;
+	unsigned short MaxHealth;
+	unsigned char Sprite;
+	unsigned char SprBase;
+	unsigned short ClusterIndex;
+	unsigned short OIndex;
+	unsigned short GateIndex;
 	int Locks;
 	bool Visible;
 	bool CheckPosition();
@@ -60,9 +60,9 @@ class WallSystem;
 class WallCluster
 {
 public:
-	byte Type;
+	unsigned char Type;
 	int NCornPt;
-	word* CornPt;
+	unsigned short* CornPt;
 	int NCells;
 	WallCell* Cells;
 	WallSystem* WSys;
@@ -71,8 +71,8 @@ public:
 	short FinalX;
 	short FinalY;
 	NewMonster* NM;
-	word  NIndex;
-	byte  NI;
+	unsigned short  NIndex;
+	unsigned char  NI;
 	//------------------//
 	WallCluster();
 	~WallCluster();
@@ -86,9 +86,9 @@ public:
 	void AddPoint( short x, short y, bool Vis );
 	void Preview();
 	void View();
-	int  CreateData( word* Data, word Health );
-	void CreateByData( word* Data );
-	void SendSelectedToWork( byte NI, byte OrdType );
+	int  CreateData( unsigned short* Data, unsigned short Health );
+	void CreateByData( unsigned short* Data );
+	void SendSelectedToWork( unsigned char NI, unsigned char OrdType );
 };
 
 class WallSystem
@@ -105,7 +105,7 @@ public:
 
 void WallHandleDraw();
 void WallHandleMouse();
-void SetWallBuildMode( byte NI, word NIndex );
+void SetWallBuildMode( unsigned char NI, unsigned short NIndex );
 void LoadAllWalls();
 
 inline int GetLI( int x, int y )
@@ -136,12 +136,12 @@ class Gate
 public:
 	short x;
 	short y;
-	byte NI;
-	byte NMask;
-	byte State;
-	byte delay;
-	byte Locked;
-	byte CharID;
+	unsigned char NI;
+	unsigned char NMask;
+	unsigned char State;
+	unsigned char delay;
+	unsigned char Locked;
+	unsigned char CharID;
 };
 
 extern Gate* Gates;
@@ -150,5 +150,5 @@ extern int MaxGates;
 
 void SetupGates();
 void InitGates();
-int AddGate( short x, short y, byte NI );
+int AddGate( short x, short y, unsigned char NI );
 void DelGate( int ID );

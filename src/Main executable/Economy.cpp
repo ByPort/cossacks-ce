@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -25,7 +26,6 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ConstStr.h"
 #include "DrawForm.h"
 
@@ -78,7 +78,7 @@ public:
 	void Load();
 	void InitInterface();
 	void CreateInterface( IconSet* ISET );
-	void PerformOperation( byte Nation, byte SellRes, byte BuyRes, int SellAmount );
+	void PerformOperation( unsigned char Nation, unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 	void Process();
 };
 
@@ -244,7 +244,7 @@ void SelectBUY( int i )
 	ECO.ResBuy = i;
 }
 
-void CmdTorg( byte NI, byte SellRes, byte BuyRes, int SellAmount );
+void CmdTorg( unsigned char NI, unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 
 void SelectBUYBUTTON( int i )
 {
@@ -288,7 +288,7 @@ extern int IconLx;
 extern int IconLy;
 extern bool ECOSHOW;
 
-extern byte MarketState;
+extern unsigned char MarketState;
 
 //Composes and shows the UI for market exchanges depending on MarketState
 void Economy::CreateInterface( IconSet* ISET )
@@ -411,7 +411,7 @@ void LoadEconomy()
 
 //Exchange resources using players own exchange rate
 //Reassign other players exchange rates, if the market is global
-void Economy::PerformOperation( byte Nation, byte SellRes, byte BuyRes, int SellAmount )
+void Economy::PerformOperation( unsigned char Nation, unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	if (5 < SellRes || 5 < BuyRes || 0 > SellAmount)
 	{//Sanity check
@@ -456,7 +456,7 @@ void Economy::PerformOperation( byte Nation, byte SellRes, byte BuyRes, int Sell
 //Calculates exchange result for dllexport (bots AI dll)
 //Always use player #0 local exchange rates for transactions
 //Else there will be unsync when bots exchange
-int GetTorgResultEx( byte SellRes, byte BuyRes, int SellAmount )
+int GetTorgResultEx( unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	int BuyID = ECO.EcResID[BuyRes];
 	int SellID = ECO.EcResID[SellRes];
@@ -464,7 +464,7 @@ int GetTorgResultEx( byte SellRes, byte BuyRes, int SellAmount )
 	return int( double( SellAmount )*ECO.sell_rates_for_bots[SellRes] / ECO.buy_rates_for_bots[BuyRes] );
 }
 
-void PerformTorg( byte Nation, byte SellRes, byte BuyRes, int SellAmount )
+void PerformTorg( unsigned char Nation, unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	ECO.PerformOperation( Nation, SellRes, BuyRes, SellAmount );
 }
@@ -502,7 +502,7 @@ void ProcessEconomy()
 	ECO.Process();
 }
 
-extern byte INVECO[6];//={2,5,4,0,1,3};
+extern unsigned char INVECO[6];//={2,5,4,0,1,3};
 
 int GetFinPower( int* Fin, int Nation )
 {
@@ -515,19 +515,19 @@ int GetFinPower( int* Fin, int Nation )
 }
 
 //Calculates exchange rate for the game market information popup
-int GetCurrentCost( byte Buy, byte Sell, int Amount )
+int GetCurrentCost( unsigned char Buy, unsigned char Sell, int Amount )
 {
 	return int( ( Amount*ECO.ResCostSell[MyNation][Sell] ) / ECO.ResCostBuy[MyNation][Buy] );
 }
 
 //Calculates exchange rate for the game market information popup
-int GetNominalCost( byte Buy, byte Sell, int Amount )
+int GetNominalCost( unsigned char Buy, unsigned char Sell, int Amount )
 {
 	return int( ( Amount*ECO.ResCostSell1[MyNation][Sell] ) / ECO.ResCostBuy1[MyNation][Buy] );
 }
 
-int GetEconomyData( byte** EC )
+int GetEconomyData( unsigned char** EC )
 {
-	*EC = (byte*) &ECO;
+	*EC = (unsigned char*) &ECO;
 	return sizeof ECO;
 }

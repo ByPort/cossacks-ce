@@ -2,9 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-//#include "stdafx.h"
-//#include "GSCarch.h"
-
+#include <windows.h>
 #include <stdio.h>
 #include "GSCtypes.h"
 #include "GSCarch.h"
@@ -25,7 +23,7 @@ void GSC_OpenError()
 	MessageBox( NULL, "Unable to map files into memory.", "Loading error...", MB_ICONERROR );
 }
 
-BOOL CGSCarch::Open( LPCSTR lpcsArchFileName )
+BOOL CGSCarch::Open( const char* lpcsArchFileName )
 {
 	strcpy( m_ArchName, lpcsArchFileName );
 
@@ -44,7 +42,7 @@ BOOL CGSCarch::Open( LPCSTR lpcsArchFileName )
 	}
 
 
-	m_pViewOfFile = (LPBYTE) MapViewOfFile( m_hMapping, FILE_MAP_READ, 0, 0, 0 );
+	m_pViewOfFile = (unsigned char*) MapViewOfFile( m_hMapping, FILE_MAP_READ, 0, 0, 0 );
 	if (!m_pViewOfFile)
 	{
 		GSC_OpenError();
@@ -52,8 +50,8 @@ BOOL CGSCarch::Open( LPCSTR lpcsArchFileName )
 	}
 
 	m_Header = (TGSCarchHDR*) ( m_pViewOfFile );
-	m_FAT = (TGSCarchFAT*) ( LPBYTE( m_pViewOfFile ) + sizeof( TGSCarchHDR ) );
-	m_Data = LPBYTE( m_pViewOfFile ) + sizeof( TGSCarchHDR )
+	m_FAT = (TGSCarchFAT*)((unsigned char*)(m_pViewOfFile)+sizeof(TGSCarchHDR));
+	m_Data = (unsigned char*)(m_pViewOfFile)+sizeof(TGSCarchHDR)
 		+ ( m_Header->m_Entries * sizeof( TGSCarchFAT ) );
 
 	return TRUE;
@@ -74,24 +72,24 @@ BOOL CGSCarch::Close()
 	return TRUE;
 }
 
-LPGSCfile CGSCarch::GetFileHandle( LPCSTR lpcsFileName )
+LPGSCfile CGSCarch::GetFileHandle( const char* lpcsFileName )
 {
-	DWORD			i = 0;
+	unsigned long			i = 0;
 	LPGSCfile		lpFileHandle = NULL;
 	LPGSCarchFAT	pFAT = NULL;
-	CHAR			sUpFileName[64];
+	char			sUpFileName[64];
 
 	ZeroMemory( sUpFileName, 64 );
 	strcpy( sUpFileName, lpcsFileName );
 	_strupr( sUpFileName );
 
-	DWORD HASH = isiCalcHash( sUpFileName );
+	unsigned long HASH = isiCalcHash( sUpFileName );
 
 	for (i = 0; i <= m_Header->m_Entries - 1; i++)
 	{
-		pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + i * sizeof( TGSCarchFAT ) );
+		pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+i * sizeof(TGSCarchFAT));
 		if (pFAT->m_Hash == HASH)
-			if (!strcmp( LPCSTR( pFAT->m_FileName ), sUpFileName ))
+			if (!strcmp((const char*)(pFAT->m_FileName), sUpFileName))
 			{
 				lpFileHandle = new TGSCfile;
 				lpFileHandle->m_FileHandle = i;
@@ -104,44 +102,44 @@ LPGSCfile CGSCarch::GetFileHandle( LPCSTR lpcsFileName )
 	return NULL;
 }
 
-VOID CGSCarch::CloseFileHandle( LPGSCfile lpFileHandle )
+void CGSCarch::CloseFileHandle( LPGSCfile lpFileHandle )
 {
 	if (lpFileHandle)
 		delete lpFileHandle;
 }
 
-VOID CGSCarch::MemDecrypt( LPBYTE lpbDestination, DWORD dwSize )
+void CGSCarch::MemDecrypt( unsigned char* lpbDestination, unsigned long dwSize )
 {
 	BYTE Key = (BYTE) ~( HIBYTE( _CRYPT_KEY_ ) );
 
 	isiDecryptMem( lpbDestination, dwSize, Key );
 }
 
-DWORD CGSCarch::GetFileSize( LPGSCfile lpFileHandle )
+unsigned long CGSCarch::GetFileSize( LPGSCfile lpFileHandle )
 {
 	LPGSCarchFAT pFAT;
 
-	pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + lpFileHandle->m_FileHandle * sizeof( TGSCarchFAT ) );
+	pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+lpFileHandle->m_FileHandle * sizeof(TGSCarchFAT));
 
 	return pFAT->m_Size;
 }
 
 
-DWORD CGSCarch::GetFilePos( LPGSCfile lpFileHandle )
+unsigned long CGSCarch::GetFilePos( LPGSCfile lpFileHandle )
 {
 	return lpFileHandle->m_Position;
 }
 
-VOID CGSCarch::SetFilePos( LPGSCfile lpFileHandle, DWORD dwPosition )
+void CGSCarch::SetFilePos( LPGSCfile lpFileHandle, unsigned long dwPosition )
 {
 	lpFileHandle->m_Position = dwPosition;
 }
 
-VOID CGSCarch::ReadFile( LPGSCfile lpFileHandle, LPBYTE lpbBuffer, DWORD dwSize )
+void CGSCarch::ReadFile( LPGSCfile lpFileHandle, unsigned char* lpbBuffer, unsigned long dwSize )
 {
 	LPGSCarchFAT pFAT;
 
-	pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + lpFileHandle->m_FileHandle * sizeof( TGSCarchFAT ) );
+	pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+lpFileHandle->m_FileHandle * sizeof(TGSCarchFAT));
 
 	memcpy( lpbBuffer, ( m_Data + ~pFAT->m_Offset + lpFileHandle->m_Position ), dwSize );
 
@@ -151,22 +149,22 @@ VOID CGSCarch::ReadFile( LPGSCfile lpFileHandle, LPBYTE lpbBuffer, DWORD dwSize 
 	lpFileHandle->m_Position += dwSize;
 }
 
-LPBYTE CGSCarch::GetFileData( LPGSCfile lpFileHandle )
+unsigned char* CGSCarch::GetFileData( LPGSCfile lpFileHandle )
 {
 	LPGSCarchFAT pFAT;
 
-	pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + lpFileHandle->m_FileHandle * sizeof( TGSCarchFAT ) );
+	pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+lpFileHandle->m_FileHandle * sizeof(TGSCarchFAT));
 
 	return m_Data + ~pFAT->m_Offset;
 }
 
 /*
-DWORD CGSCarch::CalcHash(LPCSTR lpcsFileName)
+unsigned long CGSCarch::CalcHash(const char* lpcsFileName)
 {
-	DWORD HASH=0;
-	DWORD D=0;
+	unsigned long HASH=0;
+	unsigned long D=0;
 
-	CHAR sUpFileName[64];
+	char sUpFileName[64];
 
 	ZeroMemory(sUpFileName,64);
 
@@ -175,10 +173,10 @@ DWORD CGSCarch::CalcHash(LPCSTR lpcsFileName)
 
 	for(int k=0;k<=15;k++)
 	{
-		D=(DWORD(CHAR(sUpFileName[k*4]))   << 24)+
-		  (DWORD(CHAR(sUpFileName[k*4+1])) << 16)+
-		  (DWORD(CHAR(sUpFileName[k*4+2])) << 8 )+
-		  (DWORD(CHAR(sUpFileName[k*4+3]))      );
+		D=(unsigned long(char(sUpFileName[k*4]))   << 24)+
+		  (unsigned long(char(sUpFileName[k*4+1])) << 16)+
+		  (unsigned long(char(sUpFileName[k*4+2])) << 8 )+
+		  (unsigned long(char(sUpFileName[k*4+3]))      );
 
 		HASH+=D;
 	};
@@ -187,18 +185,18 @@ DWORD CGSCarch::CalcHash(LPCSTR lpcsFileName)
 }
 */
 
-LPGSCFindData CGSCarch::FindFile( LPCSTR lpcsMask )
+LPGSCFindData CGSCarch::FindFile( const char* lpcsMask )
 {
 	LPGSCarchFAT pFAT;
 	LPGSCFindData pFindData;
 	LPSTR	lpsDelim;
-	CHAR	sUpMask[64];
+	char	sUpMask[64];
 
 	ZeroMemory( sUpMask, 64 );
 	strcpy( sUpMask, lpcsMask );
 	_strupr( sUpMask );
 
-	DWORD i;
+	unsigned long i;
 
 	pFindData = new TGSCFindData;
 
@@ -207,7 +205,7 @@ LPGSCFindData CGSCarch::FindFile( LPCSTR lpcsMask )
 
 	for (i = 0; i <= m_Header->m_Entries - 1; i++)
 	{
-		pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + i * sizeof( TGSCarchFAT ) );
+		pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+i * sizeof(TGSCarchFAT));
 		if (isiMatchesMask( LPSTR( pFAT->m_FileName ), sUpMask ))
 		{
 			lpsDelim = strrchr( LPSTR( pFAT->m_FileName ), '\\' );
@@ -230,11 +228,11 @@ BOOL CGSCarch::NextFile( LPGSCFindData gFindData )
 	LPGSCarchFAT pFAT;
 	LPSTR lpsDelim;
 
-	DWORD i;
+	unsigned long i;
 
 	for (i = gFindData->m_Found + 1; i <= m_Header->m_Entries - 1; i++)
 	{
-		pFAT = (TGSCarchFAT*) ( LPBYTE( m_FAT ) + i * sizeof( TGSCarchFAT ) );
+		pFAT = (TGSCarchFAT*)((unsigned char*)(m_FAT)+i * sizeof(TGSCarchFAT));
 		if (isiMatchesMask( LPSTR( pFAT->m_FileName ), LPSTR( gFindData->m_Mask ) ))
 		{
 			lpsDelim = strrchr( LPSTR( pFAT->m_FileName ), '\\' );

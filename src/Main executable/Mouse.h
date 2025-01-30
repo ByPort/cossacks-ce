@@ -1,4 +1,4 @@
-void LoadPointer(LPCSTR s);
+void LoadPointer(char* s);
 void SetMPtr(int x,int y,int key);
 //void ShowMPtr();
 //void ShowMPtra();

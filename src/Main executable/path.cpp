@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -511,7 +512,7 @@ bool MotionField::CheckBar(int x, int y, int Lx, int Ly)
 	return false;
 }
 
-extern byte NewCirc[16];
+extern unsigned char NewCirc[16];
 
 void MotionField::FillNewCirc(int x, int y, int Lx, int Ly)
 {
@@ -590,10 +591,10 @@ void MotionField::FillNewCirc(int x, int y, int Lx, int Ly)
 //            Search for the best way             //
 //------------------------------------------------//
 #define MaxP (4096)
-extern word pxx[MaxP + 160];
-extern word pyy[MaxP + 160];
-extern word RVIS[MaxP + 160];
-extern word LVIS[MaxP + 160];
+extern unsigned short pxx[MaxP + 160];
+extern unsigned short pyy[MaxP + 160];
+extern unsigned short RVIS[MaxP + 160];
+extern unsigned short LVIS[MaxP + 160];
 int GetLAngle(int dx, int dy, int Angle);
 int GetRAngle(int dx, int dy, int Angle);
 const int ndrr[9] = { 7,6,5,0,0,4,1,2,3 };
@@ -945,15 +946,15 @@ bool OneObject::CreatePrePath(int x1, int y1)
 	int Rty;
 	int Ltx;
 	int Lty;
-	word Rpx[MaxP];//right path
-	word Rpy[MaxP];
-	word Lpx[MaxP];//left path
-	word Lpy[MaxP];
+	unsigned short Rpx[MaxP];//right path
+	unsigned short Rpy[MaxP];
+	unsigned short Lpx[MaxP];//left path
+	unsigned short Lpy[MaxP];
 	int Rpp = 1;//index of current point
 	bool LDoing;//=true if last point reached
 	bool RDoing;
-	byte Rdirc;//currend direction
-	byte Ldirc;
+	unsigned char Rdirc;//currend direction
+	unsigned char Ldirc;
 	int Rmaxalt;//maximum alteration,right path
 	int Lmaxalt;//maximum alteration,left path
 	int Rcum = 0;
@@ -1444,15 +1445,15 @@ bool OneObject::CreatePrePath2(int x1, int y1) {
 	int Rty;
 	int Ltx;
 	int Lty;
-	word Rpx[MaxP];//right path
-	word Rpy[MaxP];
-	word Lpx[MaxP];//left path
-	word Lpy[MaxP];
+	unsigned short Rpx[MaxP];//right path
+	unsigned short Rpy[MaxP];
+	unsigned short Lpx[MaxP];//left path
+	unsigned short Lpy[MaxP];
 	int Rpp = 1;//index of current point
 	bool LDoing;//=true if last point reached
 	bool RDoing;
-	byte Rdirc;//currend direction
-	byte Ldirc;
+	unsigned char Rdirc;//currend direction
+	unsigned char Ldirc;
 	int Rmaxalt;//maximum alteration,right path
 	int Lmaxalt;//maximum alteration,left path
 	int Rcum = 0;
@@ -1935,15 +1936,15 @@ bool OneObject::CreatePrePath4(int x1, int y1) {
 	int Rty;
 	int Ltx;
 	int Lty;
-	word Rpx[MaxP];//right path
-	word Rpy[MaxP];
-	word Lpx[MaxP];//left path
-	word Lpy[MaxP];
+	unsigned short Rpx[MaxP];//right path
+	unsigned short Rpy[MaxP];
+	unsigned short Lpx[MaxP];//left path
+	unsigned short Lpy[MaxP];
 	int Rpp = 1;//index of current point
 	bool LDoing;//=true if last point reached
 	bool RDoing;
-	byte Rdirc;//currend direction
-	byte Ldirc;
+	unsigned char Rdirc;//currend direction
+	unsigned char Ldirc;
 	int Rmaxalt;//maximum alteration,right path
 	int Lmaxalt;//maximum alteration,left path
 	int Rcum = 0;
@@ -2418,15 +2419,15 @@ loopsEnd:
 	int Rty;
 	int Ltx;
 	int Lty;
-	word Rpx[MaxP];//right path
-	word Rpy[MaxP];
-	word Lpx[MaxP];//left path
-	word Lpy[MaxP];
+	unsigned short Rpx[MaxP];//right path
+	unsigned short Rpy[MaxP];
+	unsigned short Lpx[MaxP];//left path
+	unsigned short Lpy[MaxP];
 	int Rpp=1;//index of current point
 	bool LDoing;//=true if last point reached
 	bool RDoing;
-	byte Rdirc;//currend direction
-	byte Ldirc;
+	unsigned char Rdirc;//currend direction
+	unsigned char Ldirc;
 	int Rmaxalt;//maximum alteration,right path
 	int Lmaxalt;//maximum alteration,left path
 	int Rppm=1;
@@ -2701,8 +2702,8 @@ void OneObject::CreatePath(int x1, int y1) {
 	if (UnlimitedMotion) {
 		DestX = (x1 << 8) + ((Lx) << 7);
 		DestY = (y1 << 8) + ((Lx) << 7);
-		CPdestX = (word)-1;
-		CPdestY = (word)-1;
+		CPdestX = (unsigned short)-1;
+		CPdestY = (unsigned short)-1;
 		return;
 	};
 	MotionField* MFI = &MFIELDS[LockType];

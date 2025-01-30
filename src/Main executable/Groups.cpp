@@ -6,11 +6,10 @@
 #include <assert.h>
 #include "sort.h"
 #include "math.h"
-#include <crtdbg.h>
 #include "NewMon.h"
 #include "Megapolis.h"
 
-word GetDir(int, int);
+unsigned short GetDir(int, int);
 SortClass::SortClass() {
 	NUids = 0;
 	MaxUID = 0;
@@ -32,7 +31,7 @@ void SortClass::Sort() {
 	//int snsn;
 	int parms = int(Parms);
 	int nuids = NUids - 1;
-	byte fault;
+	unsigned char fault;
 
 	__asm {
 		push    esi
@@ -84,18 +83,18 @@ void SortClass::CheckSize(int Size) {
 			free(Parms);
 			//free(Usn);
 		};
-		Uids = new word[Size];
+		Uids = new unsigned short[Size];
 		Parms = new int[Size];
-		//Usn=new word[Size];
+		//Usn=new unsigned short[Size];
 		MaxUID = Size;
 	};
 };
-word SortClass::CreateByX(word* UIDS, int NUIDS, bool Direction) {
+unsigned short SortClass::CreateByX(unsigned short* UIDS, int NUIDS, bool Direction) {
 	CheckSize(NUIDS);
-	word realn = 0;
+	unsigned short realn = 0;
 	if (Direction) {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -110,7 +109,7 @@ word SortClass::CreateByX(word* UIDS, int NUIDS, bool Direction) {
 	}
 	else {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -126,12 +125,12 @@ word SortClass::CreateByX(word* UIDS, int NUIDS, bool Direction) {
 	NUids = realn;
 	return realn;
 };
-word SortClass::CreateByY(word* UIDS, int NUIDS, bool Direction) {
+unsigned short SortClass::CreateByY(unsigned short* UIDS, int NUIDS, bool Direction) {
 	CheckSize(NUIDS);
-	word realn = 0;
+	unsigned short realn = 0;
 	if (Direction) {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -146,7 +145,7 @@ word SortClass::CreateByY(word* UIDS, int NUIDS, bool Direction) {
 	}
 	else {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -162,12 +161,12 @@ word SortClass::CreateByY(word* UIDS, int NUIDS, bool Direction) {
 	NUids = realn;
 	return realn;
 };
-word SortClass::CreateByR(word* UIDS, int NUIDS, bool Direction, int x, int y) {
+unsigned short SortClass::CreateByR(unsigned short* UIDS, int NUIDS, bool Direction, int x, int y) {
 	CheckSize(NUIDS);
-	word realn = 0;
+	unsigned short realn = 0;
 	if (Direction) {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -182,7 +181,7 @@ word SortClass::CreateByR(word* UIDS, int NUIDS, bool Direction, int x, int y) {
 	}
 	else {
 		for (int i = 0; i < NUIDS; i++) {
-			word MID = UIDS[i];
+			unsigned short MID = UIDS[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB && !OB->Sdoxlo) {
@@ -198,11 +197,11 @@ word SortClass::CreateByR(word* UIDS, int NUIDS, bool Direction, int x, int y) {
 	NUids = realn;
 	return realn;
 };
-word SortClass::CreateByLine(word* UIDS, int NUIDS, int dx, int dy) {
+unsigned short SortClass::CreateByLine(unsigned short* UIDS, int NUIDS, int dx, int dy) {
 	CheckSize(NUIDS);
-	word realn = 0;
+	unsigned short realn = 0;
 	for (int i = 0; i < NUIDS; i++) {
-		word MID = UIDS[i];
+		unsigned short MID = UIDS[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB && !OB->Sdoxlo) {
@@ -217,11 +216,11 @@ word SortClass::CreateByLine(word* UIDS, int NUIDS, int dx, int dy) {
 	NUids = realn;
 	return realn;
 };
-word SortClass::CreateByLineForShips(word* UIDS, int NUIDS, int dx, int dy) {
+unsigned short SortClass::CreateByLineForShips(unsigned short* UIDS, int NUIDS, int dx, int dy) {
 	CheckSize(NUIDS);
-	word realn = 0;
+	unsigned short realn = 0;
 	for (int i = 0; i < NUIDS; i++) {
-		word MID = UIDS[i];
+		unsigned short MID = UIDS[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB && !OB->Sdoxlo) {
@@ -237,19 +236,19 @@ word SortClass::CreateByLineForShips(word* UIDS, int NUIDS, int dx, int dy) {
 	NUids = realn;
 	return realn;
 };
-void SortClass::CopyToDst(word* Dst, word* Sns) {
+void SortClass::CopyToDst(unsigned short* Dst, unsigned short* Sns) {
 	memcpy(Dst, Uids, NUids << 1);
 	for (int i = 0; i < NUids; i++) {
 		OneObject* OB = Group[Uids[i]];
 		if (OB)Sns[i] = OB->Serial;
 	};
 };
-void SortClass::Copy(word* Dst) {
+void SortClass::Copy(unsigned short* Dst) {
 	memcpy(Dst, Uids, NUids << 1);
 };
 //-----------------------Usage of the SortClass----------------------
 SortClass UNISORT;
-word SortUnitsByR(word* urefs, word* snrefs, int nu, int x, int y) {
+unsigned short SortUnitsByR(unsigned short* urefs, unsigned short* snrefs, int nu, int x, int y) {
 	int n = UNISORT.CreateByR(urefs, nu, true, x, y);
 	UNISORT.Sort();
 	UNISORT.CopyToDst(urefs, snrefs);
@@ -291,18 +290,18 @@ void PositionOrder::CheckSize(int Size) {
 			free(px);
 			free(py);
 		};
-		Ids = new word[Size];
+		Ids = new unsigned short[Size];
 		px = new int[Size];
 		py = new int[Size];
 		MaxUnit = Size;
 	};
 	NUnits = Size;
 };
-void PositionOrder::Create(word* IDS, int NIDS) {
+void PositionOrder::Create(unsigned short* IDS, int NIDS) {
 	CheckSize(NIDS);
 	memcpy(Ids, IDS, NIDS << 1);
 };
-word PositionOrder::CreateLinearPositions(int x, int y, word* IDS, int NIDS, int dx, int dy) {
+unsigned short PositionOrder::CreateLinearPositions(int x, int y, unsigned short* IDS, int NIDS, int dx, int dy) {
 	Create(IDS, NIDS);
 	UNISORT.CreateByLine(Ids, NUnits, dy >> 4, -dx >> 4);
 	UNISORT.Sort();
@@ -323,7 +322,7 @@ word PositionOrder::CreateLinearPositions(int x, int y, word* IDS, int NIDS, int
 	};
 	return N;
 };
-word PositionOrder::CreateRotatedPositions(int x, int y, word* IDS, int NIDS, int dx, int dy) {
+unsigned short PositionOrder::CreateRotatedPositions(int x, int y, unsigned short* IDS, int NIDS, int dx, int dy) {
 	//special sorting
 	dx >>= 4;
 	dy >>= 4;
@@ -382,8 +381,8 @@ word PositionOrder::CreateRotatedPositions(int x, int y, word* IDS, int NIDS, in
 	//Sorting is finished now
 	//Getting of the maximal size of Unit
 	int maxR = 0;
-	word* IDE = Ids;
-	word MID;
+	unsigned short* IDE = Ids;
+	unsigned short MID;
 	int rr;
 	OneObject* OB;
 	for (int iy = 0; iy < NU; iy++) {
@@ -429,7 +428,7 @@ word PositionOrder::CreateRotatedPositions(int x, int y, word* IDS, int NIDS, in
 	};
 	return NU;
 };
-word PositionOrder::CreateRotatedPositions2(int x, int y, word* IDS, int NIDS, int dx, int dy) {
+unsigned short PositionOrder::CreateRotatedPositions2(int x, int y, unsigned short* IDS, int NIDS, int dx, int dy) {
 	//special sorting
 	dx >>= 4;
 	dy >>= 4;
@@ -488,8 +487,8 @@ word PositionOrder::CreateRotatedPositions2(int x, int y, word* IDS, int NIDS, i
 	//Sorting is finished now
 	//Getting of the maximal size of Unit
 	int maxR = 0;
-	word* IDE = Ids;
-	word MID;
+	unsigned short* IDE = Ids;
+	unsigned short MID;
 	int rr;
 	OneObject* OB;
 	for (int iy = 0; iy < NU; iy++) {
@@ -535,7 +534,7 @@ word PositionOrder::CreateRotatedPositions2(int x, int y, word* IDS, int NIDS, i
 	};
 	return NU;
 };
-word PositionOrder::CreatePositions(int x, int y, word* IDS, int NIDS) {
+unsigned short PositionOrder::CreatePositions(int x, int y, unsigned short* IDS, int NIDS) {
 	//special sorting
 	Create(IDS, NIDS);
 	//CheckSize(NIDS);
@@ -572,8 +571,8 @@ word PositionOrder::CreatePositions(int x, int y, word* IDS, int NIDS) {
 	//Sorting is finished now
 	//Getting of the maximal size of Unit
 	int maxR = 0;
-	word* IDE = Ids;
-	word MID;
+	unsigned short* IDE = Ids;
+	unsigned short MID;
 	int rr;
 	OneObject* OB;
 	for (int iy = 0; iy < NU; iy++) {
@@ -619,9 +618,9 @@ word PositionOrder::CreatePositions(int x, int y, word* IDS, int NIDS) {
 	return NU;
 };
 extern bool CmdDone[8192];
-void RotUnit(OneObject* OB, char Dir, byte OrdType);
-void PositionOrder::SendToPosition(byte Prio, byte OrdType) {
-	word MID;
+void RotUnit(OneObject* OB, char Dir, unsigned char OrdType);
+void PositionOrder::SendToPosition(unsigned char Prio, unsigned char OrdType) {
+	unsigned short MID;
 	int cx = CenterX >> 4;
 	int cy = CenterY >> 4;
 	for (int i = 0; i < NUnits; i++) {
@@ -659,7 +658,7 @@ void PositionOrder::SendToPosition(byte Prio, byte OrdType) {
 	};
 };
 void PositionOrder::Patrol() {
-	word MID;
+	unsigned short MID;
 	int cx = CenterX >> 4;
 	int cy = CenterY >> 4;
 	for (int i = 0; i < NUnits; i++) {
@@ -672,16 +671,16 @@ void PositionOrder::Patrol() {
 };
 extern City CITY[8];
 PositionOrder PORD;
-void SetStandState(Brigade* BR, byte State) {
+void SetStandState(Brigade* BR, unsigned char State) {
 	if (BR->Strelki)return;
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	int addD = 0;
 	int addS = 0;
 	if (State) {
 		for (int i = 0; i < N; i++) {
-			word MID = Memb[i];
+			unsigned short MID = Memb[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB&&OB->Serial == MembSN[i]) {
@@ -697,7 +696,7 @@ void SetStandState(Brigade* BR, byte State) {
 	}
 	else {
 		for (int i = 0; i < N; i++) {
-			word MID = Memb[i];
+			unsigned short MID = Memb[i];
 			if (MID != 0xFFFF) {
 				OneObject* OB = Group[MID];
 				if (OB&&OB->Serial == MembSN[i]) {
@@ -711,12 +710,12 @@ extern int tmtmt;
 void CancelStandGroundAnyway(Brigade* BR);
 bool GetBrCenter(Brigade* BR, int* x, int* y);
 extern bool OneDirection;
-void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
+void GroupSendSelectedTo(unsigned char NI, int x, int y, unsigned char Prio, unsigned char OrdType) {
 	int Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* MSN = SerN[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* MSN = SerN[NI];
 	//checking for pushka
-	word* SSEL = new word[NSL[NI]];
+	unsigned short* SSEL = new unsigned short[NSL[NI]];
 	bool AllPus = true;
 	int xc = 0;
 	int yc = 0;
@@ -728,14 +727,14 @@ void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
 	int NBRG = 0;
 	int ADX = 0;
 	int ADY = 0;
-	byte RealNI = NatRefTBL[NI];
+	unsigned char RealNI = NatRefTBL[NI];
 	for (int i = 0; i < Nsel; i++) {
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB&&OB->Serial == MSN[i]) {
 				if (!OB->InArmy) {
-					byte Usage = OB->newMons->Usage;
+					unsigned char Usage = OB->newMons->Usage;
 					if (Usage != PushkaID)AllPus = false;
 					SSEL[Np] = MID;
 					Np++;
@@ -754,8 +753,8 @@ void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
 							NBRG++;
 							BR->ID += 8192;
 							if (BR->WarType) {
-								int vx = TCos[byte(BR->Direction)] >> 2;
-								int vy = TSin[byte(BR->Direction)] >> 2;
+								int vx = TCos[unsigned char(BR->Direction)] >> 2;
+								int vy = TSin[unsigned char(BR->Direction)] >> 2;
 								ADX += vx;
 								ADY += vy;
 							};
@@ -778,8 +777,8 @@ void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
 	int rdx = 16;
 	int rdy = 16;
 	if (LastDirection < 256) {
-		rdx = int(TCos[byte(LastDirection)]) << 4;
-		rdy = int(TSin[byte(LastDirection)]) << 4;
+		rdx = int(TCos[unsigned char(LastDirection)]) << 4;
+		rdy = int(TSin[unsigned char(LastDirection)]) << 4;
 	}
 	else {
 		if (Nu) {
@@ -794,8 +793,8 @@ void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
 	};
 	char ddir = LastDirection - AverageDir;
 	//if(ddir>64||ddir<-63)ddir+=128;
-	int SIN = TSin[byte(ddir)];
-	int COS = TCos[byte(ddir)];
+	int SIN = TSin[unsigned char(ddir)];
+	int COS = TCos[unsigned char(ddir)];
 	if (NBRG) {
 		BCX /= NBRG;
 		BCY /= NBRG;
@@ -858,12 +857,12 @@ void GroupSendSelectedTo(byte NI, int x, int y, byte Prio, byte OrdType) {
 	};
 	free(SSEL);
 };
-void GroupAttackSelectedBrigadesTo(byte NI, int x, int y, byte Prio, byte OrdType) {
+void GroupAttackSelectedBrigadesTo(unsigned char NI, int x, int y, unsigned char Prio, unsigned char OrdType) {
 	int Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* MSN = SerN[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* MSN = SerN[NI];
 	//checking for pushka
-	word* SSEL = new word[NSL[NI]];
+	unsigned short* SSEL = new unsigned short[NSL[NI]];
 	bool AllPus = true;
 	int xc = 0;
 	int yc = 0;
@@ -873,12 +872,12 @@ void GroupAttackSelectedBrigadesTo(byte NI, int x, int y, byte Prio, byte OrdTyp
 	int BRY[32];
 	int NBRG = 0;
 	for (int i = 0; i < Nsel; i++) {
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB&&OB->Serial == MSN[i]) {
 				if (!OB->InArmy) {
-					byte Usage = OB->newMons->Usage;
+					unsigned char Usage = OB->newMons->Usage;
 					if (Usage != SupMortID&&Usage != PushkaID&&Usage != MortiraID)AllPus = false;
 					SSEL[Np] = MID;
 					Np++;
@@ -938,16 +937,16 @@ void GroupAttackSelectedBrigadesTo(byte NI, int x, int y, byte Prio, byte OrdTyp
 	};
 	free(SSEL);
 };
-void GroupPatrolSelected(byte NI, int x, int y, byte Prio) {
+void GroupPatrolSelected(unsigned char NI, int x, int y, unsigned char Prio) {
 	int Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short* SMon = Selm[NI];
 	//checking for pushka
 	bool AllPus = true;
 	int xc = 0;
 	int yc = 0;
 	int Np = 0;
 	for (int i = 0; i < Nsel; i++) {
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB) {
@@ -961,8 +960,8 @@ void GroupPatrolSelected(byte NI, int x, int y, byte Prio) {
 	int rdx = 16;
 	int rdy = 16;
 	if (LastDirection < 256) {
-		rdx = int(TCos[byte(LastDirection)]) << 4;
-		rdy = int(TSin[byte(LastDirection)]) << 4;
+		rdx = int(TCos[unsigned char(LastDirection)]) << 4;
+		rdy = int(TSin[unsigned char(LastDirection)]) << 4;
 	}
 	else {
 		if (Np) {
@@ -986,7 +985,7 @@ void GroupPatrolSelected(byte NI, int x, int y, byte Prio) {
 	PORD.CenterY = y;
 	PORD.Patrol();
 };
-word PositionOrder::CreateOrdPos(int x, int y, byte dir, int NIDS, word* IDS, OrderDescription* ODS) {
+unsigned short PositionOrder::CreateOrdPos(int x, int y, unsigned char dir, int NIDS, unsigned short* IDS, OrderDescription* ODS) {
 	int dx = TCos[dir];
 	int dy = TSin[dir];
 	Create(IDS, NIDS);
@@ -1013,8 +1012,8 @@ word PositionOrder::CreateOrdPos(int x, int y, byte dir, int NIDS, word* IDS, Or
 	//Sorting is finished now
 	//Getting of the maximal size of Unit
 	int maxR = 512;
-	word* IDE = Ids;
-	//word MID;
+	unsigned short* IDE = Ids;
+	//unsigned short MID;
 	//int rr;
 	//OneObject* OB;
 	/*
@@ -1052,7 +1051,7 @@ word PositionOrder::CreateOrdPos(int x, int y, byte dir, int NIDS, word* IDS, Or
 	};
 	return NU;
 };
-word PositionOrder::CreateSimpleOrdPos(int x, int y, byte dir, int NIDS, word* IDS, OrderDescription* ODS) {
+unsigned short PositionOrder::CreateSimpleOrdPos(int x, int y, unsigned char dir, int NIDS, unsigned short* IDS, OrderDescription* ODS) {
 	int dx = TCos[dir];
 	int dy = TSin[dir];
 	if (IDS) {
@@ -1066,8 +1065,8 @@ word PositionOrder::CreateSimpleOrdPos(int x, int y, byte dir, int NIDS, word* I
 	};
 	//Getting of the maximal size of Unit
 	int maxR = 512;
-	//word* IDE=Ids;
-	//word MID;
+	//unsigned short* IDE=Ids;
+	//unsigned short MID;
 	int NU = NIDS;
 	//int rr;
 	//OneObject* OB;

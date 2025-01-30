@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -45,7 +46,7 @@ void Save3DMap( char* Map );
 void InitHillAmp1();
 extern short randoma[8192];
 int mrpos = 0;
-word XXP = 0;
+unsigned short XXP = 0;
 
 int mrand()
 {
@@ -68,14 +69,14 @@ struct GenArea
 {
 	short x;
 	short y;
-	byte State;
-	byte Nation;
-	byte Zone;
-	byte Usage;
-	byte Type;
-	word  NLinks;
-	word* Link;
-	word MaxLink;
+	unsigned char State;
+	unsigned char Nation;
+	unsigned char Zone;
+	unsigned char Usage;
+	unsigned char Type;
+	unsigned short  NLinks;
+	unsigned short* Link;
+	unsigned short MaxLink;
 };
 
 PaintHills PHILL[1];
@@ -83,24 +84,24 @@ PaintHills PHILL[1];
 class GenMap
 {
 public:
-	word*  GTopRef;//[TopLx*TopLy];
+	unsigned short*  GTopRef;//[TopLx*TopLy];
 	GenArea* GTopMap;
 	int   NGAreas;
 	int   MaxGArea;
-	byte*  VertHi;//[MaxPointIndex];
-	byte*  VertType;//[MaxPointIndex];
+	unsigned char*  VertHi;//[MaxPointIndex];
+	unsigned char*  VertType;//[MaxPointIndex];
 	int SIZE;
 	void CreateNet();
 	bool AddGArea( int x, int y );
 	void AddGLink( int N1, int N2 );
-	void SetStateAround( int N, byte State );
+	void SetStateAround( int N, unsigned char State );
 	GenMap();
 	~GenMap();
 	void Clear();
 	void Show( int x, int y );
 	void MakeLinearHill( int N1, int N2 );
 	void MakeSoftArea( int N1, int N2 );
-	void MakeHillSpot( int x, int y, int r0, byte* Height );
+	void MakeHillSpot( int x, int y, int r0, unsigned char* Height );
 	bool CheckWebPoint( int i );
 	bool GenerateHillLink( int N );
 	bool GenerateHillLink( int N, int Thick );
@@ -110,9 +111,9 @@ public:
 
 void GenMap::Allocate()
 {
-	GTopRef = new word[TopLx*TopLy];
-	VertHi = new byte[MaxPointIndex];
-	VertType = new byte[MaxPointIndex];
+	GTopRef = new unsigned short[TopLx*TopLy];
+	VertHi = new unsigned char[MaxPointIndex];
+	VertType = new unsigned char[MaxPointIndex];
 	SIZE = MaxPointIndex;
 }
 
@@ -126,7 +127,7 @@ void GenMap::Free()
 	GTopRef = NULL;
 }
 
-void GenMap::SetStateAround( int N, byte State )
+void GenMap::SetStateAround( int N, unsigned char State )
 {
 	GenArea* GA = GTopMap + N;
 	for ( int p = 0; p < GA->NLinks; p++ )GTopMap[GA->Link[p + p]].State = State;
@@ -170,7 +171,7 @@ void GenMap::AddGLink( int N1, int N2 )
 	if ( AR->NLinks == AR->MaxLink )
 	{
 		AR->MaxLink += 4;
-		AR->Link = (word*) realloc( AR->Link, AR->MaxLink << 2 );
+		AR->Link = (unsigned short*) realloc( AR->Link, AR->MaxLink << 2 );
 	};
 	N = AR->NLinks;
 	AR->Link[N + N] = N2;
@@ -183,7 +184,7 @@ void CheckNet( GenMap* GM )
 {
 	for ( int i = 0; i < GM->NGAreas; i++ )
 	{
-		word* LINK = GM->GTopMap[i].Link;
+		unsigned short* LINK = GM->GTopMap[i].Link;
 		int NL = GM->GTopMap[i].NLinks;
 		int x = GM->GTopMap[i].x;
 		int y = GM->GTopMap[i].y;
@@ -197,7 +198,7 @@ void CheckNet( GenMap* GM )
 		};
 	};
 };
-word GetDir( int, int );
+unsigned short GetDir( int, int );
 bool CheckDeep( int x, int y )
 {
 	int x1 = x << 1;
@@ -252,11 +253,11 @@ void GenMap::CreateNet()
 				if ( x > 0 && y > 0 && x < mmx&&y < mmy )
 				{
 					int ofst = x + y*TopLx;
-					word ZZ = GTopRef[ofst];
-					word ZU = GTopRef[ofst - TopLx];
-					word ZD = GTopRef[ofst + TopLx];
-					word ZL = GTopRef[ofst - 1];
-					word ZR = GTopRef[ofst + 1];
+					unsigned short ZZ = GTopRef[ofst];
+					unsigned short ZU = GTopRef[ofst - TopLx];
+					unsigned short ZD = GTopRef[ofst + TopLx];
+					unsigned short ZL = GTopRef[ofst - 1];
+					unsigned short ZR = GTopRef[ofst + 1];
 					if ( ZZ == 0xEEEE )
 					{
 						if ( ZU == j || ZD == j || ZL == j || ZR == j ||
@@ -308,19 +309,19 @@ void GenMap::CreateNet()
 		int Nga = GA->NLinks;
 		for ( int p = 0; p < Nga; p++ )
 		{
-			word LI = GA->Link[p + p];
+			unsigned short LI = GA->Link[p + p];
 			GenArea* GA1 = GTopMap + LI;
-			byte Dir = byte( GetDir( GA1->x - x0, GA1->y - y0 ) );
+			unsigned char Dir = unsigned char( GetDir( GA1->x - x0, GA1->y - y0 ) );
 			UNISORT.Uids[p] = LI;
 			UNISORT.Parms[p] = Dir;
 		}
 
 		UNISORT.NUids = Nga;
 		UNISORT.Sort();
-		byte CDr = 0;
+		unsigned char CDr = 0;
 		for ( int p = 0; p < Nga; p++ )
 		{
-			word LI = UNISORT.Uids[p];
+			unsigned short LI = UNISORT.Uids[p];
 			GenArea* GA2 = GTopMap + LI;
 			GA->Link[p + p] = LI;
 			GA->Link[p + p + 1] = Norma( GA->x - GA2->x, GA->y - GA2->y );
@@ -767,7 +768,7 @@ void GenMap::MakeSoftArea( int N1, int N2 )
 	{
 		if ( i != CL1 )
 		{
-			word LI = GA1->Link[i + i];
+			unsigned short LI = GA1->Link[i + i];
 			GenArea* GA3 = GTopMap + LI;
 			int xa1 = ( x0 + GA3->x * 2 ) / 3;
 			int ya1 = ( y0 + GA3->y * 2 ) / 3;
@@ -782,7 +783,7 @@ void GenMap::MakeSoftArea( int N1, int N2 )
 	{
 		if ( i != CL2 )
 		{
-			word LI = GA2->Link[i + i];
+			unsigned short LI = GA2->Link[i + i];
 			GenArea* GA3 = GTopMap + LI;
 			int xa1 = ( x0 + GA3->x * 2 ) / 3;
 			int ya1 = ( y0 + GA3->y * 2 ) / 3;
@@ -810,7 +811,7 @@ void GenMap::MakeSoftArea( int N1, int N2 )
 	{
 		if ( i != CL1 )
 		{
-			word LI = GA1->Link[i + i];
+			unsigned short LI = GA1->Link[i + i];
 			GenArea* GA3 = GTopMap + LI;
 			int xa1 = ( x0 * 2 + GA3->x ) / 3;
 			int ya1 = ( y0 * 2 + GA3->y ) / 3;
@@ -825,7 +826,7 @@ void GenMap::MakeSoftArea( int N1, int N2 )
 	{
 		if ( i != CL2 )
 		{
-			word LI = GA2->Link[i + i];
+			unsigned short LI = GA2->Link[i + i];
 			GenArea* GA3 = GTopMap + LI;
 			int xa1 = ( x0 + GA3->x * 3 ) / 4;
 			int ya1 = ( y0 + GA3->y * 3 ) / 4;
@@ -851,8 +852,8 @@ void GenMap::MakeSoftArea( int N1, int N2 )
 };
 void InitHillAmp();
 double GetHillHi( double r, double phase, double r0, double Width );
-int SqInt( byte* REND, int x, int y );
-void GenMap::MakeHillSpot( int x, int y, int r0, byte* Height )
+int SqInt( unsigned char* REND, int x, int y );
+void GenMap::MakeHillSpot( int x, int y, int r0, unsigned char* Height )
 {
 	r0 <<= ADDSH - 1;
 	int rrx = ( r0 + 320 ) >> 5;
@@ -1025,7 +1026,7 @@ void GenMap::MakeLinearHill( int N1, int N2 )
 	GA2->State=2;
 	for(i=0;i<GA1->NLinks;i++){
 		if(i!=CL1){
-			word LI=GA1->Link[i+i];
+			unsigned short LI=GA1->Link[i+i];
 			GenArea* GA3=GTopMap+LI;
 			int xa1=(x0+GA3->x*2)/3;
 			int ya1=(y0+GA3->y*2)/3;
@@ -1038,7 +1039,7 @@ void GenMap::MakeLinearHill( int N1, int N2 )
 	y0=GA2->y;
 	for(i=0;i<GA2->NLinks;i++){
 		if(i!=CL2){
-			word LI=GA2->Link[i+i];
+			unsigned short LI=GA2->Link[i+i];
 			GenArea* GA3=GTopMap+LI;
 			int xa1=(x0+GA3->x*2)/3;
 			int ya1=(y0+GA3->y*2)/3;
@@ -1063,7 +1064,7 @@ void GenMap::MakeLinearHill( int N1, int N2 )
 	NKey=0;
 	for(i=0;i<GA1->NLinks;i++){
 		if(i!=CL1){
-			word LI=GA1->Link[i+i];
+			unsigned short LI=GA1->Link[i+i];
 			GenArea* GA3=GTopMap+LI;
 			int xa1=(x0+GA3->x)>>1;
 			int ya1=(y0+GA3->y)>>1;
@@ -1076,7 +1077,7 @@ void GenMap::MakeLinearHill( int N1, int N2 )
 	y0=GA2->y;
 	for(i=0;i<GA2->NLinks;i++){
 		if(i!=CL2){
-			word LI=GA2->Link[i+i];
+			unsigned short LI=GA2->Link[i+i];
 			GenArea* GA3=GTopMap+LI;
 			int xa1=(x0+GA3->x)>>1;
 			int ya1=(y0+GA3->y)>>1;
@@ -1248,7 +1249,7 @@ void GenShow()
 
 #define NATLX (TopLx>>1)
 #define NATSH (TopSH-1)
-byte* NatDeals;//[NATLX*NATLX];
+unsigned char* NatDeals;//[NATLX*NATLX];
 double HillR[256];
 double HillW[256];
 #define NFUR 10
@@ -1371,7 +1372,7 @@ void ClearRender();
 
 void GenerateByStyle( char* Style );
 
-bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle, int Ng, int NI, int Nc, word* Units, int ADD_PARAM );
+bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle, int Ng, int NI, int Nc, unsigned short* Units, int ADD_PARAM );
 
 void GenerateHill( int Thick )
 {
@@ -1415,7 +1416,7 @@ void LimitZones();
 bool ProcessMessages();
 void CreateLandLocking( int TAlp, bool ForVision );
 void CreateFractal();
-byte* REND;
+unsigned char* REND;
 
 void GenerateRelief( int Style )
 {
@@ -1490,12 +1491,12 @@ void GenerateRelief( int Style )
 	ProcessMessages();
 	PaintAllMap( GMAP.VertHi, GMAP.VertType, PHILL, 1 );
 	ProcessMessages();
-	GMAP.GTopRef = new word[TopLx*TopLy];
-	GMAP.VertHi = new byte[MaxPointIndex];
-	GMAP.VertType = new byte[MaxPointIndex];
+	GMAP.GTopRef = new unsigned short[TopLx*TopLy];
+	GMAP.VertHi = new unsigned char[MaxPointIndex];
+	GMAP.VertType = new unsigned char[MaxPointIndex];
 	GMAP.Clear();
 	//GMAP.CreateNet();
-	//NatDeals=new byte[NATLX*NATLX];
+	//NatDeals=new unsigned char[NATLX*NATLX];
 	InitHillAmp();
 	GMAP.Free();
 };
@@ -1505,7 +1506,7 @@ extern int NNations;
 void CreateNationalMaskForRandomMap( char* Name )
 {
 	char cc2[32] = "00000000";
-	word NatUnit[8] = { 0,0,0,0,0,0,0,0 };
+	unsigned short NatUnit[8] = { 0,0,0,0,0,0,0,0 };
 	/*
 	char cc1[128];
 	int x1, x2;
@@ -1568,7 +1569,7 @@ void CreateMapByName( char* Name )
 
 	char cc1[128];
 	char cc2[32] = "00000000";
-	word NatUnit[8] = { 0,0,0,0,0,0,0,0 };
+	unsigned short NatUnit[8] = { 0,0,0,0,0,0,0,0 };
 	int x1, x2;
 	int ADD_PARAM = 0;
 
@@ -1760,17 +1761,17 @@ void CheckMapNameForStart( char* Name )
 class UndoSegment
 {
 public:
-	byte* Data;
+	unsigned char* Data;
 	int MaxData;
 	int Size;
 	int pos;
 	UndoSegment();
 	~UndoSegment();
 	void Close();
-	void Add( byte val );
+	void Add( unsigned char val );
 	void Add( short val );
 	void Add( int val );
-	bool Read( byte* val );
+	bool Read( unsigned char* val );
 	bool Read( short* val );
 	bool Read( int* val );
 };
@@ -1793,12 +1794,12 @@ UndoSegment::~UndoSegment()
 {
 	Close();
 };
-void UndoSegment::Add( byte val )
+void UndoSegment::Add( unsigned char val )
 {
 	if ( Size + 6 >= MaxData )
 	{
 		MaxData += 16384;
-		Data = (byte*) realloc( Data, MaxData );
+		Data = (unsigned char*) realloc( Data, MaxData );
 	};
 	Data[Size] = val;
 	Size++;
@@ -1808,7 +1809,7 @@ void UndoSegment::Add( short val )
 	if ( Size + 6 >= MaxData )
 	{
 		MaxData += 16384;
-		Data = (byte*) realloc( Data, MaxData );
+		Data = (unsigned char*) realloc( Data, MaxData );
 	};
 	( (short*) ( Data + Size ) )[0] = val;
 	Size += 2;
@@ -1818,12 +1819,12 @@ void UndoSegment::Add( int val )
 	if ( Size + 6 >= MaxData )
 	{
 		MaxData += 16384;
-		Data = (byte*) realloc( Data, MaxData );
+		Data = (unsigned char*) realloc( Data, MaxData );
 	};
 	( (int*) ( Data + Size ) )[0] = val;
 	Size += 4;
 };
-bool UndoSegment::Read( byte* val )
+bool UndoSegment::Read( unsigned char* val )
 {
 	if ( pos >= Size )return false;
 	*val = Data[pos];
@@ -1853,12 +1854,12 @@ void MakeUndo()
 	bool DoUndo = true;
 	while ( DoUndo )
 	{
-		byte Type;
+		unsigned char Type;
 		DoUndo = UNDO1.Read( &Type );
 		if ( DoUndo )
 		{
 			int vint;
-			byte vbyte;
+			unsigned char vbyte;
 			short vshort;
 			switch ( Type )
 			{
@@ -1907,7 +1908,7 @@ void MakeUndo()
 	UNDO1.Close();
 }
 
-void ChangeSect( int Sect, byte val )
+void ChangeSect( int Sect, unsigned char val )
 {
 	if ( Sect < 0 || Sect >= MaxLineIndex )
 	{
@@ -1916,9 +1917,9 @@ void ChangeSect( int Sect, byte val )
 
 	if ( SECTMAP( Sect ) != val )
 	{
-		UNDO1.Add( byte( 0 ) );
+		UNDO1.Add( unsigned char( 0 ) );
 		UNDO1.Add( Sect );
-		UNDO1.Add( byte( SECTMAP( Sect ) ) );
+		UNDO1.Add( unsigned char( SECTMAP( Sect ) ) );
 	}
 }
 
@@ -1929,7 +1930,7 @@ void ChangeVert( int Vert )
 		return;
 	}
 
-	UNDO1.Add( byte( 1 ) );
+	UNDO1.Add( unsigned char( 1 ) );
 	UNDO1.Add( Vert );
 	UNDO1.Add( THMap[Vert] );
 	UNDO1.Add( TexMap[Vert] );
@@ -1937,13 +1938,13 @@ void ChangeVert( int Vert )
 
 void ChangeObject( short Index )
 {
-	UNDO1.Add( byte( 2 ) );
+	UNDO1.Add( unsigned char( 2 ) );
 	UNDO1.Add( Index );
 }
 
 void ChangeSprite( int Index )
 {
-	UNDO1.Add( byte( 3 ) );
+	UNDO1.Add( unsigned char( 3 ) );
 	UNDO1.Add( Index );
 }
 
@@ -1964,8 +1965,8 @@ void ChangeSprite( int Index )
 //-------------------
 //short dx
 //short dy
-//byte texture
-//byte s1,s2,s3
+//unsigned char texture
+//unsigned char s1,s2,s3
 //short Height
 bool ImmVis = false;
 bool AllowUndo = false;
@@ -2053,7 +2054,7 @@ void RM_SaveVertices( ResFile F, int x0, int y0, int Lx, int Ly, int* KeyX, int*
 						RBlockWrite( F, &xx, 2 );
 						RBlockWrite( F, TexMap + v, 1 );
 						int StartSect = ( ix >> 1 ) * 6 + iy*SectInLine;
-						byte s;
+						unsigned char s;
 						if ( ix & 1 )
 						{
 							s = SECTMAP( StartSect + 3 );
@@ -2097,8 +2098,8 @@ void RM_LoadVertices( ResFile F, int Vsx, int Vsy )
 	{
 		short vx;
 		short vy;
-		byte tex;
-		byte s1, s2, s3;
+		unsigned char tex;
+		unsigned char s1, s2, s3;
 		short Height;
 		RBlockRead( F, &vx, 2 );
 		RBlockRead( F, &vy, 2 );
@@ -2231,8 +2232,8 @@ void RM_LoadVerticesPos( ResFile F, short** VX, short** VY, int* lpN )
 	{
 		short vx;
 		short vy;
-		byte tex;
-		byte s1, s2, s3;
+		unsigned char tex;
+		unsigned char s1, s2, s3;
 		short Height;
 		RBlockRead( F, &vx, 2 );
 		RBlockRead( F, &vy, 2 );
@@ -2256,8 +2257,8 @@ void RM_CalcVerticesPos( ResFile F, short* VX, short* VY )
 	{
 		short vx;
 		short vy;
-		byte tex;
-		byte s1, s2, s3;
+		unsigned char tex;
+		unsigned char s1, s2, s3;
 		short Height;
 		RBlockRead( F, &vx, 2 );
 		RBlockRead( F, &vy, 2 );
@@ -2283,11 +2284,11 @@ void RM_CalcVerticesPos( ResFile F, short* VX, short* VY )
 };
 //Save sprites
 //short dx,dy
-//byte SprGroup
-//word Index
+//unsigned char SprGroup
+//unsigned short Index
 
 //-----------------------------------------------------------
-void addSpriteAnyway( int x, int y, SprGroup* SG, word id );
+void addSpriteAnyway( int x, int y, SprGroup* SG, unsigned short id );
 void RM_SaveSprites( ResFile F, int x0, int y0, int Lx, int Ly, int xc, int yc )
 {
 	int sign = 'TRPS';
@@ -2307,7 +2308,7 @@ void RM_SaveSprites( ResFile F, int x0, int y0, int Lx, int Ly, int xc, int yc )
 	RBlockWrite( F, &i, 4 );
 	RBlockWrite( F, &ns, 4 );
 
-	word j = 'GA';
+	unsigned short j = 'GA';
 	for ( int i = 0; i < MaxSprt; i++ )
 	{
 		OneSprite* OS = &Sprites[i];
@@ -2343,7 +2344,7 @@ void RM_LoadSprites( ResFile F, int xc, int yc )
 	for ( int i = 0; i < ns; i++ )
 	{
 		int x, y;
-		word sign, id;
+		unsigned short sign, id;
 		RBlockRead( F, &sign, 2 );
 		RBlockRead( F, &x, 4 );
 		RBlockRead( F, &y, 4 );
@@ -2415,7 +2416,7 @@ void RM_SaveObj( ResFile F, int x0, int y0, int Lx, int Ly, int xc, int yc )
 		};
 	};
 };
-void CreateNewUnitAt( byte NI, int x, int y, word Type, word Life, word Stage );
+void CreateNewUnitAt( unsigned char NI, int x, int y, unsigned short Type, unsigned short Life, unsigned short Stage );
 extern int LASTADDID;
 void RM_LoadObj( ResFile F, int xc, int yc )
 {
@@ -2427,7 +2428,7 @@ void RM_LoadObj( ResFile F, int xc, int yc )
 		int xm, ym;
 		RBlockRead( F, &xm, 4 );
 		RBlockRead( F, &ym, 4 );
-		byte NT;
+		unsigned char NT;
 		RBlockRead( F, &NT, 1 );
 		NT = MyNation;
 		RBlockRead( F, ONAME, 31 );
@@ -2907,7 +2908,7 @@ void SetRandomPiece( char* Name )
 		free( vy );
 	};
 };
-void SetPieceInPoints( char* Name, int* xi, int* yi, int N, byte* Used, int NATT )
+void SetPieceInPoints( char* Name, int* xi, int* yi, int N, unsigned char* Used, int NATT )
 {
 	short* vx = NULL;
 	short* vy = NULL;
@@ -3060,7 +3061,7 @@ void GenerateInPoints( char* Piece, int* ObjX, int* ObjY, int NObj, int NATT )
 		Gclose( F1 );
 		if ( NNamesXX )
 		{
-			byte Used[4096];
+			unsigned char Used[4096];
 			memset( Used, 0, sizeof Used );
 			for ( int j = 0; j < NATT; j++ )
 			{
@@ -3242,12 +3243,12 @@ void ProcessSaveInSquares()
 struct TerrainData
 {
 	short Lx, Ly;
-	byte  NPlaces;
-	byte  NIDS;
-	word  PLACES[8];
-	byte  PlayerID[8];
+	unsigned char  NPlaces;
+	unsigned char  NIDS;
+	unsigned short  PLACES[8];
+	unsigned char  PlayerID[8];
 	int   CompSize;
-	byte  Data[32];
+	unsigned char  Data[32];
 };
 //SqInt params
 int SqMaxX = ( 480 << ( ADDSH - 1 ) ) * 32;
@@ -3255,7 +3256,7 @@ int SqMaxY = ( 480 << ( ADDSH - 1 ) ) * 32;
 int SqDX = ( 480 << ( ADDSH - 1 ) ) * 32 / 256;
 int SqDY = ( 480 << ( ADDSH - 1 ) ) * 32 / 256;
 //------------
-int SqInt( byte* REND, int x, int y )
+int SqInt( unsigned char* REND, int x, int y )
 {
 	if ( x < 0 )x = 0;
 	if ( y < 0 )y = 0;
@@ -3279,8 +3280,8 @@ int SqInt( byte* REND, int x, int y )
 
 extern int MaxWX;
 extern int MaxWY;
-extern byte* WaterDeep;
-extern byte* WaterBright;
+extern unsigned char* WaterDeep;
+extern unsigned char* WaterBright;
 
 void ErrM( char* s );
 
@@ -3291,9 +3292,9 @@ void ClearGoodDeepSpot( int x, int y, int r, int dr, int dh );
 void CreateInfoMap();
 
 void GenerateNationalResources( char* Mines, char* Trees, char* Stones,
-	int NGold, int NIron, int NCoal, int NPlay, word* Units, int );
+	int NGold, int NIron, int NCoal, int NPlay, unsigned short* Units, int );
 
-void CreateNatDealing( int N, byte* Nats, short* Nx, short* Ny );
+void CreateNatDealing( int N, unsigned char* Nats, short* Nx, short* Ny );
 
 bool ProcessMessages();
 
@@ -3311,20 +3312,20 @@ extern int PeaceTimeLeft;
 extern int MaxPeaceTime;
 extern int PeaceTimeStage;
 
-byte BalloonState = 0;
-byte CannonState = 0;
-byte NoArtilleryState = 0;
-byte XVIIIState = 0;
-byte CaptState = 0;
-byte SaveState = 2;
-byte DipCentreState = 0;
-byte ShipyardState = 0;
-byte MarketState = 0;
+unsigned char BalloonState = 0;
+unsigned char CannonState = 0;
+unsigned char NoArtilleryState = 0;
+unsigned char XVIIIState = 0;
+unsigned char CaptState = 0;
+unsigned char SaveState = 2;
+unsigned char DipCentreState = 0;
+unsigned char ShipyardState = 0;
+unsigned char MarketState = 0;
 
 int DecodeOptionsFromNumber( const int number, int *result );
 
 bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
-	int Ng, int NI, int Nc, word * Units, int options )
+	int Ng, int NI, int Nc, unsigned short * Units, int options )
 {
 	LastAddSpr = 0;
 
@@ -3377,12 +3378,12 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 
 		int DAT = 0;
 		int RPOS = 0;
-		REND = new byte[65537];
+		REND = new unsigned char[65537];
 		REND[65536] = 0xE3;//for integrity testing
 		REND[65535] = 0xE3;
 
 		file_offset_1 = TERR->CompSize;
-		byte* Data = &TERR->Data[0];
+		unsigned char* Data = &TERR->Data[0];
 
 		for ( int i = 0; i < file_offset_1; i++ )
 		{
@@ -3396,7 +3397,7 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 		}
 
 		//softing the terrain
-		byte* REND1 = new byte[65537];
+		unsigned char* REND1 = new unsigned char[65537];
 		memcpy( REND1, REND, 65537 );
 
 		int NN = 30 >> ( ADDSH - 1 );
@@ -3434,7 +3435,7 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 			GPROG.SetCurrentPosition( j + 1 );
 		}
 
-		byte* REND2 = new byte[65537];
+		unsigned char* REND2 = new unsigned char[65537];
 		memcpy( REND2, REND, 65537 );
 
 		//creating water
@@ -3481,8 +3482,8 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 		ProcessMessages();
 
 		//creating cost line //grammar? - coastline
-		byte CostTex[40][8];
-		byte NTex[40];
+		unsigned char CostTex[40][8];
+		unsigned char NTex[40];
 		int NTLines;
 		int Divisor;
 
@@ -3534,7 +3535,7 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 
 		//creating initial resources
 		int NNat = 0;
-		byte Nats[8] = { 0,1,2,3,4,5,6,7 };
+		unsigned char Nats[8] = { 0,1,2,3,4,5,6,7 };
 		int NPlc[8] = { 0,0,0,0,0,0,0,0 };
 		short Ntx[8];
 		short Nty[8];
@@ -3567,7 +3568,7 @@ bool CreateRandomTerrain( char* Name, int NPlay, int MountStyle,
 				{
 					if ( !pid )
 					{
-						word PXY = TERR->PLACES[u];
+						unsigned short PXY = TERR->PLACES[u];
 						Ntx[s] = ( int( PXY & 255 )*msx ) >> 10;
 						Nty[s] = ( int( PXY >> 8 )*msy ) >> 10;
 
@@ -3819,12 +3820,12 @@ void ShowTable( char* Message, char* Hint )
 
 int NatX[8];
 int NatY[8];
-byte NatPres[8];
+unsigned char NatPres[8];
 int NdMaxX = 120;
 void InitNatDeal()
 {
 	NdMaxX = msx >> 2;
-	NatDeals = new byte[NATLX*NATLX];
+	NatDeals = new unsigned char[NATLX*NATLX];
 	memset( NatDeals, 0xFF, NATLX*NATLX );
 	for ( int i = 1; i < NdMaxX; i++ )memset( NatDeals + ( i << NATSH ) + 1, 0xEE, NdMaxX - 1 );
 	memset( NatPres, 0, sizeof NatPres );
@@ -3837,7 +3838,7 @@ void InitNatDeal()
 		};
 
 };
-void SetNatDealPoint( int x, int y, byte Nat )
+void SetNatDealPoint( int x, int y, unsigned char Nat )
 {
 	if ( x > 0 && y > 0 && x < NdMaxX&&y < NdMaxX )
 	{
@@ -3857,11 +3858,11 @@ void ExtendNatDealing()
 	int MAX = ( 60 << ADDSH );
 	bool change;
 	int SH0 = 6 + ADDSH;
-	byte* TMP = new byte[NATLX*NATLX];
+	unsigned char* TMP = new unsigned char[NATLX*NATLX];
 	memcpy( TMP, NatDeals, NATLX*NATLX );
 	int CenterX[16] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	int CenterY[16] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-	byte c;
+	unsigned char c;
 	for ( int iy = 2; iy < MAX; iy++ )
 	{
 		for ( int ix = 2; ix < MAX; ix++ )
@@ -3886,8 +3887,8 @@ void ExtendNatDealing()
 			for ( int ix = 0; ix < MAX; ix++ )
 			{
 				int ofs = ix + ( iy << SH0 );
-				byte cxx = TMP[ofs];
-				byte c;
+				unsigned char cxx = TMP[ofs];
+				unsigned char c;
 				if ( cxx == 0xEE )
 				{
 					if ( ( c = TMP[ofs + 1] ) < 0xEE )
@@ -3951,7 +3952,7 @@ void ExtendNatDealing()
 	}
 }
 
-bool GetRandomPoint( short* x, short* y, byte TypeStart, byte TypeEnd )
+bool GetRandomPoint( short* x, short* y, unsigned char TypeStart, unsigned char TypeEnd )
 {
 	if ( TypeStart == 0xFF )
 	{
@@ -3961,7 +3962,7 @@ bool GetRandomPoint( short* x, short* y, byte TypeStart, byte TypeEnd )
 		*y = FreeIsY[idx];
 		return true;
 	};
-	byte Nat = TypeStart >> 4;
+	unsigned char Nat = TypeStart >> 4;
 	int R = TypeStart & 15;
 	int RM = TypeEnd & 15;
 	int R0 = R << 2;
@@ -3990,7 +3991,7 @@ bool GetRandomPoint( short* x, short* y, byte TypeStart, byte TypeEnd )
 		int ys = y0 + Rarr[R].yi[idx];
 		if ( xs > 5 && ys > 5 && xs < NdMaxX - 4 && ys < NdMaxX - 4 )
 		{
-			byte NDE = NatDeals[xs + ( ys << NATSH )];
+			unsigned char NDE = NatDeals[xs + ( ys << NATSH )];
 			if ( NDE >= TypeStart&&NDE <= TypeEnd )
 			{
 				*x = xs;
@@ -4003,7 +4004,7 @@ bool GetRandomPoint( short* x, short* y, byte TypeStart, byte TypeEnd )
 	} while ( NATT < 400 );
 	return false;
 };
-bool ConditionalSetRandomPiece( char* Name, byte StartType, byte EndType, int NAttempts )
+bool ConditionalSetRandomPiece( char* Name, unsigned char StartType, unsigned char EndType, int NAttempts )
 {
 	short* vx = NULL;
 	short* vy = NULL;
@@ -4058,7 +4059,7 @@ bool ConditionalSetRandomPiece( char* Name, byte StartType, byte EndType, int NA
 	return Done;
 };
 bool ProcessMessages();
-bool ConditionalSetRandomPiece1( char* Name, byte StartType, byte EndType, int NAttempts )
+bool ConditionalSetRandomPiece1( char* Name, unsigned char StartType, unsigned char EndType, int NAttempts )
 {
 	if ( StartType == 0xFF )
 	{
@@ -4135,7 +4136,7 @@ PieceList::PieceList( char* Name )
 	MaxNames = 0;
 	Load( Name );
 };
-void CreateNatDealing( int N, byte* Nats, short* Nx, short* Ny )
+void CreateNatDealing( int N, unsigned char* Nats, short* Nx, short* Ny )
 {
 	InitNatDeal();
 
@@ -4154,7 +4155,7 @@ void LimitZones()
 	{
 		GenArea* GA = GMAP.GTopMap + i;
 		int ofs = ( GA->x >> 1 ) + ( ( GA->y >> 1 ) << NATSH );
-		byte host = NatDeals[ofs];
+		unsigned char host = NatDeals[ofs];
 		if ( host < 128 )
 		{
 			GA->Nation = ( host >> 7 >> 1 );
@@ -4216,9 +4217,9 @@ void ClearCenterRound( int x, int y, int R )
 int NCRound;
 int CRoundX[8];
 int CRoundY[8];
-bool GenerateStartUnits( char* NationID, byte NI, int x, int y, int GenIndex );
+bool GenerateStartUnits( char* NationID, unsigned char NI, int x, int y, int GenIndex );
 void PictureCordons();
-byte CordonIDX[8];
+unsigned char CordonIDX[8];
 int PeaceTimeLeft = 300;
 int MaxPeaceTime = 0;
 int PeaceTimeStage = 0;
@@ -4236,7 +4237,7 @@ int GetUnitActivity( OneObject* OB )
 		int ym = OB->RealY >> 11;
 		if ( xm <= 0 || ym <= 0 || xm >= NATLX || ym >= NATLX )
 			return 0;
-		byte Deal = NatDeals[xm + ( ym << ( TopSH - 1 ) )];
+		unsigned char Deal = NatDeals[xm + ( ym << ( TopSH - 1 ) )];
 		if ( Deal >= 128 )
 			return 0;
 		Deal >>= 4;
@@ -4248,7 +4249,7 @@ int GetUnitActivity( OneObject* OB )
 	return -1;
 }
 
-bool CheckBuildPossibility( byte NI, int x, int y )
+bool CheckBuildPossibility( unsigned char NI, int x, int y )
 {
 	if ( !( PeaceTimeLeft&&NatDeals ) )
 	{
@@ -4260,7 +4261,7 @@ bool CheckBuildPossibility( byte NI, int x, int y )
 	{
 		return false;
 	}
-	byte Deal = NatDeals[xm + ( ym << ( TopSH - 1 ) )];
+	unsigned char Deal = NatDeals[xm + ( ym << ( TopSH - 1 ) )];
 	if ( Deal >= 128 )
 	{
 		return true;
@@ -4275,11 +4276,11 @@ bool CheckBuildPossibility( byte NI, int x, int y )
 }
 
 void GenerateNationalResources( char* Mines, char* Trees, char* Stones,
-	int NGold, int NIron, int NCoal, int NPlay, word* Units, int GenIndex )
+	int NGold, int NIron, int NCoal, int NPlay, unsigned short* Units, int GenIndex )
 {
-	byte NatStart[8];
+	unsigned char NatStart[8];
 	NCRound = 0;
-	byte NIDX[8];
+	unsigned char NIDX[8];
 	for ( int i = 0; i < 8; i++ )NatStart[i] = NatPres[i];
 	int NP = 0;
 	int nattm = 0;
@@ -4304,7 +4305,7 @@ void GenerateNationalResources( char* Mines, char* Trees, char* Stones,
 		CordonIDX[Nat] = 0xFF;
 		if ( NatPres[Nat] )
 		{
-			byte v = Nat << 4;
+			unsigned char v = Nat << 4;
 			//1.Generating trees
 			PieceList OBJS( Trees );
 			if ( OBJS.NNames )
@@ -4359,7 +4360,7 @@ void GenerateNationalResources( char* Mines, char* Trees, char* Stones,
 	{
 		if ( NatPres[Nat] )
 		{
-			byte v = Nat << 4;
+			unsigned char v = Nat << 4;
 			//1.Generating trees
 			PieceList OBJS( Trees );
 
@@ -4506,7 +4507,7 @@ void PictureCordons()
 	int MAX = ( 60 << ADDSH ) - 2;
 	bool change;
 	int SH0 = 6 + ADDSH;
-	byte* TMP = new byte[NATLX*NATLX];
+	unsigned char* TMP = new unsigned char[NATLX*NATLX];
 	memcpy( TMP, NatDeals, NATLX*NATLX );
 	do
 	{
@@ -4517,7 +4518,7 @@ void PictureCordons()
 			for ( int ix = 2; ix < MAX; ix++ )
 			{
 				int ofs = ix + ( iy << SH0 );
-				byte c = TMP[ofs];
+				unsigned char c = TMP[ofs];
 				if ( c == 0xFF )
 				{
 					if ( TMP[ofs + 1] != 0xFF )
@@ -4561,7 +4562,7 @@ void PictureCordons()
 			{
 				int x0 = ( x << 7 ) + 64;
 				int y0 = ( y << 7 ) + 64;
-				byte c = NatDeals[ofs];
+				unsigned char c = NatDeals[ofs];
 				if ( c != 0xFF )
 				{
 					c >>= 4;
@@ -4803,7 +4804,7 @@ void TestGenMap()
 	//					  "MsTools\\Bitmaps\\Soft.bmp");
 }
 
-void DelWhitePt( byte* Data, int x, int y )
+void DelWhitePt( unsigned char* Data, int x, int y )
 {
 	if ( x >= 0 && y >= 0 && x < 256 && y < 256 )
 	{
@@ -4820,11 +4821,11 @@ void DelWhitePt( byte* Data, int x, int y )
 	}
 }
 
-void ReadHiMap( char* Name, byte** Data, byte Default )
+void ReadHiMap( char* Name, unsigned char** Data, unsigned char Default )
 {
 	BMPformat BM;
-	byte* Data24;
-	*Data = new byte[65536];
+	unsigned char* Data24;
+	*Data = new unsigned char[65536];
 	memset( *Data, 0, 65536 );
 	if ( ReadBMP24( Name, &BM, &Data24 ) )
 	{
@@ -4838,7 +4839,7 @@ void ReadHiMap( char* Name, byte** Data, byte Default )
 	}
 }
 
-void DelWhiteSpot( byte* Data, int x, int y )
+void DelWhiteSpot( unsigned char* Data, int x, int y )
 {
 	DelWhitePt( Data, x, y );
 
@@ -4867,25 +4868,25 @@ void DelWhiteSpot( byte* Data, int x, int y )
 	DelWhitePt( Data, x + 1, y + 2 );
 }
 
-void DelBorder( byte* Data )
+void DelBorder( unsigned char* Data )
 {
 	int pos = 0;
-	byte* Data1 = new byte[256 * 256 * 3];
+	unsigned char* Data1 = new unsigned char[256 * 256 * 3];
 	memcpy( Data1, Data, 256 * 256 * 3 );
 	for ( int i = 0; i < 65536; i++ )
 	{
-		byte B = Data1[pos];
-		byte G = Data1[pos + 1];
-		byte R = Data1[pos + 2];
+		unsigned char B = Data1[pos];
+		unsigned char G = Data1[pos + 1];
+		unsigned char R = Data1[pos + 2];
 		if ( !( R || G || B ) )DelWhiteSpot( Data, i & 255, i >> 8 );
 		pos += 3;
 	};
 	free( Data1 );
 }
 
-void SoftZones( char* Name, byte* VHI )
+void SoftZones( char* Name, unsigned char* VHI )
 {
-	byte* Data;
+	unsigned char* Data;
 	ReadHiMap( Name, &Data, 0 );
 	int* Vertices = NULL;
 	int NVert = 0;
@@ -4917,7 +4918,7 @@ void SoftZones( char* Name, byte* VHI )
 	if ( NVert )
 	{
 		short* VertHi = new short[NVert];
-		byte*  VHIT = new byte[NVert];
+		unsigned char*  VHIT = new unsigned char[NVert];
 		for ( int j = 0; j < 50; j++ )
 		{
 			for ( int i = 0; i < NVert; i++ )
@@ -5012,20 +5013,20 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		}
 	}
 
-	byte* BData;
+	unsigned char* BData;
 	BMPformat BM;
 
 	memset( TexMap, 0, ( MaxTH + 1 )*MaxTH );
 
 	if ( ReadBMP24( Relief, &BM, &BData ) )
 	{
-		byte* REND = new byte[65537];
+		unsigned char* REND = new unsigned char[65537];
 		int pos = 0;
 		for ( int i = 0; i < 65536; i++ )
 		{
-			byte B = BData[pos];
-			byte G = BData[pos + 1];
-			byte R = BData[pos + 2];
+			unsigned char B = BData[pos];
+			unsigned char G = BData[pos + 1];
+			unsigned char R = BData[pos + 2];
 			if ( R < 10 && G < 10 && B>240 )
 			{
 				REND[i] = 0;
@@ -5038,7 +5039,7 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		}
 
 		//softing the terrain
-		byte* REND1 = new byte[65537];
+		unsigned char* REND1 = new unsigned char[65537];
 		memcpy( REND1, REND, 65537 );
 		int NN = 30 >> ( ADDSH - 1 );
 		for ( int j = 0; j < NN; j++ )
@@ -5106,8 +5107,8 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		}
 
 		//creating cost line
-		byte CostTex[40][8];
-		byte NTex[40];
+		unsigned char CostTex[40][8];
+		unsigned char NTex[40];
 		int NTLines;
 		int Divisor;
 		if ( !( GetKeyState( VK_CONTROL ) & 0x8000 ) )
@@ -5163,7 +5164,7 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		DelBorder( BData );
 		memset( THMap, 0, ( MaxTH + 1 )*MaxTH * 2 );
 		GMAP.Clear();
-		byte* HiMap;
+		unsigned char* HiMap;
 		ReadHiMap( Mount, &HiMap, 255 );
 		for ( int i = 0; i < 300000; i++ )
 		{
@@ -5232,7 +5233,7 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		{
 			TexMap[i] &= 127;
 		};
-		byte* HiGround;
+		unsigned char* HiGround;
 		ReadHiMap( Ground, &HiGround, 0 );
 		int maxx = ( msx << 5 ) + 64;
 		for ( int v = 0; v < MaxPointIndex; v++ )
@@ -5274,12 +5275,12 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 //----------------------------SAMPLES ENGINE-------------------//
 struct SampleRoot
 {
-	byte RootType;
-	byte Direction;
+	unsigned char RootType;
+	unsigned char Direction;
 	short x;
 	short y;
-	DWORD AttachMask;
-	DWORD Reserved;
+	unsigned long AttachMask;
+	unsigned long Reserved;
 };
 struct SampleSrc
 {
@@ -5412,9 +5413,9 @@ void SamplesSet::EditRootParam( int x, int y )
 	char CRT[32] = "0";
 	InputBox* IBT = DSS.addInputBox( NULL, WNDLX / 2, WNDLY - 35, CRT, 8, 80, 20, &YellowFont, &WhiteFont );
 	ItemChoose = -1;
-	DWORD MASK = 0;
-	byte CurDir = 0;
-	byte CurType = prevRoot;
+	unsigned long MASK = 0;
+	unsigned char CurDir = 0;
+	unsigned char CurType = prevRoot;
 	//search for existing root
 	for ( int i = 0; i < NSmp; i++ )if ( !_stricmp( SSET[i].Name, CurrentSet ) )
 	{
@@ -5484,8 +5485,8 @@ void SamplesSet::EditRootParam( int x, int y )
 };
 int DDDXX[8] = { 0,1,1,1,0,-1,-1,-1 };
 int DDDYY[8] = { -1,-1,0,1,1,1,0,-1 };
-void CBar( int x, int y, int Lx, int Ly, byte c );
-void xLine( int x, int y, int x1, int y1, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
+void xLine( int x, int y, int x1, int y1, unsigned char c );
 void SamplesSet::Draw()
 {
 	int dx = mapx << 5;
@@ -5506,7 +5507,7 @@ void SamplesSet::Draw()
 		{
 			int x0 = ( SS->ROOT[j].x << 8 ) - dx;
 			int y0 = ( SS->ROOT[j].y << 7 ) - dy;
-			DWORD MSK = SS->ROOT[j].AttachMask;
+			unsigned long MSK = SS->ROOT[j].AttachMask;
 			for ( int q = 0; q < 8; q++ )if ( MSK&( 1 << q ) )
 			{
 				int dx = DDDXX[q];
@@ -5517,7 +5518,7 @@ void SamplesSet::Draw()
 			ShowString( x0 + 4, y0 + 20, SS->Name, &SmallRedFont );
 			if ( SS->ROOT[j].Direction < 8 )
 			{
-				byte dd = SS->ROOT[j].Direction;
+				unsigned char dd = SS->ROOT[j].Direction;
 				int dx = DDDXX[dd];
 				int dy = DDDYY[dd];
 				xLine( x0 + 128, y0 + 64, x0 + 128 + dx * 32, y0 + 64 + dy * 16, 0x9B );
@@ -5818,16 +5819,16 @@ struct OneLinkStart
 {
 	int x;
 	int y;
-	DWORD Mask;
-	byte Type;
+	unsigned long Mask;
+	unsigned char Type;
 };
 
 class LinkSys
 {
 public:
 	SamplesSet LINKS;
-	word* Map;
-	word* Map2;
+	unsigned short* Map;
+	unsigned short* Map2;
 	int Nx;
 	SampleStamp* STM;
 	int NStm;
@@ -5836,25 +5837,25 @@ public:
 	int MaxLis;
 
 
-	word NSMP[MaxType][8];
-	word* SMP[MaxType][8];
-	byte* SMIDX[MaxType][8];
+	unsigned short NSMP[MaxType][8];
+	unsigned short* SMP[MaxType][8];
+	unsigned char* SMIDX[MaxType][8];
 	void LoadOneLink( char* Name );
 	void Init( int Nx, int Ny );
 	void Close();
 	void LoadSSet( char* list );
-	bool GenerateLink( int x, int y, DWORD Mask, byte Type, int BreakProb );
+	bool GenerateLink( int x, int y, unsigned long Mask, unsigned char Type, int BreakProb );
 	bool GenerateRandomLink( int BreakProb );
 	void SetLockInMap( int x0, int y0, int SmID, int Root );
 	bool CheckLockInMap( int x0, int y0, int SmID, int Root );
-	void SetLockPt( int x, int y, word Val );
-	word GetLockPt( int x, int y );
+	void SetLockPt( int x, int y, unsigned short Val );
+	unsigned short GetLockPt( int x, int y );
 	void AddStamp( char* Name, int x, int y );
 	void ExecuteStamps();
 	void ClearStamps();
-	void AddLinkStart( int x, int y, DWORD Mask, byte Type );
+	void AddLinkStart( int x, int y, unsigned long Mask, unsigned char Type );
 };
-void LinkSys::AddLinkStart( int x, int y, DWORD Mask, byte Type )
+void LinkSys::AddLinkStart( int x, int y, unsigned long Mask, unsigned char Type )
 {
 	if ( NLis >= MaxLis )
 	{
@@ -5874,9 +5875,9 @@ void LinkSys::Init( int x, int y )
 	memset( &SMP, 0, sizeof SMP );
 	memset( &SMIDX, 0, sizeof SMIDX );
 	Nx = x;
-	Map = new word[Nx*Nx];
+	Map = new unsigned short[Nx*Nx];
 	memset( Map, 0, Nx*Nx * 2 );
-	Map2 = new word[Nx*Nx];
+	Map2 = new unsigned short[Nx*Nx];
 	memset( Map2, 0, Nx*Nx * 2 );
 	STM = NULL;
 	NStm = 0;
@@ -5896,7 +5897,7 @@ void  LinkSys::LoadOneLink( char* Name )
 
 		RBlockRead( F, &i, 4 );
 		RBlockRead( F, &i, 4 );
-		word Nsq, Nrt;
+		unsigned short Nsq, Nrt;
 		RBlockRead( F, &Nsq, 2 );
 		RBlockRead( F, &Nrt, 2 );
 		LINKS.SSET = (SampleSrc*) realloc( LINKS.SSET, ( LINKS.NSmp + 1 ) * sizeof( SampleSrc ) );
@@ -5931,8 +5932,8 @@ void  LinkSys::LoadOneLink( char* Name )
 			int rt = SS->ROOT[j].RootType;
 			int k = SS->ROOT[j].Direction;
 			int nn = NSMP[rt][k];
-			SMP[rt][k] = (word*) realloc( SMP[rt][k], ( nn + 1 ) * 2 );
-			SMIDX[rt][k] = (byte*) realloc( SMIDX[rt][k], nn + 1 );
+			SMP[rt][k] = (unsigned short*) realloc( SMP[rt][k], ( nn + 1 ) * 2 );
+			SMIDX[rt][k] = (unsigned char*) realloc( SMIDX[rt][k], nn + 1 );
 			SMP[rt][k][nn] = cur;
 			SMIDX[rt][k][nn] = j;
 			NSMP[rt][k]++;
@@ -5972,7 +5973,7 @@ struct RLPAR
 	bool Busy;
 	int x0, y0, tt, idx, type;
 	int Prev_x0, Prev_y0, Prev_tt, Prev_idx;
-	DWORD NEXTMASK;
+	unsigned long NEXTMASK;
 };
 
 bool LinkSys::GenerateRandomLink( int rr )
@@ -5984,7 +5985,7 @@ bool LinkSys::GenerateRandomLink( int rr )
 	return GenerateLink( x0, y0, 0xFF, TypeIDX[nn + nn], TypeIDX[nn + nn + 1] );
 }
 
-bool LinkSys::GenerateLink( int param_x0, int param_y0, DWORD Mask, byte Type, int rr )
+bool LinkSys::GenerateLink( int param_x0, int param_y0, unsigned long Mask, unsigned char Type, int rr )
 {
 	RLPAR THR[NRLPAR];
 	memset( THR, 0xFF, sizeof THR );
@@ -6010,7 +6011,7 @@ bool LinkSys::GenerateLink( int param_x0, int param_y0, DWORD Mask, byte Type, i
 			do
 			{
 				int dir = mrand() & 7;
-				DWORD NEXTMASK = THR[p].NEXTMASK;
+				unsigned long NEXTMASK = THR[p].NEXTMASK;
 				if ( NEXTMASK&( 1 << dir ) )
 				{
 					int nn = NSMP[THR[p].type][dir];
@@ -6160,7 +6161,7 @@ void TEST_GM()
 
 }
 
-word LIDX = 1;
+unsigned short LIDX = 1;
 void LinkSys::SetLockInMap( int x0, int y0, int SmID, int Root )
 {
 	SampleRoot* SR = LINKS.SSET[SmID].ROOT + Root;
@@ -6184,7 +6185,7 @@ bool LinkSys::CheckLockInMap( int x0, int y0, int SmID, int Root )
 	return true;
 }
 
-void LinkSys::SetLockPt( int x, int y, word Val )
+void LinkSys::SetLockPt( int x, int y, unsigned short Val )
 {
 	if ( x < 0 || x >= Nx || y < 0 || y >= Nx )
 	{
@@ -6203,7 +6204,7 @@ void LinkSys::SetLockPt( int x, int y, word Val )
 	}
 }
 
-word LinkSys::GetLockPt( int x, int y )
+unsigned short LinkSys::GetLockPt( int x, int y )
 {
 	if ( x < 0 || x >= Nx || y < 0 || y >= Nx )
 	{
@@ -6239,7 +6240,7 @@ void GenerateWithStyle( char* terr )
 	{
 		for ( int i = 0; i < VertInLine; i++ )
 		{
-			byte tex = TexMap[vrt];
+			unsigned char tex = TexMap[vrt];
 			if ( tex > 127 )
 			{
 				LSS.SetLockPt( i >> 3, j >> 3, 1 );
@@ -6333,7 +6334,7 @@ void LinkSys::ClearStamps()
 class SaveBuf
 {
 public:
-	byte* Buf;
+	unsigned char* Buf;
 	int Pos;
 	int Size;
 	int RealSize;
@@ -6347,7 +6348,7 @@ public:
 
 void FAST_RM_Load( SaveBuf* SB, int x, int y );
 
-byte IsMount;
+unsigned char IsMount;
 
 void LinkSys::ExecuteStamps()
 {
@@ -6410,12 +6411,12 @@ inline int GET_INT( SaveBuf* SB )
 inline int GET_DWORD( SaveBuf* SB )
 {
 	SB->Pos += 4;
-	return *( (DWORD*) ( SB->Buf + SB->Pos - 4 ) );
+	return *( (unsigned long*) ( SB->Buf + SB->Pos - 4 ) );
 };
 inline int GET_BYTE( SaveBuf* SB )
 {
 	SB->Pos++;
-	return *( (byte*) ( SB->Buf + SB->Pos - 1 ) );
+	return *( (unsigned char*) ( SB->Buf + SB->Pos - 1 ) );
 };
 inline int GET_CHAR( SaveBuf* SB )
 {
@@ -6430,7 +6431,7 @@ inline int GET_SHORT( SaveBuf* SB )
 inline int GET_WORD( SaveBuf* SB )
 {
 	SB->Pos += 2;
-	return *( (word*) ( SB->Buf + SB->Pos - 2 ) );
+	return *( (unsigned short*) ( SB->Buf + SB->Pos - 2 ) );
 }
 
 int FAST_RM_LoadVertices( SaveBuf* SB, int Vsx, int Vsy, int* VIDX, int MaxVIDX )
@@ -6446,8 +6447,8 @@ int FAST_RM_LoadVertices( SaveBuf* SB, int Vsx, int Vsy, int* VIDX, int MaxVIDX 
 	{
 		short vx;
 		short vy;
-		byte tex;
-		byte s1, s2, s3;
+		unsigned char tex;
+		unsigned char s1, s2, s3;
 		short Height;
 
 		vx = GET_SHORT( SB );
@@ -6573,7 +6574,7 @@ void FAST_RM_LoadSprites( SaveBuf*SB, int xc, int yc )
 	for ( int i = 0; i < ns; i++ )
 	{
 		int x, y;
-		word sign, id;
+		unsigned short sign, id;
 		sign = GET_WORD( SB );
 		x = GET_INT( SB );
 		y = GET_INT( SB );
@@ -6603,8 +6604,8 @@ void FAST_RM_LoadSprites( SaveBuf*SB, int xc, int yc )
 	}
 }
 
-void FastAddLockBar( word x, word y );
-void FastAddUnLockBar( word x, word y );
+void FastAddLockBar( unsigned short x, unsigned short y );
+void FastAddUnLockBar( unsigned short x, unsigned short y );
 void FAST_RM_LoadLock( SaveBuf* SB, int xc, int yc )
 {
 	int NL, NU;
@@ -6638,7 +6639,7 @@ void FAST_RM_LoadObj( SaveBuf* SB, int xc, int yc )
 		int xm, ym;
 		xm = GET_SHORT( SB );
 		ym = GET_SHORT( SB );
-		byte NT = GET_BYTE( SB );
+		unsigned char NT = GET_BYTE( SB );
 		NT = MyNation;
 		xBlockRead( SB, ONAME, 31 );
 		GeneralObject** GO = NATIONS[NT].Mon;
@@ -6719,15 +6720,15 @@ void FAST_RM_Load( SaveBuf* SB, int x, int y )
 	tt0 = 0;
 }
 
-extern byte trans4[65536];
-extern byte trans8[65536];
-byte carr[39] = { 47,241,85,85,45,45,47,87,45,87,47,85,241,85,85,45,47,241,85,85,45,47,85,45,45,47,85,91,45,47,85 };
+extern unsigned char trans4[65536];
+extern unsigned char trans8[65536];
+unsigned char carr[39] = { 47,241,85,85,45,45,47,87,45,87,47,85,241,85,85,45,47,241,85,85,45,47,85,45,45,47,85,91,45,47,85 };
 void Draw1( int x, int y )
 {
 	if ( x<0 || x>RealLx || y<4 || y>RealLy )return;
 	int ofs = int( ScreenPtr ) + x + y*ScrWidth;
 	int xx1 = int( trans8 );
-	byte c = carr[randoma[ofs & 8191] % 10];
+	unsigned char c = carr[randoma[ofs & 8191] % 10];
 	__asm {
 		mov eax, ofs
 		xor ebx, ebx
@@ -6772,7 +6773,7 @@ void Draw_GRASS()
 		};
 	*/
 };
-byte GrassMask[256] = {
+unsigned char GrassMask[256] = {
 	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,1,0,1,
@@ -6924,7 +6925,7 @@ GlobalProgress::GlobalProgress()
 	Setup();
 };
 GlobalProgress GPROG;
-byte ExchangeTex( byte tex )
+unsigned char ExchangeTex( unsigned char tex )
 {
 	switch ( tex )
 	{

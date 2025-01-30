@@ -1,6 +1,6 @@
 class SaveBuf{
 public:
-	byte* Buf;
+	unsigned char* Buf;
 	int Pos;
 	int Size;
 	int RealSize;

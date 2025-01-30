@@ -3,11 +3,11 @@
 
 BOOL	isiMatchesMask(LPSTR lpszFile, LPSTR lpszMask);
 
-DWORD	isiCalcHash(LPSTR lpszFileName);
+unsigned long	isiCalcHash(LPSTR lpszFileName);
 
-void	isiDecryptMem(LPBYTE lpbBuffer, DWORD dwSize, BYTE dbKey);
+void	isiDecryptMem(unsigned char* lpbBuffer, unsigned long dwSize, BYTE dbKey);
 
-void	isiEncryptMem(LPBYTE lpbBuffer, DWORD dwSize, BYTE dbKey);
+void	isiEncryptMem(unsigned char* lpbBuffer, unsigned long dwSize, BYTE dbKey);
 
 BOOL	isiFileExists(LPSTR lpszFileName);
 

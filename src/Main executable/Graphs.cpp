@@ -25,7 +25,6 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 #include "Conststr.h"
@@ -56,7 +55,7 @@ public:
 	char* Header;
 	OneGraph GRP[16];
 	Graph();
-	void Add(int t, int v, byte c);
+	void Add(int t, int v, unsigned char c);
 	void Clear();
 	void Draw(int x0, int y0, int Lx, int Ly);
 };
@@ -106,7 +105,7 @@ void OneGraph::AddTV(int t, int v) {
 	};
 	N++;
 };
-void Graph::Add(int t, int v, byte c) {
+void Graph::Add(int t, int v, unsigned char c) {
 	for (int i = 0; i < 16; i++)if (GRP[i].Color == c) {
 		GRP[i].AddTV(t, v);
 		return;
@@ -120,7 +119,7 @@ void Graph::Add(int t, int v, byte c) {
 void Graph::Clear() {
 	for (int i = 0; i < 16; i++)GRP[i].Clear();
 };
-void xLine(int x, int y, int x1, int y1, byte c);
+void xLine(int x, int y, int x1, int y1, unsigned char c);
 void Graph::Draw(int x0, int y0, int Lx, int Ly) {
 	int MaxT = -2147483647; //BUGFIX: -2147483648 causes C4146
 	int MinT = 2147483647;
@@ -181,7 +180,7 @@ void DrawAllGrp()
 #endif
 }
 
-void ADDGR(int g, int t, int v, byte c)
+void ADDGR(int g, int t, int v, unsigned char c)
 {
 #ifndef NOGRAF
 	GRPS[g].Add(t, v, c);

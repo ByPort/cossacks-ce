@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -33,10 +34,10 @@ void ReportIt( char* s, ... )
 //
 struct OneRequest
 {
-	DWORD DevIndex;
-	DWORD Handle;
-	DWORD IHandle;
-	DWORD Opt;
+	unsigned long DevIndex;
+	unsigned long Handle;
+	unsigned long IHandle;
+	unsigned long Opt;
 };
 struct OneSXP_Device
 {
@@ -46,7 +47,7 @@ struct OneSXP_Device
 	fnCloseRequest* CloseRequest;
 	fnProcess* Process;
 	fnCloseAll* CloseAll;
-	HMODULE H;
+	void* H;
 };
 class SXP_DevScope
 {
@@ -54,18 +55,18 @@ public:
 	OneRequest* REQ;
 	int NReq;
 	int MaxReq;
-	DWORD CurReq;
+	unsigned long CurReq;
 
 	OneSXP_Device* DEVS;
 	int NDEVS;
 	SXP_DevScope();
 	~SXP_DevScope();
 
-	DWORD SendRequest( sicExplorer* SXP, char* request, bool AllowNewWindow, bool Auto );
-	DWORD SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWindow, bool Auto );
+	unsigned long SendRequest( sicExplorer* SXP, char* request, bool AllowNewWindow, bool Auto );
+	unsigned long SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWindow, bool Auto );
 
-	DWORD GetRequestResult( DWORD Handle, ParsedRQ* Result );
-	void  CloseRequest( DWORD Handle );
+	unsigned long GetRequestResult(unsigned long Handle, ParsedRQ* Result );
+	void  CloseRequest(unsigned long Handle );
 	void  Process();
 	void  CloseAll();
 	void  Shutdown();
@@ -83,7 +84,7 @@ SXP_DevScope::~SXP_DevScope()
 
 void FilterRQ2Send( sicExplorer* SXP, ParsedRQ* RQ, bool AllowNew );
 
-DWORD SXP_DevScope::SendRequest( sicExplorer* SXP, char* request, bool AllowNewWindow, bool Auto )
+unsigned long SXP_DevScope::SendRequest( sicExplorer* SXP, char* request, bool AllowNewWindow, bool Auto )
 {
 	ParsedRQ P1;
 	P1.Parse( request );
@@ -98,7 +99,7 @@ DWORD SXP_DevScope::SendRequest( sicExplorer* SXP, char* request, bool AllowNewW
 	return SendRequest( SXP, &P1, AllowNewWindow, Auto );
 }
 
-DWORD SXP_DevScope::SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWindow, bool Auto )
+unsigned long SXP_DevScope::SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWindow, bool Auto )
 {
 	FilterRQ2Send( SXP, P1, AllowNewWindow );
 	for (int i = 0; i < P1->NComm; i++)if (!P1->Comm[i].ComID[0])
@@ -113,7 +114,7 @@ DWORD SXP_DevScope::SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWi
 		P1->Compact( data, sz );
 		if (DEVS[i].SendRequest)
 		{
-			DWORD H = DEVS[i].SendRequest( data, sz );
+			unsigned long H = DEVS[i].SendRequest( data, sz );
 			free( data );
 			if (NReq >= MaxReq)
 			{
@@ -132,7 +133,7 @@ DWORD SXP_DevScope::SendRequest( sicExplorer* SXP, ParsedRQ* P1, bool AllowNewWi
 	};
 	return 0;
 };
-DWORD SXP_DevScope::GetRequestResult( DWORD Handle, ParsedRQ* Result )
+unsigned long SXP_DevScope::GetRequestResult( unsigned long Handle, ParsedRQ* Result )
 {
 	Result->Clear();
 	for (int i = 0; i < NReq; i++)if (Handle == REQ[i].IHandle)
@@ -141,7 +142,7 @@ DWORD SXP_DevScope::GetRequestResult( DWORD Handle, ParsedRQ* Result )
 		{
 			char* res;
 			int sz;
-			DWORD R = DEVS[REQ[i].DevIndex].GetRequestResult( REQ[i].Handle, &res, &sz );
+			unsigned long R = DEVS[REQ[i].DevIndex].GetRequestResult( REQ[i].Handle, &res, &sz );
 			if (R == 128)
 			{//success
 				Result->Extract( res, sz );
@@ -152,7 +153,7 @@ DWORD SXP_DevScope::GetRequestResult( DWORD Handle, ParsedRQ* Result )
 	};
 	return 1;
 };
-void  SXP_DevScope::CloseRequest( DWORD Handle )
+void  SXP_DevScope::CloseRequest( unsigned long Handle )
 {
 	for (int i = 0; i < NReq; i++)if (Handle == REQ[i].IHandle)
 	{
@@ -179,7 +180,7 @@ void  SXP_DevScope::Shutdown()
 {
 	for (int i = 0; i < NDEVS; i++)
 	{
-		FreeLibrary( DEVS[i].H );
+		FreeLibrary( (HMODULE)DEVS[i].H );
 	};
 	if (DEVS)free( DEVS );
 	int idx = CurReq;
@@ -188,21 +189,21 @@ void  SXP_DevScope::Shutdown()
 };
 void SXP_DevScope::RegisterDevice( char* ID, char* DLL_Path )
 {
-	HMODULE H = LoadLibrary( DLL_Path );
+	void* H = LoadLibrary( DLL_Path );
 	if (H)
 	{
 		DEVS = (OneSXP_Device*) realloc( DEVS, ( NDEVS + 1 ) * sizeof OneSXP_Device );
 		char STR[64];
 		sprintf( STR, "?%s_SendRequest@@YAKPADH@Z", ID );
-		DEVS[NDEVS].SendRequest = (fnSendRequest*) GetProcAddress( H, STR );
+		DEVS[NDEVS].SendRequest = (fnSendRequest*) GetProcAddress( (HMODULE)H, STR );
 		sprintf( STR, "?%s_GetRequestResult@@YAKKPAPADPAH@Z", ID );
-		DEVS[NDEVS].GetRequestResult = (fnGetRequestResult*) GetProcAddress( H, STR );
+		DEVS[NDEVS].GetRequestResult = (fnGetRequestResult*) GetProcAddress( (HMODULE)H, STR );
 		sprintf( STR, "?%s_Process@@YAXXZ", ID );
-		DEVS[NDEVS].Process = (fnProcess*) GetProcAddress( H, STR );
+		DEVS[NDEVS].Process = (fnProcess*) GetProcAddress( (HMODULE)H, STR );
 		sprintf( STR, "?%s_CloseAll@@YAXXZ", ID );
-		DEVS[NDEVS].CloseAll = (fnCloseAll*) GetProcAddress( H, STR );
+		DEVS[NDEVS].CloseAll = (fnCloseAll*) GetProcAddress( (HMODULE)H, STR );
 		sprintf( STR, "?%s_CloseRequest@@YAXK@Z", ID );
-		DEVS[NDEVS].CloseRequest = (fnCloseRequest*) GetProcAddress( H, STR );
+		DEVS[NDEVS].CloseRequest = (fnCloseRequest*) GetProcAddress( (HMODULE)H, STR );
 		DEVS[NDEVS].H = H;
 		strcpy( DEVS[NDEVS].Name, ID );
 		NDEVS++;
@@ -218,7 +219,7 @@ void InitDevs()
 	DEVSCOPE.RegisterDevice( "GW", "GW_Server.DLL" );
 }
 
-DWORD SendGlobalRequest( sicExplorer* SXP, char* data, bool allow )
+unsigned long SendGlobalRequest( sicExplorer* SXP, char* data, bool allow )
 {
 	return DEVSCOPE.SendRequest( SXP, data, allow, 1 );
 }
@@ -278,7 +279,7 @@ char* SaveCurrentResultTo( OneSicWindow* OSW, char* dest )
 void EraseTempFiles()
 {
 	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( "Internet\\Cash\\tempcml_*.cml", &FD );
+	void* H = FindFirstFile( "Internet\\Cash\\tempcml_*.cml", &FD );
 	if (H&&H != INVALID_HANDLE_VALUE)
 	{
 		do
@@ -935,7 +936,7 @@ void exec_LW_bonus( int Np, char** par, int* size )
 	V = atoi( MON );
 	char VV[10];
 	VV[0] = 1;
-	*( (DWORD*) ( VV + 1 ) ) = V;
+	*( (unsigned long*) ( VV + 1 ) ) = V;
 	SetExComm( VV, 5 );
 };
 void exec_LW_message( int Np, char** par, int* size )
@@ -1159,7 +1160,7 @@ void exec_LW_proc( int Np, char** par, int* size )
 	LW_proc_type* pro = (LW_proc_type*) atoi( par[0] );
 	pro( par + 1, Np - 1 );
 };
-DWORD GetTableHash( OneSXPTable* TB, int Line );
+unsigned long GetTableHash( OneSXPTable* TB, int Line );
 //deleting elements from the table
 void exec_LW_dtbl( int Np, char** par, int* size )
 {
@@ -1171,11 +1172,11 @@ void exec_LW_dtbl( int Np, char** par, int* size )
 		if (SXT)
 		{
 			int nc = SXT->NCol;
-			DWORD* T = (DWORD*) par[1];
+			unsigned long* T = (unsigned long*) par[1];
 			int N = size[1] >> 2;
 			for (int i = 0; i < SXT->NLines; i++)
 			{
-				DWORD HV = GetTableHash( SXT, i );
+				unsigned long HV = GetTableHash( SXT, i );
 				for (int j = 0; j < N; j++)if (HV == T[j])
 				{
 					int pos0 = i*nc;
@@ -1242,7 +1243,7 @@ void ProcessDataXchange()
 			{
 				char* res;
 				int sz;
-				DWORD R = DEVSCOPE.DEVS[DEVSCOPE.REQ[i].DevIndex].GetRequestResult( 
+				unsigned long R = DEVSCOPE.DEVS[DEVSCOPE.REQ[i].DevIndex].GetRequestResult(
 					DEVSCOPE.REQ[i].Handle, &res, &sz );
 				if (R == 128)
 				{//success
@@ -1751,7 +1752,7 @@ __declspec( dllexport ) void SendRecBuffer( byte* Data, int size, bool Final )
 		P1.AddComm( "upfile" );
 		P1.AddParam( CurrUplID, strlen( CurrUplID ) + 1 );
 		P1.AddIntParam( Final );
-		DWORD* DATA = (DWORD*) malloc( size + 8 );
+		unsigned long* DATA = (unsigned long*) malloc( size + 8 );
 		DATA[0] = CurrUplPos;
 		DATA[1] = size;
 		memcpy( DATA + 2, Data, size );
@@ -1775,7 +1776,7 @@ void exec_LW_dfp( int Np, char** par, int* size )
 {
 	if (Np >= 2 && size[1] >= 8)
 	{
-		DWORD* DD = (DWORD*) par[1];
+		unsigned long* DD = (unsigned long*) par[1];
 		int ofs = DD[0];
 		int sz = DD[1];
 		char cc[128];
@@ -1808,7 +1809,7 @@ void exec_LW_dff( int Np, char** par, int* size )
 {
 	if (Np >= 2 && size[1] >= 8)
 	{
-		DWORD* DD = (DWORD*) par[1];
+		unsigned long* DD = (unsigned long*) par[1];
 		int ofs = DD[0];
 		int sz = DD[1];
 		char cc[128];

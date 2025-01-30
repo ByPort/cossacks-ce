@@ -1,8 +1,8 @@
 struct OneIChunk{
-	byte Index;
-	word size;
-	word Summ;
-	byte Data[64];
+	unsigned char Index;
+	unsigned short size;
+	unsigned short Summ;
+	unsigned char Data[64];
 };
 struct CurUpload{
 	bool Authenticated:1;
@@ -33,8 +33,8 @@ public:
 	InternetStatsChunks();
 	void Init();
 	void Clear();
-	int ReadChunkFrom(byte* Sourse);
-	void WriteChunk(byte* Src,int L,byte Type);
+	int ReadChunkFrom(unsigned char* Sourse);
+	void WriteChunk(unsigned char* Src,int L,unsigned char Type);
 	bool Upload(int ProfileID,char* Password,int Page);
 	bool Download(int ProfileID,int Page);
 	//----downloading process----//
@@ -44,7 +44,7 @@ public:
 	void ProcessUpload();
 };
 
-void STARTIGAME(char* GameName,char* Map,char* Nick,DWORD G_GUID);
+void STARTIGAME(char* GameName,char* Map,char* Nick,unsigned long G_GUID);
 void UPDATEIGAME();
 void LOOSEIGAME(char* Nick);
 void WINIGAME(char* Nick);

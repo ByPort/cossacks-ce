@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -136,14 +137,14 @@ int GetResVal(byte* res, int LX, int LY, int RLX, int RLY, int x, int y) {
 	return z1 + ((x - rx)*(z2 - z1)) / (rx1 - rx) + ((y - ry)*(z3 - z1)) / (ry1 - ry) - (((z2 + z3 - z1 - z4)*(x - rx)*(y - ry)) / (rx1 - rx) / (ry1 - ry));
 };
 byte* DATA;
-DWORD GetSumm(char* Name) {
+unsigned long GetSumm(char* Name) {
 	ResFile F = RReset(Name);
 	if (F != INVALID_HANDLE_VALUE) {
 		int sz = RFileSize(F);
 
 		RBlockRead(F, DATA, sz);
 		RClose(F);
-		DWORD SZZ = 0;
+		unsigned long SZZ = 0;
 		for (int i = 0; i < sz; i++)SZZ += DATA[i];
 		SZZ &= 65535;
 		return SZZ;

@@ -20,7 +20,7 @@ static char THIS_FILE[] = __FILE__;
 // CDeviceCD
 int StartTrack = 2;
 int NTracks = 19;
-byte TracksMask[32] = { 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 };
+unsigned char TracksMask[32] = { 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 };
 CDeviceCD::CDeviceCD()
 {
 	GFILE* f = Gopen("Tracks.cd", "r");
@@ -38,8 +38,6 @@ CDeviceCD::~CDeviceCD()
 }
 
 
-// CDeviceCD message handlers
-MCIDEVICEID glFDeviceID;
 bool CDeviceCD::Open()
 {
 	bool success = SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -87,7 +85,7 @@ bool CDeviceCD::Close()
 		return true;
 	}
 	else
-		return FALSE;
+		return false;
 }
 
 bool CDeviceCD::Pause()
@@ -105,7 +103,7 @@ bool CDeviceCD::Pause()
 			return false;
 	}
 	else
-		return FALSE;
+		return false;
 }
 
 bool CDeviceCD::Resume()
@@ -121,7 +119,7 @@ bool CDeviceCD::Resume()
 			return false;
 	}
 	else
-		return FALSE;
+		return false;
 }
 
 bool CDeviceCD::Stop()
@@ -129,25 +127,25 @@ bool CDeviceCD::Stop()
 	return Pause();
 }
 
-DWORD CDeviceCD::GetVolume()
+unsigned long CDeviceCD::GetVolume()
 {
 	float gain = SDL_GetAudioStreamGain(audioStream);
 	if (gain == -1.0f)
 	{
 		gain = 0.0f;
 	}
-	return static_cast<DWORD>(round(gain * 100.0f));
+	return static_cast<unsigned long>(round(gain * 100.0f));
 }
 
-bool CDeviceCD::SetVolume(DWORD Volume)
+bool CDeviceCD::SetVolume(unsigned long Volume)
 {
 	// TODO: set volume only if different from current volume to avoid calling it every frame
 	bool success = SDL_SetAudioStreamGain(audioStream, static_cast<float>(Volume / 100.0f));
 
 	return 1;
 }
-extern HWND hwnd;
-bool CDeviceCD::Play(DWORD Track)
+
+bool CDeviceCD::Play(unsigned long Track)
 {
 	// TODO: FREE BUFFER IF NEEDED, CLEAN STREAM (to stop the current music) and PLAY NEXT
 	// TODO: Music stops after ~30 sec
@@ -221,7 +219,7 @@ bool CDeviceCD::Play(DWORD Track)
 		return true;
 	}
 	else
-		return FALSE;
+		return false;
 }
 int PrevTrack3 = -1;
 int PrevTrack2 = -1;
@@ -266,5 +264,5 @@ int GetCDVolume()
 
 void SetCDVolume(int Vol)
 {
-	CDPLAY.SetVolume(static_cast<DWORD>(Vol));
+	CDPLAY.SetVolume(static_cast<unsigned long>(Vol));
 }

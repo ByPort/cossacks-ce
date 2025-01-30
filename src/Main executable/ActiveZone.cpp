@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include <stdlib.h>
 #include "ResFile.h"
@@ -8,7 +9,6 @@
 #include "fog.h"
 #include "walls.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include <math.h>
 
 #include "Megapolis.h"
@@ -39,7 +39,7 @@ ActiveZone* AZones = NULL;
 int NAZones = 0;
 int MaxAZones = 0;
 
-void DrawPlaneLine( int x0, int y0, int x1, int y1, byte c );
+void DrawPlaneLine( int x0, int y0, int x1, int y1, unsigned char c );
 void Draw3DRound( int x, int y, int r )
 {
 	int N = ( ( r * 6 ) >> 5 ) + 5;
@@ -263,7 +263,7 @@ void ControlAZones( int x, int y )
 
 };
 int CurrentAGroup = -1;
-void ActiveGroup::Draw( byte c )
+void ActiveGroup::Draw( unsigned char c )
 {
 	MinX = 10000000;
 	MinY = 10000000;
@@ -276,7 +276,7 @@ void ActiveGroup::Draw( byte c )
 	AmaxY = 0;
 	for (int i = 0; i < N; i++)
 	{
-		word MID = Units[i];
+		unsigned short MID = Units[i];
 		if (MID != 0xFFFF)
 		{
 			OneObject* OB = Group[MID];
@@ -343,15 +343,15 @@ void CreateNewActiveGroup( char* gName )
 	ActiveGroup* AG = AGroups + NAGroups;
 	NAGroups++;
 	int NU = NSL[MyNation];
-	word* ids = Selm[MyNation];
-	AG->Units = new word[NU];
-	AG->Serials = new word[NU];
+	unsigned short* ids = Selm[MyNation];
+	AG->Units = new unsigned short[NU];
+	AG->Serials = new unsigned short[NU];
 	AG->N = 0;
 	AG->Name = new char[strlen( gName ) + 1];
 	strcpy( AG->Name, gName );
 	for (int i = 0; i < NU; i++)
 	{
-		word MID = ids[i];
+		unsigned short MID = ids[i];
 		if (MID != 0xFFFF)
 		{
 			OneObject* OB = Group[MID];
@@ -463,7 +463,7 @@ void RefreshGroup( ActiveGroup* AG )
 	for (int i = 0; i < AG->N; i++)
 	{
 		bool DelThis = false;
-		word MID = AG->Units[i];
+		unsigned short MID = AG->Units[i];
 		if (MID == 0xFFFF)DelThis = true;
 		else
 		{

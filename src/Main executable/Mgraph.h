@@ -1,7 +1,7 @@
-void OutErr(LPCSTR s);
+void OutErr(char* s);
 void LoadFon();
 void ShowFon();
 void LoadTiles();
-void LoadMap(LPCSTR s);
+void LoadMap(char* s);
 void ShowMap();
 void HandleMouse(int x,int y);

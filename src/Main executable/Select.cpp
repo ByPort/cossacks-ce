@@ -7,7 +7,7 @@
 #include "MapDiscr.h"
 
 
-extern word SelCenter[8];
+extern unsigned short SelCenter[8];
 SelGroup SelSet[80];
 
 SelGroup::SelGroup()
@@ -21,20 +21,20 @@ SelGroup::SelGroup()
 	Egoizm = false;
 }
 
-void SelGroup::CreateFromSelection(byte NI)
+void SelGroup::CreateFromSelection(unsigned char NI)
 {
 	if (int(Member))
 	{
 		DeleteMembers();
 	}
 
-	Member = new word[NSL[NI]];
-	SerialN = new word[NSL[NI]];
-	word Nsel = NSL[NI];
+	Member = new unsigned short[NSL[NI]];
+	SerialN = new unsigned short[NSL[NI]];
+	unsigned short Nsel = NSL[NI];
 	memcpy(Member, Selm[NI], Nsel << 1);
 	memcpy(SerialN, SerN[NI], Nsel << 1);
 	int k;
-	word MID;
+	unsigned short MID;
 	OneObject* OB;
 
 	for (k = 0; k < Nsel; k++)
@@ -54,7 +54,7 @@ void SelGroup::CreateFromSelection(byte NI)
 
 void SelGroup::DeleteMembers()
 {
-	word MID;
+	unsigned short MID;
 	OneObject* OB;
 
 	for (int k = 0; k < NMemb; k++)
@@ -83,16 +83,16 @@ void SelGroup::DeleteMembers()
 	SelGroup();
 }
 
-void SelGroup::SelectMembers(byte NI, bool Shift)
+void SelGroup::SelectMembers(unsigned char NI, bool Shift)
 {
 	SelCenter[NI] = 0;
-	word MID;
+	unsigned short MID;
 	OneObject* OB;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* ser = SerN[NI];
-	word NR = 0;
-	byte NeedNI = NatRefTBL[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* ser = SerN[NI];
+	unsigned short NR = 0;
+	unsigned char NeedNI = NatRefTBL[NI];
 	if (!Shift) {
 		for (int i = 0; i < Nsel; i++) {
 			MID = SMon[i];
@@ -108,14 +108,14 @@ void SelGroup::SelectMembers(byte NI, bool Shift)
 			free(SMon);
 			free(ser);
 		};
-		SMon = new word[NMemb];
-		ser = new word[NMemb];
+		SMon = new unsigned short[NMemb];
+		ser = new unsigned short[NMemb];
 	}
 	else {
 		NR = NSL[NI];
 		int N1 = NMemb + NR;
-		SMon = (word*)realloc(SMon, N1 << 1);
-		ser = (word*)realloc(ser, N1 << 1);
+		SMon = (unsigned short*)realloc(SMon, N1 << 1);
+		ser = (unsigned short*)realloc(ser, N1 << 1);
 	};
 	Selm[NI] = SMon;
 	SerN[NI] = ser;
@@ -135,15 +135,15 @@ void SelGroup::SelectMembers(byte NI, bool Shift)
 	};
 	NSL[NI] = NR;
 };
-void SelGroup::ImSelectMembers(byte NI, bool Shift) {
+void SelGroup::ImSelectMembers(unsigned char NI, bool Shift) {
 	SelCenter[NI] = 0;
-	word MID;
+	unsigned short MID;
 	OneObject* OB;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* ser = ImSerN[NI];
-	word NR = 0;
-	byte NeedNI = NatRefTBL[NI];
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* ser = ImSerN[NI];
+	unsigned short NR = 0;
+	unsigned char NeedNI = NatRefTBL[NI];
 	if (!Shift) {
 		for (int i = 0; i < Nsel; i++) {
 			MID = SMon[i];
@@ -159,14 +159,14 @@ void SelGroup::ImSelectMembers(byte NI, bool Shift) {
 			free(SMon);
 			free(ser);
 		};
-		SMon = new word[NMemb];
-		ser = new word[NMemb];
+		SMon = new unsigned short[NMemb];
+		ser = new unsigned short[NMemb];
 	}
 	else {
 		NR = ImNSL[NI];
 		int N1 = NMemb + NR;
-		SMon = (word*)realloc(SMon, N1 << 1);
-		ser = (word*)realloc(ser, N1 << 1);
+		SMon = (unsigned short*)realloc(SMon, N1 << 1);
+		ser = (unsigned short*)realloc(ser, N1 << 1);
 	}
 	ImSelm[NI] = SMon;
 	ImSerN[NI] = ser;

@@ -8,6 +8,7 @@
  * pictures into the RLCTable structure. Then you can draw the
  * picture on the screen wit the procedure ShowRLCItem
  */
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "mode.h"
@@ -22,14 +23,14 @@ extern int RSCRSizeY;
 extern int COPYSizeX;
 extern int LOADED;
 __declspec( dllexport )
-void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCFont lpr );
-byte PAL1[256];
-byte PAL2[256];
-byte PAL3[256];
-byte PAL4[256];
-byte PAL5[256];
-byte PAL6[256];
-byte PAL7[256];
+void ShowCharUNICODE( int x, int y, unsigned char* strptr, lpRLCFont lpr );
+unsigned char PAL1[256];
+unsigned char PAL2[256];
+unsigned char PAL3[256];
+unsigned char PAL4[256];
+unsigned char PAL5[256];
+unsigned char PAL6[256];
+unsigned char PAL7[256];
 void ErrM( char* s );
 extern void* offScreenPtr;
 
@@ -633,7 +634,7 @@ void ShowRLCi( int x, int y, void* PicPtr )
 }
 
 //End of RLC with clipping & with palette
-void ShowRLCpal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLCpal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	int ScrOfst = int( ScreenPtr ) + y*ScrWidth + x;
@@ -674,7 +675,7 @@ void ShowRLCpal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -871,7 +872,7 @@ void ShowRLCpal( int x, int y, void* PicPtr, byte* pal )
 
 //End of RLC with clipping & encoding
 //Showing inverse RLC image with clipping & encodint
-void ShowRLCipal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLCipal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	int ScrOfst = int( ScreenPtr ) + y*ScrWidth + x;
@@ -912,7 +913,7 @@ void ShowRLCipal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -1112,7 +1113,7 @@ void ShowRLCipal( int x, int y, void* PicPtr, byte* pal )
 //End of inverted RLC with clipping & encoding
 
 //End of RLC with clipping & with palette->fon
-void ShowRLCfonpal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLCfonpal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	if (!PicPtr)return;
@@ -1154,7 +1155,7 @@ void ShowRLCfonpal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -1353,7 +1354,7 @@ void ShowRLCfonpal( int x, int y, void* PicPtr, byte* pal )
 }
 //End of RLC with clipping & encoding
 //Showing inverse RLC image with clipping & encodint
-void ShowRLCifonpal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLCifonpal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	int ScrOfst = int( ScreenPtr ) + y*ScrWidth + x;
@@ -1394,7 +1395,7 @@ void ShowRLCifonpal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -1599,7 +1600,7 @@ void ShowRLCifonpal( int x, int y, void* PicPtr, byte* pal )
 //End of inverted RLC with clipping & encoding->fon
 
 //End of RLC with clipping & with palette(half-transparent fog)
-void ShowRLChtpal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLChtpal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	int ScrOfst = int( ScreenPtr ) + y*ScrWidth + x;
@@ -1640,7 +1641,7 @@ void ShowRLChtpal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -1845,7 +1846,7 @@ void ShowRLChtpal( int x, int y, void* PicPtr, byte* pal )
 }
 //End of RLC with clipping & encoding
 //Showing inverse RLC image with clipping & encodint(half-transparent fog)
-void ShowRLCihtpal( int x, int y, void* PicPtr, byte* pal )
+void ShowRLCihtpal( int x, int y, void* PicPtr, unsigned char* pal )
 {
 	//for(int i=0;i<256;i++) precomp[i]=i;
 	int ScrOfst = int( ScreenPtr ) + y*ScrWidth + x;
@@ -1886,7 +1887,7 @@ void ShowRLCihtpal( int x, int y, void* PicPtr, byte* pal )
 	}
 	if (WindY1 < y + PLY - 1) subline += y + PLY - 1 - WindY1;
 	addofs += 4;
-	byte Acm;
+	unsigned char Acm;
 	PLY -= subline;
 	if (PLY > 0)
 	{
@@ -2151,11 +2152,11 @@ void ShowRLCip7( int x, int y, void* PicPtr )
 	ShowRLCipal( x, y, PicPtr, PAL7 );
 }
 
-extern byte fog[8192 + 1024];
-extern byte wfog[8192];
-extern byte yfog[8192];
-extern byte rfog[8192];
-extern byte trans8[65536];
+extern unsigned char fog[8192 + 1024];
+extern unsigned char wfog[8192];
+extern unsigned char yfog[8192];
+extern unsigned char rfog[8192];
+extern unsigned char trans8[65536];
 
 void ShowRLCShadow( int x, int y, void* PicPtr )
 {
@@ -2196,7 +2197,7 @@ void ShowRLCItemDarkN( int x, int y, lpRLCTable lprt, int n, int Ints )
 		ShowRLCiDarkN( x, y, (void*) ( ( *lprt )->OfsTable[n - 4096] ), Ints );
 	};
 };
-void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, byte* Pal )
+void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal )
 {
 	if (n < 4096)
 	{
@@ -2207,7 +2208,7 @@ void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, byte* Pal )
 		ShowRLCipal( x, y, (void*) ( ( *lprt )->OfsTable[n - 4096] ), Pal );
 	};
 };
-void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, byte* Pal )
+void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal )
 {
 	if (n < 4096)
 	{
@@ -2275,12 +2276,12 @@ void ShowRLCiFire( int x, int y, void* PicPtr )
 }
 
 //Load rlc file, allocate and fill provided RLCTable
-bool LoadRLC( LPCSTR lpFileName, RLCTable *RLCtbl )
+bool LoadRLC( const char* lpFileName, RLCTable *RLCtbl )
 {
 	ResFile f1 = RReset( lpFileName );
 	if (INVALID_HANDLE_VALUE != f1)
 	{
-		DWORD fsz = RFileSize( f1 );
+		unsigned long fsz = RFileSize( f1 );
 		LOADED += fsz;
 
 		*RLCtbl = (RLCTable) malloc( fsz + 4 );
@@ -2306,7 +2307,7 @@ bool LoadRLC( LPCSTR lpFileName, RLCTable *RLCtbl )
 	return false;
 }
 
-void ShowRLCItem( int x, int y, lpRLCTable lprt, int n, byte nt )
+void ShowRLCItem( int x, int y, lpRLCTable lprt, int n, unsigned char nt )
 {
 	cntr++;
 	if (cntr > 64 && !InCycle)
@@ -2441,7 +2442,7 @@ void ShowRLCItemFired( int x, int y, lpRLCTable lprt, int n )
 		ShowRLCiFire( x, y, (void*) ( ( *lprt )->OfsTable[n - 4096] ) );
 	};
 };
-int GetRLCWidth( RLCTable lpr, byte n )
+int GetRLCWidth( RLCTable lpr, unsigned char n )
 {
 	int GPID = int( lpr );
 	if (GPID < 4096)
@@ -2458,7 +2459,7 @@ int GetRLCWidth( RLCTable lpr, byte n )
 	}
 	else return 0;
 }
-int GetCHEX( byte c )
+int GetCHEX( unsigned char c )
 {
 	if (c >= '0'&&c <= '9')return c - '0';
 	if (c >= 'a'&&c <= 'z')return c + 10 - 'a';
@@ -2466,7 +2467,7 @@ int GetCHEX( byte c )
 	return 0;
 }
 
-int GetRLCWidthUNICODE( RLCTable lpr, byte* strptr, int* L )
+int GetRLCWidthUNICODE( RLCTable lpr, unsigned char* strptr, int* L )
 {
 	if (strptr[0] == SIGNBYTE)//FUNNY: Funny shit, Sherlock. DEL, srsly?!
 	{
@@ -2509,7 +2510,7 @@ int GetRLCWidthUNICODE( RLCTable lpr, byte* strptr, int* L )
 	}
 }
 
-__declspec( dllexport ) int GetRLCHeight( RLCTable lpr, byte n )
+__declspec( dllexport ) int GetRLCHeight( RLCTable lpr, unsigned char n )
 {
 	int GPID = int( lpr );
 	if (GPID < 4096)
@@ -2543,13 +2544,13 @@ void ShowChar( int x, int y, char c, lpRLCFont lpf )
 	if (GPID < 4096)
 	{
 		GPS.ImageType[GPID] = ( GPS.ImageType[GPID] & 7 ) | lpf->Options;
-		GPS.ShowGP( x, y, GPID, byte( c ), 0 );
+		GPS.ShowGP( x, y, GPID, unsigned char( c ), 0 );
 		return;
 	};
 	ShowRLCItem( x, y, &( lpf->RLC ), c, 0 );
 }
 
-__declspec( dllexport ) void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCFont lpr )
+__declspec( dllexport ) void ShowCharUNICODE( int x, int y, unsigned char* strptr, lpRLCFont lpr )
 {
 	if (strptr[0] == SIGNBYTE)
 	{
@@ -2604,7 +2605,7 @@ __declspec( dllexport ) void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCF
 	}
 }
 
-void ShowString( int x, int y, LPCSTR lps, lpRLCFont lpf )
+void ShowString( int x, int y, const char* lps, lpRLCFont lpf )
 {
 	if (nullptr == lps)
 	{
@@ -2616,16 +2617,16 @@ void ShowString( int x, int y, LPCSTR lps, lpRLCFont lpf )
 	if (GPID < 4096)
 	{
 		GPS.ImageType[GPID] = ( GPS.ImageType[GPID] & 7 ) | lpf->Options;
-		byte ch;
+		unsigned char ch;
 		int i = 0;
 		do
 		{
 			ch = lps[i];
 			if (ch != 0)
 			{
-				ShowCharUNICODE( x, y, (byte*) ( lps + i ), lpf );
+				ShowCharUNICODE( x, y, (unsigned char*) ( lps + i ), lpf );
 				int L = 1;
-				x += GetRLCWidthUNICODE( lpf->RLC, (byte*) ( lps + i ), &L );
+				x += GetRLCWidthUNICODE( lpf->RLC, (unsigned char*) ( lps + i ), &L );
 				i += L - 1;
 			}
 			i++;
@@ -2634,7 +2635,7 @@ void ShowString( int x, int y, LPCSTR lps, lpRLCFont lpf )
 		return;
 	}
 
-	byte ch;
+	unsigned char ch;
 	int i = 0;
 	do
 	{
@@ -2656,15 +2657,15 @@ int GetRLCStrWidth( char* str, lpRLCFont lpf )
 	for (int i = 0; i < sl; i++)
 	{
 		int LL = 1;
-		L += GetRLCWidthUNICODE( lpf->RLC, (byte*) ( str + i ), &LL );
+		L += GetRLCWidthUNICODE( lpf->RLC, (unsigned char*) ( str + i ), &LL );
 		i += LL - 1;
 	};
 	return L;
 };
-void ShowShadString( int x, int y, LPCSTR lps, lpRLCFont lpf )
+void ShowShadString( int x, int y, const char* lps, lpRLCFont lpf )
 {
 	if (lps == nullptr) return;
-	byte	ch;
+	unsigned char	ch;
 	int		i = 0;
 	do
 	{
@@ -2673,7 +2674,7 @@ void ShowShadString( int x, int y, LPCSTR lps, lpRLCFont lpf )
 		{
 			ShowRLCItem( x, y, &( lpf->RLC ), lpf->FirstSymbol + ch, 0 );
 			int LL = 1;
-			x += GetRLCWidthUNICODE( lpf->RLC, (byte*) ( lps + i ), &LL );
+			x += GetRLCWidthUNICODE( lpf->RLC, (unsigned char*) ( lps + i ), &LL );
 			i += LL - 1;
 		}
 		i++;

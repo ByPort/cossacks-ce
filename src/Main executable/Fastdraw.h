@@ -55,7 +55,7 @@ class FASTDRAW_API RLCFont
 public:
 	int	FirstSymbol;
 	int LastSymbol;
-	byte Options;
+	unsigned char Options;
 	int ShadowGP;
 	int ShadowDx;
 	int ShadowDy;
@@ -93,23 +93,23 @@ typedef RLCFont* lpRLCFont;
 
 void SetScreenPtr(void);
 
-int GetRLCWidth(RLCTable lpr, byte n);
+int GetRLCWidth(RLCTable lpr, unsigned char n);
 
 __declspec(dllexport) void SetRLCWindow(int x, int y, int lx, int ly, int slx);
 
-__declspec(dllexport) int GetRLCHeight(RLCTable lpr, byte n);
+__declspec(dllexport) int GetRLCHeight(RLCTable lpr, unsigned char n);
 
 //Shows RLC picture
 //This procedure needs window parameters to be initializated
 FASTDRAW_API void ShowRLC(int x, int y, void* PicPtr);
 
 //Loading RLC file
-FASTDRAW_API bool LoadRLC(LPCSTR lpFileName, RLCTable *RLCtbl);
+FASTDRAW_API bool LoadRLC(const char* lpFileName, RLCTable *RLCtbl);
 
-FASTDRAW_API void ShowRLCItem(int x, int y, lpRLCTable lprt, int n, byte nt);
+FASTDRAW_API void ShowRLCItem(int x, int y, lpRLCTable lprt, int n, unsigned char nt);
 FASTDRAW_API void ShowRLCItemShadow(int x, int y, lpRLCTable lprt, int n);
 FASTDRAW_API void ClearScreen();
-FASTDRAW_API void ShowString(int x, int y, LPCSTR lps, lpRLCFont lpf);
+FASTDRAW_API void ShowString(int x, int y, const char* lps, lpRLCFont lpf);
 FASTDRAW_API void RegisterRLCFont(lpRLCFont lrf, RLCTable lpr, int fir);
 FASTDRAW_API void LoadPalettes();
 FASTDRAW_API void StoreWindow();
@@ -118,7 +118,7 @@ FASTDRAW_API void SetWind(int x, int y, int Lx, int Ly);
 FASTDRAW_API int GetRLCStrWidth(char* str, lpRLCFont lpf);
 FASTDRAW_API void CheckFontColor(lpRLCFont lpf);
 FASTDRAW_API void LoadOptionalTable(int n, char* Name);
-FASTDRAW_API int GetRLCWidthUNICODE(RLCTable lpr, byte* strptr, int* L);
+FASTDRAW_API int GetRLCWidthUNICODE(RLCTable lpr, unsigned char* strptr, int* L);
 
 /*
  *                   Graphics routine
@@ -129,9 +129,9 @@ FASTDRAW_API int GetRLCWidthUNICODE(RLCTable lpr, byte* strptr, int* L);
  *  unsigned int    Horisontal size of the picture
  *  unsigned short  Vertical size of the sub-picture
  *
- *    byte          Number of RLE substrings
+ *    unsigned char          Number of RLE substrings
  *
- *      byte        Length of the substring
+ *      unsigned char        Length of the substring
  *
- *  byte[...]       Colors table
+ *  unsigned char[...]       Colors table
  */

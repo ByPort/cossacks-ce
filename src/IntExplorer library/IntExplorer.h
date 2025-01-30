@@ -1,7 +1,7 @@
 class OneSicWindow;
-typedef DWORD fnSendRequest(char* request, int size);
-typedef DWORD fnGetRequestResult(DWORD Handle, char** Result, int* Size);
-typedef void fnCloseRequest(DWORD Handle);
+typedef unsigned long fnSendRequest(char* request, int size);
+typedef unsigned long fnGetRequestResult(unsigned long Handle, char** Result, int* Size);
+typedef void fnCloseRequest(unsigned long Handle);
 typedef void fnProcess();
 typedef void fnCloseAll();
 struct OneVariable {
@@ -19,7 +19,7 @@ struct OneSXProcess {
 };
 struct OneSXPTable {
 	char ID[32];
-	byte COLMOPT[32];
+	unsigned char COLMOPT[32];
 	int NLines;
 	int NRefs;
 	int NCol;
@@ -30,15 +30,15 @@ struct OneSXPTable {
 struct FileDownloadProcess {
 	char  URL[256];
 	char  Name[256];
-	DWORD Handle;
-	byte  ReqMask[128];
+	unsigned long Handle;
+	unsigned char  ReqMask[128];
 	bool  Ready;
 };
 class sicExplorer {
 public:
 	char HomeAddress[512];
 	char ACCESSKEY[16];
-	DWORD ID;
+	unsigned long ID;
 
 	OneVariable* GVARS;
 	int NGVars;
@@ -56,7 +56,7 @@ public:
 	int GetGPPictureIndex(char* Name);
 
 	//server information
-	HMODULE ServerDLL;
+	void* ServerDLL;
 	fnSendRequest* SendRequest;
 	fnGetRequestResult* GetRequestResult;
 	fnCloseRequest* CloseRequest;
@@ -68,7 +68,7 @@ public:
 	char FONT1[16];
 	char FONT2[16];
 	char FONT3[16];
-	HMODULE H;
+	void* H;
 
 	OneSicWindow** Windows;
 	int NWindows;
@@ -161,8 +161,8 @@ public:
 	char WinID[16];
 	sicExplorer* EXP;
 	char* REF;
-	DWORD GHANDLE;
-	DWORD UPHANDLE;
+	unsigned long GHANDLE;
+	unsigned long UPHANDLE;
 	bool Ready : 1;
 	bool Parsed : 1;
 	bool Error : 1;
@@ -299,8 +299,8 @@ extern int SCROLL0;
 extern int CBB_2;
 extern int CBB_0;
 __declspec(dllimport)
-byte GetPaletteColor(int r, int g, int b);
-DWORD SendGlobalRequest(sicExplorer* SXP, char* data, bool allow);
+unsigned char GetPaletteColor(int r, int g, int b);
+unsigned long SendGlobalRequest(sicExplorer* SXP, char* data, bool allow);
 struct Corners {
 	int CLU, CRU, CLD, CRD;
 	int LL, LR, LU, LD;
@@ -309,7 +309,7 @@ __declspec(dllimport)
 void DrawFilledRect3(int x0, int y0, int x1, int y1, Corners* CR, int GP_File, int StartFill, int NFill);
 __declspec(dllimport)
 void DrawRect3(int x0, int y0, int x1, int y1, Corners* CR, int GP_File);
-//DWORD SendGlobalRequest(ParsedRQ* RQ);
+//unsigned long SendGlobalRequest(ParsedRQ* RQ);
 __declspec(dllimport)
 void _ExFree(void* ptr);
 __declspec(dllimport)

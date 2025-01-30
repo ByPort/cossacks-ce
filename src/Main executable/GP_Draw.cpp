@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "mode.h"
@@ -5,7 +6,6 @@
 #include "Lines.h"
 #include <stdio.h>
 #include <assert.h>
-#include <CrtDbg.h>
 #include "CTables.h"
 #include "GP_Draw.h"
 #include "mapdiscr.h"
@@ -19,19 +19,19 @@ bool NewGPImage;
 //What are you?
 extern int XShift[512];
 
-extern word RLCNSpr[MaxGPIdx];
-void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, byte* Pal );
-void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, byte* Pal );
-word GP_L_IDXS[MaxGPIdx];
+extern unsigned short RLCNSpr[MaxGPIdx];
+void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal );
+void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal );
+unsigned short GP_L_IDXS[MaxGPIdx];
 int LOADED = 0;
 
 extern int COUNTER;
 typedef short* lpShort;
-typedef DWORD* lpDWORD;
+typedef unsigned long* lpDWORD;
 GP_System::GP_System()
 {
 	CashSize = 4200000;
-	PackCash = new byte[CashSize + 4];
+	PackCash = new unsigned char[CashSize + 4];
 	PackCash[CashSize] = 0x37;
 	PackCash[CashSize + 1] = 0x42;
 	INTV( PackCash ) = 0;
@@ -47,8 +47,8 @@ GP_System::GP_System()
 	memset( RLCImage, 0, ( sizeof RLCImage )*NGPReady );
 	RLCShadow = new RLCTable[NGPReady];
 	memset( RLCShadow, 0, ( sizeof RLCShadow )*NGPReady );
-	GPNFrames = new word[NGPReady];
-	ImageType = new byte[NGPReady];
+	GPNFrames = new unsigned short[NGPReady];
+	ImageType = new unsigned char[NGPReady];
 	UNITBL = (UNICODETABLE**) malloc( NGPReady << 2 );
 	memset( ImageType, 0, NGPReady );
 	memset( UNITBL, 0, NGPReady << 2 );
@@ -61,7 +61,7 @@ GP_System::GP_System()
 	memset( ItDX, 0, 4 * NGPReady );
 	memset( ItLX, 0, 4 * NGPReady );
 	CASHREF = new lpDWORD[NGPReady];
-	Mapping = new byte[NGPReady];
+	Mapping = new unsigned char[NGPReady];
 	memset( CASHREF, 0, NGPReady << 2 );
 	memset( Mapping, 0, NGPReady );
 	//PreLoadGPImage("gets2");
@@ -141,14 +141,14 @@ bool GP_System::GetGPSize( int i, int n, int* Lx, int* Ly )
 	}
 	else return false;
 };
-byte* GP_System::GetCash( int Size )
+unsigned char* GP_System::GetCash( int Size )
 {
 	int UsedSize = -8;
 	int NSeg = 0;
 	int tpos = CashPos;
 	int cas = CashSize;
 	//COUNTER=div(CashPos*100,CashSize).quot;
-	byte* Cash = PackCash;
+	unsigned char* Cash = PackCash;
 	//assert(Cash[CashSize]==0x37&&Cash[CashSize+1]==0x42);
 	while (tpos < cas&&UsedSize < Size)
 	{
@@ -192,7 +192,7 @@ byte* GP_System::GetCash( int Size )
 	};
 	INTV( Cash + CashPos ) = 0;
 	INTV( Cash + CashPos + 4 ) = UsedSize + 8;
-	byte* cps = Cash + CashPos;
+	unsigned char* cps = Cash + CashPos;
 	CashPos += UsedSize + 8;
 	return cps;
 };
@@ -505,7 +505,7 @@ bool GP_System::LoadGP( int i )
 		return false;
 	}
 	ResFile f;
-	byte* mpptr = 0;
+	unsigned char* mpptr = 0;
 	switch (ImageType[i] & 7)
 	{
 	case 0:
@@ -531,7 +531,7 @@ bool GP_System::LoadGP( int i )
 			else
 			{
 				LOADED += GPSize[i];
-				GPH[i] = lpGP_GlobalHeader( new byte[GPSize[i]] );
+				GPH[i] = lpGP_GlobalHeader( new unsigned char[GPSize[i]] );
 				lpGPH = GPH[i];
 				RBlockRead( f, GPH[i], GPSize[i] );
 				Mapping[i] = 0;
@@ -576,8 +576,8 @@ bool GP_System::LoadGP( int i )
 					};
 				} while (DIFF != -1);
 			};
-			CASHREF[i] = new DWORD[csz + 1];
-			DWORD* CREF = CASHREF[i];
+			CASHREF[i] = new unsigned long[csz + 1];
+			unsigned long* CREF = CASHREF[i];
 			memset( CREF, 0xFF, ( csz + 1 ) << 2 );
 			csz = np;
 			for (int n = 0; n < np; n++)
@@ -640,11 +640,11 @@ bool GP_System::LoadGP( int i )
 }
 
 //cache format:
-//DWORD Pack reference offset(PRefOfs)[=NULL if not assigned]
-//DWORD Unpacked data size+8(UDataSize)
+//unsigned long Pack reference offset(PRefOfs)[=NULL if not assigned]
+//unsigned long Unpacked data size+8(UDataSize)
 
 //Draw units in shadows and menu effects
-void GP_ShowMaskedPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPict( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -723,8 +723,8 @@ void GP_ShowMaskedPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 
 	if (x >= WindX && x1 <= WindX1)
 	{
@@ -1156,7 +1156,7 @@ void GP_ShowMaskedPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder
 	}
 }
 
-void GP_ShowMaskedPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPictInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -1223,8 +1223,8 @@ void GP_ShowMaskedPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Enco
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -1657,7 +1657,7 @@ void GP_ShowMaskedPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Enco
 		};
 	};
 };
-//key word: SHADRAW
+//key unsigned short: SHADRAW
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -1669,7 +1669,7 @@ void GP_ShowMaskedPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Enco
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedPictShadow( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPictShadow( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -1736,8 +1736,8 @@ void GP_ShowMaskedPictShadow( int x, int y, GP_Header* Pic, byte* CData, byte* E
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX&&x1 <= WindX1)
 	{
 		//***********************************************************//
@@ -2188,7 +2188,7 @@ void GP_ShowMaskedPictShadow( int x, int y, GP_Header* Pic, byte* CData, byte* E
 		};
 	};
 };
-void GP_ShowMaskedPictShadowInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPictShadowInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -2255,8 +2255,8 @@ void GP_ShowMaskedPictShadowInv( int x, int y, GP_Header* Pic, byte* CData, byte
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -2707,7 +2707,7 @@ void GP_ShowMaskedPictShadowInv( int x, int y, GP_Header* Pic, byte* CData, byte
 		};
 	};
 };
-//key word: DARK_OVERPOINT
+//key unsigned short: DARK_OVERPOINT
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -2719,7 +2719,7 @@ void GP_ShowMaskedPictShadowInv( int x, int y, GP_Header* Pic, byte* CData, byte
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedPictOverpoint( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPictOverpoint( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -2788,8 +2788,8 @@ void GP_ShowMaskedPictOverpoint( int x, int y, GP_Header* Pic, byte* CData, byte
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX&&x1 <= WindX1)
 	{
 		//***********************************************************//
@@ -3258,7 +3258,7 @@ void GP_ShowMaskedPictOverpoint( int x, int y, GP_Header* Pic, byte* CData, byte
 		};
 	};
 };
-void GP_ShowMaskedPictOverpointInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPictOverpointInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -3325,8 +3325,8 @@ void GP_ShowMaskedPictOverpointInv( int x, int y, GP_Header* Pic, byte* CData, b
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -3778,7 +3778,7 @@ void GP_ShowMaskedPictOverpointInv( int x, int y, GP_Header* Pic, byte* CData, b
 	};
 };
 
-//key word: PALDRAW
+//key unsigned short: PALDRAW
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -3790,7 +3790,7 @@ void GP_ShowMaskedPictOverpointInv( int x, int y, GP_Header* Pic, byte* CData, b
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedPalPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPalPict( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -3857,8 +3857,8 @@ void GP_ShowMaskedPalPict( int x, int y, GP_Header* Pic, byte* CData, byte* Enco
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX&&x1 <= WindX1)
 	{
 		//***********************************************************//
@@ -4303,7 +4303,7 @@ void GP_ShowMaskedPalPict( int x, int y, GP_Header* Pic, byte* CData, byte* Enco
 		};
 	};
 };
-void GP_ShowMaskedPalPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedPalPictInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -4370,8 +4370,8 @@ void GP_ShowMaskedPalPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* E
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -4822,7 +4822,7 @@ void GP_ShowMaskedPalPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* E
 		};
 	};
 };
-//key word: MULTIDRAW
+//key unsigned short: MULTIDRAW
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -4834,7 +4834,7 @@ void GP_ShowMaskedPalPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* E
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedMultiPalPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedMultiPalPict( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -4901,8 +4901,8 @@ void GP_ShowMaskedMultiPalPict( int x, int y, GP_Header* Pic, byte* CData, byte*
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX&&x1 <= WindX1)
 	{
 		//***********************************************************//
@@ -5359,7 +5359,7 @@ void GP_ShowMaskedMultiPalPict( int x, int y, GP_Header* Pic, byte* CData, byte*
 		};
 	};
 };
-void GP_ShowMaskedMultiPalPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedMultiPalPictInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -5426,8 +5426,8 @@ void GP_ShowMaskedMultiPalPictInv( int x, int y, GP_Header* Pic, byte* CData, by
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -5890,7 +5890,7 @@ void GP_ShowMaskedMultiPalPictInv( int x, int y, GP_Header* Pic, byte* CData, by
 		};
 	};
 };
-//key word: MULTIDRAW
+//key unsigned short: MULTIDRAW
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -5902,7 +5902,7 @@ void GP_ShowMaskedMultiPalPictInv( int x, int y, GP_Header* Pic, byte* CData, by
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedMultiPalTPict( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedMultiPalTPict( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -5969,8 +5969,8 @@ void GP_ShowMaskedMultiPalTPict( int x, int y, GP_Header* Pic, byte* CData, byte
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX&&x1 <= WindX1)
 	{
 		//***********************************************************//
@@ -6422,7 +6422,7 @@ void GP_ShowMaskedMultiPalTPict( int x, int y, GP_Header* Pic, byte* CData, byte
 	};
 };
 
-void GP_ShowMaskedMultiPalTPictInv( int x, int y, GP_Header* Pic, byte* CData, byte* Encoder )
+void GP_ShowMaskedMultiPalTPictInv( int x, int y, GP_Header* Pic, unsigned char* CData, unsigned char* Encoder )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -6489,8 +6489,8 @@ void GP_ShowMaskedMultiPalTPictInv( int x, int y, GP_Header* Pic, byte* CData, b
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX&&x <= WindX1)
 	{
 		//***********************************************************//
@@ -6947,8 +6947,8 @@ void GP_ShowMaskedMultiPalTPictInv( int x, int y, GP_Header* Pic, byte* CData, b
 		};
 	};
 };
-//key word: WMIRROR
-extern byte refl[3072];
+//key unsigned short: WMIRROR
+extern unsigned char refl[3072];
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
@@ -6960,7 +6960,7 @@ extern byte refl[3072];
 //******************************************************************************//
 //******************************************************************************//
 //******************************************************************************//
-void GP_ShowMaskedMirrorPict( int x, int y, GP_Header* Pic, byte* CData, int* WSHIFT )
+void GP_ShowMaskedMirrorPict( int x, int y, GP_Header* Pic, unsigned char* CData, int* WSHIFT )
 {
 	x += Pic->dx;
 	y += Pic->dy;
@@ -7031,8 +7031,8 @@ void GP_ShowMaskedMirrorPict( int x, int y, GP_Header* Pic, byte* CData, int* WS
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x >= WindX + 10 && x1 <= WindX1 - 10)
 	{
 		//***********************************************************//
@@ -7538,7 +7538,7 @@ void GP_ShowMaskedMirrorPict( int x, int y, GP_Header* Pic, byte* CData, int* WS
 		};
 	};
 };
-void GP_ShowMaskedMirrorPictInv( int x, int y, GP_Header* Pic, byte* CData, int* WSHIFT )
+void GP_ShowMaskedMirrorPictInv( int x, int y, GP_Header* Pic, unsigned char* CData, int* WSHIFT )
 {
 	x -= Pic->dx;
 	y += Pic->dy;
@@ -7605,8 +7605,8 @@ void GP_ShowMaskedMirrorPictInv( int x, int y, GP_Header* Pic, byte* CData, int*
 	int LineStart;
 	int CLIP;
 	int CURCLIP;
-	byte SPACE_MASK;
-	byte PIX_MASK;
+	unsigned char SPACE_MASK;
+	unsigned char PIX_MASK;
 	if (x1 >= WindX + 10 && x <= WindX1 - 10)
 	{
 		//***********************************************************//
@@ -8105,7 +8105,7 @@ void GP_ShowMaskedMirrorPictInv( int x, int y, GP_Header* Pic, byte* CData, int*
 		};
 	};
 };
-inline void NatUnpack( byte* Dest, byte* Src, int Len )
+inline void NatUnpack( unsigned char* Dest, unsigned char* Src, int Len )
 {
 	__asm {
 		push	esi
@@ -8139,7 +8139,7 @@ inline void NatUnpack( byte* Dest, byte* Src, int Len )
 						  pop		esi
 	};
 };
-inline void GreyUnpack( byte* Dest, byte* Src, int Len )
+inline void GreyUnpack( unsigned char* Dest, unsigned char* Src, int Len )
 {
 	Len >>= 1;
 	__asm {
@@ -8168,10 +8168,10 @@ inline void GreyUnpack( byte* Dest, byte* Src, int Len )
 						  pop		esi
 	};
 };
-inline void StdUnpack( byte* Dest, byte* Src, int Len, byte* Voc )
+inline void StdUnpack( unsigned char* Dest, unsigned char* Src, int Len, unsigned char* Voc )
 {
 	//COUNTER++;
-	byte Calc;
+	unsigned char Calc;
 	__asm {
 		push	esi
 		push	edi
@@ -8219,9 +8219,9 @@ inline void StdUnpack( byte* Dest, byte* Src, int Len, byte* Voc )
 			pop		esi
 	};
 };
-inline void LZUnpack( byte* Dest, byte* Src, int Len )
+inline void LZUnpack( unsigned char* Dest, unsigned char* Src, int Len )
 {
-	byte Calc;
+	unsigned char Calc;
 	__asm {
 		push	esi
 		push	edi
@@ -8271,11 +8271,11 @@ inline void LZUnpack( byte* Dest, byte* Src, int Len )
 			pop		esi
 	};
 };
-extern byte Bright[8192];
+extern unsigned char Bright[8192];
 
 
-//Used for color masking of interface elements. Color offset = Nation byte * 4
-byte NatPal[64] =
+//Used for color masking of interface elements. Color offset = Nation unsigned char * 4
+unsigned char NatPal[64] =
 {
 	0xD0,//red
 	0xD1,
@@ -8311,15 +8311,15 @@ byte NatPal[64] =
 	0xEF
 };
 
-extern byte Optional1[8192];
-extern byte Optional2[8192];
-extern byte Optional3[8192];
+extern unsigned char Optional1[8192];
+extern unsigned char Optional2[8192];
+extern unsigned char Optional3[8192];
 
 int startTrans = 0;
 
 void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 	int x, int y, int FileIndex, int SprIndex,
-	byte Nation
+	unsigned char Nation
 )
 {
 	if (!( FileIndex < NGP && ( SprIndex & 4095 ) < GPNFrames[FileIndex] ))
@@ -8369,7 +8369,7 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 	GP_Header* lpGPCUR = lpGP;
 
 
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[RSprIndex];
 
 	if (ItDX[FileIndex])
@@ -8380,7 +8380,7 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 
 	if (Optx & 64)
 	{
@@ -8392,7 +8392,7 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 		CDOffs += 32768;
 	}
 
-	byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 
 	if (( Optx & 63 ) == 43)
 	{
@@ -8406,7 +8406,7 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -8416,8 +8416,8 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 				INTV( PACKOFS ) = (int) ( PAK );//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+				*PAK = (unsigned long) PACKOFS;
+				StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 			}
 
 			if (SprIndex >= 4096)
@@ -8434,8 +8434,8 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			}
 
 
@@ -8443,29 +8443,29 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 			{
 				GP_ShowMaskedPalPictInv(
 					x, y, lpGPCUR, PACKOFS,
-					(byte*) ( NatPal + ( Nation << 2 ) )//IMPORTANT: color masking for interface
+					(unsigned char*) ( NatPal + ( Nation << 2 ) )//IMPORTANT: color masking for interface
 				);
 			}
 			else
 			{
 				GP_ShowMaskedPalPict(
 					x, y, lpGPCUR, PACKOFS,
-					(byte*) ( NatPal + ( Nation << 2 ) )//IMPORTANT: color masking for interface
+					(unsigned char*) ( NatPal + ( Nation << 2 ) )//IMPORTANT: color masking for interface
 				);
 			}
 
 			break;
 		case 2://transparent 1/4
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			break;
 		case 3://transparent 1/2
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			break;
 		case 4://transparent 3/4
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			break;
 		case 5://Shadow
 			switch (imt)
@@ -8495,15 +8495,15 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 			break;
 		case 6://AlphaRY
 			if (SprIndex >= 4096)
-				GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaR );
+				GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaR );
 			else 
-				GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaR );
+				GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaR );
 			break;
 		case 7://AlphaWB
 			if (SprIndex >= 4096)
-				GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaW );
+				GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaW );
 			else
-				GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaW );
+				GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaW );
 			break;
 		case 38:
 			if (PACKOFS == NO_PACK)
@@ -8512,8 +8512,8 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				GreyUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				GreyUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			};
 			switch (imt)
 			{
@@ -8565,38 +8565,38 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 			switch (imt)
 			{
 			case 1://white
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Bright + startTrans );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Bright + startTrans );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog );
 				break;
 			case 2://red
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog + startTrans );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog + startTrans );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog );
 				break;
 			case 3:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 );
 				break;
 			case 4:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 );
 				break;
 			case 5:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
 				break;
 			case 6:
-				//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
-				//else GP_ShowMaskedMultiPalPictInv(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
+				//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
+				//else GP_ShowMaskedMultiPalPictInv(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
 				break;
 			default:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
-				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
+				else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
 				break;
 			};
 			break;
 		case 41:
-			if (SprIndex >= 4096)GP_ShowMaskedPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, NULL );
-			else GP_ShowMaskedPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, NULL );
+			if (SprIndex >= 4096)GP_ShowMaskedPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, NULL );
+			else GP_ShowMaskedPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, NULL );
 			break;
 		case 43:
 		case 44:
@@ -8607,8 +8607,8 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			};
 			if (SprIndex >= 4096)GP_ShowMaskedPictInv( x, y, lpGPCUR, PACKOFS, NULL );
 			else GP_ShowMaskedPict( x, y, lpGPCUR, PACKOFS, NULL );
@@ -8622,20 +8622,20 @@ void GP_System::ShowGP(//IMPORTANT: show sprite with color masking
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 
 	} while (DIFF != -1);
 }
 
 void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 	int x, int y, int FileIndex, int SprIndex,
-	byte Nation, int mask )
+	unsigned char Nation, int mask )
 {
 	if (!( FileIndex < NGP && ( SprIndex & 4095 ) < GPNFrames[FileIndex] ))
 	{
@@ -8665,12 +8665,12 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 	GP_GlobalHeader* lpGH = GPH[FileIndex];
 	GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 	GP_Header* lpGPCUR = lpGP;
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[SprIndex & 4095];
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 	if (Optx & 64)
 	{
 		CDOffs += 16384;
@@ -8679,7 +8679,7 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 	{
 		CDOffs += 32768;
 	}
-	byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 	if (( Optx & 63 ) == 43)
 	{
 		UnpackLen += 262144;
@@ -8690,7 +8690,7 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 	}
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -8702,8 +8702,8 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+					*PAK = (unsigned long) PACKOFS;
+					StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 				};
 				if (mask & 512)
 				{
@@ -8726,37 +8726,37 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
-				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
-				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
+				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 			};
 			break;
 		case 2://transparent 1/4
 			if (mask & 4)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			};
 			break;
 		case 3://transparent 1/2
 			if (mask & 8)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			};
 			break;
 		case 4://transparent 3/4
 			if (mask & 16)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			}
 			else if (mask & 2048)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, NULL );
-				else GP_ShowMaskedPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, NULL );
+				if (SprIndex >= 4096)GP_ShowMaskedPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, NULL );
+				else GP_ShowMaskedPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, NULL );
 			};
 			break;
 		case 5://Shadow
@@ -8777,15 +8777,15 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 		case 6://AlphaRY
 			if (mask & 128)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaR );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaR );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaR );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaR );
 			};
 			break;
 		case 7://AlphaWB
 			if (mask & 256)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaW );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, AlphaW );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaW );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, AlphaW );
 			};
 			break;
 		case 38:
@@ -8797,8 +8797,8 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					GreyUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					GreyUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
 				switch (imt)
 				{
@@ -8839,32 +8839,32 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 				switch (imt)
 				{
 				case 1://white
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Bright + startTrans );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Bright + startTrans );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog );
 					break;
 				case 2://red
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog + startTrans );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog + startTrans );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog );
 					break;
 				case 3:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 );
 					break;
 				case 4:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 );
 					break;
 				case 5:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
 					break;
 				case 6:
-					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
-					//else GP_ShowMaskedMultiPalPictInv(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
+					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
+					//else GP_ShowMaskedMultiPalPictInv(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
 					break;
 				default:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
-					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
+					else GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
 					break;
 				};
 			};
@@ -8878,9 +8878,9 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 			else
 			{
 				if (SprIndex >= 4096)
-					GP_ShowMaskedMirrorPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, XShift );
+					GP_ShowMaskedMirrorPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, XShift );
 				else
-					GP_ShowMaskedMirrorPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, XShift );
+					GP_ShowMaskedMirrorPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, XShift );
 			};
 			break;
 		case 43:
@@ -8894,8 +8894,8 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
 				if (mask & 512)
 				{
@@ -8918,16 +8918,16 @@ void GP_System::ShowGPLayers(//IMPORTANT: color masking for units and buildings
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 	} while (DIFF != -1);
 };
-void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, byte Nation )
+void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, unsigned char Nation )
 {
 	if (!( FileIndex < NGP && ( SprIndex & 4095 ) < GPNFrames[FileIndex] ))
 	{
@@ -8953,20 +8953,20 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 	GP_GlobalHeader* lpGH = GPH[FileIndex];
 	GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 	GP_Header* lpGPCUR = lpGP;
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[SprIndex & 4095];
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 	if (Optx & 64)CDOffs += 16384;
 	if (Optx & 128)CDOffs += 32768;
-	byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 	if (( Optx & 63 ) == 43)UnpackLen += 262144;
 	if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -8976,8 +8976,8 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+				*PAK = (unsigned long) PACKOFS;
+				StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 			};
 			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, PACKOFS, trans8 );
 			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, trans8 );
@@ -8989,27 +8989,27 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			};
-			if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
-			else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+			if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
+			else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 			break;
 		case 3://transparent 1/2
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+			else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			break;
 		case 4://transparent 3/4
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			break;
 		case 5://Shadow
 			if (SprIndex >= 4096)GP_ShowMaskedPictShadowInv( x, y, lpGPCUR, NULL, fog + 4096 );
 			else GP_ShowMaskedPictShadow( x, y, lpGPCUR, NULL, fog + 4096 );
 			break;
 		case 41:
-			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 		case 43:
 		case 44:
 		case 42:
@@ -9019,8 +9019,8 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 				INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 				PACKOFS += 8;
 				//lpGPCUR->Pack=PACKOFS;
-				*PAK = (DWORD) PACKOFS;
-				LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			};
 			if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, PACKOFS, trans8 );
 			else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, trans8 );
@@ -9034,7 +9034,7 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
@@ -9042,10 +9042,10 @@ void GP_System::ShowGPTransparent( int x, int y, int FileIndex, int SprIndex, by
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 	} while (DIFF != -1);
 };
-void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprIndex, byte Nation, int mask )
+void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprIndex, unsigned char Nation, int mask )
 {
 	if (!( FileIndex < NGP && ( SprIndex & 4095 ) < GPNFrames[FileIndex] ))
 	{
@@ -9071,20 +9071,20 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 	GP_GlobalHeader* lpGH = GPH[FileIndex];
 	GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 	GP_Header* lpGPCUR = lpGP;
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[SprIndex & 4095];
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 	if (Optx & 64)CDOffs += 16384;
 	if (Optx & 128)CDOffs += 32768;
-	byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 	if (( Optx & 63 ) == 43)UnpackLen += 262144;
 	if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -9096,8 +9096,8 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+					*PAK = (unsigned long) PACKOFS;
+					StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 				};
 				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, PACKOFS, trans8 );
 				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, trans8 );
@@ -9112,33 +9112,33 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				}
 
 				if (SprIndex >= 4096)
 				{
-					GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+					GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 				}
 				else
 				{
-					//GP_ShowMaskedPalPict(x, y, lpGPCUR, PACKOFS, (byte*)(NatPal + (Nation << 2)));
-					GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+					//GP_ShowMaskedPalPict(x, y, lpGPCUR, PACKOFS, (unsigned char*)(NatPal + (Nation << 2)));
+					GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 				}
 			};
 			break;
 		case 3://transparent 1/2
 			if (mask & 8)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			};
 			break;
 		case 4://transparent 3/4
 			if (mask & 16)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			};
 			break;
 		case 5://Shadow
@@ -9159,8 +9159,8 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 		case 41://storing
 			if (mask & 1)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			};
 			break;
 		case 43:
@@ -9174,8 +9174,8 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
 				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, PACKOFS, trans8 );
 				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, trans8 );
@@ -9190,7 +9190,7 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
@@ -9198,7 +9198,7 @@ void GP_System::ShowGPTransparentLayers( int x, int y, int FileIndex, int SprInd
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 	} while (DIFF != -1);
 };
 void GP_System::FreeRefs( int FileIndex )
@@ -9216,7 +9216,7 @@ void GP_System::FreeRefs( int FileIndex )
 	{
 		GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 		GP_Header* lpGPCUR = lpGP;
-		DWORD* PAK = CASHREF[FileIndex];
+		unsigned long* PAK = CASHREF[FileIndex];
 		PAK += PAK[SprIndex & 4095];
 
 		int DIFF = -1;
@@ -9224,13 +9224,13 @@ void GP_System::FreeRefs( int FileIndex )
 		int UnpackLen = lpGP->CData >> 14;
 		int CDOffs = lpGP->CData & 16383;
 
-		byte Optx = lpGP->Options;
+		unsigned char Optx = lpGP->Options;
 		if (Optx & 64)
 			CDOffs += 16384;
 		if (Optx & 128)
 			CDOffs += 32768;
 
-		byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+		unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 
 		do
 		{
@@ -9254,21 +9254,21 @@ void GP_System::FreeRefs( int FileIndex )
 			UnpackLen = lpGPCUR->CData >> 14;
 			CDOffs = lpGPCUR->CData & 16383;
 
-			byte Optx = lpGPCUR->Options;
+			unsigned char Optx = lpGPCUR->Options;
 			if (Optx & 64)
 				CDOffs += 16384;
 			if (Optx & 128)
 				CDOffs += 32768;
 
 			PAK++;
-			PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+			PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 		} while (DIFF != -1);
 	}
 }
 
 void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in placement mode) and ???
 	int x, int y, int FileIndex, int SprIndex,
-	byte Nation, byte* Table
+	unsigned char Nation, unsigned char* Table
 )
 {
 	if (( SprIndex & 4095 ) >= GPNFrames[FileIndex])
@@ -9297,19 +9297,19 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 	GP_GlobalHeader* lpGH = GPH[FileIndex];
 	GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 	GP_Header* lpGPCUR = lpGP;
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[SprIndex & 4095];
 	int imt = ImageType[FileIndex] >> 4;
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 	if (Optx & 64)CDOffs += 16384;
 	if (Optx & 128)CDOffs += 32768;
-	byte* PACKOFS = (byte*) ( *PAK );
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -9318,8 +9318,8 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 				PACKOFS = GetCash( UnpackLen + 18 );
 				INTV( PACKOFS ) = (int) PAK;
 				PACKOFS += 8;
-				*PAK = (DWORD) PACKOFS;
-				StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+				*PAK = (unsigned long) PACKOFS;
+				StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 			}
 
 			if (SprIndex >= 4096)
@@ -9334,31 +9334,31 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 				PACKOFS = GetCash( UnpackLen + 8 );
 				INTV( PACKOFS ) = (int) PAK;
 				PACKOFS += 8;
-				*PAK = (DWORD) PACKOFS;
-				NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			}
 
 			if (SprIndex >= 4096)
 			{
-				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 			}
 			else
 			{
-				GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+				GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 			}
 
 			break;
 		case 3://transparent 1/2
 			if (SprIndex >= 4096)
-				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			else
-				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			break;
 		case 4://transparent 3/4
 			if (SprIndex >= 4096)
-				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			else
-				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			break;
 		case 5://Shadow
 			if (SprIndex >= 4096)
@@ -9368,9 +9368,9 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 			break;
 		case 41:
 			if (SprIndex >= 4096)
-				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			else
-				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+				GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			break;
 		case 43:
 		case 44:
@@ -9380,8 +9380,8 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 				PACKOFS = GetCash( UnpackLen + 18 );
 				INTV( PACKOFS ) = (int) PAK;
 				PACKOFS += 8;
-				*PAK = (DWORD) PACKOFS;
-				LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			}
 
 			if (SprIndex >= 4096)
@@ -9399,8 +9399,8 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 				PACKOFS = GetCash( UnpackLen + 8 );
 				INTV( PACKOFS ) = (int) PAK;
 				PACKOFS += 8;
-				*PAK = (DWORD) PACKOFS;
-				GreyUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+				*PAK = (unsigned long) PACKOFS;
+				GreyUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 			}
 
 			switch (imt)
@@ -9435,28 +9435,28 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 			switch (imt)
 			{
 			case 1://white
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Bright + startTrans );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Bright + startTrans );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog );
 				break;
 			case 2://red
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog + startTrans );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog + startTrans );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog );
 				break;
 			case 3:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 );
 				break;
 			case 4:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 );
 				break;
 			case 5:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
 				break;
 			default:
-				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
+				if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
 				break;
 			};
 			break;
@@ -9469,7 +9469,7 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
@@ -9477,13 +9477,13 @@ void GP_System::ShowGPPal(//IMPORTANT: color masking for buildings (only in plac
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 	} while (DIFF != -1);
 }
 
 void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only when selected) and ???
 	int x, int y, int FileIndex, int SprIndex,
-	byte Nation, byte* Table, int mask
+	unsigned char Nation, unsigned char* Table, int mask
 )
 {
 	if (( ImageType[FileIndex] & 7 ) > 1)
@@ -9507,18 +9507,18 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 	GP_GlobalHeader* lpGH = GPH[FileIndex];
 	GP_Header* lpGP = GPX( lpGH, LGPH[SprIndex & 4095] );
 	GP_Header* lpGPCUR = lpGP;
-	DWORD* PAK = CASHREF[FileIndex];
+	unsigned long* PAK = CASHREF[FileIndex];
 	PAK += PAK[SprIndex & 4095];
 	int DIFF = -1;
 	int UnpackLen = lpGP->CData >> 14;
 	int CDOffs = lpGP->CData & 16383;
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 	if (Optx & 64)CDOffs += 16384;
 	if (Optx & 128)CDOffs += 32768;
-	byte* PACKOFS = (byte*) ( *PAK );//lpGP->Pack;
+	unsigned char* PACKOFS = (unsigned char*) ( *PAK );//lpGP->Pack;
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -9530,8 +9530,8 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					StdUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen, ( (byte*) lpGH ) + lpGH->VocOffset );
+					*PAK = (unsigned long) PACKOFS;
+					StdUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen, ( (unsigned char*) lpGH ) + lpGH->VocOffset );
 				};
 				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, Table );
 				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, Table );
@@ -9546,11 +9546,11 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					NatUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					NatUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
-				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
-				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (byte*) ( NatPal + ( Nation << 2 ) ) );
+				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
+				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, (unsigned char*) ( NatPal + ( Nation << 2 ) ) );
 			};
 			break;
 
@@ -9558,22 +9558,22 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 		case 2://transparent 1/4
 			if (mask & 4)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			};
 			break;
 		case 3://transparent 1/2
 			if (mask & 8)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
-				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans8 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalTPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
+				else GP_ShowMaskedMultiPalTPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans8 );
 			};
 			break;
 		case 4://transparent 3/4
 			if (mask & 16)
 			{
-				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
-				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, trans4 );
+				if (SprIndex >= 4096)GP_ShowMaskedMultiPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
+				else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, trans4 );
 			};
 			break;
 
@@ -9593,8 +9593,8 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 			};
 			break;
 		case 41:
-			if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
-			else GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Table );
+			if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
+			else GP_ShowMaskedPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Table );
 			break;
 		case 43:
 		case 44:
@@ -9607,8 +9607,8 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					LZUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					LZUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
 				if (SprIndex >= 4096)GP_ShowMaskedPalPictInv( x, y, lpGPCUR, PACKOFS, Table );
 				else GP_ShowMaskedPalPict( x, y, lpGPCUR, PACKOFS, Table );
@@ -9623,8 +9623,8 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 					INTV( PACKOFS ) = (int) PAK;//&lpGPCUR->Pack);
 					PACKOFS += 8;
 					//lpGPCUR->Pack=PACKOFS;
-					*PAK = (DWORD) PACKOFS;
-					GreyUnpack( PACKOFS, ( (byte*) lpGPCUR ) + CDOffs, UnpackLen );
+					*PAK = (unsigned long) PACKOFS;
+					GreyUnpack( PACKOFS, ( (unsigned char*) lpGPCUR ) + CDOffs, UnpackLen );
 				};
 				switch (imt)
 				{
@@ -9649,8 +9649,8 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, Optional3 );
 					break;
 				case 6:
-					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
-					//else GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
+					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
+					//else GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
 					break;
 				default:
 					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, PACKOFS, fog + 1024 );
@@ -9665,32 +9665,32 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 				switch (imt)
 				{
 				case 1://white
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Bright + startTrans );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Bright + startTrans );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog );
 					break;
 				case 2://red
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog + startTrans );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, yfog );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog + startTrans );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, yfog );
 					break;
 				case 3:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional1 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 + startTrans );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional1 );
 					break;
 				case 4:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional2 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 + startTrans );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional2 );
 					break;
 				case 5:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, Optional3 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, Optional3 );
 					break;
 				case 6:
-					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
-					//else GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((byte*)lpGPCUR)+CDOffs,Optional4);
+					//if(SprIndex<4096)GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
+					//else GP_ShowMaskedMultiPalPict(x,y,lpGPCUR,((unsigned char*)lpGPCUR)+CDOffs,Optional4);
 					break;
 				default:
-					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
-					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (byte*) lpGPCUR ) + CDOffs, fog + 1024 );
+					if (SprIndex < 4096)GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
+					else GP_ShowMaskedMultiPalPict( x, y, lpGPCUR, ( (unsigned char*) lpGPCUR ) + CDOffs, fog + 1024 );
 					break;
 				};
 			};
@@ -9704,7 +9704,7 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 		};
 		UnpackLen = lpGPCUR->CData >> 14;
 		CDOffs = lpGPCUR->CData & 16383;
-		byte Optx = lpGPCUR->Options;
+		unsigned char Optx = lpGPCUR->Options;
 
 		if (( Optx & 63 ) == 43)UnpackLen += 262144;
 		if (( Optx & 63 ) == 44)UnpackLen += 262144 * 2;
@@ -9712,34 +9712,34 @@ void GP_System::ShowGPPalLayers(//IMPORTANT: color masking for buildings (only w
 		if (Optx & 64)CDOffs += 16384;
 		if (Optx & 128)CDOffs += 32768;
 		PAK++;
-		PACKOFS = (byte*) ( *PAK );//lpGPCUR->Pack;
+		PACKOFS = (unsigned char*) ( *PAK );//lpGPCUR->Pack;
 	} while (DIFF != -1);
 };
 
-void GP_System::ShowGPRedN( int x, int y, int FileIndex, int SprIndex, byte Nation, int N )
+void GP_System::ShowGPRedN( int x, int y, int FileIndex, int SprIndex, unsigned char Nation, int N )
 {
 	ShowGPPal( x, y, FileIndex, SprIndex, Nation, yfog + ( N * 256 ) );
 }
 
-void GP_System::ShowGPDarkN( int x, int y, int FileIndex, int SprIndex, byte Nation, int N )
+void GP_System::ShowGPDarkN( int x, int y, int FileIndex, int SprIndex, unsigned char Nation, int N )
 {
 	ShowGPPal( x, y, FileIndex, SprIndex, Nation, wfog + ( N << 8 ) );
 };
-void GP_System::ShowGPDark( int x, int y, int FileIndex, int SprIndex, byte Nation )
+void GP_System::ShowGPDark( int x, int y, int FileIndex, int SprIndex, unsigned char Nation )
 {
 	//	assert(FileIndex<NGP);
 	ShowGPGrad( x, y, FileIndex, SprIndex, Nation, fog + 1024 );
 };
-void GP_System::ShowGPFired( int x, int y, int FileIndex, int SprIndex, byte Nation )
+void GP_System::ShowGPFired( int x, int y, int FileIndex, int SprIndex, unsigned char Nation )
 {
 	//	assert(FileIndex<NGP);
 	ShowGPGrad( x, y, FileIndex, SprIndex, Nation, yfog + 1024 );
 };
-void GP_System::ShowGPMutno( int x, int y, int FileIndex, int SprIndex, byte Nation )
+void GP_System::ShowGPMutno( int x, int y, int FileIndex, int SprIndex, unsigned char Nation )
 {
 	ShowGPGrad( x, y, FileIndex, SprIndex, Nation, wfog + 1024 );
 };
-void GP_System::ShowGPGrad( int x, int y, int FileIndex, int SprIndex, byte Nation, byte* Table )
+void GP_System::ShowGPGrad( int x, int y, int FileIndex, int SprIndex, unsigned char Nation, unsigned char* Table )
 {
 	//assert(FileIndex<NGP);
 	if (( ImageType[FileIndex] & 7 ) > 1)
@@ -9761,7 +9761,7 @@ GP_System GPS;
 extern int mapx;
 extern int mapy;
 static int npp = 0;
-void OvpBar1( int x, int y, int Lx, int Ly, byte c )
+void OvpBar1( int x, int y, int Lx, int Ly, unsigned char c )
 {
 	int ofst = int( ScreenPtr ) + x + y*ScrWidth;
 	__asm {
@@ -9784,7 +9784,7 @@ void OvpBar1( int x, int y, int Lx, int Ly, byte c )
 					  pop		edi
 	};
 };
-void OvpBar2( int x, int y, int Lx, int Ly, byte c )
+void OvpBar2( int x, int y, int Lx, int Ly, unsigned char c )
 {
 	int ofst = int( ScreenPtr ) + x + y*ScrWidth;
 	__asm {
@@ -9807,11 +9807,11 @@ void OvpBar2( int x, int y, int Lx, int Ly, byte c )
 					  pop		edi
 	};
 };
-extern byte WaterCost[65536];
+extern unsigned char WaterCost[65536];
 //Waves
 void ShowGradPicture( int x, int y, int Lx, int Ly,
 	int z1, int z2, int z3, int z4,
-	byte* Bitmap, int BMLx )
+	unsigned char* Bitmap, int BMLx )
 {
 	BMLx -= Lx;
 	int a = z1 << 16;
@@ -9860,8 +9860,8 @@ void ShowGradPicture( int x, int y, int Lx, int Ly,
 class WaterSpot
 {
 public:
-	byte* Vertex;
-	byte* Altitude;
+	unsigned char* Vertex;
+	unsigned char* Altitude;
 	int Lx, Ly;
 
 	WaterSpot();
@@ -9877,8 +9877,8 @@ WaterSpot::WaterSpot()
 	Ly = 20;
 	int nn = Lx * Ly;
 
-	Vertex = new byte[nn];
-	Altitude = new byte[nn];
+	Vertex = new unsigned char[nn];
+	Altitude = new unsigned char[nn];
 
 	memset( Vertex, 0, nn );
 	memset( Altitude, 0, nn );
@@ -9941,7 +9941,7 @@ void WaterSpot::Process()
 	int nn = Lx*Ly;
 	for (int i = 0; i < nn; i++)
 	{
-		byte alt = Altitude[i];
+		unsigned char alt = Altitude[i];
 		if (alt & 128)
 		{
 			if (alt < 128 + 4)alt++;
@@ -9958,7 +9958,7 @@ void WaterSpot::Process()
 		Altitude[i] = alt;
 	};
 };
-byte ttt[4096];
+unsigned char ttt[4096];
 void WaterSpot::Draw( int xx, int yy )
 {
 	int i = 0;
@@ -10084,7 +10084,8 @@ UNIFONTS::~UNIFONTS()
 };
 void FONERR()
 {
-	MessageBox( NULL, "Invalid Unicode.dat", "ERROR!", 0 );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "ERROR!", "Invalid Unicode.dat", nullptr);
+	//MessageBox( NULL, "Invalid Unicode.dat", "ERROR!", 0 );
 	assert( 0 );
 };
 
@@ -10339,12 +10340,12 @@ __declspec( dllexport ) bool CheckGP_Inside( int FileIndex, int SprIndex, int dx
 	GP_Header* lpGPCUR = lpGP;
 	int DIFF = -1;
 
-	byte Optx = lpGP->Options;
+	unsigned char Optx = lpGP->Options;
 
 
 	do
 	{
-		byte Opt = lpGPCUR->Options & 63;
+		unsigned char Opt = lpGPCUR->Options & 63;
 		switch (Opt)
 		{
 		case 0://standart packing
@@ -10390,9 +10391,9 @@ GP_IMG* GP_Reg = nullptr;
 
 struct GP_IMG
 {
-	word Index;
-	word GPID;
-	word Spr;
+	unsigned short Index;
+	unsigned short GPID;
+	unsigned short Spr;
 	short x;
 	short y;
 };
@@ -10409,7 +10410,7 @@ void Clean_GP_IMG()
 	N_GP_Reg = 0;
 }
 
-void RegisterVisibleGP( word Index, int FileIndex, int SprIndex, int x, int y )
+void RegisterVisibleGP( unsigned short Index, int FileIndex, int SprIndex, int x, int y )
 {
 	if (N_GP_Reg >= Max_GP_Reg)
 	{
@@ -10425,7 +10426,7 @@ void RegisterVisibleGP( word Index, int FileIndex, int SprIndex, int x, int y )
 	N_GP_Reg++;
 }
 
-word CheckCoorInGP( int x, int y )
+unsigned short CheckCoorInGP( int x, int y )
 {
 	for (int i = N_GP_Reg - 1; i >= 0; i--)
 	{

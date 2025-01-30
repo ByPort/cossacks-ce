@@ -30,7 +30,7 @@ void ErrM(char* s);
 bool Mode3D;
 void CreateRandomHMap();
 extern int mul3(int);
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 int Buf3Dofs;
 int Buf3DLx;
 int Buf3DLy;
@@ -42,14 +42,14 @@ extern int LightDX;
 extern int LightDY;
 extern int LightDZ;
 #define Max3DLy 1024
-extern byte darkfog[40960];
-word VertBuf[Max3DLy * 16];
-//word x1  -->Dx
-//word x2  -->Lx
+extern unsigned char darkfog[40960];
+unsigned short VertBuf[Max3DLy * 16];
+//unsigned short x1  -->Dx
+//unsigned short x2  -->Lx
 //int res         BMX
 //int bmxy        BMY
 //int fog
-//byte TempDest[800000];
+//unsigned char TempDest[800000];
 static int curXT;
 static int curYT;
 static int curRX;
@@ -64,7 +64,7 @@ static int BMdx;
 static int OffsetX;
 static int OffsetY;
 bool PrepareToRender(int NLines, int startX, int startY) {
-	word curx;
+	unsigned short curx;
 	__asm {
 		mov		ax, VertBuf[0]
 		mov		bx, VertBuf[2]
@@ -214,15 +214,15 @@ void addLine(int x, int y) {
 //It is really important. Before this oeration
 //VertBuf must be filled by values of x1,Lx,BMxy,Fog
 //OUTPUT:
-// word  NLines
+// unsigned short  NLines
 // For every line:
-// word  Dx
+// unsigned short  Dx
 // short Lx 
-// byte  data[Lx]
+// unsigned char  data[Lx]
 // ...
 int BPtemp;
-void RenderTriangle64(int NLines, byte* Dest, byte* Bitmap) {
-	((word*)Dest)[0] = NLines;
+void RenderTriangle64(int NLines, unsigned char* Dest, unsigned char* Bitmap) {
+	((unsigned short*)Dest)[0] = NLines;
 	int Startscan;
 	int ScanSize;
 	int VertPos;
@@ -315,8 +315,8 @@ void PreRenderTri64(int x1, int y1,
 	int x3, int y3,
 	int bmxy, int bmdx,
 	int bmdy, int fog, int fogdx, int fogdy,
-	byte* bitm,
-	byte* Dest) {
+	unsigned char* bitm,
+	unsigned char* Dest) {
 	int z1 = GetMin(y1, y2, y3);
 	int z2 = GetMax(y1, y2, y3);
 	curScrOfs = x1 + y1*Buf3DLx;
@@ -351,7 +351,7 @@ void PreRenderTri64(int x1, int y1,
 	PrepareToRender(z2 - z1 + 1, x1, y1 - z1);
 	RenderTriangle64(z2 - z1 + 1, Dest, bitm);
 };
-void ShowTriangle(int x, int y, byte* data) {
+void ShowTriangle(int x, int y, unsigned char* data) {
 	int dx = ((int*)data)[1];
 	int dy = ((int*)data)[2];
 	int ofst = int(ScreenPtr) + (y + dy)*ScrWidth + x - dx;
@@ -393,7 +393,7 @@ void ShowTriangle(int x, int y, byte* data) {
 			pop		esi
 	};
 };
-void ShowClippedTriangle(int x, int y, byte* data) {
+void ShowClippedTriangle(int x, int y, unsigned char* data) {
 	int dx = ((int*)data)[1];
 	int dy = ((int*)data)[2];
 	int x1 = x + dx;
@@ -498,7 +498,7 @@ void ShowClippedTriangle(int x, int y, byte* data) {
 			pop		esi
 	};
 };
-void ShowClippedTriangleMMX(int x, int y, byte* data) {
+void ShowClippedTriangleMMX(int x, int y, unsigned char* data) {
 	int dx = ((int*)data)[1];
 	int dy = ((int*)data)[2];
 	int x1 = x + dx;
@@ -621,7 +621,7 @@ void RenderSmartTriangle64(int xs1, int ys1,
 	int xb2, int yb2,
 	int xb3, int yb3,
 	int f1, int f2, int f3,
-	byte * Dest, byte* Bitm) {
+	unsigned char * Dest, unsigned char* Bitm) {
 	int dxb2 = xb2 - xb1;
 	int dxb3 = xb3 - xb1;
 	int dyb2 = yb2 - yb1;
@@ -646,8 +646,8 @@ void RenderSmartTriangle64(int xs1, int ys1,
 	Axy = div(Axy << 8, D).quot;
 	Ayx = div(Ayx << 8, D).quot;
 	int bmxy = ((xb1 & 63) << 8) + ((yb1 & 63) << 24);
-	int bmdx = word(Axx) + (word(Ayx) << 16);
-	int bmdy = word(Axy) + (word(Ayy) << 16);
+	int bmdx = unsigned short(Axx) + (unsigned short(Ayx) << 16);
+	int bmdy = unsigned short(Axy) + (unsigned short(Ayy) << 16);
 	//Fogging
 	int DScr = dys2*dxs3 - dxs2*dys3;
 	int FDx = 0;
@@ -671,7 +671,7 @@ static int TempEBP;
 static int BMXStart;
 static int BMYStart;
 static int	fogstart;
-static word curx;
+static unsigned short curx;
 static int FOG1;
 bool PrecPrepareToRender(int NLines, int startX, int startY) {
 	__asm {
@@ -769,7 +769,7 @@ bool PrecPrepareToRender(int NLines, int startX, int startY) {
 	//Now we are ready to render trrriangle !!!!!!!!!!!!
 	return true;
 };
-static word STRTX;
+static unsigned short STRTX;
 bool AbsolutePrecPrepareToRender(int NLines, int startX, int startY) {
 	__asm {
 		mov		ax, VertBuf[0]
@@ -871,13 +871,13 @@ bool AbsolutePrecPrepareToRender(int NLines, int startX, int startY) {
 //It is really important. Before this oeration
 //VertBuf must be filled by values of x1,Lx,BMxy,Fog
 //OUTPUT:
-// word  NLines
+// unsigned short  NLines
 // For every line:
-// word  Dx
+// unsigned short  Dx
 // short Lx 
-// byte  data[Lx]
+// unsigned char  data[Lx]
 // ...
-int PrecRenderTriangle64(int NLines, byte* Dest, byte* Bitmap) {
+int PrecRenderTriangle64(int NLines, unsigned char* Dest, unsigned char* Bitmap) {
 	((int*)Dest)[0] = NLines;
 	int Startscan;
 	int ScanSize;
@@ -953,8 +953,8 @@ int PrecRenderTriangle64(int NLines, byte* Dest, byte* Bitmap) {
 	};
 	return 0;
 };
-int PrecRenderTriangle128(int NLines, byte* Dest, byte* Bitmap) {
-	((word*)Dest)[0] = NLines;
+int PrecRenderTriangle128(int NLines, unsigned char* Dest, unsigned char* Bitmap) {
+	((unsigned short*)Dest)[0] = NLines;
 	int Startscan;
 	int ScanSize;
 	int VertPos;
@@ -1029,7 +1029,7 @@ int PrecRenderTriangle128(int NLines, byte* Dest, byte* Bitmap) {
 	};
 	return 0;
 };
-int PrecRenderTriangle64Dithering(int NLines, byte* Dest, byte* Bitmap) {
+int PrecRenderTriangle64Dithering(int NLines, unsigned char* Dest, unsigned char* Bitmap) {
 	((int*)Dest)[0] = NLines;
 	int Startscan;
 	int ScanSize;
@@ -1127,8 +1127,8 @@ int PrecPreRenderTri64(int x1, int y1,
 	int bmx, int bmy,
 	int bmdxx, int bmdyx, int bmdxy, int bmdyy,
 	int fog, int fogdx, int fogdy,
-	byte* bitm,
-	byte* Dest) {
+	unsigned char* bitm,
+	unsigned char* Dest) {
 	int z1 = GetMin(y1, y2, y3);
 	int z2 = GetMax(y1, y2, y3);
 	curScrOfs = x1 + y1*Buf3DLx;
@@ -1173,8 +1173,8 @@ int PrecPreRenderTri128(int x1, int y1,
 	int bmx, int bmy,
 	int bmdxx, int bmdyx, int bmdxy, int bmdyy,
 	int fog, int fogdx, int fogdy,
-	byte* bitm,
-	byte* Dest) {
+	unsigned char* bitm,
+	unsigned char* Dest) {
 	int z1 = GetMin(y1, y2, y3);
 	int z2 = GetMax(y1, y2, y3);
 	curScrOfs = x1 + y1*Buf3DLx;
@@ -1220,7 +1220,7 @@ int RenderBestTriangle64(int xs1, int ys1,
 	int xb2, int yb2,
 	int xb3, int yb3,
 	int f1, int f2, int f3,
-	byte * Dest, byte* Bitm) {
+	unsigned char * Dest, unsigned char* Bitm) {
 	int dxb2 = xb2 - xb1;
 	int dxb3 = xb3 - xb1;
 	int dyb2 = yb2 - yb1;
@@ -1246,8 +1246,8 @@ int RenderBestTriangle64(int xs1, int ys1,
 	Ayx = div(Ayx << 16, D).quot;
 
 	int bmxy = ((xb1 & 63) << 8) + ((yb1 & 63) << 24);
-	int bmdx = word(Axx) + (word(Ayx) << 16);
-	int bmdy = word(Axy) + (word(Ayy) << 16);
+	int bmdx = unsigned short(Axx) + (unsigned short(Ayx) << 16);
+	int bmdy = unsigned short(Axy) + (unsigned short(Ayy) << 16);
 	//Fogging
 	int DScr = dys2*dxs3 - dxs2*dys3;
 	int FDx = 0;
@@ -1268,7 +1268,7 @@ int RenderBestTriangle128(int xs1, int ys1,
 	int xb2, int yb2,
 	int xb3, int yb3,
 	int f1, int f2, int f3,
-	byte * Dest, byte* Bitm) {
+	unsigned char * Dest, unsigned char* Bitm) {
 	int dxb2 = xb2 - xb1;
 	int dxb3 = xb3 - xb1;
 	int dyb2 = yb2 - yb1;
@@ -1294,8 +1294,8 @@ int RenderBestTriangle128(int xs1, int ys1,
 	Ayx = div(Ayx << 16, D).quot;
 
 	int bmxy = ((xb1 & 63) << 8) + ((yb1 & 63) << 24);
-	int bmdx = word(Axx) + (word(Ayx) << 16);
-	int bmdy = word(Axy) + (word(Ayy) << 16);
+	int bmdx = unsigned short(Axx) + (unsigned short(Ayx) << 16);
+	int bmdy = unsigned short(Axy) + (unsigned short(Ayy) << 16);
 	//Fogging
 	int DScr = dys2*dxs3 - dxs2*dys3;
 	int FDx = 0;
@@ -1309,7 +1309,7 @@ int RenderBestTriangle128(int xs1, int ys1,
 		f1 << 16, FDx, FDy, Bitm, Dest);
 
 };
-int DirectRenderTriangle64Dithering(int NLines, int StartLine, int EndLine, int DestSizeX, byte* Dest, byte* Bitmap) {
+int DirectRenderTriangle64Dithering(int NLines, int StartLine, int EndLine, int DestSizeX, unsigned char* Dest, unsigned char* Bitmap) {
 	if (StartLine >= NLines || EndLine < 0)return 0;
 	int RealStartLine = StartLine;
 	if (RealStartLine < 0)RealStartLine = 0;
@@ -1419,8 +1419,8 @@ int DirectPreRenderTri64(int x1, int y1,
 	int bmx, int bmy,
 	int bmdxx, int bmdyx, int bmdxy, int bmdyy,
 	int fog, int fogdx, int fogdy,
-	byte* bitm,
-	byte* Dest,
+	unsigned char* bitm,
+	unsigned char* Dest,
 	int StartLine, int EndLine, int ScanSize) {
 	int z1 = GetMin(y1, y2, y3);
 	int z2 = GetMax(y1, y2, y3);
@@ -1470,7 +1470,7 @@ void DirectRenderTriangle64(int xs1, int ys1,
 	int xb2, int yb2,
 	int xb3, int yb3,
 	int f1, int f2, int f3,
-	byte * Dest, byte* Bitm,
+	unsigned char * Dest, unsigned char* Bitm,
 	int StartLine, int EndLine, int ScanSize) {
 	StartLine -= ys1;
 	EndLine -= ys1;
@@ -1500,8 +1500,8 @@ void DirectRenderTriangle64(int xs1, int ys1,
 	Ayx = div(Ayx << 16, D).quot;
 
 	int bmxy = ((xb1 & 63) << 8) + ((yb1 & 63) << 24);
-	int bmdx = word(Axx) + (word(Ayx) << 16);
-	int bmdy = word(Axy) + (word(Ayy) << 16);
+	int bmdx = unsigned short(Axx) + (unsigned short(Ayx) << 16);
+	int bmdy = unsigned short(Axy) + (unsigned short(Ayy) << 16);
 	//Fogging
 	int DScr = dys2*dxs3 - dxs2*dys3;
 	int FDx = 0;
@@ -1517,8 +1517,8 @@ void DirectRenderTriangle64(int xs1, int ys1,
 };
 //---------------------NEW 3D MAP RENDERING!--------------------
 
-byte *tex1;
-byte TexColors[256];
+unsigned char *tex1;
+unsigned char TexColors[256];
 
 //----------------------NEW MAP WITH CASHING--------------------
 //
@@ -1544,8 +1544,8 @@ byte TexColors[256];
 */
 
 short* THMap;// Map of heights in vertices
-byte* TexMap;//Map of textures in vertices
-byte* SectMap;//Map of sections on lines
+unsigned char* TexMap;//Map of textures in vertices
+unsigned char* SectMap;//Map of sections on lines
 
 //int CurTIRef;
 //int CurTIBufPos;
@@ -1555,7 +1555,7 @@ RLCTable SimpleMaskA;
 RLCTable SimpleMaskB;
 RLCTable SimpleMaskC;
 RLCTable SimpleMaskD;
-extern byte ExtTex[256][4];
+extern unsigned char ExtTex[256][4];
 extern short randoma[8192];
 int GetVTex(int i) {
 	//if(RoadOpt[i]==1)return RoadTex[TexMap[i]];
@@ -1724,8 +1724,8 @@ void CreateRandomHMap() {
 //const int HardLight[32]={0,1,2,3,4,5,6,8,10,12,14,16,18,20,22,24,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30};
 const int HardLight[32] = { 0,1,1,3,5,7,9,11,12,12,12,12,12,12,12,12,12,12,12,12,12,12,13,13,13,13,13,13,13,13,13,13 };
 int GetLighting(int i) {
-	byte tex = GetVTex(i);
-	word tf = TexFlags[tex];
+	unsigned char tex = GetVTex(i);
+	unsigned short tf = TexFlags[tex];
 	if (tf&TEX_NOLIGHT)return 0;
 	int h1, h2, h3, h4, h5, h6;
 	if (i & 1) {
@@ -1767,14 +1767,14 @@ void ShowRelief() {
 
 };
 //-----------------------------TESTING--------------------------
-word TexFlags[256];
-byte TexMedia[256];
-word RoadTex[256];
-byte ExtTex[256][4];
+unsigned short TexFlags[256];
+unsigned char TexMedia[256];
+unsigned short RoadTex[256];
+unsigned char ExtTex[256][4];
 char* TexNames[256];
 void NLine(GFILE*);
 void ClearIntersectionBuffer();
-byte TileMap[256];
+unsigned char TileMap[256];
 extern int TEXARR[8];
 
 void Loadtextures()
@@ -1782,7 +1782,7 @@ void Loadtextures()
 	memset(TileMap, 0, sizeof TileMap);
 	ResFile f1 = RReset("tiles3.bmp");//("dmbmp.bpx");//("textures.bpx");
 	RSeek(f1, 0x436);
-	tex1 = new byte[RFileSize(f1) - 0x436];
+	tex1 = new unsigned char[RFileSize(f1) - 0x436];
 	int ntex = RFileSize(f1) >> 12;
 	MaxTex = ntex;
 	RBlockRead(f1, tex1, RFileSize(f1) - 0x436);
@@ -1897,7 +1897,7 @@ void Loadtextures()
 
 extern int COUNTER;
 
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 
 void TestGP();
 
@@ -1916,15 +1916,15 @@ struct VertOver
 	short xz;
 	int   v;
 	bool Visible;
-	byte* Data;
+	unsigned char* Data;
 };
 
 class OverTriangle 
 {
 public:
 	VertOver** TRIANG;
-	word*      NTRIANG;
-	byte** Buffer;
+	unsigned short*      NTRIANG;
+	unsigned char** Buffer;
 	int MaxElm;
 	int CurElm;
 
@@ -2195,7 +2195,7 @@ void OverTriangle::CreateFullMap() {
 	};
 }
 
-int RenderSector(int i, bool Mode3D, byte* DST, bool NeedRender)
+int RenderSector(int i, bool Mode3D, unsigned char* DST, bool NeedRender)
 {
 	if (i >= MaxTH*MaxTH * 2)
 	{
@@ -2435,11 +2435,11 @@ void OverTriangle::ShowElement(int Sq, int idx) {
 	if (VO&&idx < NTRIANG[Sq]) {
 		VO += idx;
 		if (!VO->Data) {
-			byte TMP[8192];
+			unsigned char TMP[8192];
 			int SZ = RenderSector(VO->v, Mode3D, TMP, true);
 			//			assert(SZ<8192);
 			if (SZ) {
-				VO->Data = new byte[SZ];
+				VO->Data = new unsigned char[SZ];
 				memcpy(VO->Data, TMP, SZ);
 				TotalTriSize += SZ;
 			};

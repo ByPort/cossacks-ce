@@ -4,7 +4,6 @@
 #define GP_API __declspec(dllimport)
 #endif
 #pragma pack(1)
-typedef unsigned short word;
 typedef char* LPCHAR; 
 #define MaxGPIdx 3000
 
@@ -16,9 +15,9 @@ public:
 	short dy;
 	short Lx;
 	short Ly;
-	byte* Pack;
+	unsigned char* Pack;
 	char  Options;
-	DWORD CData;
+	unsigned long CData;
 	short NLines;
 	int GetLx();
 	int GetLy();
@@ -34,12 +33,12 @@ struct GP_API GP_GlobalHeader
 	int		 VocOffset;
 	short    VocLength;
 	//GP_Header* LGPH[256];
-	DWORD    LGPH[256];
+	unsigned long    LGPH[256];
 };
 struct OneUnicodeSet{
 	int DY;
 	int DX;
-	byte UseColor;
+	unsigned char UseColor;
 	int Start;
 	int NSymbols;
 	int GP_Start;
@@ -63,14 +62,14 @@ public:
 	UNICODETABLE* FindFont(char* Name);
 };
 extern GP_API UNIFONTS UFONTS;
-#define NO_PACK ((byte*)0xFFFFFFFF)
+#define NO_PACK ((unsigned char*)0xFFFFFFFF)
 void ErrM(char* s);
 typedef GP_GlobalHeader* lpGP_GlobalHeader;
 
 class GP_API GP_System
 {
 public:
-	byte* PackCash;
+	unsigned char* PackCash;
 	int CashSize;
 	int CashPos;
 
@@ -82,10 +81,10 @@ public:
 	//Array of pointers to buffers with loaded resource files
 	GP_GlobalHeader** GPH;
 
-	DWORD** CASHREF;
-	byte* Mapping;
+	unsigned long** CASHREF;
+	unsigned char* Mapping;
 	char** GPNames;
-	word* GPNFrames;
+	unsigned short* GPNFrames;
 	RLCTable* RLCImage;
 	RLCTable* RLCShadow;
 	int* GPSize;
@@ -96,7 +95,7 @@ public:
 	//1 = GP
 	//2 = RLC
 	//3 = RLC + Shadow 
-	byte* ImageType;
+	unsigned char* ImageType;
 
 	short** ImLx;
 	short** ImLy;
@@ -105,7 +104,7 @@ public:
 	UNICODETABLE** UNITBL;
 	GP_System();
 	~GP_System();
-	byte* GetCash(int Size);
+	unsigned char* GetCash(int Size);
 	int PreLoadGPImage(char* Name);
 	int PreLoadGPImage(char* Name,bool Shadow);
 	bool LoadGP(int i);
@@ -114,18 +113,18 @@ public:
 	int GetGPShift(int i,int n);
 	int  GetGPHeight(int i,int n);
 	bool GetGPSize(int i,int n,int* Lx,int* Ly);
-	void ShowGP(int x,int y,int FileIndex,int SprIndex,byte Nation);
-	void ShowGPLayers(int x,int y,int FileIndex,int SprIndex,byte Nation,int mask);
-	void ShowGPTransparent(int x,int y,int FileIndex,int SprIndex,byte Nation);
-	void ShowGPTransparentLayers(int x,int y,int FileIndex,int SprIndex,byte Nation,int mask);
-	void ShowGPPal(int x,int y,int FileIndex,int SprIndex,byte Nation,byte* Table);
-	void ShowGPPalLayers(int x,int y,int FileIndex,int SprIndex,byte Nation,byte* Table,int mask);
-	void ShowGPRedN(int x,int y,int FileIndex,int SprIndex,byte Nation,int N);
-	void ShowGPDarkN(int x,int y,int FileIndex,int SprIndex,byte Nation,int N);
-	void ShowGPDark(int x,int y,int FileIndex,int SprIndex,byte Nation);
-	void ShowGPFired(int x,int y,int FileIndex,int SprIndex,byte Nation);
-	void ShowGPMutno(int x,int y,int FileIndex,int SprIndex,byte Nation);
-	void ShowGPGrad(int x,int y,int FileIndex,int SprIndex,byte Antion,byte* Table);
+	void ShowGP(int x,int y,int FileIndex,int SprIndex,unsigned char Nation);
+	void ShowGPLayers(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,int mask);
+	void ShowGPTransparent(int x,int y,int FileIndex,int SprIndex,unsigned char Nation);
+	void ShowGPTransparentLayers(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,int mask);
+	void ShowGPPal(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,unsigned char* Table);
+	void ShowGPPalLayers(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,unsigned char* Table,int mask);
+	void ShowGPRedN(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,int N);
+	void ShowGPDarkN(int x,int y,int FileIndex,int SprIndex,unsigned char Nation,int N);
+	void ShowGPDark(int x,int y,int FileIndex,int SprIndex,unsigned char Nation);
+	void ShowGPFired(int x,int y,int FileIndex,int SprIndex,unsigned char Nation);
+	void ShowGPMutno(int x,int y,int FileIndex,int SprIndex,unsigned char Nation);
+	void ShowGPGrad(int x,int y,int FileIndex,int SprIndex,unsigned char Antion,unsigned char* Table);
 	void SetWhiteFont(int Gp_File);
 	void SetRedFont(int Gp_File);
 	void SetBlackFont(int Gp_File);
@@ -148,4 +147,4 @@ public:
 	void UnLoad();
 };
 
-extern word GP_L_IDXS[MaxGPIdx];
+extern unsigned short GP_L_IDXS[MaxGPIdx];

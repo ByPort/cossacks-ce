@@ -1,5 +1,5 @@
 class GFILE{
-	byte Buf[16384];
+	unsigned char Buf[16384];
 	int NBytesRead;
 	int BufPos;
 	int GlobalPos;

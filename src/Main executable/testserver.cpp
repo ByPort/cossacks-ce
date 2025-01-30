@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -25,11 +26,9 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 #include "Conststr.h"
-#include <Process.h>
 #include "Recorder.h"
 #include "GSINC.H"
 #include "TopoGraf.h"
@@ -56,12 +55,11 @@ typedef void tpOpenRef( int Index, char* home );
 typedef void tpResizeSXP( int Index, int x, int y, int x1, int y1 );
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
 typedef void tpProcessDownloadInternetFiles();
-typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
+typedef void tpSendRecBuffer( unsigned char* Data, int size, bool Final );
 extern bool KeyPressed;
 extern int LastKey;
 
-HMODULE H_Exp = nullptr;
-HMODULE H_ExpOld = nullptr;
+void* H_Exp = nullptr;
 fnInitSXP* InitSXP = nullptr;
 fnRunSXP* RunSXP = nullptr;
 fnProcessSXP* ProcessSXP = nullptr;
@@ -103,27 +101,27 @@ __declspec( dllexport ) void StartExplorer()
 
 	if (H_Exp)
 	{
-		InitSXP = (fnInitSXP*) GetProcAddress( H_Exp, "InitSXP" );
+		InitSXP = (fnInitSXP*) GetProcAddress( (HMODULE)H_Exp, "InitSXP" );
 
 		if (InitSXP)
 		{
 			InitSXP();
 		}
 
-		RunSXP = (fnRunSXP*) GetProcAddress( H_Exp, "RunSXP" );
-		ProcessSXP = (fnProcessSXP*) GetProcAddress( H_Exp, "ProcessSXP" );
-		GetAccessKey = (fnGetAccessKey*) GetProcAddress( H_Exp, "?GetAccessKey@@YAPADH@Z" );
-		SetAccessKey = (fnSetAccessKey*) GetProcAddress( H_Exp, "?SetAccessKey@@YAXHPAD@Z" );
-		SXP_StepBack = (fnSXP_Operation*) GetProcAddress( H_Exp, "SXP_StepBack" );
-		SXP_StepForw = (fnSXP_Operation*) GetProcAddress( H_Exp, "SXP_StepForw" );
-		SXP_Refresh = (fnSXP_Operation*) GetProcAddress( H_Exp, "SXP_Refresh" );
-		SXP_SetVar = (tpSXP_SetVar*) GetProcAddress( H_Exp, "SXP_SetVar" );
-		SXP_GetVar = (tpSXP_GetVar*) GetProcAddress( H_Exp, "SXP_GetVar" );
-		OpenRef = (tpOpenRef*) GetProcAddress( H_Exp, "OpenRef" );
-		ResizeSXP = (tpResizeSXP*) GetProcAddress( H_Exp, "ResizeSXP" );
-		StartDownloadInternetFile = (tpStartDownloadInternetFile*) GetProcAddress( H_Exp, "?StartDownloadInternetFile@@YAXPAD00@Z" );
-		ProcessDownloadInternetFiles = (tpProcessDownloadInternetFiles*) GetProcAddress( H_Exp, "?ProcessDownloadInternetFiles@@YAXXZ" );
-		SendRecBuffer = (tpSendRecBuffer*) GetProcAddress( H_Exp, "?SendRecBuffer@@YAXPAEH_N@Z" );
+		RunSXP = (fnRunSXP*) GetProcAddress( (HMODULE)H_Exp, "RunSXP" );
+		ProcessSXP = (fnProcessSXP*) GetProcAddress( (HMODULE)H_Exp, "ProcessSXP" );
+		GetAccessKey = (fnGetAccessKey*) GetProcAddress( (HMODULE)H_Exp, "?GetAccessKey@@YAPADH@Z" );
+		SetAccessKey = (fnSetAccessKey*) GetProcAddress( (HMODULE)H_Exp, "?SetAccessKey@@YAXHPAD@Z" );
+		SXP_StepBack = (fnSXP_Operation*) GetProcAddress( (HMODULE)H_Exp, "SXP_StepBack" );
+		SXP_StepForw = (fnSXP_Operation*) GetProcAddress( (HMODULE)H_Exp, "SXP_StepForw" );
+		SXP_Refresh = (fnSXP_Operation*) GetProcAddress( (HMODULE)H_Exp, "SXP_Refresh" );
+		SXP_SetVar = (tpSXP_SetVar*) GetProcAddress( (HMODULE)H_Exp, "SXP_SetVar" );
+		SXP_GetVar = (tpSXP_GetVar*) GetProcAddress( (HMODULE)H_Exp, "SXP_GetVar" );
+		OpenRef = (tpOpenRef*) GetProcAddress( (HMODULE)H_Exp, "OpenRef" );
+		ResizeSXP = (tpResizeSXP*) GetProcAddress( (HMODULE)H_Exp, "ResizeSXP" );
+		StartDownloadInternetFile = (tpStartDownloadInternetFile*) GetProcAddress( (HMODULE)H_Exp, "?StartDownloadInternetFile@@YAXPAD00@Z" );
+		ProcessDownloadInternetFiles = (tpProcessDownloadInternetFiles*) GetProcAddress( (HMODULE)H_Exp, "?ProcessDownloadInternetFiles@@YAXXZ" );
+		SendRecBuffer = (tpSendRecBuffer*) GetProcAddress( (HMODULE)H_Exp, "?SendRecBuffer@@YAXPAEH_N@Z" );
 	}
 }
 
@@ -131,17 +129,12 @@ __declspec( dllexport ) void FinExplorer()
 {
 	if (H_Exp)
 	{
-		FreeLibrary( H_Exp );
+		FreeLibrary( (HMODULE)H_Exp );
 
 		H_Exp = nullptr;
 		InitSXP = nullptr;
 		RunSXP = nullptr;
 		ProcessSXP = nullptr;
-
-		if (H_ExpOld)
-		{
-			FreeLibrary( H_ExpOld );
-		}
 	}
 }
 
@@ -232,11 +225,11 @@ __declspec( dllexport ) void ExplorerResize( int Index, int x, int y, int x1, in
 bool ProcessNewInternetLogin();
 
 typedef void fnVoid();
-typedef void fnVoidLPB( byte* );
+typedef void fnVoidLPB( unsigned char* );
 typedef void fnVoidLPC( char* );
-typedef void tpSaveAllDipData( byte** ptr, int* size );
+typedef void tpSaveAllDipData( unsigned char** ptr, int* size );
 typedef void tpPerformDipCommand( char* Data, int size );
-typedef void tpLoadAllDipData( byte* ptr, int size );
+typedef void tpLoadAllDipData( unsigned char* ptr, int size );
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
 typedef void tpProcessDownloadInternetFiles();
-typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
+typedef void tpSendRecBuffer( unsigned char* Data, int size, bool Final );

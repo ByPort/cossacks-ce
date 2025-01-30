@@ -5,7 +5,7 @@
  * and a backbuffer and sets 800x600x8 display mode.
  *
  ***********************************************************************/
-#define __ddini_cpp_
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -15,8 +15,6 @@
 #include "GSound.h"
 #include "fonts.h"
 #include "VirtScreen.h"
-
-void Rept( LPSTR sz, ... );
 
 //Dimensions of possible screen resolutions
 __declspec( dllexport ) int ModeLX[32];
@@ -51,11 +49,7 @@ SDL_Renderer* renderer;                 // SDL Renderer object
 SDL_Surface* primarySurface;            // SDL primary surface
 SDL_Texture* primaryTexture;            // SDL primary texture
 SDL_Surface* backSurface;               // SDL back surface
-BOOL                    bActive;        // is application active (not minimized / has focus)?
-BOOL                    CurrentSurface; //=FALSE if backbuffer
-										// is active (Primary surface is visible)
-										//=TRUE if  primary surface is active
-										// (but backbuffer is visible)
+int                    bActive;        // is application active (not minimized / has focus)?
 //BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 bool                    SDLError;       // false if SDL works normally
 //DDSURFACEDESC           ddsd;
@@ -64,16 +58,10 @@ bool                    SDLError;       // false if SDL works normally
 SDL_Palette*            sdlPal;
 
 extern bool PalDone;
-extern word PlayerMenuMode;
-
-struct zzz
-{
-	BITMAPINFO bmp;
-	PALETTEENTRY XPal[255];
-};
+extern unsigned short PlayerMenuMode;
 
 // Get closest palette color from RGB
-__declspec( dllexport ) byte GetPaletteColor( int r, int g, int b )
+__declspec( dllexport ) unsigned char GetPaletteColor( int r, int g, int b )
 {
 	int dmax = 10000;
 	int bestc = 0;
@@ -89,8 +77,7 @@ __declspec( dllexport ) byte GetPaletteColor( int r, int g, int b )
 	return bestc;
 }
 
-zzz xxt;
-//typedef byte barr[ScreenSizeX*ScreenSizeY];
+//typedef unsigned char barr[ScreenSizeX*ScreenSizeY];
 void* offScreenPtr;
 /*
  * Flipping Pages
@@ -252,7 +239,7 @@ int BestVY = 480;
 int BestBPP = 32;
 
 //Save results of DirectX display mode enumeration
-//HRESULT CALLBACK ModeCallback( LPDDSURFACEDESC pdds, LPVOID lParam )
+//HRESULT CALLBACK ModeCallback( LPDDSURFACEDESC pdds, void* lParam )
 //{
 //	if (1024 > pdds->dwWidth || 768 > pdds->dwHeight)
 //	{//Don't allow for resolutions less than 1024 x 768 ot bigger than 1920x[...]
@@ -342,8 +329,6 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 	bool success;
 	char buf[256];
 	SDLError = false;
-	CurrentSurface = true;
-
 	if (window_mode)
 	{
 		SVSC.SetSize( RealLx, RealLy );
@@ -656,7 +641,7 @@ SDMOD:;
 //}
 
 /*   Direct Draw palette loading*/
-void LoadPalette( LPCSTR lpFileName )
+void LoadPalette( const char* lpFileName )
 {
 	// Palette originally was set somewhere in mdraw.dll
 	// These LoadPalette functions weren't working originally
@@ -749,7 +734,7 @@ void LoadPalette( LPCSTR lpFileName )
 		}
 	}
 }
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void SetDarkPalette()
 {
@@ -777,7 +762,7 @@ void SetDarkPalette()
 // And it worked because changes reflected on the screen immediately
 // TODO: Rewrite SlowLoadPalette to render each palette update or to make fade-in effect different way
 // For now just rendering once after SlowLoadPalette
-__declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
+__declspec( dllexport ) void SlowLoadPalette( const char* lpFileName )
 {
 	if (SDLError)
 	{
@@ -879,15 +864,15 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 				{
 					//for (int j = 0; j < 1024; j++)
 					//{
-						//pal[j] = byte( ( int( pal0[j] )*mul ) >> 8 );
+						//pal[j] = unsigned char( ( int( pal0[j] )*mul ) >> 8 );
 					//}
 					for (int j = 0; j < 255; j++)
 					{
 						SDL_Color color = {
-							byte((int(originalColors[j].r) * mul) >> 8),
-							byte((int(originalColors[j].g) * mul) >> 8),
-							byte((int(originalColors[j].b) * mul) >> 8),
-							//byte((int(originalColors[j].a) * mul) >> 8),
+							unsigned char((int(originalColors[j].r) * mul) >> 8),
+							unsigned char((int(originalColors[j].g) * mul) >> 8),
+							unsigned char((int(originalColors[j].b) * mul) >> 8),
+							//unsigned char((int(originalColors[j].a) * mul) >> 8),
 							255,
 						};
 						SDL_SetPaletteColors(sdlPal, &color, j, 1);
@@ -901,7 +886,7 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 	}
 }
 
-__declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
+__declspec( dllexport ) void SlowUnLoadPalette( const char* lpFileName )
 {
 	if (SDLError)
 	{
@@ -927,15 +912,15 @@ __declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
 			{
 				//for (int j = 0; j < 1024; j++)
 				//{
-				//	pal[j] = byte( ( int( pal0[j] )*( 255 - mul ) ) >> 8 );
+				//	pal[j] = unsigned char( ( int( pal0[j] )*( 255 - mul ) ) >> 8 );
 				//}
 				for (int j = 0; j < 255; j++)
 				{
 					SDL_Color color = {
-						byte((int(originalColors[j].r) * ( 255 - mul )) >> 8),
-						byte((int(originalColors[j].g) * ( 255 - mul )) >> 8),
-						byte((int(originalColors[j].b) * ( 255 - mul )) >> 8),
-						//byte((int(originalColors[j].a) * ( 255 - mul )) >> 8),
+						unsigned char((int(originalColors[j].r) * ( 255 - mul )) >> 8),
+						unsigned char((int(originalColors[j].g) * ( 255 - mul )) >> 8),
+						unsigned char((int(originalColors[j].b) * ( 255 - mul )) >> 8),
+						//unsigned char((int(originalColors[j].a) * ( 255 - mul )) >> 8),
 						255,
 					};
 					SDL_SetPaletteColors(sdlPal, &color, j, 1);
@@ -982,7 +967,7 @@ void FreeDDObjects( void )
 }
 
 __declspec( dllexport )
-void GetPalColor( byte idx, byte* r, byte* g, byte* b )
+void GetPalColor( unsigned char idx, unsigned char* r, unsigned char* g, unsigned char* b )
 {
 	//*r = GPal[idx].peRed;
 	//*g = GPal[idx].peGreen;

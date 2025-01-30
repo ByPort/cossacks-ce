@@ -2,7 +2,7 @@
 struct Radio{
 	char* xi;
 	char* yi;
-	word N;
+	unsigned short N;
 };
 #define RRad 90
 extern Radio Rarr[RRad];
@@ -14,7 +14,7 @@ extern int TopLx;
 extern int TopLy;
 extern int MaxTop;
 extern int TopSH;
-extern word* TopRef;
+extern unsigned short* TopRef;
 
 #define SI_Center	1
 #define SI_Meln		2
@@ -32,34 +32,34 @@ extern word* TopRef;
 #define SI_Central  32768
 struct StrategyInfo{
 public:
-	word BuildInfo;
-	byte NPeasants;
-	byte NShortRange;
-	byte NLongRange;
-	byte NMortir;
-	byte NTowers;
-	byte NPushek;
+	unsigned short BuildInfo;
+	unsigned char NPeasants;
+	unsigned char NShortRange;
+	unsigned char NLongRange;
+	unsigned char NMortir;
+	unsigned char NTowers;
+	unsigned char NPushek;
 };
 struct Area{
 	short x;
 	short y;
-	byte  Importance;
-	byte NTrees;
-	byte NStones;
+	unsigned char  Importance;
+	unsigned char NTrees;
+	unsigned char NStones;
 	//01-gold
 	//02-iron
 	//04-coal
-	word  NMines;
-	word* MinesIdx;
-	word  NLinks;
-	word* Link;
-	word MaxLink;
+	unsigned short  NMines;
+	unsigned short* MinesIdx;
+	unsigned short  NLinks;
+	unsigned short* Link;
+	unsigned short MaxLink;
 	StrategyInfo SINF[8];
 };
 struct MediaTop{
-	word* MotionLinks;
-	word* LinksDist;
-	word* TopRef;
+	unsigned short* MotionLinks;
+	unsigned short* LinksDist;
+	unsigned short* TopRef;
 	int NAreas;
 	Area* TopMap;
 };
@@ -67,25 +67,25 @@ extern MediaTop GTOP[2];
 extern Area* TopMap;
 extern int   NAreas;
 extern int MaxArea;
-extern word* MotionLinks;
-extern word* LinksDist;
+extern unsigned short* MotionLinks;
+extern unsigned short* LinksDist;
 void CreateStrategyInfo();
 //---------
 #define WTopLx (TopLx)
 #define WTopSH (TopSH)
 #define WCLSH 2
 #define WCLLX 4
-extern word* WTopRef;
+extern unsigned short* WTopRef;
 extern Area* WTopMap;
 extern int   WNAreas;
 extern int WMaxArea;
-extern word* WMotionLinks;
-extern word* WLinksDist;
+extern unsigned short* WMotionLinks;
+extern unsigned short* WLinksDist;
 //---------
 void InitTopChange();
 void ClearTopChange();
-void AddChTop(word TopID);
-void AddSurroundingAreas(word TopID);
+void AddChTop(unsigned short TopID);
+void AddSurroundingAreas(unsigned short TopID);
 void DynamicalLockTopCell(int x,int y);
 void DynamicalUnLockTopCell(int x,int y);
 void ProcessDynamicalTopology();

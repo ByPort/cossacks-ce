@@ -14,8 +14,8 @@ void PushWindow(TempWindow* W);
 void PopWindow(TempWindow* W);
 void IntersectWindows(int x0,int y0,int x1,int y1);
 struct OneScale{
-	byte* Data;
-	byte* ColoredData;
+	unsigned char* Data;
+	unsigned char* ColoredData;
 	char FONT[16];
 	RLCFont* Font;
 	int Lx;
@@ -42,9 +42,9 @@ public:
 	char Title[32];
 	OneScale* SCALE;
 	int NScales;
-	byte* CountryMap;
-	byte ColorTBL[65536];
-	byte CORIG[256];
+	unsigned char* CountryMap;
+	unsigned char ColorTBL[65536];
+	unsigned char CORIG[256];
 	PAL3 COLORS[256];
 	char* Names[256];
 	int XSumm[256];
@@ -53,8 +53,8 @@ public:
 
 	int CountryLx;
 	int CountryLy;
-	DWORD LastUpdateDate;
-	DWORD UpdateData;
+	unsigned long LastUpdateDate;
+	unsigned long UpdateData;
 	int WX,WY,WLX,WLY;
 
 	int VCenterX;
@@ -78,7 +78,7 @@ public:
 
 	void SetTitle(char* title){strcpy(Title,title);};
 	void LoadMapData(sicExplorer* SXP);
-	void UpdateMapData(byte* Data);
+	void UpdateMapData(unsigned char* Data);
 	void SetOutput(int x,int y,int lx,int ly){WX=x;WY=y;WLX=lx;WLY=ly;};
 	void ShowMapPart();
 	void ApplyColorsToScaleLayer(int Idx);

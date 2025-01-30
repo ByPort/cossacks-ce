@@ -3,7 +3,7 @@
 //                class.
 ///////////////////////////////////////////////////////////
 
-//#include <stdafx.h>
+#include <stdlib.h>
 #include "cdirsnd.h"
 
 static void StreamAudioBuffer(SoundBuffer* pSoundBuffer, Sint16* destSamples, int additionalAmount)
@@ -13,11 +13,11 @@ static void StreamAudioBuffer(SoundBuffer* pSoundBuffer, Sint16* destSamples, in
 		return;
 	}
 
-	int bufferSize = min(additionalAmount, pSoundBuffer->size - pSoundBuffer->pos);
+	int bufferSize = (additionalAmount < (pSoundBuffer->size - pSoundBuffer->pos) ? additionalAmount : pSoundBuffer->size - pSoundBuffer->pos);
 
 	// FIXME: the size in bytes should be just additionalAmount since it's the size in bytes, not words
 	Sint16* samples = (Sint16*)malloc(sizeof(Sint16) * bufferSize);
-	memcpy(samples, (byte*)pSoundBuffer->data + pSoundBuffer->pos, (size_t)bufferSize);
+	memcpy(samples, (unsigned char*)pSoundBuffer->data + pSoundBuffer->pos, (size_t)bufferSize);
 	// Some fade-out effect?
 	//if (bufferSize < additionalAmount)
 	//{
@@ -129,7 +129,7 @@ void CDirSound::CreateDirSound()
 	// Initialize class data members.
 	m_currentBufferNum = 0;
 
-	for (UINT x = 0; x < MAXSND1; ++x)
+	for (unsigned int x = 0; x < MAXSND1; ++x)
 	{
 		m_bufferPointers[x] = NULL;
 	}
@@ -167,7 +167,7 @@ CDirSound::~CDirSound()
 void CDirSound::ReleaseAll()
 {
 	// Release all sound buffers.
-	for (UINT x = 1; x <= m_currentBufferNum; ++x)
+	for (unsigned int x = 1; x <= m_currentBufferNum; ++x)
 	{
 		if (!m_bufferPointers[x]->isDuplicated)
 		{
@@ -188,7 +188,7 @@ void CDirSound::ReleaseAll()
 // This member function creates secondary sound buffers.
 // The class can accommodate up to MAXSND such buffers.
 ///////////////////////////////////////////////////////////
-UINT CDirSound::CreateSoundBuffer(CWave* pWave)
+unsigned int CDirSound::CreateSoundBuffer(CWave* pWave)
 {
 	// Make sure there's room for another buffer.
 	if (m_currentBufferNum == MAXSND)
@@ -212,7 +212,7 @@ UINT CDirSound::CreateSoundBuffer(CWave* pWave)
 // This member function creates secondary sound buffers.
 // The class can accommodate up to MAXSND such buffers.
 ///////////////////////////////////////////////////////////
-UINT CDirSound::DuplicateSoundBuffer(UINT bufferNum)
+unsigned int CDirSound::DuplicateSoundBuffer(unsigned int bufferNum)
 {
 	// TODO: maybe remove this and create different buffer for the same sound
 
@@ -248,13 +248,13 @@ UINT CDirSound::DuplicateSoundBuffer(UINT bufferNum)
 //
 // This function copies wave data to a DirectSound buffer.
 ///////////////////////////////////////////////////////////
-BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
+bool CDirSound::CopyWaveToBuffer(CWave* pWave, unsigned int bufferNum)
 {
 	bool success;
 
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
-		return FALSE;
+		return false;
 
 	// Get a pointer to the requested buffer.
 	SoundBuffer* pSoundBuffer =
@@ -275,7 +275,7 @@ BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
 	// Lock the buffer.
 	success = SDL_LockAudioStream(pSoundBuffer->stream);
 	if (!success)
-		return FALSE;
+		return false;
 
 	// Copy the data into the buffer.
 	char* pWaveData = pWave->GetWaveDataPtr();
@@ -286,7 +286,7 @@ BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
 
 	SDL_UnlockAudioStream(pSoundBuffer->stream);
 
-	return TRUE;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////
@@ -297,25 +297,25 @@ BOOL CDirSound::CopyWaveToBuffer(CWave* pWave, UINT bufferNum)
 // returns FALSE.
 ///////////////////////////////////////////////////////////
 // TODO: rename to SDLAudioOK
-BOOL CDirSound::DirectSoundOK()
+bool CDirSound::DirectSoundOK()
 {
 	if (!m_SDLAudioDeviceID)
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////
-// CDirSound::PlaySound()
+// CDirSound::PlaySoundN()
 //
 // This member function plays the sound stored in the given
 // buffer.
 ///////////////////////////////////////////////////////////
-BOOL CDirSound::PlaySound(UINT bufferNum)
+bool CDirSound::PlaySoundN(unsigned int bufferNum)
 {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
-		return FALSE;
+		return false;
 
 	// Get a pointer to the requested buffer.
 	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
@@ -327,11 +327,11 @@ BOOL CDirSound::PlaySound(UINT bufferNum)
 
 	return true;
 }
-BOOL CDirSound::PlayCoorSound(UINT bufferNum, int x, int vx)
+bool CDirSound::PlayCoorSound(unsigned int bufferNum, int x, int vx)
 {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
-		return FALSE;
+		return false;
 
 	// Get a pointer to the requested buffer.
 	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
@@ -344,12 +344,12 @@ BOOL CDirSound::PlayCoorSound(UINT bufferNum, int x, int vx)
 	pSoundBuffer->x = x;
 	pSoundBuffer->y = vx;
 
-	return TRUE;
+	return true;
 }
 
 extern int CenterX;
 
-void CDirSound::ControlPan(UINT bufferNum) 
+void CDirSound::ControlPan(unsigned int bufferNum) 
 {
 	if (m_bufferPointers[bufferNum]->playing)
 	{
@@ -368,6 +368,8 @@ void CDirSound::ControlPan(UINT bufferNum)
 
 		SetPan(bufferNum, pan);
 
+		// TODO: make sure RAND_MAX is the same on other platforms
+		// TODO: or even remove since this is a noop
 		if (rand() < 350)
 		{
 			IsPlaying(bufferNum);
@@ -375,7 +377,7 @@ void CDirSound::ControlPan(UINT bufferNum)
 	}
 }
 
-void CDirSound::SetVolume(UINT bufferNum, int vol) {
+void CDirSound::SetVolume(unsigned int bufferNum, int vol) {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return;
@@ -386,7 +388,7 @@ void CDirSound::SetVolume(UINT bufferNum, int vol) {
 	// Make sure the buffer is set to play from the beginning.
 	pSoundBuffer->volume = vol;
 };
-void CDirSound::SetPan(UINT bufferNum, int pan) {
+void CDirSound::SetPan(unsigned int bufferNum, int pan) {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 		return;
@@ -400,7 +402,8 @@ void CDirSound::SetPan(UINT bufferNum, int pan) {
 
 void CDirSound::ProcessSoundSystem()
 {
-	for (int i = 1; i < min(MAXSND1, m_currentBufferNum+1); i++)
+	unsigned int sndLimit = (MAXSND1 < (m_currentBufferNum + 1)) ? MAXSND1 : (m_currentBufferNum + 1);
+	for (int i = 1; i < sndLimit; i++)
 	{
 		if (m_bufferPointers[i]->playing)
 		{
@@ -415,11 +418,11 @@ void CDirSound::ProcessSoundSystem()
 // This member function stops the sound stored in the given
 // buffer.
 ///////////////////////////////////////////////////////////
-BOOL CDirSound::StopSound(UINT bufferNum)
+bool CDirSound::StopSound(unsigned int bufferNum)
 {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
-		return FALSE;
+		return false;
 
 	// Get a pointer to the requested buffer.
 	SoundBuffer* pSoundBuffer = m_bufferPointers[bufferNum];
@@ -427,9 +430,9 @@ BOOL CDirSound::StopSound(UINT bufferNum)
 	// Make sure the buffer is set to play from the beginning.
 	pSoundBuffer->playing = false;
 
-	return TRUE;
+	return true;
 }
-int CDirSound::GetPos(UINT bufferNum)
+int CDirSound::GetPos(unsigned int bufferNum)
 {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
@@ -443,10 +446,8 @@ int CDirSound::GetPos(UINT bufferNum)
 
 }
 
-bool CDirSound::IsPlaying(UINT bufferNum)
+bool CDirSound::IsPlaying(unsigned int bufferNum)
 {
-	HRESULT result;
-
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))
 	{

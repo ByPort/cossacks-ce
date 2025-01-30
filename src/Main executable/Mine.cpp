@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -32,11 +33,11 @@ extern int ATTGR_ICON;
 extern int AttGrPos;
 int GetCell( int xs, int ys );
 void GoToMineLink( OneObject* OB );
-bool OneObject::GoToMine( word ID, byte Prio )
+bool OneObject::GoToMine( unsigned short ID, unsigned char Prio )
 {
 	return GoToMine( ID, Prio, 0 );
 };
-bool OneObject::GoToMine( word ID, byte Prio, byte Type )
+bool OneObject::GoToMine( unsigned short ID, unsigned char Prio, unsigned char Type )
 {
 
 
@@ -87,8 +88,8 @@ void GoToMineLink( OneObject* OBJ )
 	//int yy=OBJ->LocalOrder->info.BuildObj.ObjY;
 	OBJ->PrioryLevel = OBJ->LocalOrder->PrioryLevel;
 	int n = OBJ->LocalOrder->info.BuildObj.ObjX;
-	word OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
-	word OSN = OBJ->LocalOrder->info.BuildObj.SN;
+	unsigned short OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short OSN = OBJ->LocalOrder->info.BuildObj.SN;
 	OneObject* OB = Group[OID];
 	if (!OB)
 	{
@@ -116,7 +117,7 @@ void GoToMineLink( OneObject* OBJ )
 				{
 					//Hiding
 GGG1:
-					word* Ins = new word[OB->NInside + 1];
+					unsigned short* Ins = new unsigned short[OB->NInside + 1];
 					if (OB->NInside)
 					{
 						memcpy( Ins, OB->Inside, OB->NInside << 1 );
@@ -132,7 +133,7 @@ GGG1:
 				{
 					if (!OB->NInside)
 					{
-						byte OldNat = OB->NNUM;
+						unsigned char OldNat = OB->NNUM;
 						DelObject( OB );
 						OB->Nat->CITY->UnRegisterNewUnit( OB );
 						int oldst = OBJ->Stage;
@@ -172,7 +173,7 @@ GGG1:
 								{
 									int N = OB->NInside;
 									N = ( int( rando() )*N ) >> 15;
-									word MID = OB->Inside[N];
+									unsigned short MID = OB->Inside[N];
 									if (MID != 0xFFFF)
 									{
 										OneObject* IOB = Group[MID];
@@ -234,7 +235,7 @@ GGG1:
 	};
 };
 void LeaveMineLink( OneObject* OB );
-void OneObject::LeaveMine( word Type )
+void OneObject::LeaveMine( unsigned short Type )
 {
 	if (UnlimitedMotion)return;
 	if (!NInside)return;
@@ -260,8 +261,8 @@ void LeaveMineLink( OneObject* OBJ )
 		return;
 	};
 	OneObject* OB = NULL;
-	word p;
-	word Type = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short p;
+	unsigned short Type = OBJ->LocalOrder->info.BuildObj.ObjIndex;
 	for (int i = 0; i < OBJ->NInside && !OB; i++)
 	{
 		p = OBJ->Inside[i];
@@ -297,7 +298,7 @@ void LeaveMineLink( OneObject* OBJ )
 	OBJ->DeleteLastOrder();
 
 };
-void CmdUnSelUnitsSet( byte NI, word* BUF, int NU );
+void CmdUnSelUnitsSet( unsigned char NI, unsigned short* BUF, int NU );
 void DeleteFromSelection( OneObject* OB )
 {
 	if (!OB)return;
@@ -306,8 +307,8 @@ void DeleteFromSelection( OneObject* OB )
 		if (OB->ImSelected&( 1 << i ))
 		{
 			int Nsel = ImNSL[i];
-			word* SMon = ImSelm[i];
-			word ID = OB->Index;
+			unsigned short* SMon = ImSelm[i];
+			unsigned short ID = OB->Index;
 			for (int f = 0; f < Nsel; f++)if (SMon[f] == ID)SMon[f] = 0xFFFF;
 			OB->ImSelected &= ~GM( i );
 			CmdUnSelUnitsSet( i, &ID, 1 );
@@ -329,8 +330,8 @@ void OneObject::HideMe()
 	DeletePath();
 }
 
-void CmdOpenGates( byte NI );
-void CmdCloseGates( byte NI );
+void CmdOpenGates( unsigned char NI );
+void CmdCloseGates( unsigned char NI );
 
 void OneObject::ShowMe()
 {
@@ -354,7 +355,7 @@ void PushUnitOutOfMine( int i )
 	}
 }
 
-void CmdCreateGates( byte NI );
+void CmdCreateGates( unsigned char NI );
 
 void DoGates( int i )//typedef void HandlePro(int);
 {
@@ -403,8 +404,8 @@ int GetWCharID( OneObject* OB )
 	}
 }
 
-word LastOFCR = 0xFFFF;
-word create_formation_type = 0;
+unsigned short LastOFCR = 0xFFFF;
+unsigned short create_formation_type = 0;
 
 void OfficerCallback( int i )//typedef void HandlePro(int);
 {
@@ -429,7 +430,7 @@ void SDS_Pro( int i )//typedef void HandlePro(int);
 void ZAGLUXA( int i )//typedef void HandlePro(int);
 {}
 
-void CmdStopUpgrade( byte NI );
+void CmdStopUpgrade( unsigned char NI );
 
 //Calls CmdStopUpgrade()
 //int i = OneObject->Index of the building, in which the upgrade is running
@@ -438,14 +439,14 @@ void StopUpgrade( int i )//typedef void HandlePro(int);
 	CmdStopUpgrade( MyNation );
 }
 
-void CmdUnloadAll( byte Nat );
+void CmdUnloadAll( unsigned char Nat );
 
 void UNLOAD( int i ) //typedef void HandlePro(int);
 {
 	CmdUnloadAll( MyNation );
 }
 
-void CmdSetGuardState( byte, word );
+void CmdSetGuardState( unsigned char, unsigned short );
 
 extern bool GUARDMODE;
 
@@ -461,7 +462,7 @@ void CHGUARD( int i )
 	}
 }
 
-int EnumUnitsInRound( int x, int y, int r, word Type, byte Nation );
+int EnumUnitsInRound( int x, int y, int r, unsigned short Type, unsigned char Nation );
 
 extern int SET_DEST_ICON;
 extern int SDS_X;
@@ -482,11 +483,11 @@ extern int IDLE_MY;
 
 void PerformUpgradeLink( OneObject* OBJ );
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
-void CmdSelectIdlePeasants( byte );
+void CmdSelectIdlePeasants( unsigned char );
 
-void CmdSelectIdleMines( byte );
+void CmdSelectIdleMines( unsigned char );
 
 void SELECT1( int i )
 {
@@ -520,7 +521,7 @@ void ChOrdN( int i )
 	Lpressed = 0;
 }
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 char* GetTextByID( char* ID );
 int DecOrdID = 43;
 int IncOrdID = 47;
@@ -535,26 +536,26 @@ void ATTGR_PRO( int p )//typedef void HandlePro(int);
 
 //Displays special abilities for various units or buildings
 //Curious: handles officers' abilities, but not for existing formations
-bool CreateInsideList( IconSet* IS, byte NI )
+bool CreateInsideList( IconSet* IS, unsigned char NI )
 {
 	if (PlayGameMode == 1)
 	{
 		return false;
 	}
 
-	word Nmons[1024];
+	unsigned short Nmons[1024];
 	memset( Nmons, 0, 2048 );
 
 	int Nsel = ImNSL[MyNation];
-	word* SMon = ImSelm[NI];
+	unsigned short* SMon = ImSelm[NI];
 	if (!Nsel)
 	{
 		return false;
 	}
 
-	word MID;
+	unsigned short MID;
 	bool OneType = 1;
-	word TypeID = 0xFFFF;
+	unsigned short TypeID = 0xFFFF;
 
 	if (Nsel)
 	{
@@ -704,7 +705,7 @@ bool CreateInsideList( IconSet* IS, byte NI )
 
 		if (Nsel == 1 || ( GO->OFCR && OneType ))
 		{
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			if (Usage == CenterID && OB->Ready)
 			{
 				OneIcon* OI = IS->AddIconFixed( 0, IDLE_PICON, IDLE_PX + IDLE_PY * 12 );
@@ -809,9 +810,9 @@ bool CreateInsideList( IconSet* IS, byte NI )
 						{
 							OI->AssignIntVal( SDS->Amount[p - 1] );
 
-							OI->AssignLeft( &CrBrig, int( DWORD( OB->Index & 8191 )
-								+ DWORD( SDS->LocalID[p - 1] ) * 8192
-								+ DWORD( SDS->Units[j] ) * 8192 * 256 ) );
+							OI->AssignLeft( &CrBrig, int( unsigned long( OB->Index & 8191 )
+								+ unsigned long( SDS->LocalID[p - 1] ) * 8192
+								+ unsigned long( SDS->Units[j] ) * 8192 * 256 ) );
 
 							OI->CreateHint( NATIONS[MyNation].Mon[SDS->Units[j]]->Message );
 
@@ -887,10 +888,10 @@ bool CreateInsideList( IconSet* IS, byte NI )
 				if (OB->Transport)Per = true;
 				NewMonster* NM = OB->newMons;
 				int Nins = OB->NInside;
-				word* INS = OB->Inside;
+				unsigned short* INS = OB->Inside;
 				for (int j = 0; j < Nins; j++)
 				{
-					word InMID = INS[j];
+					unsigned short InMID = INS[j];
 					if (InMID != 0xFFFF)
 					{
 						OneObject* INO = Group[InMID];
@@ -906,7 +907,7 @@ bool CreateInsideList( IconSet* IS, byte NI )
 				{
 					if (OR1->DoLink == &LeaveMineLink || OR1->DoLink == &LeaveTransportLink)
 					{
-						word IID = OR1->info.BuildObj.ObjIndex;
+						unsigned short IID = OR1->info.BuildObj.ObjIndex;
 						//assert(IID<1024);
 						if (Nmons[IID])Nmons[IID]--;
 					};
@@ -971,7 +972,7 @@ void OneObject::TakeResourceFromSprite( int SID )
 		return;
 	}
 
-	byte msk = 1 << OC->IntResType;
+	unsigned char msk = 1 << OC->IntResType;
 	if (msk & NM->ProdType)
 	{
 		RType = OC->IntResType;
@@ -1016,7 +1017,7 @@ void TakeResourceFromSpriteLink( OneObject* OBJ )
 
 	int work = ( NM->FreeAdd + OBJ->NInside*NM->PeasantAdd ) << ( 2 + SpeedSh );
 
-	byte RTP = OBJ->RType;
+	unsigned char RTP = OBJ->RType;
 	if (RTP == GoldID)
 	{
 		NInGold[NT] += OBJ->NInside;
@@ -1056,7 +1057,7 @@ void TakeResourceFromSpriteLink( OneObject* OBJ )
 		{
 			if (OBJ->NInside)
 			{
-				word Last = OBJ->Inside[OBJ->NInside - 1];
+				unsigned short Last = OBJ->Inside[OBJ->NInside - 1];
 				if (Last != 0xFFFF)
 				{
 					OneObject* OB = Group[Last];
@@ -1093,7 +1094,7 @@ char* GetSprResourceName( OneObject* OB )
 
 void ShowRLCItemTrans8( int x, int y, lpRLCTable lprt, int n );
 
-void ShowBuilding( NewMonster* NM, int x, int y, byte kind )
+void ShowBuilding( NewMonster* NM, int x, int y, unsigned char kind )
 {
 	int x0 = x + NM->PicDx;
 	int y0 = y + NM->PicDy;
@@ -1170,7 +1171,7 @@ void EnumerateScreenSprites( SprInf* SPI )
 				int* SPRF = SpRefs[cell];
 				for (int i = 0; i < NSP; i++)
 				{
-					word ID = SPRF[i];
+					unsigned short ID = SPRF[i];
 					OneSprite* OS = &Sprites[ID];
 					if (OS->Enabled)SPI( OS );
 				};
@@ -1182,13 +1183,13 @@ void EnumerateScreenSprites( SprInf* SPI )
 int mul3( int );
 extern bool Mode3D;
 NewMonster* NEWMON;
-byte MineMask;
+unsigned char MineMask;
 void MSpinf( OneSprite* OS )
 {
 	ObjCharacter* OC = OS->OC;
 	if (OC->IntResType != 0xFF)
 	{
-		byte MS = 1 << OC->IntResType;
+		unsigned char MS = 1 << OC->IntResType;
 		if (MS&MineMask)
 		{
 			int x = smapx + OS->x;

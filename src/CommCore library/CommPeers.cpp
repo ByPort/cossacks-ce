@@ -3,11 +3,11 @@
 #include "CommCore.h"
 
 // ---------------------------------------------------------------------------------------------
-u_short CCommCore::GetPeerByCCUID(LPCSTR lpcszCCUID)
+unsigned short CCommCore::GetPeerByCCUID(const char* lpcszCCUID)
 {
 	//	_log_message("GetPeerByCCUID()");
 
-	for (u_short i = 0; i < m_uPeerCount; i++)
+	for (unsigned short i = 0; i < m_uPeerCount; i++)
 	{
 		if (memcmp(m_PeerList[i].m_szCCUID, lpcszCCUID, 22) == 0)
 		{
@@ -20,11 +20,11 @@ u_short CCommCore::GetPeerByCCUID(LPCSTR lpcszCCUID)
 
 // ---------------------------------------------------------------------------------------------
 
-u_short CCommCore::GetPeerById(PEER_ID PeerId)
+unsigned short CCommCore::GetPeerById(PEER_ID PeerId)
 {
 	//	_log_message("GetPeerById()");
 
-	for (u_short i = 0; i < m_uPeerCount; i++)
+	for (unsigned short i = 0; i < m_uPeerCount; i++)
 	{
 		if (m_PeerList[i].m_Id == PeerId)
 		{
@@ -37,7 +37,7 @@ u_short CCommCore::GetPeerById(PEER_ID PeerId)
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::DropPeer(u_short uPeer)
+int CCommCore::DropPeer(unsigned short uPeer)
 {
 	_log_message("DropPeer()");
 
@@ -48,27 +48,27 @@ BOOL CCommCore::DropPeer(u_short uPeer)
 	if (m_bServer)
 		SendServerList();
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::DeletePeer(PEER_ID piNumber)
+int CCommCore::DeletePeer(PEER_ID piNumber)
 {
 	_log_message("DeletePeer()");
 
-	u_short
+	unsigned short
 		uPeer = GetPeerById(piNumber);
 
 	if (uPeer == BAD_PEER_ID)
-		return FALSE;
+		return 0;
 
 	return DropPeer(uPeer);
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::EnumPeers()
+int CCommCore::EnumPeers()
 {
 	//	_log_message("EnumPeers()");
 
@@ -87,7 +87,7 @@ BOOL CCommCore::EnumPeers()
 		}
 	}
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------

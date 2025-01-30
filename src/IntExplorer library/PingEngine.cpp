@@ -3,7 +3,7 @@
 #include <stdlib.h> 
 
 struct OneIPAddress{
-	DWORD IP;
+	unsigned long IP;
 	int LastPingTime;
 	int LastRequestTime;
 	int Ping;
@@ -15,11 +15,11 @@ public:
 	bool InitFailed;
 	OneIPAddress* Requests;
 	int NRequests;
-	int GetPing(DWORD IP);
+	int GetPing(unsigned long IP);
 	void Process();
 	int LastPingTime;
 	void Setup();
-	bool SendPingToIP(DWORD IP);
+	bool SendPingToIP(unsigned long IP);
 	PingEngine();
 	~PingEngine();
 };
@@ -49,12 +49,12 @@ unsigned int destIP;
 // ICMP header 
 // 
 typedef struct _ihdr { 
-  BYTE i_type; 
-  BYTE i_code; 
-  USHORT i_cksum; 
-  USHORT i_id; 
-  USHORT i_seq; 
-  ULONG timestamp; 
+  unsigned char i_type; 
+  unsigned char i_code;
+  unsigned short i_cksum; 
+  unsigned short i_id; 
+  unsigned short i_seq; 
+  unsigned long timestamp; 
 }IcmpHeader; 
  
 #define STATUS_FAILED 0xFFFF 
@@ -65,7 +65,7 @@ typedef struct _ihdr {
 #define xfree(p)   free(p)
  
 void fill_icmp_data(char *, int); 
-USHORT checksum(USHORT *, int); 
+unsigned short checksum(unsigned short *, int); 
 void decode_resp(char *,int ,struct sockaddr_in *); 
 PingEngine::PingEngine(){
 	memset(this,0,sizeof *this);
@@ -94,9 +94,9 @@ void PingEngine::Setup(){
 	ioctlsocket(sockRaw,FIONBIO,&lArgP);
 	IsInit=1;
 };
-USHORT checksum(USHORT *buffer, int size);
+unsigned short checksum(unsigned short *buffer, int size);
 int seq_no=0;
-bool PingEngine::SendPingToIP(DWORD IP){
+bool PingEngine::SendPingToIP(unsigned long IP){
 	sockaddr_in dest;
 	memset(&dest,0,sizeof(dest)); 
  	dest.sin_addr.s_addr = IP; 
@@ -108,9 +108,9 @@ bool PingEngine::SendPingToIP(DWORD IP){
 	fill_icmp_data(icmp_data,datasize); 
 	((IcmpHeader*)icmp_data)->i_cksum = 0; 
 	((IcmpHeader*)icmp_data)->timestamp = GetTickCount(); 
-	((IcmpHeader*)icmp_data)->i_seq = (USHORT)seq_no++; 
-	((IcmpHeader*)icmp_data)->i_cksum = checksum((USHORT*)icmp_data,datasize); 
-	DWORD bwrote = sendto(sockRaw,icmp_data,datasize,0,(struct sockaddr*)&dest,sizeof(dest));
+	((IcmpHeader*)icmp_data)->i_seq = (unsigned short)seq_no++;
+	((IcmpHeader*)icmp_data)->i_cksum = checksum((unsigned short*)icmp_data,datasize);
+	unsigned long bwrote = sendto(sockRaw,icmp_data,datasize,0,(struct sockaddr*)&dest,sizeof(dest));
 	if (bwrote == SOCKET_ERROR)return false;
 	return true;
 };
@@ -125,11 +125,11 @@ void PingEngine::Process(){
 	char recvbuf[MAX_PACKET];
 	sockaddr_in from;
 	int L=sizeof from;
-	DWORD bread = recvfrom(sockRaw,recvbuf,MAX_PACKET,0,(sockaddr*)&from,&L); 
+	unsigned long bread = recvfrom(sockRaw,recvbuf,MAX_PACKET,0,(sockaddr*)&from,&L);
 	if (bread != SOCKET_ERROR){ 
 		int dt;
 		if(decode_resp(recvbuf,bread,&from,&dt)&&dt<4000){
-			DWORD IP=from.sin_addr.s_addr;
+			unsigned long IP=from.sin_addr.s_addr;
 			for(int i=0;i<NRequests;i++){
 				if(Requests[i].IP==IP){
 					if(!Requests[i].Ping)Requests[i].Ping=dt;
@@ -166,7 +166,7 @@ void PingEngine::Process(){
 	};
 	
 };
-int PingEngine::GetPing(DWORD IP){
+int PingEngine::GetPing(unsigned long IP){
 	if(!IsInit)return false;
 	for(int i=0;i<NRequests;i++)if(Requests[i].IP==IP){
 		Requests[i].LastRequestTime=GetTickCount();
@@ -180,22 +180,22 @@ int PingEngine::GetPing(DWORD IP){
 	NRequests++;
 	return 0;
 };
-USHORT checksum(USHORT *buffer, int size){ 
+unsigned short checksum(unsigned short *buffer, int size){
  
   unsigned long cksum=0; 
  
   while(size >1) { 
 cksum+=*buffer++; 
-size -=sizeof(USHORT); 
+size -=sizeof(unsigned short);
   } 
    
   if(size ) { 
-cksum += *(UCHAR*)buffer; 
+cksum += *(unsigned char*)buffer;
   } 
  
   cksum = (cksum >> 16) + (cksum & 0xffff); 
   cksum += (cksum >>16); 
-  return (USHORT)(~cksum); 
+  return (unsigned short)(~cksum);
 } 
 void fill_icmp_data(char * icmp_data, int datasize){ 
  
@@ -206,7 +206,7 @@ void fill_icmp_data(char * icmp_data, int datasize){
  
   icmp_hdr->i_type = ICMP_ECHO; 
   icmp_hdr->i_code = 0; 
-  icmp_hdr->i_id = (USHORT)GetCurrentProcessId(); 
+  icmp_hdr->i_id = (unsigned short)GetCurrentProcessId();
   icmp_hdr->i_cksum = 0; 
   icmp_hdr->i_seq = 0; 
    
@@ -227,7 +227,7 @@ bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time) {
  	if (icmphdr->i_type != ICMP_ECHOREPLY) { 
 		return false;
 	} 
-	if (icmphdr->i_id != (USHORT)GetCurrentProcessId()) { 
+	if (icmphdr->i_id != (unsigned short)GetCurrentProcessId()) { 
 		return false;
 	};
 	*time=GetTickCount()-icmphdr->timestamp;
@@ -235,7 +235,7 @@ bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time) {
 }
 PingEngine PE;
 // The only function used outsize
-int GETPING(DWORD IP){
+int GETPING(unsigned long IP){
 	if(!PE.IsInit)PE.Setup();
 	PE.Process();
 	return PE.GetPing(IP);

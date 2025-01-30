@@ -23,29 +23,29 @@
 #define ExMask (MaxExpl-1)
 #define WEPSH 14
 void PlayAnimation( NewAnimation* NA, int Frame, int x, int y );
-extern byte AlphaR[65536];
-extern byte AlphaW[65536];
-void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, byte* Pal );
-extern word FlyMops[256][256];
+extern unsigned char AlphaR[65536];
+extern unsigned char AlphaW[65536];
+void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal );
+extern unsigned short FlyMops[256][256];
 int NUCLUSE[4];
 bool EUsage[MaxExpl];
-word LastAnmIndex;
+unsigned short LastAnmIndex;
 AnmObject* GAnm[MaxExpl];
 short TSin[257];
 short TCos[257];
 short TAtg[257];
-word ID_FIRE;
-word ID_FIREX;
-word ID_FIRE1;
-word ID_MAGW;
-word ID_EXPL1;
-word ID_EXPL2;
-word ID_GLASSFLY;
-word ID_GLASSBROKEN;
-word ID_FLYFIRE;
-word ID_MAGEXP;
-word ID_FOG;
-word ID_FOG1;
+unsigned short ID_FIRE;
+unsigned short ID_FIREX;
+unsigned short ID_FIRE1;
+unsigned short ID_MAGW;
+unsigned short ID_EXPL1;
+unsigned short ID_EXPL2;
+unsigned short ID_GLASSFLY;
+unsigned short ID_GLASSBROKEN;
+unsigned short ID_FLYFIRE;
+unsigned short ID_MAGEXP;
+unsigned short ID_FOG;
+unsigned short ID_FOG1;
 NewAnimation** FiresAnm[2];
 NewAnimation** PreFires[2];
 NewAnimation** PostFires[2];
@@ -67,9 +67,9 @@ int GetWeaponType( char* Name )
 
 int mul3( int );
 int nEused;
-word LastReq;
+unsigned short LastReq;
 short randoma[8192];
-word rpos;
+unsigned short rpos;
 
 //Precalculates Sin/Cos, loads random.lst
 void InitExplosions()
@@ -121,13 +121,13 @@ bool Create3DAnmObject( Weapon* Weap, int xs, int ys, int zs,
 	int xd, int yd, int zd,
 	OneObject* OB );
 extern int ExplMedia;
-extern byte TexMedia[256];
-extern byte* WaterDeep;
+extern unsigned char TexMedia[256];
+extern unsigned char* WaterDeep;
 char WpnChar[228];
 
 bool Create3DAnmObjectEX( Weapon* Weap, int xs, int ys, int zs1,
 	int xd, int yd, int zd,
-	OneObject* OB, byte AttType, word DestObj,
+	OneObject* OB, unsigned char AttType, unsigned short DestObj,
 	int vx, int vy, int vz );
 void ExplodeAnmObject( AnmObject* AO )
 {
@@ -449,10 +449,10 @@ void ProcessExpl()
 }
 
 void MoveAway( int x, int y );
-bool TraceObjectsInLine( int xs, int ys, int zs, int* xD, int* yD, int* zD, int damage, OneObject* Sender, byte AttType );
+bool TraceObjectsInLine( int xs, int ys, int zs, int* xD, int* yD, int* zD, int damage, OneObject* Sender, unsigned char AttType );
 bool Create3DAnmObjectEX( Weapon* Weap, int xs, int ys, int zs1,
 	int xd, int yd, int zd,
-	OneObject* OB, byte AttType, word DestObj,
+	OneObject* OB, unsigned char AttType, unsigned short DestObj,
 	int vx, int vy, int vz )
 {
 	if ( !Weap )return false;
@@ -472,7 +472,7 @@ bool Create3DAnmObjectEX( Weapon* Weap, int xs, int ys, int zs1,
 		i = 0;
 		while ( EUsage[i] && i < LastReq )i++;
 	};
-	LastAnmIndex = (word) -1;
+	LastAnmIndex = (unsigned short) -1;
 	if ( EUsage[i] )return 0;
 	LastAnmIndex = i;
 	LastReq = ( i + 1 )&ExMask;
@@ -491,13 +491,13 @@ bool Create3DAnmObjectEX( Weapon* Weap, int xs, int ys, int zs1,
 			int ns = 0;
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = OB->Inside[i];
+				unsigned short MID = OB->Inside[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OBX = Group[MID];
 					if ( OBX && !OBX->Sdoxlo )
 					{
-						byte use = OBX->newMons->Usage;
+						unsigned char use = OBX->newMons->Usage;
 						if ( use == StrelokID )ns++;
 					};
 				};
@@ -692,7 +692,7 @@ bool Create3DAnmObjectEX( Weapon* Weap, int xs, int ys, int zs1,
 
 bool Create3DAnmObject( Weapon* Weap, int xs, int ys, int zs1,
 	int xd, int yd, int zd,
-	OneObject* OB, byte AttType, word DestObj )
+	OneObject* OB, unsigned char AttType, unsigned short DestObj )
 {
 	return Create3DAnmObjectEX( Weap, xs, ys, zs1, xd, yd, zd, OB, AttType, DestObj, 0, 0, 0 );
 }
@@ -751,7 +751,7 @@ Weapon* ReturnFlyChild( Weapon* Weap )
 	return nullptr;
 }
 
-int CheckWpPoint( int x, int y, int z, word Index )
+int CheckWpPoint( int x, int y, int z, unsigned short Index )
 {
 	int zg = GetBar3DHeight( x, y );
 	int zL = GetUnitHeight( x, y );
@@ -767,7 +767,7 @@ int CheckWpPoint( int x, int y, int z, word Index )
 
 	if ( zg )
 	{
-		word Own = GetBar3DOwner( x, y );
+		unsigned short Own = GetBar3DOwner( x, y );
 		if ( Own != Index )
 		{
 			return Own;
@@ -780,7 +780,7 @@ int CheckWpPoint( int x, int y, int z, word Index )
 	return 0xFFFF;
 }
 
-int CheckWpLine( int xs, int ys, int zs, int xd, int yd, int zd, word Index )
+int CheckWpLine( int xs, int ys, int zs, int xd, int yd, int zd, unsigned short Index )
 {
 	int v = Norma( xd - xs, yd - ys );
 
@@ -814,7 +814,7 @@ int CheckWpLine( int xs, int ys, int zs, int xd, int yd, int zd, word Index )
 }
 
 bool ShotRecommended;
-int PredictShot( Weapon* Weap, int xs, int ys, int zs, int xd, int yd, int zd, word Index )
+int PredictShot( Weapon* Weap, int xs, int ys, int zs, int xd, int yd, int zd, unsigned short Index )
 {
 	Weapon* WP = ReturnFlyChild( Weap );
 	if ( WP )
@@ -905,7 +905,7 @@ int PredictShot( Weapon* Weap, int xs, int ys, int zs, int xd, int yd, int zd, w
 
 bool TraceObjectsInLine( int xs, int ys, int zs,
 	int* xD, int* yD, int* zD, int damage,
-	OneObject* Sender, byte AttType )
+	OneObject* Sender, unsigned char AttType )
 {
 	int cx = -1;
 	int cy = -1;
@@ -918,9 +918,9 @@ bool TraceObjectsInLine( int xs, int ys, int zs,
 	int N = ( Len >> 4 ) + 1;
 	int N2 = N + N;
 	int MinR = 10000;
-	word BestID = 0xFFFF;
+	unsigned short BestID = 0xFFFF;
 	int SMID = 0xFFFF;
-	byte MASK = 0;
+	unsigned char MASK = 0;
 	if ( Sender )
 	{
 		SMID = Sender->Index;
@@ -945,7 +945,7 @@ bool TraceObjectsInLine( int xs, int ys, int zs,
 				if ( NMon )
 				{
 					int ofs1 = cell << SHFCELL;
-					word MID;
+					unsigned short MID;
 					for ( int i = 0; i < NMon; i++ )
 					{
 						MID = GetNMSL( ofs1 + i );

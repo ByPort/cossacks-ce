@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -24,7 +25,6 @@
 #include "RealWater.h"
 #include "3DMapEd.h"
 #include "TopoGraf.h"
-#include "crtdbg.h"
 #include "ActiveZone.h"
 
 bool Loadingmap = 0;
@@ -48,7 +48,7 @@ void FreeArrays();
 void SetupArrays();
 void NewMap( int szX, int szY );
 void CleanArrays();
-extern byte* RivDir;
+extern unsigned char* RivDir;
 
 bool LoadHeader( ResFile f1 )
 {
@@ -96,7 +96,7 @@ void SaveSurface( ResFile f1 )
 }
 
 extern int RivNX;
-extern byte* RivVol;
+extern unsigned char* RivVol;
 
 void LoadSurface( ResFile f1 )
 {
@@ -149,7 +149,7 @@ void LoadTiles( ResFile f1 )
 	RBlockRead( f1, TexMap, N );
 	for ( int i = 0; i < N; i++ )
 	{
-		word tf = TexFlags[TexMap[i]];
+		unsigned short tf = TexFlags[TexMap[i]];
 	}
 }
 
@@ -189,7 +189,7 @@ void SaveSprites( ResFile f1 )
 	i = 'EERT';
 	RBlockWrite( f1, &i, 4 );
 	i = ( ns * 12 ) + 8;
-	word j = 'GA';
+	unsigned short j = 'GA';
 	RBlockWrite( f1, &i, 4 );
 	RBlockWrite( f1, &ns, 4 );
 
@@ -233,7 +233,7 @@ void SaveSprites( ResFile f1 )
 	}
 }
 
-void addSpriteAnyway( int x, int y, SprGroup* SG, word id );
+void addSpriteAnyway( int x, int y, SprGroup* SG, unsigned short id );
 
 void DeleteAllSprites();
 
@@ -243,7 +243,7 @@ void LoadSprites( ResFile f1 )
 	int ns;
 	RBlockRead( f1, &ns, 4 );
 	int x, y;
-	word GSIND, sign;
+	unsigned short GSIND, sign;
 	for ( int i = 0; i < MaxSprt; i++ )
 		Sprites[i].Enabled = false;
 	for ( int i = 0; i < ns; i++ )
@@ -394,7 +394,7 @@ void SaveUnits3( ResFile f1 )
 			RBlockWrite( f1, &OB->WallX, 2 );
 			RBlockWrite( f1, &OB->WallY, 2 );
 			RBlockWrite( f1, &OB->RealDir, 1 );
-			byte Opt = 0;
+			unsigned char Opt = 0;
 			if ( OB->StandGround )Opt |= 1;
 			if ( OB->NoSearchVictim )Opt |= 2;
 			RBlockWrite( f1, &Opt, 1 );
@@ -407,7 +407,7 @@ void ClearHints();
 
 int LASTADDID;
 
-void CreateNewUnitAt( byte NI, int x, int y, word Type, word Life, word Stage )
+void CreateNewUnitAt( unsigned char NI, int x, int y, unsigned short Type, unsigned short Life, unsigned short Stage )
 {
 	LASTADDID = 0xFFFF;
 	Nation* NT = &NATIONS[NI];
@@ -433,7 +433,7 @@ void CreateNewUnitAt( byte NI, int x, int y, word Type, word Life, word Stage )
 
 extern bool GroundBox;
 
-OneObject* CreateNewUnitAt3( byte NI, int x, int y, word Type, word Life, word Stage )
+OneObject* CreateNewUnitAt3( unsigned char NI, int x, int y, unsigned short Type, unsigned short Life, unsigned short Stage )
 {
 	Nation* NT = &NATIONS[NI];
 	GroundBox = 0;
@@ -467,8 +467,8 @@ void LoadUnits( ResFile f1 )
 	RBlockRead( f1, &NU, 4 );
 	for ( int i = 0; i < NU; i++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		char Name[33];
 		RBlockRead( f1, &NI, 1 );
@@ -505,8 +505,8 @@ void TestUnits( ResFile f1 )
 	RBlockRead( f1, &NU, 4 );
 	for ( int i = 0; i < NU; i++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		char Name[33];
 		RBlockRead( f1, &NI, 1 );
@@ -538,8 +538,8 @@ void LoadUnits2( ResFile f1 )
 
 	for ( int i = 0; i < NU; i++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		short wx, wy;
 		char Name[33];
@@ -583,8 +583,8 @@ void TestUnits2( ResFile f1 )
 	RBlockRead( f1, &NU, 4 );
 	for ( int i = 0; i < NU; i++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		short wx, wy;
 		char Name[33];
@@ -607,7 +607,7 @@ void TestUnits2( ResFile f1 )
 	}
 }
 
-OneObject* CreateNewUnitAt3( byte NI, int x, int y, word Type, word Life, word Stage );
+OneObject* CreateNewUnitAt3( unsigned char NI, int x, int y, unsigned short Type, unsigned short Life, unsigned short Stage );
 
 void LoadUnits3( ResFile f1 )
 {
@@ -616,8 +616,8 @@ void LoadUnits3( ResFile f1 )
 	RBlockRead( f1, &NU, 4 );
 	for ( int q = 0; q < NU; q++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		short wx, wy;
 		char Name[33];
@@ -629,7 +629,7 @@ void LoadUnits3( ResFile f1 )
 		RBlockRead( f1, &Stage, 2 );
 		RBlockRead( f1, &wx, 2 );
 		RBlockRead( f1, &wy, 2 );
-		byte DIR, Opt;
+		unsigned char DIR, Opt;
 		RBlockRead( f1, &DIR, 1 );
 		RBlockRead( f1, &Opt, 1 );
 		RBlockRead( f1, Name, 33 );
@@ -673,8 +673,8 @@ void TestUnits3( ResFile f1 )
 	RBlockRead( f1, &NU, 4 );
 	for ( int i = 0; i < NU; i++ )
 	{
-		byte NI;
-		word Life, NIndex, Stage;
+		unsigned char NI;
+		unsigned short Life, NIndex, Stage;
 		int x, y;
 		short wx, wy;
 		char Name[33];
@@ -686,7 +686,7 @@ void TestUnits3( ResFile f1 )
 		RBlockRead( f1, &Stage, 2 );
 		RBlockRead( f1, &wx, 2 );
 		RBlockRead( f1, &wy, 2 );
-		byte DIR, Opt;
+		unsigned char DIR, Opt;
 		RBlockRead( f1, &DIR, 1 );
 		RBlockRead( f1, &Opt, 1 );
 		RBlockRead( f1, Name, 33 );
@@ -1037,7 +1037,7 @@ void LoadGates( ResFile f1 )
 	Gates = (Gate*) realloc( Gates, MaxGates * sizeof Gate );
 	RBlockRead( f1, Gates, NGates * sizeof Gate );
 };
-extern byte* WaterBright;
+extern unsigned char* WaterBright;
 void SaveWaterCost( ResFile f1 )
 {
 	int i = '2AES';
@@ -1143,15 +1143,15 @@ void LoadTopology( ResFile f1 )
 	RBlockRead( f1, &NAreas, 4 );
 	MaxArea = NAreas;
 	TopMap = new Area[NAreas];
-	MotionLinks = new word[NAreas*NAreas];
-	LinksDist = new word[NAreas*NAreas];
+	MotionLinks = new unsigned short[NAreas*NAreas];
+	LinksDist = new unsigned short[NAreas*NAreas];
 	for ( int j = 0; j < NAreas; j++ )
 	{
 		Area* Ar1 = TopMap + j;
 		RBlockRead( f1, Ar1, sizeof Area );
-		if ( Ar1->NMines )Ar1->MinesIdx = new word[Ar1->NMines];
+		if ( Ar1->NMines )Ar1->MinesIdx = new unsigned short[Ar1->NMines];
 		else Ar1->MinesIdx = NULL;
-		if ( Ar1->NLinks )Ar1->Link = new word[Ar1->NLinks];
+		if ( Ar1->NLinks )Ar1->Link = new unsigned short[Ar1->NLinks];
 		else Ar1->Link = NULL;
 		if ( Ar1->NMines )RBlockRead( f1, Ar1->MinesIdx, Ar1->NMines << 1 );
 		if ( Ar1->NLinks )RBlockRead( f1, Ar1->Link, Ar1->NLinks << 1 );
@@ -1192,15 +1192,15 @@ void LoadTopology1( ResFile f1 )
 	RBlockRead( f1, &NAreas, 4 );
 	MaxArea = NAreas;
 	TopMap = new Area[NAreas];
-	MotionLinks = new word[NAreas*NAreas];
-	LinksDist = new word[NAreas*NAreas];
+	MotionLinks = new unsigned short[NAreas*NAreas];
+	LinksDist = new unsigned short[NAreas*NAreas];
 	for ( int j = 0; j < NAreas; j++ )
 	{
 		Area* Ar1 = TopMap + j;
 		RBlockRead( f1, Ar1, sizeof Area );
-		if ( Ar1->NMines )Ar1->MinesIdx = new word[Ar1->NMines];
+		if ( Ar1->NMines )Ar1->MinesIdx = new unsigned short[Ar1->NMines];
 		else Ar1->MinesIdx = NULL;
-		if ( Ar1->NLinks )Ar1->Link = new word[Ar1->MaxLink << 1];
+		if ( Ar1->NLinks )Ar1->Link = new unsigned short[Ar1->MaxLink << 1];
 		else Ar1->Link = NULL;
 		if ( Ar1->NMines )RBlockRead( f1, Ar1->MinesIdx, Ar1->NMines << 1 );
 		if ( Ar1->NLinks )RBlockRead( f1, Ar1->Link, Ar1->NLinks << 2 );
@@ -1215,15 +1215,15 @@ void LoadWTopology1( ResFile f1 )
 {
 	RBlockRead( f1, &WNAreas, 4 );
 	WTopMap = new Area[WNAreas];
-	WMotionLinks = new word[WNAreas*WNAreas];
-	WLinksDist = new word[WNAreas*WNAreas];
+	WMotionLinks = new unsigned short[WNAreas*WNAreas];
+	WLinksDist = new unsigned short[WNAreas*WNAreas];
 	for ( int j = 0; j < WNAreas; j++ )
 	{
 		Area* Ar1 = WTopMap + j;
 		RBlockRead( f1, Ar1, sizeof Area );
-		if ( Ar1->NMines )Ar1->MinesIdx = new word[Ar1->NMines];
+		if ( Ar1->NMines )Ar1->MinesIdx = new unsigned short[Ar1->NMines];
 		else Ar1->MinesIdx = NULL;
-		if ( Ar1->NLinks )Ar1->Link = new word[Ar1->MaxLink << 1];
+		if ( Ar1->NLinks )Ar1->Link = new unsigned short[Ar1->MaxLink << 1];
 		else Ar1->Link = NULL;
 		if ( Ar1->NMines )RBlockRead( f1, Ar1->MinesIdx, Ar1->NMines << 1 );
 		if ( Ar1->NLinks )RBlockRead( f1, Ar1->Link, Ar1->NLinks << 2 );
@@ -1311,7 +1311,7 @@ void LoadZonesAndGroups( ResFile f1 )
 	{
 		ActiveZone* AZ = AZones + i;
 		RBlockRead( f1, AZ, sizeof ActiveZone );
-		byte L;
+		unsigned char L;
 		RBlockRead( f1, &L, 1 );
 		AZ->Name = new char[L];
 		RBlockRead( f1, AZ->Name, L );
@@ -1320,12 +1320,12 @@ void LoadZonesAndGroups( ResFile f1 )
 	{
 		ActiveGroup* AG = AGroups + q;
 		RBlockRead( f1, AG, sizeof ActiveGroup );
-		byte L;
+		unsigned char L;
 		RBlockRead( f1, &L, 1 );
 		AG->Name = new char[L];
 		RBlockRead( f1, AG->Name, L );
-		AG->Units = new word[AG->N];
-		AG->Serials = new word[AG->N];
+		AG->Units = new unsigned short[AG->N];
+		AG->Serials = new unsigned short[AG->N];
 		for ( int i = 0; i < AG->N; i++ )
 		{
 			int x, y;
@@ -1398,7 +1398,7 @@ void SaveFormations( ResFile f1 )
 					for ( int k = 0; k < BR->NMemb; k++ )RBlockWrite( f1, &BR->posY[k], 2 );
 					for ( int j = 0; j < BR->NMemb; j++ )
 					{
-						word MID = BR->Memb[j];
+						unsigned short MID = BR->Memb[j];
 						if ( MID != 0xFFFF )
 						{
 							OneObject* OB = Group[MID];
@@ -1432,12 +1432,12 @@ void LoadFormations( ResFile f1 )
 	int NB;
 	RBlockRead( f1, &NB, 4 );
 	bool oldvers = 0;
-	word* tmp = nullptr;
-	byte* tmp1 = nullptr;
+	unsigned short* tmp = nullptr;
+	unsigned char* tmp1 = nullptr;
 	if ( NB )
 	{
-		tmp = new word[NB];
-		tmp1 = new byte[NB];
+		tmp = new unsigned short[NB];
+		tmp1 = new unsigned char[NB];
 	};
 	for ( int i = 0; i < NB; i++ )
 	{
@@ -1468,8 +1468,8 @@ void LoadFormations( ResFile f1 )
 			BR->PosCreated = 1;
 			BR->posX = new int[BR->NMemb];
 			BR->posY = new int[BR->NMemb];
-			BR->Memb = new word[BR->NMemb];
-			BR->MembSN = new word[BR->NMemb];
+			BR->Memb = new unsigned short[BR->NMemb];
+			BR->MembSN = new unsigned short[BR->NMemb];
 			for ( int k = 0; k < BR->NMemb; k++ )
 			{
 				BR->posX[k] = 0;
@@ -1587,7 +1587,7 @@ void SaveFormationsNew( ResFile f1 )
 					for ( int k = 0; k < BR->NMemb; k++ )RBlockWrite( f1, &BR->posY[k], 2 );
 					for ( int j = 0; j < BR->NMemb; j++ )
 					{
-						word MID = BR->Memb[j];
+						unsigned short MID = BR->Memb[j];
 						if ( MID != 0xFFFF )
 						{
 							OneObject* OB = Group[MID];
@@ -1654,8 +1654,8 @@ void LoadFormationsNew( ResFile f1 )
 			BR->PosCreated = 1;
 			BR->posX = new int[BR->NMemb];
 			BR->posY = new int[BR->NMemb];
-			BR->Memb = new word[BR->NMemb];
-			BR->MembSN = new word[BR->NMemb];
+			BR->Memb = new unsigned short[BR->NMemb];
+			BR->MembSN = new unsigned short[BR->NMemb];
 			for ( int k = 0; k < BR->NMemb; k++ )
 			{
 				BR->posX[k] = 0;
@@ -1709,7 +1709,7 @@ void LoadFormationsNew( ResFile f1 )
 
 
 
-							//byte use = OB->newMons->Usage;
+							//unsigned char use = OB->newMons->Usage;
 
 							//BR->Strelki = ( use == StrelokID || use == GrenaderID || OB->newMons->Artilery );
 						}
@@ -1766,7 +1766,7 @@ void CloseMap( ResFile f1 )
 	RClose( f1 );
 }
 
-void CreateMapPreview( byte* Data, int Lx, int Ly );
+void CreateMapPreview( unsigned char* Data, int Lx, int Ly );
 char* MPNAME;
 
 bool GetPreviewName( char* Name, char* ccc )
@@ -1809,7 +1809,7 @@ bool GetPreviewName( char* Name, char* ccc )
 
 void SavePreview( ResFile f1 )
 {
-	byte* Preview = new byte[292 * 190];
+	unsigned char* Preview = new unsigned char[292 * 190];
 	CreateMapPreview( Preview, 292, 190 );
 	int i = 'WEIV';
 	RBlockWrite( f1, &i, 4 );
@@ -1837,25 +1837,25 @@ void SavePreview( ResFile f1 )
 
 	free( Preview );
 };
-void LoadPreview( ResFile f1, byte* Data )
+void LoadPreview( ResFile f1, unsigned char* Data )
 {
 	RBlockRead( f1, Data, 292 * 190 );
 };
 void ClearSMS();
 void LoadSMSInMap( ResFile F );
 void SaveSMSInMap( ResFile F );
-extern byte* NatDeals;
+extern unsigned char* NatDeals;
 #define NATLX (TopLx>>1)
 extern int PeaceTimeLeft;
-extern byte CordonIDX[8];
+extern unsigned char CordonIDX[8];
 
-extern byte BalloonState;
-extern byte CannonState;
-extern byte NoArtilleryState;
-extern byte XVIIIState;
-extern byte DipCentreState;
-extern byte ShipyardState;
-extern byte MarketState;
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char NoArtilleryState;
+extern unsigned char XVIIIState;
+extern unsigned char DipCentreState;
+extern unsigned char ShipyardState;
+extern unsigned char MarketState;
 
 extern int MaxPeaceTime;
 extern int PeaceTimeStage;
@@ -1885,7 +1885,7 @@ void SavePeaceTimeInfo( ResFile f1 )
 	};
 };
 extern int RivNX;
-extern byte* RivVol;
+extern unsigned char* RivVol;
 void SaveRivers( ResFile f1 )
 {
 	int i = '1VIR';
@@ -1909,7 +1909,7 @@ void LoadPeaceTimeInfo( ResFile f1 )
 		free( NatDeals );
 	}
 
-	NatDeals = new byte[NATLX*NATLX];
+	NatDeals = new unsigned char[NATLX*NATLX];
 	RBlockRead( f1, NatDeals, NATLX*NATLX );
 	RBlockRead( f1, &PeaceTimeLeft, 4 );
 	RBlockRead( f1, CordonIDX, 8 );
@@ -2016,8 +2016,8 @@ void CheckMapName( char* Name );
 void ClearTrianglesSystem();
 void CreateTrianglesSystem();
 void CreateWTopMap();
-extern word NChAreas;
-void ResearchCurrentIsland( byte Nat );
+extern unsigned short NChAreas;
+void ResearchCurrentIsland( unsigned char Nat );
 void CreateCostPlaces();
 void CheckMapNameForStart( char* Name );
 
@@ -2339,7 +2339,7 @@ GGG:;
 	RClose( f1 );
 }
 
-bool GetPreview( char* Name, byte* Data )
+bool GetPreview( char* Name, unsigned char* Data )
 {
 	ResFile f1 = RReset( Name );
 	if ( f1 == INVALID_HANDLE_VALUE )

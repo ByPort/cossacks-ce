@@ -1,6 +1,5 @@
 #include "stdio.h"
 #include "windows.h"
-//#include "stdafx.h"
 #include "ResFile.h"
 #include "math.h"
 #include "bmptool.h"
@@ -30,12 +29,12 @@
 //    %%%%%%%% - Lo part of KeyColor
 // };
 //
-bool SaveArch24(char* Name,byte* Data,int Lx,int Ly){
+bool SaveArch24(char* Name,unsigned char* Data,int Lx,int Ly){
 	int KeyR=Data[0];
 	int KeyG=Data[1];
 	int KeyB=Data[2];
-	byte* NData=new byte[Lx*Ly*3+256];
-	byte* TMP=new byte[Lx*Ly*3+256];
+	unsigned char* NData=new unsigned char[Lx*Ly*3+256];
+	unsigned char* TMP=new unsigned char[Lx*Ly*3+256];
 	bool Type=false;
 	int Len=Lx*Ly*3;
 	int pos=0;
@@ -163,11 +162,11 @@ bool SaveArch24(char* Name,byte* Data,int Lx,int Ly){
 	free(TMP);
 	return true;
 };
-bool ReadArch24(char* Name,BMPformat* BM,byte** data){
+bool ReadArch24(char* Name,BMPformat* BM,unsigned char** data){
 	ResFile f1=RReset(Name);
 	if(IOresult())return false;
 	int Lx,Ly;
-	byte KeyR,KeyG,KeyB,zz;
+	unsigned char KeyR,KeyG,KeyB,zz;
 	RBlockRead(f1,&Lx,4);
 	if(Lx!='42RA'){
 		RClose(f1);
@@ -180,11 +179,11 @@ bool ReadArch24(char* Name,BMPformat* BM,byte** data){
 	RBlockRead(f1,&KeyB,1);
 	RBlockRead(f1,&zz,1);
 	int DSize=RFileSize(f1)-16;
-	byte* NData=new byte[DSize];
+	unsigned char* NData=new unsigned char[DSize];
 	RBlockRead(f1,NData,DSize);
 	int DstLen=Lx*Ly*3;
-	*data=new byte[Lx*Ly*3];
-	byte* Data=*data;
+	*data=new unsigned char[Lx*Ly*3];
+	unsigned char* Data=*data;
 	int APos=0;
 	int NPos=0;
 	int Cmd,Len,i;

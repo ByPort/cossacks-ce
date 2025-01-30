@@ -6,24 +6,24 @@
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SetSessionName( LPCSTR lpcszSessionName )
+int CCommCore::SetSessionName( const char* lpcszSessionName )
 {
 	_log_message( "SetSessionName()" );
 
 	strcpy( m_szSessionName, lpcszSessionName );
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-LPCSTR CCommCore::GetUserName( PEER_ID PeerId )
+const char* CCommCore::GetUserName( PEER_ID PeerId )
 {
 	_log_message( "GetUserName()" );
 
 	if (PeerId == m_piNumber)
 		return m_szUserName;
 
-	u_short uPeerNum = GetPeerById( PeerId );
+	unsigned short uPeerNum = GetPeerById( PeerId );
 
 	if (uPeerNum == BAD_PEER_ID)
 		return NULL;
@@ -33,18 +33,18 @@ LPCSTR CCommCore::GetUserName( PEER_ID PeerId )
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SetUserName( LPCSTR lpcszUserName )
+int CCommCore::SetUserName( const char* lpcszUserName )
 {
 	_log_message( "SetUserName()" );
 
 	strcpy( m_szUserName, lpcszUserName );
 
-	return TRUE;//SendUserName();
+	return 1;//SendUserName();
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendUserName()
+int CCommCore::SendUserName()
 {
 	_log_message( "SendUserName()" );
 
@@ -67,16 +67,16 @@ BOOL CCommCore::SendUserName()
 		return SendRawPacket( m_paServAddr,
 			m_paServPort,
 			CC_PT_SEND_USER_NAME,
-			(LPBYTE) &SendUserNamePacket,
+			(unsigned char*) &SendUserNamePacket,
 			sizeof( CC_PK_SEND_USER_NAME ),
-			TRUE,
-			FALSE );
+			1,
+			0 );
 	};
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::GetUserData( PEER_ID PeerId, LPBYTE lpbUserData, u_short * puUserDataSize )
+int CCommCore::GetUserData( PEER_ID PeerId, unsigned char* lpbUserData, unsigned short * puUserDataSize )
 {
 	_log_message( "GetUserData()" );
 
@@ -87,10 +87,10 @@ BOOL CCommCore::GetUserData( PEER_ID PeerId, LPBYTE lpbUserData, u_short * puUse
 		{
 			*puUserDataSize = m_uUserDataSize;
 		}
-		return TRUE;
+		return 1;
 	}
 
-	u_short uPeerNum = GetPeerById( PeerId );
+	unsigned short uPeerNum = GetPeerById( PeerId );
 
 	if (uPeerNum == BAD_PEER_ID)
 	{
@@ -98,7 +98,7 @@ BOOL CCommCore::GetUserData( PEER_ID PeerId, LPBYTE lpbUserData, u_short * puUse
 		{
 			*puUserDataSize = 0;
 		}
-		return FALSE;
+		return 0;
 	}
 
 	memcpy( lpbUserData, m_PeerList[uPeerNum].m_lpbUserData, m_PeerList[uPeerNum].m_uUserDataSize );
@@ -108,13 +108,13 @@ BOOL CCommCore::GetUserData( PEER_ID PeerId, LPBYTE lpbUserData, u_short * puUse
 		*puUserDataSize = m_PeerList[uPeerNum].m_uUserDataSize;
 	}
 
-	return TRUE;
+	return 1;
 }
 
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SetUserData( const LPBYTE lpcbUserData, u_short uUserDataSize )
+int CCommCore::SetUserData( const unsigned char* lpcbUserData, unsigned short uUserDataSize )
 {
 	_log_message( "SetUserData()" );
 
@@ -123,25 +123,25 @@ BOOL CCommCore::SetUserData( const LPBYTE lpcbUserData, u_short uUserDataSize )
 		free( m_lpbUserData );
 	}
 
-	m_lpbUserData = (LPBYTE) malloc( uUserDataSize );
+	m_lpbUserData = (unsigned char*) malloc( uUserDataSize );
 	assert( m_lpbUserData );
 
 	m_uUserDataSize = uUserDataSize;
 
 	memcpy( m_lpbUserData, lpcbUserData, uUserDataSize );
 
-	return TRUE;//SendUserData();
+	return 1;//SendUserData();
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendUserData()
+int CCommCore::SendUserData()
 {
 	_log_message( "SendUserData()" );
 
 	if (!m_lpbUserData)
 	{
-		return FALSE;
+		return 0;
 	}
 
 	if (m_bServer)
@@ -150,7 +150,7 @@ BOOL CCommCore::SendUserData()
 		free( m_PeerList[0].m_lpbUserData );
 
 		m_PeerList[0].m_uUserDataSize = m_uUserDataSize;
-		m_PeerList[0].m_lpbUserData = (LPBYTE) malloc( m_uUserDataSize );
+		m_PeerList[0].m_lpbUserData = (unsigned char*) malloc( m_uUserDataSize );
 		assert( m_PeerList[0].m_lpbUserData );
 
 		memcpy( m_PeerList[0].m_lpbUserData, m_lpbUserData, m_uUserDataSize );
@@ -171,13 +171,13 @@ BOOL CCommCore::SendUserData()
 
 		memcpy( lpSendUserDataPacket->m_UserData, m_lpbUserData, m_uUserDataSize );
 
-		BOOL bRes = SendRawPacket( m_paServAddr,
+		int bRes = SendRawPacket( m_paServAddr,
 			m_paServPort,
 			CC_PT_SEND_USER_DATA,
-			(LPBYTE) lpSendUserDataPacket,
+			(unsigned char*) lpSendUserDataPacket,
 			sizeof( CC_PK_SEND_USER_DATA ) + m_uUserDataSize,
-			TRUE,
-			FALSE );
+			1,
+			0 );
 		free( lpSendUserDataPacket );
 
 		return bRes;
@@ -186,19 +186,19 @@ BOOL CCommCore::SendUserData()
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendDropClient( PEER_ID PeerID )
+int CCommCore::SendDropClient( PEER_ID PeerID )
 {
 	_log_message( "SendDropClient()" );
 
 	CC_PK_HOST_DROP		HostDropPacket;
 
-	u_short	uPeerNum;
+	unsigned short	uPeerNum;
 
 	uPeerNum = GetPeerById( PeerID );
 
 	if (BAD_PEER_ID == uPeerNum)
 	{
-		return FALSE;
+		return 0;
 	}
 
 	HostDropPacket.m_dwReserved = 0xFF;
@@ -206,36 +206,36 @@ BOOL CCommCore::SendDropClient( PEER_ID PeerID )
 	return SendRawPacket( m_PeerList[uPeerNum].m_ex_Addr,
 		m_PeerList[uPeerNum].m_ex_Port,
 		CC_PT_HOST_DROP,
-		(LPBYTE) &HostDropPacket,
+		(unsigned char*) &HostDropPacket,
 		sizeof( CC_PK_HOST_DROP ),
-		TRUE,
-		FALSE );
+		1,
+		0 );
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendToAll( LPBYTE lpbBuffer, u_short u_Size, BOOL bSecure )
+int CCommCore::SendToAll( unsigned char* lpbBuffer, unsigned short u_Size, int bSecure )
 {
 	_log_message( "SendToAll()" );
 
 	for (int i = 0; i < m_uPeerCount; i++)
 		if (!SendToPeer( m_PeerList[i].m_Id, lpbBuffer, u_Size, bSecure ))
-			return FALSE;
+			return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendToPeer( PEER_ID piNumber, LPBYTE lpbBuffer, u_short uSize, BOOL bSecure )
+int CCommCore::SendToPeer( PEER_ID piNumber, unsigned char* lpbBuffer, unsigned short uSize, int bSecure )
 {
 	_log_message( "SendToPeer()" );
 
 	if (piNumber == m_piNumber)
-		return TRUE;
+		return 1;
 
 	LPCC_PK_SEND_DATA	lpFrame;
-	u_short				uFrameSize;
+	unsigned short				uFrameSize;
 
 	uFrameSize = sizeof( CC_PK_SEND_DATA ) + uSize;
 
@@ -244,17 +244,17 @@ BOOL CCommCore::SendToPeer( PEER_ID piNumber, LPBYTE lpbBuffer, u_short uSize, B
 	lpFrame->m_uSize = uSize;
 	memcpy( lpFrame->m_bData, lpbBuffer, uSize );
 
-	u_short	uPeerNum = GetPeerById( piNumber );
+	unsigned short	uPeerNum = GetPeerById( piNumber );
 	if (uPeerNum == BAD_PEER_ID)
-		return FALSE;
+		return 0;
 
-	BOOL bRes = SendRawPacket( ( uPeerNum == 0 ) ? m_paServAddr : m_PeerList[uPeerNum].m_ex_Addr,
+	int bRes = SendRawPacket( ( uPeerNum == 0 ) ? m_paServAddr : m_PeerList[uPeerNum].m_ex_Addr,
 		m_PeerList[uPeerNum].m_ex_Port,
 		CC_PT_SEND_DATA,
-		(LPBYTE) lpFrame,
+		(unsigned char*) lpFrame,
 		uFrameSize,
 		bSecure,
-		FALSE );
+		0 );
 
 	free( lpFrame );
 
@@ -263,7 +263,7 @@ BOOL CCommCore::SendToPeer( PEER_ID piNumber, LPBYTE lpbBuffer, u_short uSize, B
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendConfirmDataPacket( sockaddr_in *lpSender, u_long lStamp )
+int CCommCore::SendConfirmDataPacket( sockaddr_in *lpSender, unsigned long lStamp )
 {
 	_log_message( "SendConfirmDataPacket()" );
 
@@ -274,18 +274,18 @@ BOOL CCommCore::SendConfirmDataPacket( sockaddr_in *lpSender, u_long lStamp )
 	if (!SendRawPacket( lpSender->sin_addr,
 		lpSender->sin_port,
 		CC_PT_FRAME_CONFIRM,
-		(LPBYTE) &ConfPacket,
+		(unsigned char*) &ConfPacket,
 		sizeof( CC_PK_FRAME_CONFIRM ),
-		FALSE,
-		FALSE ))
-		return FALSE;
+		0,
+		0 ))
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendConnectReject( sockaddr_in *lpSender, u_short uReason )
+int CCommCore::SendConnectReject( sockaddr_in *lpSender, unsigned short uReason )
 {
 	_log_message( "SendConnectReject()" );
 
@@ -296,18 +296,18 @@ BOOL CCommCore::SendConnectReject( sockaddr_in *lpSender, u_short uReason )
 	if (!SendRawPacket( lpSender->sin_addr,
 		lpSender->sin_port,
 		CC_PT_CONNECT_REJECT,
-		(LPBYTE) &RejectPacket,
+		(unsigned char*) &RejectPacket,
 		sizeof( CC_PK_CONNECT_REJECT ),
-		TRUE,
-		FALSE ))
-		return FALSE;
+		1,
+		0 ))
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendConnectOk( sockaddr_in *lpSender, PEER_ID PeerId )
+int CCommCore::SendConnectOk( sockaddr_in *lpSender, PEER_ID PeerId )
 {
 	_log_message( "SendConnectOk()" );
 
@@ -321,18 +321,18 @@ BOOL CCommCore::SendConnectOk( sockaddr_in *lpSender, PEER_ID PeerId )
 	if (!SendRawPacket( lpSender->sin_addr,
 		lpSender->sin_port,
 		CC_PT_CONNECT_OK,
-		(LPBYTE) &ConnectOkPacket,
+		(unsigned char*) &ConnectOkPacket,
 		sizeof( CC_PK_CONNECT_OK ),
-		TRUE,
-		FALSE ))
-		return FALSE;
+		1,
+		0 ))
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendDropOk( sockaddr_in *lpSender )
+int CCommCore::SendDropOk( sockaddr_in *lpSender )
 {
 	_log_message( "SendDropOk()" );
 
@@ -343,18 +343,18 @@ BOOL CCommCore::SendDropOk( sockaddr_in *lpSender )
 	if (!SendRawPacket( lpSender->sin_addr,
 		lpSender->sin_port,
 		CC_PT_HOST_DROP_OK,
-		(LPBYTE) &HostDropOkPacket,
+		(unsigned char*) &HostDropOkPacket,
 		sizeof( CC_PK_HOST_DROP_OK ),
-		TRUE,
-		FALSE ))
-		return FALSE;
+		1,
+		0 ))
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-VOID CCommCore::SetCommCoreUID( LPCSTR lpcszCCUID )
+void CCommCore::SetCommCoreUID( const char* lpcszCCUID )
 {
 	_log_message( "SetCommCoreUID()" );
 
@@ -371,14 +371,14 @@ VOID CCommCore::SetCommCoreUID( LPCSTR lpcszCCUID )
 
 // ---------------------------------------------------------------------------------------------
 
-VOID CCommCore::NewCommCoreUID( LPSTR lpszCCUID )
+void CCommCore::NewCommCoreUID( char* lpszCCUID )
 {
 	_log_message( "NewCommCoreUID()" );
 
-	CHAR	szComputerName[255];
-	CHAR	szCCUID[255];
-	DWORD	dwSize = 64;
-	DWORD	dwTicks;
+	char	szComputerName[255];
+	char	szCCUID[255];
+	unsigned long	dwSize = 64;
+	unsigned long	dwTicks;
 	int		iRand;
 
 	GetComputerName( szComputerName, &dwSize );
@@ -403,13 +403,13 @@ VOID CCommCore::NewCommCoreUID( LPSTR lpszCCUID )
 
 // ---------------------------------------------------------------------------------------------
 
-VOID CCommCore::GetCommCoreUID( LPSTR lpszCCUID )
+void CCommCore::GetCommCoreUID( char* lpszCCUID )
 {
 	_log_message( "GetCommCoreUID()" );
 
 	HKEY	hKey;
-	CHAR	szCCUID[64];
-	DWORD	dwSize = 64;
+	char	szCCUID[64];
+	unsigned long	dwSize = 64;
 
 	if (RegOpenKeyEx( HKEY_CURRENT_USER,
 		"Software\\GSC Game World",
@@ -440,12 +440,12 @@ VOID CCommCore::GetCommCoreUID( LPSTR lpszCCUID )
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendNewName( PEER_ID PeerId )			// Отсылает информацию о имени	(сервер)
+int CCommCore::SendNewName( PEER_ID PeerId )			// Отсылает информацию о имени	(сервер)
 {
 	_log_message( "SendNewName()" );
 
 	CC_PK_SEND_NEW_NAME			SendNewNamePacket;
-	u_short						uPeerNum;
+	unsigned short						uPeerNum;
 
 	uPeerNum = GetPeerById( PeerId );
 
@@ -457,27 +457,27 @@ BOOL CCommCore::SendNewName( PEER_ID PeerId )			// Отсылает информ
 			SendRawPacket( m_PeerList[i].m_ex_Addr,
 				m_PeerList[i].m_ex_Port,
 				CC_PT_SEND_NEW_NAME,
-				(LPBYTE) &SendNewNamePacket,
+				(unsigned char*) &SendNewNamePacket,
 				sizeof( CC_PK_SEND_NEW_NAME ),
-				TRUE,
-				FALSE );
+				1,
+				0 );
 
-	return TRUE;
+	return 1;
 }
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendNewData( PEER_ID PeerId )			// Отсылает информацию о дате	(сервер)
+int CCommCore::SendNewData( PEER_ID PeerId )			// Отсылает информацию о дате	(сервер)
 {
 	_log_message( "SendNewData()" );
 
 	LPCC_PK_SEND_NEW_DATA		pSendNewDataPacket = NULL;
-	u_short						uPacketSize = 0;
-	u_short						uPeerNum;
+	unsigned short						uPacketSize = 0;
+	unsigned short						uPeerNum;
 
 	uPeerNum = GetPeerById( PeerId );
 
 	if (uPeerNum == BAD_PEER_ID)
-		return FALSE;
+		return 0;
 
 	uPacketSize = sizeof( CC_PK_SEND_NEW_DATA ) + m_PeerList[uPeerNum].m_uUserDataSize;
 
@@ -495,39 +495,39 @@ BOOL CCommCore::SendNewData( PEER_ID PeerId )			// Отсылает информ
 			SendRawPacket( m_PeerList[i].m_ex_Addr,
 				m_PeerList[i].m_ex_Port,
 				CC_PT_SEND_NEW_DATA,
-				(LPBYTE) pSendNewDataPacket,
+				(unsigned char*) pSendNewDataPacket,
 				uPacketSize,
-				TRUE,
-				FALSE );
+				1,
+				0 );
 
 		};
 
 	free( pSendNewDataPacket );
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::IsOverNAT( PEER_ID PeerId )
+int CCommCore::IsOverNAT( PEER_ID PeerId )
 {
 	_log_message( "IsOverNAT()" );
 
 	if (PeerId == 1)
-		return FALSE;
+		return 0;
 
-	u_short uPeerNum;
+	unsigned short uPeerNum;
 
 	uPeerNum = GetPeerById( PeerId );
 
 	if (uPeerNum == BAD_PEER_ID)
-		return FALSE;
+		return 0;
 
 	return m_PeerList[uPeerNum].m_bOverNAT;
 }
 
 // ---------------------------------------------------------------------------------------------
-VOID CCommCore::GetServerAddress( LPSTR lpszServerAddress )
+void CCommCore::GetServerAddress( char* lpszServerAddress )
 {
 	if (lpszServerAddress)
 	{
@@ -536,14 +536,14 @@ VOID CCommCore::GetServerAddress( LPSTR lpszServerAddress )
 }
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendUdpHolePunch( sockaddr *server, char *content, const int content_len )
+int CCommCore::SendUdpHolePunch( sockaddr *server, char *content, const int content_len )
 {
 	const int res = sendto( m_DataSocket, content, content_len, 0, server, sizeof( sockaddr_in ) );
 
 	if (SOCKET_ERROR == res)
 	{
-		return FALSE;
+		return 0;
 	}
 
-	return TRUE;
+	return 1;
 }

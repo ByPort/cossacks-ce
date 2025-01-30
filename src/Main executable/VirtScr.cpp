@@ -22,9 +22,8 @@
 #include "VirtScreen.h"
 #include "MapSprites.h"
 #include "NewMon.h"
-#include <crtdbg.h>
 
-extern byte *tex1;
+extern unsigned char *tex1;
 extern RLCTable SimpleMask;
 
 int mul3( int );
@@ -81,9 +80,9 @@ void VirtualScreen::SetSize( int scLx, int scLy )
 	RealVLy = CellNY*CellSY;
 	NCells = CellNX*CellNY;
 
-	CellQuotX = new byte[NCells];
-	CellQuotY = new byte[NCells];
-	CellFlags = new byte[NCells];
+	CellQuotX = new unsigned char[NCells];
+	CellQuotY = new unsigned char[NCells];
+	CellFlags = new unsigned char[NCells];
 
 	memset( CellQuotX, 0, NCells );
 	memset( CellQuotY, 0, NCells );
@@ -92,14 +91,14 @@ void VirtualScreen::SetSize( int scLx, int scLy )
 	Lx = 128 << ADDSH;
 	Ly = 128 << ADDSH;
 
-	VirtualScreenPointer = new byte[RealVLx*( RealVLy + 4 )] + RealVLx + RealVLx;
+	VirtualScreenPointer = new unsigned char[RealVLx*( RealVLy + 4 )] + RealVLx + RealVLx;
 	memset( VirtualScreenPointer - ( RealVLx << 1 ), 255, RealVLx << 1 );
 	memset( VirtualScreenPointer + ( RealVLx*RealVLy ), 255, RealVLx << 1 );
 	MaxTMX = div( 256 << ADDSH, ShiftsPerCellX ).quot;
 	MaxTMY = div( 256 << ADDSH, ShiftsPerCellY ).quot + 1;
 	TriangMap = new int[MaxTMX*MaxTMY];
 	LoTriMap = new int[MaxTMX*MaxTMY];
-	MarkedX = new byte[MaxTMX];
+	MarkedX = new unsigned char[MaxTMX];
 	memset( MarkedX, 1, MaxTMX );
 	Grids = false;
 }
@@ -318,15 +317,15 @@ void VirtualScreen::RefreshSurface()
 	RenderVSPart( QuotX + 1, QuotY + 1, 0, 0, Lx1, Ly1 );
 }
 
-extern byte ExtTex[256][4];
+extern unsigned char ExtTex[256][4];
 extern short randoma[8192];
 
-byte DTX( byte v, int t )
+unsigned char DTX( unsigned char v, int t )
 {
 	return ExtTex[v][randoma[t & 8191] & 3];
 }
 
-extern byte TileMap[256];
+extern unsigned char TileMap[256];
 
 int VirtualScreen::ShowLimitedSector( int i, bool Mode3D, int HiLine, int LoLine, int QuotX, int QuotY )
 {
@@ -1061,5 +1060,5 @@ void VirtualScreen::Sequrity()
 
 int AddTHMap( int i )
 {
-	return ( TexFlags[TexMap[i]] & 8 ? 0 : word( randoma[word( i % 8133 )] ) & 7 );
+	return ( TexFlags[TexMap[i]] & 8 ? 0 : unsigned short( randoma[unsigned short( i % 8133 )] ) & 7 );
 }

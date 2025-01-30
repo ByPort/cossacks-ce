@@ -25,7 +25,7 @@ MotionField UnitsField;
 typedef bool PhysicsFn(OneObject* OB);
 extern short TSin[257];
 extern short TCos[257];
-word GetDir(int dx,int dy);
+unsigned short GetDir(int dx,int dy);
 void RunLeftVeslo(OneObject* OB,bool State);
 void RunRightVeslo(OneObject* OB,bool State);
 bool CalculateMotion2(OneObject* OB){
@@ -235,7 +235,7 @@ void EraseLodkiInCell(int cell,int x,int y,int Lx,int Ly){
     int NMon=MCount[cell];
 	if(!NMon)return;
 	int ofs1=cell<<SHFCELL;
-	word MID;
+	unsigned short MID;
 	for(int i=0;i<NMon;i++){
 		MID=GetNMSL(ofs1+i);
 		if(MID!=0xFFFF){
@@ -261,7 +261,7 @@ int GetShipDangerInCell(int cell,int x,int y){
     int NMon=MCount[cell];
 	if(!NMon)return 0;
 	int ofs1=cell<<SHFCELL;
-	word MID;
+	unsigned short MID;
 	for(int i=0;i<NMon;i++){
 		MID=GetNMSL(ofs1+i);
 		if(MID!=0xFFFF){
@@ -344,18 +344,18 @@ void EraseLodki(int x,int y,int Lx,int Ly){
 		};
 	};
 };
-void AddTrace(int x,int y,byte Dir);
+void AddTrace(int x,int y,unsigned char Dir);
 void CreateTrace(OneObject* OB);
 bool RemoveShipsInCell(int cell,int x,int y,int Lx,OneObject* MyObj){
 	cell+=VAL_MAXCX+1;
 	if(cell<0||cell>=VAL_MAXCX*MAXCY)return false;
-	word MyMid=MyObj->Index;
+	unsigned short MyMid=MyObj->Index;
 	int mx1=x+Lx-1;
 	int my1=y+Lx-1;
     int NMon=MCount[cell];
 	if(!NMon)return false;
 	int ofs1=cell<<SHFCELL;
-	word MID;
+	unsigned short MID;
 	int cx=(x<<1)+Lx;
 	int cy=(y<<1)+Lx;
 	for(int i=0;i<NMon;i++){
@@ -383,7 +383,7 @@ bool RemoveShipsInCell(int cell,int x,int y,int Lx,OneObject* MyObj){
 };
 void TryToPushShipsBy(OneObject* MyMid,int x,int y,int Lx){
 	int cell=((x+6)>>3)+(((y+6)>>3)<<VAL_SHFCX);
-	byte D=MyMid->RealDir;
+	unsigned char D=MyMid->RealDir;
 	int DX=0;
 	int DY=0;
 	if(D==0)x++;
@@ -422,7 +422,7 @@ void PerformMotion2(OneObject* OB){
 		NewMonster* NMN=OB->newMons;
 		AdvCharacter* ADC=OB->Ref.General->MoreCharacter;
 		NMN->AdvChar=ADC;
-		byte OLDDIR=OB->RealDir;
+		unsigned char OLDDIR=OB->RealDir;
 		bool MRes=CalculateMotion2(OB);
 CalcMotion:
 		if(OB->Speed){

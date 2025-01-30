@@ -2,15 +2,12 @@
 #define _ICMP_PINGER_H_INCLUDED_
 
 #define _COOL_
-/*
-#include <Winsock2.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-#include <assert.h>
-*/
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#include <Winsock2.h>
 
 #define STATUS_FAILED		0xFFFF
 #define DEF_PACKET_SIZE		32
@@ -37,7 +34,7 @@ public:
 	BOOL	InitNetwork();		// Обязательно вызывать в начале
 	BOOL	DoneNetwork();		// Желательно вызывать в конце
 //---------------------------------------------------------------------
-	BOOL	SetTargetName(LPCSTR lpcszTargetName);
+	BOOL	SetTargetName(const char* lpcszTargetName);
 	// Установить имя подозреваемого хоста
 	// в форме "xxx.yyy.zzz.sss" или
 	// в форме "somehost.somedomain.net"
@@ -57,7 +54,7 @@ protected:
 	BOOL			m_bNetworkInitialized;	//
 	BOOL			m_bTargetSet;			//
 	sockaddr_in		m_TargetAddr;			//
-	DWORD			m_dwLastSendTime;		//
+	unsigned long			m_dwLastSendTime;		//
 	IcmpHeader		m_IcmpHeader;			//
 	int				m_iSeqCounter;			//
 	USHORT			checksum(USHORT *, int);

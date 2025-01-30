@@ -32,7 +32,7 @@ CHttpComm::CHttpComm()
 	m_szProxyAddr[0] = '\0';
 	m_dwProxyPort = 0;
 
-	DWORD	dwSiz;
+	unsigned long	dwSiz;
 
 	HKEY hGscKey;
 
@@ -83,13 +83,13 @@ CHttpComm::~CHttpComm()
 	// -- All Ok ------------------------------------------------------------
 }
 
-DWORD CHttpComm::AddRequest( LPCSTR lpcszURL )
+unsigned long CHttpComm::AddRequest( const char* lpcszURL )
 {
 	if (!m_bInitialized)
 		return 0;
 
 	CHAR		szHostName[255];
-	LPCSTR		lpszTemp = nullptr;
+	const char*		lpszTemp = nullptr;
 
 	m_pRequestList = (PHttpQuery) realloc( m_pRequestList, ( ++m_dwRequestCount ) * sizeof( SHttpQuery ) );
 	// -- completing structure -----------------------------------------------
@@ -197,7 +197,7 @@ DWORD CHttpComm::AddRequest( LPCSTR lpcszURL )
 
 VOID CHttpComm::ProcessRequests()
 {
-	for (DWORD i = 0; i < m_dwRequestCount; i++)
+	for (unsigned long i = 0; i < m_dwRequestCount; i++)
 		switch (m_pRequestList[i].m_Stage)
 		{
 		case csConnecting:
@@ -267,9 +267,9 @@ VOID CHttpComm::ProcessRequests()
 }
 
 
-int CHttpComm::GetData( DWORD dwHandle, LPVOID lpvBuffer, DWORD dwBufferSize )
+int CHttpComm::GetData( unsigned long dwHandle, void* lpvBuffer, unsigned long dwBufferSize )
 {
-	for (DWORD i = 0; i < m_dwRequestCount; i++)
+	for (unsigned long i = 0; i < m_dwRequestCount; i++)
 	{
 		if (m_pRequestList[i].m_dwHandle == dwHandle && m_pRequestList[i].m_Stage == csWaiting)
 		{
@@ -278,7 +278,7 @@ int CHttpComm::GetData( DWORD dwHandle, LPVOID lpvBuffer, DWORD dwBufferSize )
 				return 0;
 			}
 
-			DWORD j = 0;
+			unsigned long j = 0;
 			while (
 				( *(LPDWORD) ( (LPBYTE) m_pRequestList[i].m_lpvBuffer
 					+ ( j++ ) ) != 0x0A0D0A0D )
@@ -294,9 +294,9 @@ int CHttpComm::GetData( DWORD dwHandle, LPVOID lpvBuffer, DWORD dwBufferSize )
 }
 
 
-VOID CHttpComm::FreeData( DWORD dwHandle )
+VOID CHttpComm::FreeData( unsigned long dwHandle )
 {
-	for (DWORD i = 0; i < m_dwRequestCount; i++)
+	for (unsigned long i = 0; i < m_dwRequestCount; i++)
 		if (m_pRequestList[i].m_dwHandle == dwHandle)
 		{
 			if (m_pRequestList[i].m_lpszQuery)

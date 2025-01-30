@@ -39,11 +39,11 @@ int NThemUnits;
 extern MotionField UnitsField;
 extern int tmtmt;
 extern int HREQRADIUS;
-extern word FlyMops[256][256];
-extern byte* NPresence;
+extern unsigned short FlyMops[256][256];
+extern unsigned char* NPresence;
 void ShowFog( OneObject* ZZ );
 
-word MAXOBJECT;//<= 65536
+unsigned short MAXOBJECT;//<= 65536
 
 //Если поступает приказ уровня<16 и тварь, которую
 //нужно атаковать стоит дальше этого расстояния, то
@@ -52,7 +52,7 @@ static int MaxReplyDistance = 50;
 
 int PathAsks;
 const int drr[9] = { 7,6,5,0,0,4,1,2,3 };
-const byte drrb[9] = { 7,6,5,0,0,4,1,2,3 };
+const unsigned char drrb[9] = { 7,6,5,0,0,4,1,2,3 };
 const int idrx[8] = { 0,1,1,1,0,-1,-1,-1 };
 const int idry[8] = { -1,-1,0,1,1,1,0,-1 };
 
@@ -61,20 +61,20 @@ static int OptA[256][256];
 
 static int SIndex;
 int counter;
-static byte xi[256][256];
-static byte yi[256][256];
-byte RNTB[64][256];
+static unsigned char xi[256][256];
+static unsigned char yi[256][256];
+unsigned char RNTB[64][256];
 
 //HUGE ARRAY!
 OneObject OBJECTS[ULIMIT];
 
 //Организация очереди на выполнение долгого приказа
-word ComStc[StSize];
+unsigned short ComStc[StSize];
 
-word StHead;
-word StTile;
+unsigned short StHead;
+unsigned short StTile;
 
-bool CheckAttAbility( OneObject* OB, word Patient )
+bool CheckAttAbility( OneObject* OB, unsigned short Patient )
 {
 	if (OB && Patient != 0xFFFF)
 	{
@@ -110,13 +110,14 @@ bool CheckAttAbility( OneObject* OB, word Patient )
 RLCTable MImage[maximage];
 RLCTable miniMImage[maximage];
 int MaxImage;
-void Err( LPCSTR s )
+void Err( const char* s )
 {
-	MessageBox( hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nation loading failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK );
 }
 
 //Загрузка нации из файла
-void Nation::CreateNation( byte Mask, byte NI )
+void Nation::CreateNation( unsigned char Mask, unsigned char NI )
 {
 	NMask = Mask;
 	CITY = nullptr;
@@ -127,7 +128,7 @@ void Nation::CreateNation( byte Mask, byte NI )
 	PathAsks = 0;
 }
 
-word LastObject;
+unsigned short LastObject;
 
 //Создать паземный объект типа монсира с координатами (x,y)
 //и номером n в таблице монстров данной нации
@@ -139,10 +140,10 @@ word LastObject;
 //запрос на перемещение
 struct AskMove
 {
-	word ReqID;//индекс перемещаемого
-	word PreID;//индекс жаждущего дорваться в эту клетку
-	byte x;
-	byte y;
+	unsigned short ReqID;//индекс перемещаемого
+	unsigned short PreID;//индекс жаждущего дорваться в эту клетку
+	unsigned char x;
+	unsigned char y;
 	char dx;
 	char dy;
 };
@@ -150,13 +151,13 @@ struct AskMove
 int NAsk;//Количество запросов
 AskMove Ask[8192];//Массив запросов
 bool FailLink[8192];//Массив неразрешенных перемещений
-word CurInd;
-word IDMap[256][256];
-word RQMap[256][256];//:3-запещенное направление ..
+unsigned short CurInd;
+unsigned short IDMap[256][256];
+unsigned short RQMap[256][256];//:3-запещенное направление ..
 					 //:13-номер в таблице запросов
 
 //Добавить запрос в систему запросов на перемещение
-void AddAsk( word ReqID, byte x, byte y, char zdx, char zdy )
+void AddAsk( unsigned short ReqID, unsigned char x, unsigned char y, char zdx, char zdy )
 {
 	//DEBUGGING
 	OneObject* OB = Group[ReqID];
@@ -226,7 +227,7 @@ inline void cmSetXY( char x, char y )
 	NowBuf[Ofst + 2] = y;
 	Ofst += 3;
 };
-inline void cmSetXYDir( byte x, byte y, byte dir, byte n )
+inline void cmSetXYDir( unsigned char x, unsigned char y, unsigned char dir, unsigned char n )
 {
 	ChkOfst( 4 );
 	NowBuf[Ofst] = 18;
@@ -235,11 +236,11 @@ inline void cmSetXYDir( byte x, byte y, byte dir, byte n )
 	NowBuf[Ofst + 3] = ( dir & 7 ) | ( n << 4 );
 	Ofst += 4;
 };
-inline void cmSetXYDirX( byte x, byte y, char dx, char dy, byte n )
+inline void cmSetXYDirX( unsigned char x, unsigned char y, char dx, char dy, unsigned char n )
 {
 	ChkOfst( 4 );
 	//assert(dx<2&&dy<2);
-	byte dr = drr[( dx + 1 ) * 3 + dy + 1];
+	unsigned char dr = drr[( dx + 1 ) * 3 + dy + 1];
 	NowBuf[Ofst] = 18;
 	NowBuf[Ofst + 1] = x;
 	NowBuf[Ofst + 2] = y;
@@ -247,7 +248,7 @@ inline void cmSetXYDirX( byte x, byte y, char dx, char dy, byte n )
 	Ofst += 4;
 };
 
-inline void cmChkXY( byte x, byte y )
+inline void cmChkXY( unsigned char x, unsigned char y )
 {
 	ChkOfst( 3 );
 	NowBuf[Ofst] = 44;
@@ -258,31 +259,31 @@ inline void cmChkXY( byte x, byte y )
 inline void cmSetDir( int dx, int dy )
 {
 	if (dx == 0 && dy == 0)return;
-	byte dr = drr[( dx + 1 ) * 3 + dy + 1];
+	unsigned char dr = drr[( dx + 1 ) * 3 + dy + 1];
 	ChkOfst( 2 );
 	NowBuf[Ofst] = 5;
 	NowBuf[Ofst + 1] = dr;
 	Ofst += 2;
 };
-void cmSetDirD( byte dr )
+void cmSetDirD( unsigned char dr )
 {
 	ChkOfst( 2 );
 	NowBuf[Ofst] = 5;
 	NowBuf[Ofst + 1] = dr & 7;
 	Ofst += 2;
 };
-inline void cmLoadAnm( byte stype, byte dtype, word kind )
+inline void cmLoadAnm( unsigned char stype, unsigned char dtype, unsigned short kind )
 {
 	ChkOfst( 5 );
 	NowBuf[Ofst] = 6;
 	NowBuf[Ofst + 1] = dtype;
 	NowBuf[Ofst + 2] = stype;
-	NowBuf[Ofst + 3] = byte( kind );
+	NowBuf[Ofst + 3] = unsigned char( kind );
 	NowBuf[Ofst + 4] = 0;
 	Ofst += 5;
 }
 
-inline void cmPerfAnm( byte n )
+inline void cmPerfAnm( unsigned char n )
 {
 	ChkOfst( 2 );
 	NowBuf[Ofst] = 8;
@@ -304,7 +305,7 @@ inline void cmDone()
 
 //Переместить объект в точку (x,y)
 
-typedef byte xxx[64];
+typedef unsigned char xxx[64];
 
 void COrd( Order1* ordr )
 {
@@ -324,7 +325,7 @@ void SendToLink( OneObject* OBJ );
 //Атаковать point
 void AttackPointLink( OneObject* OBJ );
 
-void OneObject::AttackPoint( byte px, byte py, byte wep, int Prio )
+void OneObject::AttackPoint( unsigned char px, unsigned char py, unsigned char wep, int Prio )
 {
 	if (CheckOrderAbility())
 	{
@@ -369,7 +370,7 @@ void AttackPointLink( OneObject* OBJ )
 //Атаковать point
 void ContinueAttackPointLink( OneObject* OBJ );
 
-void OneObject::ContinueAttackPoint( byte px, byte py, int Prio )
+void OneObject::ContinueAttackPoint( unsigned char px, unsigned char py, int Prio )
 {
 	if (CheckOrderAbility())
 	{
@@ -421,7 +422,7 @@ void ContinueAttackPointLink( OneObject* OBJ )
 //Атаковать стену
 void ContinueAttackWallLink( OneObject* OBJ );
 
-void OneObject::ContinueAttackWall( byte px, byte py, int Prio )
+void OneObject::ContinueAttackWall( unsigned char px, unsigned char py, int Prio )
 {
 	if (CheckOrderAbility())
 	{
@@ -527,8 +528,8 @@ void EliminateBuilding( OneObject* OB )
 	};
 }
 
-word DeathList[64];
-word DeathSN[64];
+unsigned short DeathList[64];
+unsigned short DeathSN[64];
 
 int NDeath;
 void InitDeathList()
@@ -576,7 +577,7 @@ void ProcessDeathList()
 		{
 			if (OB)
 			{
-				word d = OB->Serial - DeathSN[i];
+				unsigned short d = OB->Serial - DeathSN[i];
 				if (d == 1 || d == 0xFFFF)
 				{
 					DeathSN[i] = OB->Serial;
@@ -734,7 +735,7 @@ void OneObject::Die()
 	{
 		for (int j = 0; j < NInside; j++)
 		{
-			word MID = Inside[j];
+			unsigned short MID = Inside[j];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -770,7 +771,7 @@ void OneObject::Die()
 			if (OB && OB->NInside)
 			{
 				int N = OB->NInside;
-				word* INS = OB->Inside;
+				unsigned short* INS = OB->Inside;
 				if (INS)
 				{
 					for (int j = 0; j < N; j++)
@@ -1026,19 +1027,19 @@ void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender )
 }
 
 extern short AlarmSoundID;
-extern byte   WeaponFlags[32];
+extern unsigned char   WeaponFlags[32];
 extern int LastAttackDelay;
 int LastAttackX = -1;
 int LastAttackY = -1;
 int AlarmDelay = 0;
 int GetUnitActivity( OneObject* OB );
-void DamageInside( OneObject* OB, int Dam, OneObject* Sender, byte AttType )
+void DamageInside( OneObject* OB, int Dam, OneObject* Sender, unsigned char AttType )
 {
 	int p = ( int( rando() ) * 101 ) >> 15;
 	if (p < OB->newMons->PromaxPercent)return;
 	int N = OB->NInside;
 	int rp = ( int( rando() )*N ) >> 15;
-	word pp = OB->Inside[rp];
+	unsigned short pp = OB->Inside[rp];
 	if (pp != 0xFFFF)
 	{
 		OneObject* IOB = Group[pp];
@@ -1049,7 +1050,7 @@ void DamageInside( OneObject* OB, int Dam, OneObject* Sender, byte AttType )
 	};
 }
 
-void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender, byte AttType )
+void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender, unsigned char AttType )
 {
 	if (Sender && Sender->Index != Index)
 	{
@@ -1093,13 +1094,13 @@ void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender, byte Att
 			int MAXS = Sender->Ref.General->MoreCharacter->MaxInside;
 			for (int i = 0; i < Sender->NInside; i++)
 			{
-				word MID = Sender->Inside[i];
+				unsigned short MID = Sender->Inside[i];
 				if (MID != 0xFFFF)
 				{
 					OneObject* IOB = Group[MID];
 					if (IOB && !IOB->Sdoxlo)
 					{
-						byte USE = IOB->newMons->Usage;
+						unsigned char USE = IOB->newMons->Usage;
 						if (USE == StrelokID || USE == HorseStrelokID || USE == ArcherID)NS++;
 					};
 				};
@@ -1113,12 +1114,12 @@ void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender, byte Att
 		};
 		int damtype = 0;
 		if (AttType < NAttTypes)damtype = Sender->Ref.General->MoreCharacter->WeaponKind[AttType];
-		byte* RF = Sender->Ref.General->MoreCharacter->WeaponKind;
+		unsigned char* RF = Sender->Ref.General->MoreCharacter->WeaponKind;
 
 
 		if (damtype >= 0)
 		{
-			byte wf = WeaponFlags[damtype];
+			unsigned char wf = WeaponFlags[damtype];
 
 			if (wf & 2)
 			{
@@ -1177,7 +1178,7 @@ void OneObject::MakeDamage( int Fundam, int Persist, OneObject* Sender, byte Att
 			{
 				for (int j = 0; j < NInside; j++)
 				{
-					word MID = Inside[j];
+					unsigned short MID = Inside[j];
 					if (MID != 0xFFFF)
 					{
 						OneObject* OB = Group[MID];
@@ -1228,9 +1229,9 @@ void WinnerControl( bool Anyway )
 	int NThemCenters = 0;
 	int MyMask = 1 << NatRefTBL[MyNation];
 
-	byte UnLockN[8];
+	unsigned char UnLockN[8];
 	memset( UnLockN, 0, 8 );
-	byte MyNT = NatRefTBL[MyNation];
+	unsigned char MyNT = NatRefTBL[MyNation];
 
 	for (int i = 0; i < 8; i++)
 		if (NATIONS[i].VictState != 1)
@@ -1245,7 +1246,7 @@ void WinnerControl( bool Anyway )
 			OneObject* OB = Group[i];
 			if (OB && UnLockN[OB->NNUM] && OB->NNUM != 7 && !( OB->Sdoxlo && !OB->Hidden ))
 			{
-				byte USE = OB->newMons->Usage;
+				unsigned char USE = OB->newMons->Usage;
 				if (USE == PeasantID)
 				{
 					if (OB->Nat->AI_Enabled)
@@ -1326,7 +1327,7 @@ void OneObject::DefaultSettings( GeneralObject* GO )
 	//MTime=0;
 	NInside = 0;
 	Transport = GO->newMons->Transport;
-	//if(Transport)Inside=new word[18];
+	//if(Transport)Inside=new unsigned short[18];
 	//else Inside=nullptr;
 	//TimeInside=nullptr;
 	Serial = rando();
@@ -1384,7 +1385,7 @@ void OneObject::DefaultSettings( GeneralObject* GO )
 
 void PatrolLink( OneObject* OBJ );
 
-void OneObject::Patrol( int px, int py, int x1, int y1, byte Prio )
+void OneObject::Patrol( int px, int py, int x1, int y1, unsigned char Prio )
 {
 	if (InArmy)
 		return;
@@ -1495,12 +1496,12 @@ void WaitForRepairLink( OneObject* OBJ )
 //################                 ###################//
 //####################################################//
 extern bool EUsage[8192];
-extern word LastAnmIndex;
+extern unsigned short LastAnmIndex;
 extern AnmObject* GAnm[8192];
-word NucList[128];
-word NucSN[128];
+unsigned short NucList[128];
+unsigned short NucSN[128];
 bool NDone[128];
-word NNuc;
+unsigned short NNuc;
 
 //Zero NucList, NucSN, NNuc
 void InitNucList()
@@ -1510,7 +1511,7 @@ void InitNucList()
 	NNuc = 0;
 }
 
-void RegisterNuc( word ID )
+void RegisterNuc( unsigned short ID )
 {
 	if (!EUsage[ID])return;
 	for (int i = 0; i < 128; i++)
@@ -1539,10 +1540,10 @@ void RegisterNuc( word ID )
 					NNuc--;
 				}else
 				if(!NDone[i]){
-					byte NMS=EO->NMask;
+					unsigned char NMS=EO->NMask;
 					int dpx=EO->destX;
 					int dpy=EO->destY;
-					word AID=0xFFFF;
+					unsigned short AID=0xFFFF;
 					int adist=1000;
 					int diss;
 					//find nearest enemy antinuclear;
@@ -1606,8 +1607,8 @@ int NNations;
 char** NatsIDS;
 char NatCharLo[32][8];
 char NatCharHi[32][8];
-byte NTex1[32];
-byte NTex2[32];
+unsigned char NTex1[32];
+unsigned char NTex2[32];
 
 int GetNationByID( char* Name )
 {
@@ -1675,19 +1676,19 @@ void LoadNations()
 	};
 	Gclose( f );
 };
-void Nation::AddPopul( word N )
+void Nation::AddPopul( unsigned short N )
 {
 	if (NPopul >= MaxPopul)
 	{
 		MaxPopul += 64;
-		Popul = (word*) realloc( Popul, 2 * MaxPopul );
+		Popul = (unsigned short*) realloc( Popul, 2 * MaxPopul );
 	};
 	Popul[NPopul] = N;
 	NPopul++;
 	if (NAccount >= MaxAccount)
 	{
 		MaxAccount += 64;
-		Account = (word*) realloc( Account, 2 * MaxAccount );
+		Account = (unsigned short*) realloc( Account, 2 * MaxAccount );
 	};
 	int acc = CITY->Account / 100;
 	if (acc < 0)acc = 0;
@@ -1695,12 +1696,12 @@ void Nation::AddPopul( word N )
 	NAccount++;
 	if (N)ThereWasUnit = 1;
 };
-void Nation::AddUpgrade( word ID, int time )
+void Nation::AddUpgrade( unsigned short ID, int time )
 {
 	if (NUpgMade >= MaxUpgMade)
 	{
 		MaxUpgMade += 64;
-		UpgIDS = (word*) realloc( UpgIDS, 2 * MaxUpgMade );
+		UpgIDS = (unsigned short*) realloc( UpgIDS, 2 * MaxUpgMade );
 		UpgTime = (int*) realloc( UpgTime, 4 * MaxUpgMade );
 	};
 	UpgIDS[NUpgMade] = ID;

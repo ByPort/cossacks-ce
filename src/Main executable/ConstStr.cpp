@@ -15,6 +15,7 @@ void LOADSC(char* ID,char** str){
 		MessageBox(NULL,cc,"String not found...",0);
 	};
 };
+// FIXME: something strange's happening here
 #undef LoadSC
 #define LoadSC(z) char* ##z##=NULL;
 #include "ConstStr.h"

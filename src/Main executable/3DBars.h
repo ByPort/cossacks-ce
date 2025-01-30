@@ -3,8 +3,8 @@ struct OneBar
 	int x0,y0,x1,y1;
 	short MinBX,MinBY,MaxBX,MaxBY;
 	short H;
-	word Owner;
-	word ID;
+	unsigned short Owner;
+	unsigned short ID;
 };
 
 void DrawBar3D(OneBar* ONB);
@@ -15,12 +15,12 @@ extern int B3SX;
 extern int B3SY;
 extern int B3SZ;
 
-extern word** Obj3Map;
-extern word*  NObj3;
+extern unsigned short** Obj3Map;
+extern unsigned short*  NObj3;
 
 void InitObjs3();
 void ClearObjs3();
-word Add3DBar(int X0,int Y0,int X1,int Y1,short H,int ID,word Owner);
-void Delete3DBar(word ID);
+unsigned short Add3DBar(int X0,int Y0,int X1,int Y1,short H,int ID,unsigned short Owner);
+void Delete3DBar(unsigned short ID);
 int GetBar3DHeight(int x,int y);
 int GetBar3DOwner(int x,int y);

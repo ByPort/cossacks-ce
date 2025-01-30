@@ -27,12 +27,12 @@ public:
 	int x;
 	int y;
 	NewAnimation* WAnm;
-	byte CurSprite;
+	unsigned char CurSprite;
 	char vx;
 	char vy;
 	char CheckShiftX;
 	char CheckShiftY;
-	byte Direction;
+	unsigned char Direction;
 };
 #define MaxWFrames  512
 WaveFrame WAVES[MaxWFrames];
@@ -44,7 +44,7 @@ int MinX;
 int MinY;
 int MaxX;
 int MaxY;
-byte WSET[256];
+unsigned char WSET[256];
 NewAnimation* GetNewAnimationByName(char* Name);
 void InitWaves() {
 	for (int i = 0; i < MaxWFrames; i++)WAVES[i].Enabled = false;
@@ -82,7 +82,7 @@ inline bool CheckColor(int x, int y)
 {
 	if (x >= 0 && y >= 0 && x <= MaxX && y <= MaxY)
 	{
-		byte c = ((byte*)(ScreenPtr))[smapx + x + (smapy + y)*SCRSizeX];
+		unsigned char c = ((unsigned char*)(ScreenPtr))[smapx + x + (smapy + y)*SCRSizeX];
 		return(0 != WSET[c]);
 	}
 	else

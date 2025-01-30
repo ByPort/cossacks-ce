@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -12,9 +13,9 @@ class MouseZone
 {
 public:
 	int x, y, x1, y1, Index, MoveIndex;
-	byte ScanCode;
-	byte KeyState;
-	byte Pressed;
+	unsigned char ScanCode;
+	unsigned char KeyState;
+	unsigned char Pressed;
 	HandlePro* Pro;
 	HandlePro* RPro;
 	HandlePro* MoveOver;
@@ -164,7 +165,7 @@ void AssignMovePro(int i, HandlePro* HPro, int id)
 	}
 }
 
-void AssignKeys(int i, byte Scan, byte State) 
+void AssignKeys(int i, unsigned char Scan, unsigned char State) 
 {
 	if (i != -1) 
 	{
@@ -212,11 +213,11 @@ int CreateZone(int x, int y, int lx, int ly, HandlePro* HPro, int Index, char* H
 	return -1;
 };
 bool MouseOverZone = 0;
-extern byte SpecCmd;
-byte LastPressedCodes[8] = { 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };
+extern unsigned char SpecCmd;
+unsigned char LastPressedCodes[8] = { 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };
 extern bool EnterChatMode;
 extern bool EditMapMode;
-byte ScanPressed[256];
+unsigned char ScanPressed[256];
 int CheckZonePressed(int i) {
 	if (EnterChatMode || EditMapMode)return false;
 	for (int j = 0; j < 8; j++)if (LastPressedCodes[j] != 0xFF) {
@@ -225,8 +226,8 @@ int CheckZonePressed(int i) {
 	if (i < NZones&&Zones[i].Index != -1) {
 		if (Zones[i].ScanCode != 0xFF) {
 			if ((GetKeyState(Zones[i].ScanCode) & 0x8000) || ScanPressed[Zones[i].ScanCode]) {
-				byte State = Zones[i].KeyState;
-				byte Scan = Zones[i].ScanCode;
+				unsigned char State = Zones[i].KeyState;
+				unsigned char Scan = Zones[i].ScanCode;
 
 				if (State & 1) {
 					if (!(GetKeyState(VK_CONTROL) & 0x8000))return false;
@@ -254,15 +255,15 @@ int CheckZonePressed(int i) {
 	}
 	else return false;
 };
-extern byte KeyCodes[512][2];
+extern unsigned char KeyCodes[512][2];
 #define NKEYS 61
-extern byte ScanKeys[NKEYS];
+extern unsigned char ScanKeys[NKEYS];
 bool CheckSpritePressed(int sp) {
 	if (sp < 0 || sp >= 512 || EnterChatMode || EditMapMode)return false;
 	if (KeyCodes[sp][0]) {
 		if ((GetKeyState(ScanKeys[KeyCodes[sp][0]]) & 0x8000) || ScanPressed[ScanKeys[KeyCodes[sp][0]]]) {
-			byte State = KeyCodes[sp][1];
-			byte Scan = ScanKeys[KeyCodes[sp][0]];
+			unsigned char State = KeyCodes[sp][1];
+			unsigned char Scan = ScanKeys[KeyCodes[sp][0]];
 			if (State & 1) {
 				if (!(GetKeyState(VK_CONTROL) & 0x8000))return false;
 			}

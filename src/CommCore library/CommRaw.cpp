@@ -4,7 +4,7 @@
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::ReSendFrame(u_short uFrameNum)
+int CCommCore::ReSendFrame(unsigned short uFrameNum)
 {
 
 	sockaddr_in			sinPeer;
@@ -43,24 +43,24 @@ BOOL CCommCore::ReSendFrame(u_short uFrameNum)
 		0x00,
 		(sockaddr *)&sinPeer,
 		sizeof(sockaddr_in)) == SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
+int CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
 	PEER_PORT			PeerPort,
-	u_short				uType,
-	LPBYTE				lpbBuffer,
-	u_short				uSize,
-	BOOL				bSecureMessage,
-	BOOL				bWaitForCompletion)
+	unsigned short				uType,
+	unsigned char*				lpbBuffer,
+	unsigned short				uSize,
+	int				bSecureMessage,
+	int				bWaitForCompletion)
 {
 	sockaddr_in			sinPeer;
 	LPCC_PK_RAW_FRAME	lpRawFrame;
-	u_short				uRawFrameSize;
+	unsigned short				uRawFrameSize;
 
 	uRawFrameSize = sizeof(CC_PK_RAW_FRAME) + uSize;
 	lpRawFrame = (LPCC_PK_RAW_FRAME)malloc(uRawFrameSize);
@@ -112,28 +112,28 @@ BOOL CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
 		sizeof(sockaddr_in)) == SOCKET_ERROR)
 	{
 		free(lpRawFrame);
-		return FALSE;
+		return 0;
 	};
 
 	if (!bSecureMessage) {
 		free(lpRawFrame);
-		return TRUE;
+		return 1;
 	};
 
-	BOOL bRes = QueueAddPacket(PeerAddr,
+	int bRes = QueueAddPacket(PeerAddr,
 		PeerPort,
 		lpRawFrame,
 		uRawFrameSize);
 
 	if (!bRes)
-		return FALSE;
+		return 0;
 
 	if (!bWaitForCompletion)
-		return TRUE;
+		return 1;
 
-	DWORD dwSendTime = m_FrameList[m_uFrameCount - 1].m_dwSendTime;
+	unsigned long dwSendTime = m_FrameList[m_uFrameCount - 1].m_dwSendTime;
 
-	m_bBlockingCall = TRUE;
+	m_bBlockingCall = 1;
 
 	while (QueuePacketExists(m_lStamp)) {
 		ReceiveData(NULL);
@@ -142,7 +142,7 @@ BOOL CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
 			lpIdleProc();
 	};
 
-	m_bBlockingCall = FALSE;
+	m_bBlockingCall = 0;
 
 	return ((GetTickCount() - dwSendTime) < (RETRY_COUNT*RETRY_TIME));
 }

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -27,14 +28,15 @@ extern int MidiSound;
 static bool SoundOK;
 CDirSound* CDS;
 char* SoundID[MaxSnd];
-word SndTable[MaxSnd][16];
-byte SnDanger[MaxSnd];
-word NSnd[MaxSnd];
-word NSounds;
+unsigned short SndTable[MaxSnd][16];
+unsigned char SnDanger[MaxSnd];
+unsigned short NSnd[MaxSnd];
+unsigned short NSounds;
 int NoMineSound = -1;
-void Errs(LPCSTR s)
+void Errs(const char* s)
 {
-	MessageBox(hwnd, s, "Sound loading failed...", MB_ICONWARNING | MB_OK);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Sound loading failed...", s, nullptr);
+	//MessageBox(hwnd, s, "Sound loading failed...", MB_ICONWARNING | MB_OK);
 	assert(false);
 };
 extern short randoma[8192];
@@ -155,7 +157,7 @@ void PlayEffect(int n, int pan, int vol) {
 				if (!poss) {
 					CDS->SetVolume(sid, vol/*+CDS->Volume[sid]*/);
 					CDS->SetPan(sid, pan);
-					CDS->PlaySound(sid);
+					CDS->PlaySoundN(sid);
 					sndmade = false;
 				}
 				else {
@@ -169,7 +171,7 @@ void PlayEffect(int n, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundN(SndTable[n][nnn]);
 			};
 			*/
 		};
@@ -205,7 +207,7 @@ void PlayCoorEffect(int n, int x, int y, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundN(SndTable[n][nnn]);
 			};
 			*/
 		};
@@ -232,7 +234,7 @@ void PlaySingleEffect(int n, int pan, int vol) {
 				if (!poss) {
 					CDS->SetVolume(sid, vol);
 					CDS->SetPan(sid, pan);
-					CDS->PlaySound(sid);
+					CDS->PlaySoundN(sid);
 					sndmade = false;
 				}
 				else {
@@ -246,7 +248,7 @@ void PlaySingleEffect(int n, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundN(SndTable[n][nnn]);
 			};
 			*/
 		};
@@ -271,7 +273,7 @@ void PrepareSound() {
 };
 
 extern int FogMode;
-word GetFog(int x, int y);
+unsigned short GetFog(int x, int y);
 
 void AddEffectV(int x, int y, int vx, int id) {
 	if (!SoundOK)return;

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -29,7 +30,7 @@
 #include "3DMapEd.h"
 #include "mode.h"
 #include "Curve.h"
-#include <crtdbg.h>
+
 void CheckGP();
 BlockBars LockBars;
 BlockBars UnLockBars;
@@ -41,32 +42,32 @@ extern bool TexMapMod;
 extern int TM_Tan0;
 extern int TM_Tan1;
 int Prop43(int y);
-word GetTexture();
+unsigned short GetTexture();
 void SetTexture(int Vert, int nm);
 //returns planar y from(screen coordinates (x,y)
 extern int mul3(int);
-void AddLockBar(word x, word y) {
+void AddLockBar(unsigned short x, unsigned short y) {
 	LockBars.Add(x, y);
 	UnLockBars.Delete(x, y);
 	BSetBar(x << 2, y << 2, 4);
 };
-void FastAddLockBar(word x, word y) {
+void FastAddLockBar(unsigned short x, unsigned short y) {
 	LockBars.FastAdd(x, y);
 	//UnLockBars.Delete(x,y);
 	//BSetBar(x<<2,y<<2,4);
 };
-void FastAddUnLockBar(word x, word y) {
+void FastAddUnLockBar(unsigned short x, unsigned short y) {
 	//LockBars.FastAdd(x,y);
 	UnLockBars.FastAdd(x, y);
 	//UnLockBars.Delete(x,y);
 	//BSetBar(x<<2,y<<2,4);
 };
-void AddUnLockbar(word x, word y) {
+void AddUnLockbar(unsigned short x, unsigned short y) {
 	LockBars.Delete(x, y);
 	UnLockBars.Add(x, y);
 	BClrBar(x << 2, y << 2, 4);
 };
-void AddDefaultBar(word x, word y) {
+void AddDefaultBar(unsigned short x, unsigned short y) {
 	LockBars.Delete(x, y);
 	UnLockBars.Delete(x, y);
 };
@@ -108,7 +109,7 @@ int ConvScrY(int x, int y) {
 };
 struct SelectionRequest {
 	int x, y, r;
-	byte TileType;
+	unsigned char TileType;
 };
 int Norm(int dx, int dy) {
 	return int(sqrt(dx*dx + dy*dy));
@@ -172,7 +173,7 @@ void MarkLineToDraw(int i) {
 	};
 };
 //returns division of line by cicle in CurDiv
-void GetDivPoint(int x1, int y1, int x2, int y2, byte* CurDiv, SelectionRequest* SR) {
+void GetDivPoint(int x1, int y1, int x2, int y2, unsigned char* CurDiv, SelectionRequest* SR) {
 	int rd = SR->r;
 	int cdv = *CurDiv;
 	int r0 = Norm(x1 - SR->x, y1 - SR->y);
@@ -288,8 +289,8 @@ void PutTexInPoint(int i, SelectionRequest* SR) {
 	for (int j = 0; j < 6; j++) {
 		if (vind[j] > 0 && vind[j] < MaxPointIndex&&Lines[j] < MaxLineIndex) {
 			if (j & 1) {
-				byte sm = GetSectMap(Lines[j]);
-				byte sm1 = sm;
+				unsigned char sm = GetSectMap(Lines[j]);
+				unsigned char sm1 = sm;
 				GetDivPoint(GetTriX(vind[j]), GetTriY(vind[j]), xp, yp, &sm, SR);
 				if (sm != sm1) {
 					int LI = Lines[j];
@@ -302,8 +303,8 @@ void PutTexInPoint(int i, SelectionRequest* SR) {
 			else {
 				int LI = Lines[j];
 				if (LI >= 0 && LI < MaxLineIndex) {
-					byte sm = SECTMAP(Lines[j]);
-					byte sm1 = sm;
+					unsigned char sm = SECTMAP(Lines[j]);
+					unsigned char sm1 = sm;
 					GetDivPoint(xp, yp, GetTriX(vind[j]), GetTriY(vind[j]), &sm, SR);
 					if (sm != sm1) {
 						MarkLineToDraw(LI);
@@ -314,7 +315,7 @@ void PutTexInPoint(int i, SelectionRequest* SR) {
 		};
 	};
 };
-void SetTexturedRound(int x, int y, int rx, byte Tex) {
+void SetTexturedRound(int x, int y, int rx, unsigned char Tex) {
 	int r = rx;
 	int yy = y;
 	if (Mode3D)yy = ConvScrY(x, y);
@@ -339,8 +340,8 @@ void SetTexturedRound(int x, int y, int rx, byte Tex) {
 			};
 		};
 };
-extern byte darkfog[40960];
-extern byte minimap[maxmap][maxmap];
+extern unsigned char darkfog[40960];
+extern unsigned char minimap[maxmap][maxmap];
 void SetTexture(int Vert, int nm) {
 	if (Vert < 0 || Vert >= MaxPointIndex)return;
 	if (TexMapMod) {
@@ -363,7 +364,7 @@ void SetTexture(int Vert, int nm) {
 	int ix = uu.rem;
 	int iy = uu.quot;
 	int Lit = GetLighting(Vert);
-	byte c = TexColors[nm];
+	unsigned char c = TexColors[nm];
 	c = darkfog[16384 + c + (Lit << 8)];
 	if (TriUnit == 16) {
 		int xx = ix >> ADDSH;
@@ -374,7 +375,7 @@ void SetTexture(int Vert, int nm) {
 		if (ix >= 0 && ix < maxmap&&iy >= 0 && iy < maxmap)minimap[iy][ix] = c;
 	};
 	TexMap[Vert] = nm;
-	word tf = TexFlags[nm];
+	unsigned short tf = TexFlags[nm];
 	/*
 	if(tf&TEX_PLAIN)AddTHMap[Vert]=0;
 	else if(tf&TEX_HARD)AddTHMap[Vert]=rand()&15;
@@ -386,7 +387,7 @@ extern int WMPSIZE;
 extern int MaxWX;
 extern int MaxWY;
 
-extern byte* WaterDeep;//cell size=32x16
+extern unsigned char* WaterDeep;//cell size=32x16
 void CreateMiniMapPart(int x0, int y0, int x1, int y1)
 {
 	int msx2 = msx >> 1;
@@ -413,7 +414,7 @@ void CreateMiniMapPart(int x0, int y0, int x1, int y1)
 			{
 				int Vert = VertInLine*(iy + iy) + ix + ix;
 				int Lit = GetLighting(Vert);
-				byte c = TexColors[GetVTex(Vert)];
+				unsigned char c = TexColors[GetVTex(Vert)];
 				c = darkfog[16384 + c + (Lit << 8)];
 				int ixx = (ix >> ADDSH) - 1;
 				int iyy = (iy >> ADDSH) - 1;
@@ -432,7 +433,7 @@ void CreateMiniMapPart(int x0, int y0, int x1, int y1)
 			{
 				int Vert = VertInLine*iy + ix;
 				int Lit = GetLighting(Vert);
-				byte c = TexColors[GetVTex(Vert)];
+				unsigned char c = TexColors[GetVTex(Vert)];
 				c = darkfog[16384 + c + (Lit << 8)];
 				int ixx = ix >> ADDSH;
 				int iyy = ix >> ADDSH;
@@ -469,12 +470,12 @@ void CreateMiniMapPart(int x0, int y0, int x1, int y1)
 int IMGMAX;
 int ImgLx;
 int ImgLy;
-byte* ImgDat;
+unsigned char* ImgDat;
 
 int* PrpX1;
 int* PrpMul;
 
-void PutMPPoint(int x, int y, byte c)
+void PutMPPoint(int x, int y, unsigned char c)
 {
 	if (x < 0 || x >= IMGMAX || y < 0 || y >= IMGMAX)
 		return;
@@ -484,7 +485,7 @@ void PutMPPoint(int x, int y, byte c)
 
 int srando();
 
-void CreateMapPreview(byte* Data, int Lx, int Ly)
+void CreateMapPreview(unsigned char* Data, int Lx, int Ly)
 {
 	int PX1[480 << 3];
 	int PM1[480 << 3];
@@ -510,7 +511,7 @@ void CreateMapPreview(byte* Data, int Lx, int Ly)
 		{
 			int Vert = VertInLine*(iy)+ix;
 			int Lit = GetLighting(Vert);
-			byte c = TexColors[GetVTex(Vert)];
+			unsigned char c = TexColors[GetVTex(Vert)];
 			c = darkfog[16384 + c + (Lit << 8)];
 			int dy = iy - (GetHeight(ix << 5, iy << 5) >> 4);
 			PutMPPoint(ix, dy, c);
@@ -545,7 +546,7 @@ void CreateMapPreview(byte* Data, int Lx, int Ly)
 		for (int j = 0; j < msy; j += stp1)
 		{
 			int wd = WaterDeep[i + j*MaxWX];
-			byte cc = 0;
+			unsigned char cc = 0;
 			if (wd > 200)
 			{
 				cc = 0xB4;
@@ -588,7 +589,7 @@ void CreateMapPreview(byte* Data, int Lx, int Ly)
 		{
 			int xx = OB->RealX >> 9;
 			int yy = (OB->RealY >> 9) - (OB->RZ >> 5);
-			byte c = 0xD0 + (OB->NNUM << 2);
+			unsigned char c = 0xD0 + (OB->NNUM << 2);
 			PutMPPoint(xx - 1, yy, c);
 			PutMPPoint(xx + 1, yy, c);
 			PutMPPoint(xx, yy - 1, c);
@@ -598,7 +599,7 @@ void CreateMapPreview(byte* Data, int Lx, int Ly)
 	}
 }
 
-extern byte* WaterBright;
+extern unsigned char* WaterBright;
 
 void CreateMiniMap()
 {
@@ -613,7 +614,7 @@ void CreateMiniMap()
 			{
 				int Vert = VertInLine*(iy << ADDSH) + (ix << ADDSH);
 				int Lit = GetLighting(Vert);
-				byte c = TexColors[GetVTex(Vert)];
+				unsigned char c = TexColors[GetVTex(Vert)];
 				c = darkfog[16384 + c + (Lit << 8)];
 				if (ix >= 0 && ix < maxmap && iy >= 0 && iy < maxmap)
 				{
@@ -630,7 +631,7 @@ void CreateMiniMap()
 			{
 				int Vert = VertInLine*iy + ix;
 				int Lit = GetLighting(Vert);
-				byte c = TexColors[GetVTex(Vert)];
+				unsigned char c = TexColors[GetVTex(Vert)];
 				c = darkfog[16384 + c + (Lit << 8)];
 				if (ix >= 0 && ix < maxmap && iy >= 0 && iy < maxmap)
 				{
@@ -649,7 +650,7 @@ void CreateMiniMap()
 				//IMPORTANT: change water coloring in minimap for better visibility
 				//current = black;// grey;//blue (orignial)
 				int B = WaterBright[ofs];
-				byte c = 0x00;// 0x6A;//0xB3
+				unsigned char c = 0x00;// 0x6A;//0xB3
 				if (B > (6 * 16 - 8))
 				{//Lighter
 					c = 0x00;// 0x6E;//0xB7
@@ -701,9 +702,9 @@ void CreateMiniMap()
 	}
 }
 
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 extern int tmtmt;
-void ShowPen(int x, int y1, int r, byte ptc) {
+void ShowPen(int x, int y1, int r, unsigned char ptc) {
 	SetRLCWindow(smapx, smapy, smaplx << 5, mul3(smaply) << 3, ScrWidth);
 	int y = Prop43(y1);
 	int npt = r >> 1;
@@ -970,7 +971,7 @@ void CreateLandLocking(int TAlp, bool ForVision) {
 		for (int iy = 1; iy < myy; iy++) {
 			int ppx = ix << 2;
 			int ppy = iy << 2;
-			byte c = 0;
+			unsigned char c = 0;
 			if (TMF->CheckBar(ppx + 1, ppy + 1 - 4, 2, 2))c |= 1;
 			if (TMF->CheckBar(ppx + 1 + 4, ppy + 1, 2, 2))c |= 2;
 			if (TMF->CheckBar(ppx + 1, ppy + 1 + 4, 2, 2))c |= 4;
@@ -1005,7 +1006,7 @@ void CreateLandLocking(int TAlp, bool ForVision) {
 		for (int iy = 1; iy < myy; iy++) {
 			int ppx = ix << 2;
 			int ppy = iy << 2;
-			byte c = 0;
+			unsigned char c = 0;
 			if (TMF->CheckBar(ppx + 1, ppy + 1 - 4, 2, 2))c |= 1;
 			if (TMF->CheckBar(ppx + 1 + 4, ppy + 1, 2, 2))c |= 2;
 			if (TMF->CheckBar(ppx + 1, ppy + 1 + 4, 2, 2))c |= 4;
@@ -1095,8 +1096,8 @@ void CreateUnitsLocking() {
 			OB->GetCornerXY(&xx, &yy);
 			NewMonster* NM = OB->newMons;
 			int nn;
-			byte* LockX;
-			byte* LockY;
+			unsigned char* LockX;
+			unsigned char* LockY;
 			if (OB->Stage < OB->Ref.General->MoreCharacter->ProduceStages&&NM->NBLockPt) {
 				nn = NM->NBLockPt;
 				LockX = NM->BLockX;
@@ -1150,7 +1151,7 @@ int PlatoHi = 128;
 int SurfType = 1;
 void SetTextureInCurve();
 void SetPlatoInCurve();
-void SetHiInRegion(byte H);
+void SetHiInRegion(unsigned char H);
 bool EnterVal(int * val, char* Message);
 int EnterHi(int * val, int Type);
 void SoftRegion();
@@ -1166,7 +1167,7 @@ bool CheckCurveLinked(int x, int y) {
 	}
 	else return false;
 };
-void AddPointToCurve(int x, int y, bool Final, byte Type) {
+void AddPointToCurve(int x, int y, bool Final, unsigned char Type) {
 	if (NCurves && !Final) {
 		if (Norma(x - CurveX[NCurves - 1], y - CurveY[NCurves - 1]) < 4)return;
 	};
@@ -1551,8 +1552,8 @@ void PutTexInPointWithCurve(int i) {
 			if (j & 1) {
 				int LI = Lines[j];
 				if (LI >= 0 && LI < MaxLineIndex) {
-					byte sm = SECTMAP(LI);
-					byte sm1 = sm;
+					unsigned char sm = SECTMAP(LI);
+					unsigned char sm1 = sm;
 					int cp = GetCrossProportion(GetTriX(vind[j]), GetTriY(vind[j]), xp, yp);
 					//int cp=GetCrossProportion(xp,yp,GetTriX(vind[j]),GetTriY(vind[j]));
 					if (cp != -1) {
@@ -1569,8 +1570,8 @@ void PutTexInPointWithCurve(int i) {
 			else {
 				int LI = Lines[j];
 				if (LI >= 0 && LI < MaxLineIndex) {
-					byte sm = SECTMAP(Lines[j]);
-					byte sm1 = sm;
+					unsigned char sm = SECTMAP(Lines[j]);
+					unsigned char sm1 = sm;
 					int cp = GetCrossProportion(xp, yp, GetTriX(vind[j]), GetTriY(vind[j]));
 					//int cp=GetCrossProportion(GetTriX(vind[j]),GetTriY(vind[j]),xp,yp);
 					if (cp != -1) {
@@ -1587,7 +1588,7 @@ void PutTexInPointWithCurve(int i) {
 		};
 	};
 };
-void SetSectionsInPoint(int i, int h, byte* VertHi) {
+void SetSectionsInPoint(int i, int h, unsigned char* VertHi) {
 	if (i<0 || i>MaxTH*MaxTH * 2)return;
 	int H0 = VertHi[i];
 	if (H0 > h)return;
@@ -1768,10 +1769,10 @@ void SetPlatoInCurve() {
 			};
 		};
 };
-byte RTARR0[16] = { 81,81,81,11,4 ,5,6,0,0,0,0,0,0,0,0,0 };
-byte RTARR1[16] = { 81,11,4 ,5 ,6 ,0,0,0,0,0,0,0,0,0,0,0 };
-byte RTARR2[16] = { 11,4 ,5 ,6 ,0 ,0,0,0,0,0,0,0,0,0,0,0 };
-byte RoadPrio[256] = {
+unsigned char RTARR0[16] = { 81,81,81,11,4 ,5,6,0,0,0,0,0,0,0,0,0 };
+unsigned char RTARR1[16] = { 81,11,4 ,5 ,6 ,0,0,0,0,0,0,0,0,0,0,0 };
+unsigned char RTARR2[16] = { 11,4 ,5 ,6 ,0 ,0,0,0,0,0,0,0,0,0,0,0 };
+unsigned char RoadPrio[256] = {
 	0x00,0x0C,0x0C,0x10,0x0D,0x0C,0x0B,0x10,0xFF,0xFF,//00
 	0xFF,0x0E,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,//10
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,//20
@@ -1801,7 +1802,7 @@ byte RoadPrio[256] = {
 
 
 void SetRoadInCurve(int tp) {
-	byte* RTARR;
+	unsigned char* RTARR;
 	if (tp == 4)RTARR = RTARR0;
 	else if (tp == 5)RTARR = RTARR1;
 	else RTARR = RTARR2;
@@ -2000,7 +2001,7 @@ void InterpolateCurve() {
 	free(CurY);
 };
 //------------------Special functions for random generation and texturing---------------
-void SetPlatoInCurve(byte* VertHi, byte* VertType, byte Type) {
+void SetPlatoInCurve(unsigned char* VertHi, unsigned char* VertType, unsigned char Type) {
 	FUNType* FTP3;
 	if (SurfType == 1)FTP3 = &FUN1;
 	else if (SurfType == 2)FTP3 = &FUN2;
@@ -2051,7 +2052,7 @@ void SetPlatoInCurve(byte* VertHi, byte* VertType, byte Type) {
 			};
 		};
 };
-void SetHiInRegion(byte H) {
+void SetHiInRegion(unsigned char H) {
 	/*
 	int xmin=100000;
 	int ymin=100000;
@@ -2076,7 +2077,7 @@ void SetHiInRegion(byte H) {
 	};
 	*/
 };
-void SoftRegion(byte* MpVertHi) {
+void SoftRegion(unsigned char* MpVertHi) {
 	int NVert = 0;
 	int MaxVert = 0;
 	int* Vert = NULL;
@@ -2169,9 +2170,9 @@ void SoftRegion(byte* MpVertHi) {
 };
 const int R14[10] = { 0,1,2,2,3,4,4,5,5,6 };
 int mrand();
-void PaintAllMap(byte* VertHi, byte* VertType, PaintHills* PHL, int NTypes) {
+void PaintAllMap(unsigned char* VertHi, unsigned char* VertType, PaintHills* PHL, int NTypes) {
 	for (int i = 0; i < MaxPointIndex; i++) {
-		word VType = VertType[i];
+		unsigned short VType = VertType[i];
 		if (VType > 0 && VType <= NTypes) {
 			PaintHills* PH = PHL + VType - 1;
 			int vx = i%VertInLine;
@@ -2234,7 +2235,7 @@ void PaintAllMap(byte* VertHi, byte* VertType, PaintHills* PHL, int NTypes) {
 					};
 					if (!UNFND) {
 						int ti = (int(rand())*PH->TexAmount[L]) >> 15;
-						TexMap[i] = byte(PH->Texs[L][ti]);
+						TexMap[i] = unsigned char(PH->Texs[L][ti]);
 					};
 				};
 				for (int p = 0; p < PH->NHiSections; p++)SetSectionsInPoint(i, PH->HiSect[p], VertHi);
@@ -2252,13 +2253,13 @@ void GenerateRandomRoad(int idx) {
 		int y0 = (mrand()*(480 << ADDSH)) >> 15;
 		if (!CheckBar(x0 - 6, y0 - 6, 12, 12)) {
 			AddPointToCurve(x0 << 4, y0 << 4, 0, idx);
-			byte dir0 = mrand() & 255;
+			unsigned char dir0 = mrand() & 255;
 			int L = 400;
 			int L0 = 6;
 			do {
 				int maxd = 32;
 				int x1, y1;
-				byte d1;
+				unsigned char d1;
 				do {
 					int dd = ((mrand()*maxd) >> 14) - maxd;
 					d1 = dir0 + dd;
@@ -2290,8 +2291,8 @@ void GenerateRandomRoad(int idx) {
 };
 extern int RealLx;
 extern int RealLy;
-void xLine(int x, int y, int x1, int y1, byte c);
-void SHOWBARS(BlockBars* BB, byte c) {
+void xLine(int x, int y, int x1, int y1, unsigned char c);
+void SHOWBARS(BlockBars* BB, unsigned char c) {
 	int dx = mapx << 5;
 	int dy = mapy << 4;
 	for (int i = 0; i < BB->NBars; i++) {
@@ -2315,12 +2316,13 @@ char* GSU_file;
 void GSU_Error(char* Nation) {
 	char ccc[100];
 	sprintf(ccc, "Invalid data for %s in %s", Nation, GSU_file);
-	MessageBox(hwnd, ccc, "ERROR!", 0);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", ccc, nullptr);
+	//MessageBox(hwnd, ccc, "ERROR!", 0);
 };
-extern HWND hwnd;
+extern void* hwnd;
 bool ReadWinString(GFILE* F, char* STR, int Max);
 int ADDRES[8];
-bool GenerateStartUnits(char* NationID, byte NI, int x, int y, int GenIndex) {
+bool GenerateStartUnits(char* NationID, unsigned char NI, int x, int y, int GenIndex) {
 	memset(ADDRES, 0, 8 * 4);
 	if (!GenIndex)return false;
 	char ccc[128];
@@ -2336,7 +2338,7 @@ bool GenerateStartUnits(char* NationID, byte NI, int x, int y, int GenIndex) {
 			while (ccc[0] && ccc[strlen(ccc) - 1] == ' ')ccc[strlen(ccc) - 1] = 0;
 			if (ccc[0] == '#' && !strcmp(ccc + 1, NationID)) {
 				//found!
-				word UnitsIDS[64];
+				unsigned short UnitsIDS[64];
 				char UnitMark[64];
 				int NUIDS = 0;
 				ccc[0] = 0;

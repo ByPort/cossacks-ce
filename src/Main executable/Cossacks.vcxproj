@@ -119,6 +119,7 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PreprocessorDefinitions>NODPLAY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -165,7 +166,6 @@
     <ClCompile Include="Brigade.cpp" />
     <ClCompile Include="Build.cpp" />
     <ClCompile Include="Cdirsnd.cpp" />
-    <ClCompile Include="Chkinet.cpp" />
     <ClCompile Include="ConstStr.cpp" />
     <ClCompile Include="Cwave.cpp" />
     <ClCompile Include="Danger.cpp" />
@@ -234,7 +234,6 @@
     <ClCompile Include="Stringshash.cpp" />
     <ClCompile Include="testserver.cpp" />
     <ClCompile Include="Timing.cpp" />
-    <ClCompile Include="Tmixer.cpp" />
     <ClCompile Include="TopoGraf.cpp" />
     <ClCompile Include="Transport.cpp" />
     <ClCompile Include="UnRar.cpp" />
@@ -265,14 +264,12 @@
     <ClInclude Include="Cdirsnd.h" />
     <ClInclude Include="CEngine\Goaceng.h" />
     <ClInclude Include="Chat\Chat.h" />
-    <ClInclude Include="CommCore.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="Conststr.h" />
     <ClInclude Include="Ctables.h" />
     <ClInclude Include="Curve.h" />
     <ClInclude Include="Cwave.h" />
     <ClInclude Include="Danger.h" />
-    <ClInclude Include="Dbgint.h" />
     <ClInclude Include="Ddini.h" />
     <ClInclude Include="Devicecd.h" />
     <ClInclude Include="Dialogs.h" />
@@ -309,7 +306,6 @@
     <ClInclude Include="Mode.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Mplayer.h" />
-    <ClInclude Include="Multi.h" />
     <ClInclude Include="Multipl.h" />
     <ClInclude Include="Nature.h" />
     <ClInclude Include="Newai.h" />
@@ -330,11 +326,8 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Safety.h" />
     <ClInclude Include="Sort.h" />
-    <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="Stdarg.h" />
     <ClInclude Include="Strategyresearch.h" />
     <ClInclude Include="Stringhash.h" />
-    <ClInclude Include="Tmixer.h" />
     <ClInclude Include="Tntfileio.h" />
     <ClInclude Include="TopoGraf.h" />
     <ClInclude Include="Transport.h" />

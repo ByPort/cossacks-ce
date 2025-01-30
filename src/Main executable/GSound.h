@@ -6,4 +6,4 @@ void AddEffect(int x,int y,int id);
 void AddWorkEffect(int x,int y,int id);
 void AddOrderEffect(int x,int y,int id);
 void AddWarEffect(int x,int y,int id);
-extern word NSounds;
+extern unsigned short NSounds;

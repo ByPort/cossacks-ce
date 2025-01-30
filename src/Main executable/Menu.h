@@ -9,7 +9,7 @@ public:
 	bool	MakeShift:1;
 	bool	ChangeFont:1;
 	bool	EraseOnChoose:1;
-	LPCSTR	items;
+	char*	items;
 	int		MenuLy;
 	int		ItemLy;
 	int		NItems;
@@ -21,11 +21,11 @@ public:
 	lpRLCFont font;
 	lpRLCFont font1;
 	int		evHandler;
-	void	CreateMenu(LPCSTR s,lpRLCFont f,lpRLCFont f1,fnc* ff,int style);
+	void	CreateMenu(char* s,lpRLCFont f,lpRLCFont f1,fnc* ff,int style);
 	void	Show(int n);
 	int		GetAmount();
-	LPCSTR  GetNstr(int n);
-	int		GetLen(LPCSTR s);
+	char*	GetNstr(int n);
+	int		GetLen(char* s);
 	void	ShowModal();
 	void	Close();
 };

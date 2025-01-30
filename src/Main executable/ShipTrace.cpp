@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -26,7 +27,7 @@ public:
 	short Ly;
 	short N;
 	short H;
-	byte* Data;
+	unsigned char* Data;
 	Blob();
 	~Blob();
 	void Load(char* Name);
@@ -53,14 +54,14 @@ void Blob::Load(char* Name) {
 	RBlockRead(f, &Ly, 2);
 	RBlockRead(f, &N, 2);
 	RBlockRead(f, &H, 2);
-	Data = new byte[Lx*Ly*N];
+	Data = new unsigned char[Lx*Ly*N];
 	RBlockRead(f, Data, Lx*Ly*N);
 	RClose(f);
 };
-byte TraceGrd[4096];
-void ShowBlob(int x, int y, byte* Blob, int Lx, int Ly) {
+unsigned char TraceGrd[4096];
+void ShowBlob(int x, int y, unsigned char* Blob, int Lx, int Ly) {
 	if (x > WindX1 || y > WindY1)return;
-	byte* bof = Blob;
+	unsigned char* bof = Blob;
 	int BLX = Lx;
 	int BLY = Ly;
 	if (x < WindX) {
@@ -199,9 +200,9 @@ int BlobX[MaxBlob];
 int BlobY[MaxBlob];
 int BlobVx[MaxBlob];
 int BlobVy[MaxBlob];
-byte BlobTime[MaxBlob];
-byte BlobVisible[MaxBlob];
-byte BlobOpt[MaxBlob];
+unsigned char BlobTime[MaxBlob];
+unsigned char BlobVisible[MaxBlob];
+unsigned char BlobOpt[MaxBlob];
 int NBlobs;
 int CurBlob;
 extern int time3;
@@ -261,7 +262,7 @@ void ProcessBlobs() {
 		if (BlobVisible[i])
 		{
 			int p = BlobTime[i];
-			byte op = BlobOpt[i];
+			unsigned char op = BlobOpt[i];
 			if (p)
 			{
 				int n = Blob1.N;
@@ -314,7 +315,7 @@ void InitBlobs()
 	CurBlob = 0;
 }
 
-void AddBlob(int x, int y, byte Dir, bool dir2)
+void AddBlob(int x, int y, unsigned char Dir, bool dir2)
 {
 	int Cur;
 	if (NBlobs < MaxBlob)
@@ -374,7 +375,7 @@ void AddBlob(int x, int y, byte Dir, bool dir2)
 	BlobOpt[Cur] = dir2;
 }
 
-void AddBlob(int x, int y, byte Dir)
+void AddBlob(int x, int y, unsigned char Dir)
 {
 	AddBlob(x, y, Dir, 0);
 }
@@ -403,7 +404,7 @@ void AddRandomBlobs()
 
 extern int tmtmt;
 
-void AddTrace(int x, int y, byte Dir)
+void AddTrace(int x, int y, unsigned char Dir)
 {
 	AddBlob(x, y, Dir + 64);
 	AddBlob(x, y, Dir - 64);
@@ -419,7 +420,7 @@ void CreateTrace(OneObject* OB)
 	}
 
 	NewMonster* NM = OB->newMons;
-	byte ANGL = OB->RealDir - 64;
+	unsigned char ANGL = OB->RealDir - 64;
 
 	int dz = NM->WaveDZ;
 	int SIN = TSin[ANGL];

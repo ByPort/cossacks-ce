@@ -37,18 +37,18 @@ extern const int kMinorMessageDisplayTime;
 bool CheapMode;
 void PerformAction( OneObject* OB, int x, int y );
 extern const int drr[9] = { 7,6,5,0,0,4,1,2,3 };
-extern word LastObject;
+extern unsigned short LastObject;
 void CreateTimedHint( char* s, int time );
 
 //return 0-unable
 //       n-busy(n=number of tasks)
 //		 -1-ready
-bool ApplyCost( byte NI, word NIndex );
+bool ApplyCost( unsigned char NI, unsigned short NIndex );
 
 //Returns the number of queued unit productions in this object
-//word ID: id of unit
+//unsigned short ID: id of unit
 //const bool running_production: only count queued productions, not all available
-int OneObject::CheckAbility( word ID, const bool running_production )
+int OneObject::CheckAbility( unsigned short ID, const bool running_production )
 {
 	if ( !NewBuilding )
 	{
@@ -56,7 +56,7 @@ int OneObject::CheckAbility( word ID, const bool running_production )
 	}
 
 	Nation* NT = Nat;
-	word NInd = NIndex;
+	unsigned short NInd = NIndex;
 
 	int p = NT->PACount[NInd];
 
@@ -102,7 +102,7 @@ void MoveAwayShipInCell( int cell, int x, int y )
 	int NMon = MCount[cell];
 	if ( !NMon )return;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -179,13 +179,13 @@ void MoveAwayShip( int x, int y )
 void ProduceObjLink( OneObject* OBJ );
 extern City CITY[8];
 void CheckArmies( City* );
-void OneObject::Produce( word ID )
+void OneObject::Produce( unsigned short ID )
 {
 	Produce( ID, 0xFFFF );
 };
 //extern int RESRC[8][8];
-void GetUnitCost( byte NI, word NIndex, int* Cost, word Power );
-void OneObject::Produce( word ID, word GroupID )
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost, unsigned short Power );
+void OneObject::Produce( unsigned short ID, unsigned short GroupID )
 {
 	bool PREVIEW = 0;
 	if ( CheckOrderAbility() )return;
@@ -323,20 +323,20 @@ bool ShowProducedShip( OneObject* Port, int CX, int CY )
 
 extern MotionField UnitsField;
 bool SubCost = false;
-byte DetermineResource( int x, int y );
+unsigned char DetermineResource( int x, int y );
 void GotoFinePosition( OneObject* OB );
 int GetHeight( int, int );
 void FindUnitPosition( int* x, int *y, NewMonster* NM );
 extern int DiffP[4];
-void UnProduce( OneObject* OB, word Type );
-extern word* BLDList;
+void UnProduce( OneObject* OB, unsigned short Type );
+extern unsigned short* BLDList;
 void GetRect( OneObject* ZZ, int* x, int* y, int* Lx, int* Ly );
 bool PInside( int x, int y, int x1, int y1, int xp, int yp );
-word CheckBuildingInCell( int cx, int cy, int dstx, int dsty )
+unsigned short CheckBuildingInCell( int cx, int cy, int dstx, int dsty )
 {
 	if ( cx >= 0 && cy >= 0 && cx < VAL_MAXCX&&cy < VAL_MAXCX )
 	{
-		word MID = BLDList[cx + ( cy << VAL_SHFCX )];
+		unsigned short MID = BLDList[cx + ( cy << VAL_SHFCX )];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -359,8 +359,8 @@ void ProduceObjLink( OneObject* OBJ )
 	Nation* NT = OBJ->Nat;
 	if ( NT->NFarms < NT->NGidot + 1 )return;
 
-	word OI = OBJ->LocalOrder->info.Produce.ObjIndex;
-	word GID = OBJ->LocalOrder->info.Produce.ID;
+	unsigned short OI = OBJ->LocalOrder->info.Produce.ObjIndex;
+	unsigned short GID = OBJ->LocalOrder->info.Produce.ID;
 	if ( OBJ->LocalOrder->info.Produce.Power == 0xFFFF )
 	{
 		OBJ->DeleteLastOrder();
@@ -382,9 +382,9 @@ void ProduceObjLink( OneObject* OBJ )
 		UnProduce( OBJ, OI );
 		return;
 	};
-	byte NI = NT->NNUM;
+	unsigned char NI = NT->NNUM;
 	//int xcost=NT->Mon[OI]->cost;
-	byte step = OBJ->LocalOrder->info.Produce.PStep << SpeedSh;
+	unsigned char step = OBJ->LocalOrder->info.Produce.PStep << SpeedSh;
 	int xxx = OBJ->LocalOrder->info.Produce.Progress;
 	int nxxx = OBJ->LocalOrder->info.Produce.NStages;
 	int pst = PADC->ProduceStages;
@@ -421,7 +421,7 @@ void ProduceObjLink( OneObject* OBJ )
 		OBJ->DeleteLastOrder();
 		return;
 	};
-	//	byte NI=OBJ->NNUM;
+	//	unsigned char NI=OBJ->NNUM;
 	xxx += step;
 	OBJ->LocalOrder->info.Produce.Progress = xxx;
 	if ( xxx < nxxx )return;
@@ -449,8 +449,8 @@ void ProduceObjLink( OneObject* OBJ )
 			if ( GID <= 0xFFFE && GID < SCENINF.NUGRP )
 			{
 				UnitsGroup* UG = SCENINF.UGRP + GID;
-				UG->IDS = (word*) realloc( UG->IDS, UG->N * 2 + 2 );
-				UG->SNS = (word*) realloc( UG->SNS, UG->N * 2 + 2 );
+				UG->IDS = (unsigned short*) realloc( UG->IDS, UG->N * 2 + 2 );
+				UG->SNS = (unsigned short*) realloc( UG->SNS, UG->N * 2 + 2 );
 				UG->IDS[UG->N] = OB->Index;
 				UG->SNS[UG->N] = OB->Serial;
 				UG->N++;
@@ -509,7 +509,7 @@ void ProduceObjLink( OneObject* OBJ )
 				//determining if it possible to go inside
 				int cx = DSTX >> 7;
 				int cy = DSTY >> 7;
-				word INS = 0xFFFF;
+				unsigned short INS = 0xFFFF;
 				int dyy = ( DSTY >> 1 ) - GetHeight( DSTX, DSTY );
 				for ( int r = 0; r < 4; r++ )
 				{
@@ -518,7 +518,7 @@ void ProduceObjLink( OneObject* OBJ )
 					int N = Rarr[r].N;
 					for ( int j = 0; j < N; j++ )
 					{
-						word mid = CheckBuildingInCell( cx + xi[j], cy + yi[j], DSTX, dyy );
+						unsigned short mid = CheckBuildingInCell( cx + xi[j], cy + yi[j], DSTX, dyy );
 						if ( mid != 0xFFFF )INS = mid;
 					};
 				};
@@ -528,11 +528,11 @@ void ProduceObjLink( OneObject* OBJ )
 				}
 				else
 				{
-					byte rk = DetermineResource( DSTX, DSTY );
+					unsigned char rk = DetermineResource( DSTX, DSTY );
 					if ( rk < 0xFE && OB->newMons->Peasant )
 					{
 						int NN = 15;
-						byte RK1 = 0xFE;
+						unsigned char RK1 = 0xFE;
 						int XXX, YYY;
 						do
 						{
@@ -624,17 +624,17 @@ void GotoFinePosition( OneObject* OB )
 };
 struct ProCash
 {
-	word ID;
-	byte NI;
+	unsigned short ID;
+	unsigned char NI;
 	int Amount;
 	int SubMoney[6];
 };
 ProCash UNICASH[32];
 int CSSIZE = 0;
-void GetUnitCost( byte NI, word NIndex, int* Cost );
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost );
 //extern int RESRC[8][8];
-void GetCorrectMoney( byte NI, int* MONEY );
-void TakeUnitFromCash( byte NI, word ID )
+void GetCorrectMoney( unsigned char NI, int* MONEY );
+void TakeUnitFromCash( unsigned char NI, unsigned short ID )
 {
 	for ( int i = 0; i < CSSIZE; i++ )if ( UNICASH[i].ID == ID&&UNICASH[i].NI == NI )
 	{
@@ -653,7 +653,7 @@ void TakeUnitFromCash( byte NI, word ID )
 		};
 	};
 };
-bool AddUnitsToCash( byte NI, word ID )
+bool AddUnitsToCash( unsigned char NI, unsigned short ID )
 {
 	int cps = -1;
 	int addc = 0;
@@ -685,7 +685,7 @@ void ClearUniCash()
 {
 	CSSIZE = 0;
 };
-void GetCorrectMoney( byte NI, int* MONEY )
+void GetCorrectMoney( unsigned char NI, int* MONEY )
 {
 	for ( int i = 0; i < 6; i++ )MONEY[i] = XRESRC( NI, i );
 	for ( int i = 0; i < CSSIZE; i++ )
@@ -700,14 +700,14 @@ void GetCorrectMoney( byte NI, int* MONEY )
 		};
 	};
 };
-int GetAmount( word ID )
+int GetAmount( unsigned short ID )
 {
-	word CID = 0;
-	word Nsel = ImNSL[MyNation];
-	word* SMon = ImSelm[MyNation];
+	unsigned short CID = 0;
+	unsigned short Nsel = ImNSL[MyNation];
+	unsigned short* SMon = ImSelm[MyNation];
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OBJ = Group[MID];
@@ -737,14 +737,14 @@ int GetAmount( word ID )
 	return CID;
 }
 
-int GetProgress( word ID, int* MaxProgress )
+int GetProgress( unsigned short ID, int* MaxProgress )
 {
-	word CID = 0;
-	word Nsel = ImNSL[MyNation];
-	word* SMon = ImSelm[MyNation];
+	unsigned short CID = 0;
+	unsigned short Nsel = ImNSL[MyNation];
+	unsigned short* SMon = ImSelm[MyNation];
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OBJ = Group[MID];

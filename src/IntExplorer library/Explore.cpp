@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -106,7 +107,7 @@ void OneSicWindow::Process()
 		{
 			char* res;
 			int sz;
-			DWORD r = EXP->GetRequestResult( GHANDLE, &res, &sz );
+			unsigned long r = EXP->GetRequestResult( GHANDLE, &res, &sz );
 			MaxL = sz;
 			if (r == 128)
 			{
@@ -1048,7 +1049,7 @@ int OneSicWindow::ParseTheWholeText()
 																				if (S1)
 																				{
 																					int N = S1 - Result - pos;
-																					byte* buf = (byte*) malloc( N / 2 + 10 );
+																					unsigned char* buf = (unsigned char*) malloc( N / 2 + 10 );
 																					char* src = Result + pos;
 																					int bpos = 0;
 																					for (int i = 0; i < N;)
@@ -1067,7 +1068,7 @@ int OneSicWindow::ParseTheWholeText()
 																						} while (i < N && !( ( c1 >= '0'&&c1 <= '9' ) || ( c1 >= 'A'&&c1 <= 'F' ) ));
 																						if (i < N)
 																						{
-																							buf[bpos] = (byte) ( ( GETHX( c ) << 4 ) + GETHX( c1 ) );
+																							buf[bpos] = (unsigned char) ( ( GETHX( c ) << 4 ) + GETHX( c1 ) );
 																							bpos++;
 																						};
 																					};
@@ -1760,12 +1761,12 @@ extern "C" __declspec( dllexport ) void ProcessSXP( int Index, DialogsSystem* DS
 		SXPR->LastReparseTime = GetTickCount();
 		for (int i = 0; i < SXPR->NDownl; i++)
 		{
-			byte* DNMASK = SXPR->DOWNL[i].ReqMask;
+			unsigned char* DNMASK = SXPR->DOWNL[i].ReqMask;
 			for (int j = 0; j < 128; j++)
 			{
 				if (DNMASK[j])
 				{
-					byte B = DNMASK[j];
+					unsigned char B = DNMASK[j];
 					int w = j << 3;
 					for (int h = 0; h < 8; h++)
 					{
@@ -2080,12 +2081,12 @@ OneSXPTable* sicExplorer::GetTable( char* Name )
 #define DO8(buf,i)  DO4(buf,i); DO4(buf,i+4);
 #define DO16(buf)   DO8(buf,0); DO8(buf,8);
 
-DWORD GetHVAL( char* buf )
+unsigned long GetHVAL( char* buf )
 {
-	u_int len = strlen( buf );
-	const u_long adler = 1L;
-	u_long s1 = adler & 0xffff;
-	u_long s2 = ( adler >> 16 ) & 0xffff;
+	unsigned int len = strlen( buf );
+	const unsigned long adler = 1L;
+	unsigned long s1 = adler & 0xffff;
+	unsigned long s2 = ( adler >> 16 ) & 0xffff;
 	int k;
 
 	if (buf == nullptr) return 1L;
@@ -2111,7 +2112,7 @@ DWORD GetHVAL( char* buf )
 	return ( s2 << 16 ) | s1;
 };
 
-DWORD GetTableHash( OneSXPTable* TB, int Line )
+unsigned long GetTableHash( OneSXPTable* TB, int Line )
 {
 	char CC[2048];
 	CC[0] = 0;
@@ -2143,7 +2144,7 @@ void sicExplorer::SendTableRefresh( char* Name, char* server )
 		char ccc[512];
 		sprintf( ccc, "%d", TB->NLines );
 		P1.AddParam( ccc, strlen( ccc ) + 1 );
-		DWORD* HSET = (DWORD*) malloc( ( TB->NLines + 1 ) << 2 );
+		unsigned long* HSET = (unsigned long*) malloc( ( TB->NLines + 1 ) << 2 );
 		for (int j = 0; j < TB->NLines; j++)HSET[j] = GetTableHash( TB, j );
 		P1.AddParam( (char*) HSET, TB->NLines << 2 );
 		int sz = P1.UnParse( nullptr, 0 );

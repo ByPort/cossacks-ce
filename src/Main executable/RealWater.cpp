@@ -32,7 +32,7 @@ short Wave0[WaveSize * 2];
 short Wave1[WaveSize * 2];
 short Wave2[WaveSize * 2];
 
-byte NSegments[WaveLy];
+unsigned char NSegments[WaveLy];
 short Segments[WaveLy * 16];
 short CostLine[4096];
 short NCostPoints;
@@ -50,7 +50,7 @@ short ScWave1[65536];
 short ScWave2[65536];
 
 extern int tmtmt;
-extern byte WaterCost[65536];
+extern unsigned char WaterCost[65536];
 
 #define SetWAVE(x) x[pos]=dh;\
 	               x[pos+1]=dh2;\
@@ -416,9 +416,9 @@ void ProcessWaveFrame(short* Wave, int x, int y, int x1, int y1) {
 extern int WMPSIZE;
 extern int MaxWX;
 extern int MaxWY;
-byte* WaterDeep;//cell size=32x16
-byte* WaterBright;
-word  CostPos[32 * 32];
+unsigned char* WaterDeep;//cell size=32x16
+unsigned char* WaterBright;
+unsigned short  CostPos[32 * 32];
 short CostHi[32 * 32];
 #define MaxCVal  30*256
 #define CSpeed 2*128
@@ -477,7 +477,7 @@ void ProcessCost()
 	for (int i = 0; i < 32 * 32; i++)
 	{
 		CostHi[i] = 0;
-		word CP = CostPos[i];
+		unsigned short CP = CostPos[i];
 		if (CP & 32768) {
 			if (CP < 32768 + MaxCVal)CP += CSpeed;
 			else CP &= 32767;
@@ -1675,7 +1675,7 @@ void HandleShift()
 void ConditionalProcessWaves(short* Wave0, short* Wave1, short* Wave2, int x0, int y0, int Lx, int Ly) 
 {
 	int SX = MaxWX;
-	byte* copos = WaterDeep + x0 + mapx + (y0 + mapy)*SX;
+	unsigned char* copos = WaterDeep + x0 + mapx + (y0 + mapy)*SX;
 	int dpos = SX - Lx;
 	for (int iy = 0; iy < Ly; iy++) 
 	{
@@ -1954,7 +1954,7 @@ void SetupSpot()
 
 extern short TSin[257];
 extern short TCos[257];
-void SpotByUnit(int x, int y, int r, byte dir) {
+void SpotByUnit(int x, int y, int r, unsigned char dir) {
 	int xx = (x >> 6) - Spx0;
 	int yy = (y >> 6) - Spy0;
 	if (xx < SpLx&&yy < SpLy) {
@@ -2017,10 +2017,10 @@ void CreateWaterLocking(int x, int y, int x1, int y1) {
 };
 extern int RealLy;
 void CorrectLeftWaves() {
-	byte* Scr = ((byte*)ScreenPtr);
+	unsigned char* Scr = ((unsigned char*)ScreenPtr);
 	int N = RealLy >> 1;
 	for (int i = 0; i < N; i++) {
-		byte c = Scr[0];
+		unsigned char c = Scr[0];
 		if (c >= 0xB0 && c <= 0xBC) {
 			Scr[ScrWidth] = Scr[0];
 			Scr[ScrWidth + 1] = Scr[1];

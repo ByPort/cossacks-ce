@@ -4,7 +4,7 @@
 #include "math.h"
 #include "bmptool.h"
 
-void SaveToBMP24(char* Name, int Lx, int Ly, byte* data)
+void SaveToBMP24(char* Name, int Lx, int Ly, unsigned char* data)
 {
 	ResFile f1 = RRewrite(Name);
 	BMPformat BM;
@@ -32,13 +32,13 @@ void SaveToBMP24(char* Name, int Lx, int Ly, byte* data)
 	};
 	RClose(f1);
 };
-bool ReadBMP24(char* Name, BMPformat* BM, byte** data) {
+bool ReadBMP24(char* Name, BMPformat* BM, unsigned char** data) {
 	ResFile f1 = RReset(Name);
 	if (f1 != INVALID_HANDLE_VALUE) {
 		RBlockRead(f1, BM, sizeof BMPformat);
 		if (IOresult() || BM->bfType != 'MB')return false;
 		if (BM->biBitCount != 24)return false;
-		*data = new byte[BM->biWidth*BM->biHeight * 3];
+		*data = new unsigned char[BM->biWidth*BM->biHeight * 3];
 		int wid = BM->biWidth * 3;
 		int rwid = wid;
 		if (wid & 3)rwid = (wid | 3) + 1;
@@ -51,13 +51,13 @@ bool ReadBMP24(char* Name, BMPformat* BM, byte** data) {
 	}
 	else return false;
 };
-bool ReadBMP8(char* Name, BMPformat* BM, byte** data) {
+bool ReadBMP8(char* Name, BMPformat* BM, unsigned char** data) {
 	ResFile f1 = RReset(Name);
 	if (f1 != INVALID_HANDLE_VALUE) {
 		RBlockRead(f1, BM, sizeof BMPformat);
 		if (IOresult() || BM->bfType != 'MB')return false;
 		if (BM->biBitCount != 8)return false;
-		*data = new byte[BM->biWidth*BM->biHeight];
+		*data = new unsigned char[BM->biWidth*BM->biHeight];
 		int wid = BM->biWidth;
 		int rwid = wid;
 		if (wid & 3)rwid = (wid | 3) + 1;
@@ -70,14 +70,14 @@ bool ReadBMP8(char* Name, BMPformat* BM, byte** data) {
 	}
 	else return false;
 };
-bool ReadBMP8TOBPX(char* Name, byte** data) {
+bool ReadBMP8TOBPX(char* Name, unsigned char** data) {
 	BMPformat BM;
 	ResFile f1 = RReset(Name);
 	if (f1 != INVALID_HANDLE_VALUE) {
 		RBlockRead(f1, &BM, sizeof BMPformat);
 		if (IOresult() || BM.bfType != 'MB')return false;
 		if (BM.biBitCount != 8)return false;
-		*data = new byte[BM.biWidth*BM.biHeight + 4];
+		*data = new unsigned char[BM.biWidth*BM.biHeight + 4];
 		int wid = BM.biWidth;
 		int rwid = wid;
 		if (wid & 3)rwid = (wid | 3) + 1;
@@ -92,13 +92,13 @@ bool ReadBMP8TOBPX(char* Name, byte** data) {
 	}
 	else return false;
 };
-bool LoadBitmapLikeGrayscale(char* Name, int* Lx, int* Ly, byte** res) {
-	byte* data;
+bool LoadBitmapLikeGrayscale(char* Name, int* Lx, int* Ly, unsigned char** res) {
+	unsigned char* data;
 	BMPformat BM;
 	if (ReadBMP24(Name, &BM, &data)) {
 		int LX = BM.biWidth;
 		int LY = BM.biHeight;
-		*res = new byte[LX*LY];
+		*res = new unsigned char[LX*LY];
 		for (int ix = 0; ix < LX; ix++)
 			for (int iy = 0; iy < LY; iy++) {
 				int ofs = (ix + iy*LX);
@@ -114,7 +114,7 @@ bool LoadBitmapLikeGrayscale(char* Name, int* Lx, int* Ly, byte** res) {
 	};
 	return false;
 };
-int GetResVal(byte* res, int LX, int LY, int RLX, int RLY, int x, int y) {
+int GetResVal(unsigned char* res, int LX, int LY, int RLX, int RLY, int x, int y) {
 	int vx = (x*LX) / RLX;
 	int vy = (y*LY) / RLY;
 	int rx = (vx*RLX) / LX;
@@ -137,15 +137,15 @@ int GetResVal(byte* res, int LX, int LY, int RLX, int RLY, int x, int y) {
 	int z4 = res[vx1 + LX*vy1];
 	return z1 + ((x - rx)*(z2 - z1)) / (rx1 - rx) + ((y - ry)*(z3 - z1)) / (ry1 - ry) - (((z2 + z3 - z1 - z4)*(x - rx)*(y - ry)) / (rx1 - rx) / (ry1 - ry));
 };
-byte* DATA;
-DWORD GetSumm(char* Name) {
+unsigned char* DATA;
+unsigned long GetSumm(char* Name) {
 	ResFile F = RReset(Name);
 	if (F != INVALID_HANDLE_VALUE) {
 		int sz = RFileSize(F);
 
 		RBlockRead(F, DATA, sz);
 		RClose(F);
-		DWORD SZZ = 0;
+		unsigned long SZZ = 0;
 		for (int i = 0; i < sz; i++)SZZ += DATA[i];
 		SZZ &= 65535;
 		return SZZ;
@@ -161,7 +161,7 @@ int TotalSize = 0;
 
 __declspec(dllexport) void _ExFree(void* ptr) 
 {
-	DWORD* Ptr = (DWORD*)ptr;
+	unsigned long* Ptr = (unsigned long*)ptr;
 	try 
 	{
 		if (Ptr&&Ptr[0] != 0xcdcdcdcd) 

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -545,9 +546,9 @@ int NUP = 0;
 void OneMap::UpdateMapData( byte* Date )
 {
 	NUP++;
-	DWORD StartDate = *( (DWORD*) Date );
+	unsigned long StartDate = *( (unsigned long*) Date );
 	Date += 4;
-	DWORD CurrentDate = *( (DWORD*) Date );
+	unsigned long CurrentDate = *( (unsigned long*) Date );
 	Date += 4;
 	//FILE* F1=fopen("Internet\\Cash\\map.log","a");
 	//fprintf(F1,"UPDATE: %d->%d (TOTAL: pts: %d  upd: %d)\n",StartDate,CurrentDate,NPT,NUP);
@@ -561,14 +562,14 @@ void OneMap::UpdateMapData( byte* Date )
 			fprintf( F, "%u", CurrentDate );
 			fclose( F );
 			UpdateData = CurrentDate;
-			int NPt = *( (DWORD*) Date );
+			int NPt = *( (unsigned long*) Date );
 			Date += 4;
 			int i;
 			for (i = 0; i < NPt; i++)
 			{
-				int x = *( (word*) Date );
+				int x = *( (unsigned short*) Date );
 				Date += 2;
-				int y = *( (word*) Date );
+				int y = *( (unsigned short*) Date );
 				Date += 2;
 				byte c = *Date;
 				Date++;
@@ -609,7 +610,7 @@ void OneMap::AddMapPicture( char* Name, int x, int y, int dx, int dy, int Sprite
 	sprintf( cc, "Internet\\Cash\\%s_*.gp", Name );
 	int L = strlen( Name );
 	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( cc, &FD );
+	void* H = FindFirstFile( cc, &FD );
 	if (H != INVALID_HANDLE_VALUE)
 	{
 		do

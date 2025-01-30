@@ -4,13 +4,13 @@
 
 // ---------------------------------------------------------------------------------------------
 
-u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
+unsigned short CCommCore::ReceiveData(unsigned char* lpbBuffer, LPPEER_ID lpPeerId)
 {
 	sockaddr_in					SenderAddr;
 	LPCC_PK_RAW_FRAME			lpFrame;
-	u_short						uPeer;
+	unsigned short						uPeer;
 	int							SenderLength=sizeof(sockaddr_in);
-	u_short						PeerNum;
+	unsigned short						PeerNum;
 	int							i;
 
 	LPCC_PK_SEND_DATA			lpDataPacket;
@@ -25,7 +25,7 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 	LPCC_PK_SEND_NEW_NAME		lpSendNewName;
 	LPCC_PK_SEND_NEW_DATA		lpSendNewData;
 
-	u_long		lDataSize;
+	unsigned long		lDataSize;
 
 	ioctlsocket(m_DataSocket,FIONREAD,&lDataSize);
 
@@ -156,7 +156,7 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 				break;
 			};
 
-			m_PeerList[m_uPeerCount].m_bAlive=TRUE;
+			m_PeerList[m_uPeerCount].m_bAlive=1;
 			m_PeerList[m_uPeerCount].m_ex_Addr.s_addr=SenderAddr.sin_addr.s_addr;
 			m_PeerList[m_uPeerCount].m_ex_Port=SenderAddr.sin_port;
 			m_PeerList[m_uPeerCount].m_Id=++m_piAutoInc;
@@ -167,12 +167,12 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 			memcpy(m_PeerList[m_uPeerCount].m_szCCUID,lpTryConnect->m_szCCUID,22);
 
 			// Over NAT ?
-			m_PeerList[m_uPeerCount].m_bOverNAT=TRUE;
+			m_PeerList[m_uPeerCount].m_bOverNAT=1;
 
 			for(i=0;i<lpTryConnect->m_uAddrCount;i++)
 				if( (lpTryConnect->m_dwAddrList[i]==SenderAddr.sin_addr.s_addr) &&
 					(SenderAddr.sin_port==htons(DATA_PORT) ) )
-						m_PeerList[m_uPeerCount].m_bOverNAT=FALSE;
+						m_PeerList[m_uPeerCount].m_bOverNAT=0;
 
 			if(!SendConnectOk(&SenderAddr,m_piAutoInc))
 				return 0x00;
@@ -251,7 +251,7 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 			if(m_PeerList[uPeer].m_lpbUserData)
 				free(m_PeerList[uPeer].m_lpbUserData);
 
-			m_PeerList[uPeer].m_lpbUserData=(LPBYTE)malloc(lpUserData->m_uUserDataSize);
+			m_PeerList[uPeer].m_lpbUserData=(unsigned char*)malloc(lpUserData->m_uUserDataSize);
 			assert(m_PeerList[uPeer].m_lpbUserData);
 
 			memcpy(m_PeerList[uPeer].m_lpbUserData,lpUserData->m_UserData,lpUserData->m_uUserDataSize);
@@ -292,7 +292,7 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 			if(m_PeerList[uPeer].m_lpbUserData)
 				free(m_PeerList[uPeer].m_lpbUserData);
 
-			m_PeerList[uPeer].m_lpbUserData=(LPBYTE)malloc(lpSendNewData->m_uUserDataSize);
+			m_PeerList[uPeer].m_lpbUserData=(unsigned char*)malloc(lpSendNewData->m_uUserDataSize);
 			assert(m_PeerList[uPeer].m_lpbUserData);
 
 			m_PeerList[uPeer].m_uUserDataSize=lpSendNewData->m_uUserDataSize;

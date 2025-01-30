@@ -5,12 +5,10 @@
  * the resource file, you even will not recognise where
  * the given file is.
  */
- //#include <afx.h>
 
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include "tntFileIO.h"
 #include "unrar.h"
 #include "Arc\GSCSet.h"
 #include "assert.h"
@@ -22,7 +20,7 @@ CGSCset GSFILES;
 bool FilesInit();
 //Opening the resource file
 bool ProtectionMode = false;
-ResFile RResetEx( LPCSTR lpFileName )
+ResFile RResetEx( const char* lpFileName )
 {
 	bool Only = GSFILES.m_ArchList&&ProtectionMode;
 
@@ -39,7 +37,7 @@ ResFile RResetEx( LPCSTR lpFileName )
 	}
 }
 
-bool GetRarName( LPCSTR Name, char* Dest )
+bool GetRarName( const char* Name, char* Dest )
 {
 	int L = strlen( Name );
 	strcpy( Dest, Name );
@@ -99,7 +97,7 @@ void EraseAllFNames()
 void RCloseEx( ResFile hFile );
 void ExtractArchive( char *ArcName, int Mode, char* Dest );
 
-__declspec( dllexport ) ResFile RReset( LPCSTR lpFileName )
+__declspec( dllexport ) ResFile RReset( const char* lpFileName )
 {
 	SetLastError( 0 );
 
@@ -133,7 +131,7 @@ __declspec( dllexport ) ResFile RReset( LPCSTR lpFileName )
 }
 
 //Rewriting file
-__declspec( dllexport ) ResFile RRewrite( LPCSTR lpFileName )
+__declspec( dllexport ) ResFile RRewrite( const char* lpFileName )
 {
 	FilesInit();
 	//return CreateFile(lpFileName,GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,
@@ -150,7 +148,7 @@ __declspec( dllexport ) ResFile RRewrite( LPCSTR lpFileName )
 }
 
 //Getting size of the resource file
-__declspec( dllexport ) DWORD RFileSize( ResFile hFile )
+__declspec( dllexport ) unsigned long RFileSize( ResFile hFile )
 {
 	if ( hFile == INVALID_HANDLE_VALUE )
 	{
@@ -161,7 +159,7 @@ __declspec( dllexport ) DWORD RFileSize( ResFile hFile )
 }
 
 // Setting file position 
-__declspec( dllexport ) DWORD RSeek( ResFile hFile, int pos )
+__declspec( dllexport ) unsigned long RSeek( ResFile hFile, int pos )
 {
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
@@ -175,7 +173,7 @@ __declspec( dllexport ) DWORD RSeek( ResFile hFile, int pos )
 }
 
 //Reading the file
-__declspec( dllexport ) DWORD RBlockRead( ResFile hFile, LPVOID lpBuffer, DWORD BytesToRead )
+__declspec( dllexport ) unsigned long RBlockRead( ResFile hFile, void* lpBuffer, unsigned long BytesToRead )
 {
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
@@ -190,7 +188,7 @@ __declspec( dllexport ) DWORD RBlockRead( ResFile hFile, LPVOID lpBuffer, DWORD 
 }
 
 //Writing the file
-__declspec( dllexport ) DWORD RBlockWrite( ResFile hFile, LPVOID lpBuffer, DWORD BytesToWrite )
+__declspec( dllexport ) unsigned long RBlockWrite( ResFile hFile, void* lpBuffer, unsigned long BytesToWrite )
 {
 	if ( hFile == INVALID_HANDLE_VALUE )
 	{
@@ -203,7 +201,7 @@ __declspec( dllexport ) DWORD RBlockWrite( ResFile hFile, LPVOID lpBuffer, DWORD
 	return BytesToWrite;
 }
 
-DWORD IOresult( void )
+unsigned long IOresult( void )
 {
 	return 0;//GetLastError();
 }

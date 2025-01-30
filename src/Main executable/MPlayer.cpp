@@ -1,5 +1,6 @@
 #define INITGUID
 #include "ddini.h"
+#include "../CommCore library/CommCore.h"
 #include "ResFile.h"
 #include "FastDraw.h"
 #include "mgraph.h"
@@ -27,7 +28,6 @@
 #include "Gp_Draw.h"
 #include "Megapolis.h"
 #pragma pack(4)
-#include "CommCore.h"
 #include "Pinger.h"
 #pragma pack(1)
 #include "IR.h"
@@ -40,9 +40,9 @@ extern const int kSystemMessageDisplayTime;
 #define NOMPINFO
 #define SINGLETESTNETWORK
 
-void StartPing( DWORD DPID, int ID );
+void StartPing( unsigned long DPID, int ID );
 void EndPing( int ID );
-char* GetLString( DWORD DPID );
+char* GetLString( unsigned long DPID );
 CCommCore IPCORE;
 bool InternetProto = 0;
 
@@ -53,18 +53,18 @@ unsigned long GetRealTime();
 char* GetTextByID( char* ID );
 char* GetPName( int i );
 extern char SaveFileName[128];
-void CmdLoadNetworkGame( byte NI, int ID, char* Name );
+void CmdLoadNetworkGame( unsigned char NI, int ID, char* Name );
 extern RLCFont FPassive;
 extern RLCFont FActive;
 extern RLCFont FDisable;
-extern DWORD Signatur[2049];
+extern unsigned long Signatur[2049];
 PLAYERSBACKUP PBACK;
 Menu SingleMulti;
 Menu ChooseConn;
 Menu ChooseSession;
 Menu StartMultiplayer;
-word PlayerMenuMode;
-word PrevRpos;
+unsigned short PlayerMenuMode;
+unsigned short PrevRpos;
 extern bool DoNewInet;
 extern int COUNTER;
 bool ProcessMessages();
@@ -77,17 +77,17 @@ __declspec( dllexport ) bool GameInProgress;
 LPDIRECTPLAY3A lpDirectPlay3A;
 static LPDPLAYINFO lpDPInfo = 0;
 #endif
-const DWORD APPMSG_CHATSTRING = 0; // message type for chat string
-const DWORD MAXNAMELEN = 200; // max size of a session or player name
+const unsigned long APPMSG_CHATSTRING = 0; // message type for chat string
+const unsigned long MAXNAMELEN = 200; // max size of a session or player name
 char szSessionName[MAXNAMELEN];
 char szPlayerName[MAXNAMELEN];
-const DWORD ExDataID = 0xF376425E;
-const DWORD PlExitID = 0xEA3521BC;
-const DWORD NON = 0xFFFFFFFF;
-byte PrevEB[4096];
+const unsigned long ExDataID = 0xF376425E;
+const unsigned long PlExitID = 0xEA3521BC;
+const unsigned long NON = 0xFFFFFFFF;
+unsigned char PrevEB[4096];
 int PrevEBSize;
-byte PrevPrevEB[4096];
-byte PrevPrevPrevEB[4096];
+unsigned char PrevPrevEB[4096];
+unsigned char PrevPrevPrevEB[4096];
 int PrevPrevEBSize;
 int PrevPrevPrevEBSize;
 //data transferring format
@@ -98,48 +98,48 @@ int PrevPrevPrevEBSize;
 
 extern "C" __declspec( dllexport ) void ShowCentralText( char* ID, int time );
 
-void CmdSaveNetworkGame( byte NI, int ID, char* Name );
+void CmdSaveNetworkGame( unsigned char NI, int ID, char* Name );
 extern int tmtmt;
-word NProviders;
-word NPlayers;
-word NSessions;
-DWORD RealTime;
-DWORD CurrentPitchTicks;
+unsigned short NProviders;
+unsigned short NPlayers;
+unsigned short NSessions;
+unsigned long RealTime;
+unsigned long CurrentPitchTicks;
 
-LPVOID lplpConnectionBuffer[16];
+void* lplpConnectionBuffer[16];
 GUID SessionsGUID[32];
 CDPID PlayersID[32];
-byte* PData[32];
-DWORD PDSize[32];
+unsigned char* PData[32];
+unsigned long PDSize[32];
 bool PUsed[32];
 bool Ready;
-extern byte ExBuf[8192];
-extern byte MyRace;
+extern unsigned char ExBuf[8192];
+extern unsigned char MyRace;
 extern char CurrentMap[64];
 extern int EBPos;
 CDPID MyDPID;
 CDPID ServerDPID;
-DWORD MyDSize;
-byte* MyData;
+unsigned long MyDSize;
+unsigned char* MyData;
 char ProvidersList[512];
 char PlayersList[512];
 char SessionsList[512];
 bool CreateMultiplaterInterface();
-DWORD ExBuf1[2193];
-DWORD EBPos1;
+unsigned long ExBuf1[2193];
+unsigned long EBPos1;
 int PLNAT[8];
-void PrepareGameMedia( byte myid, bool );
+void PrepareGameMedia( unsigned char myid, bool );
 // message structure used to send a chat string to another player
 typedef struct
 {
-	DWORD dwType; // message type (APPMSG_CHATSTRING)
+	unsigned long dwType; // message type (APPMSG_CHATSTRING)
 	char szMsg[1]; // message string (variable length)
 } MSG_CHATSTRING, *LPMSG_CHATSTRING;
 void IAmLeft();
 bool ShutdownConnection();
 // globals
 HANDLE ghReceiveThread = nullptr; // handle of receive thread
-DWORD gidReceiveThread = 0; // id of receive thread
+unsigned long gidReceiveThread = 0; // id of receive thread
 HANDLE ghKillReceiveEvent = nullptr; // event used to kill receive thread
 HWND ghChatWnd = nullptr; // main chat window
 #ifndef NODPLAY
@@ -168,20 +168,20 @@ void SetupEBufs()
 	}
 }
 
-extern word rpos;
+extern unsigned short rpos;
 
 //Describes which players are out of sync
-byte SYNBAD[8] = {};
+unsigned char SYNBAD[8] = {};
 
 //Copies EBufs[i].Data into ExBuf
 //Performs synchronization check
 void UpdateEBufs()
 {
 	//copy containig to ExBuf
-	byte* EPOS = ExBuf;
+	unsigned char* EPOS = ExBuf;
 	EBPos = 0;
-	word FirstRand = 0xFFFF;
-	word OtherRand = 0xFFFF;
+	unsigned short FirstRand = 0xFFFF;
+	unsigned short OtherRand = 0xFFFF;
 	int cp = 0;
 	bool savmad = 0;
 	memset( SYNBAD, 0, 8 );
@@ -192,7 +192,7 @@ void UpdateEBufs()
 		{
 			if (0xFFFF == FirstRand)
 			{
-				FirstRand = word( EBufs[i].RandIndex );
+				FirstRand = unsigned short( EBufs[i].RandIndex );
 			}
 			else
 			{
@@ -261,17 +261,17 @@ int GetPIndex( CDPID PD )
 
 char CHATSTRING[256] = "";
 
-DWORD CHATDPID = 0;
+unsigned long CHATDPID = 0;
 PlayerInfo* PINFLOC;
 #ifndef NODPLAY
-BOOL WINAPI PIEnumPlayersCallback2( DPID dpId,
-	DWORD dwPlayerType, LPCDPNAME lpName,
-	DWORD dwFlags, LPVOID lpContext )
+int WINAPI PIEnumPlayersCallback2( DPID dpId,
+	unsigned long dwPlayerType, LPCDPNAME lpName,
+	unsigned long dwFlags, void* lpContext )
 {
 	if (NPlayers >= 8)return false;
 	PlayersID[NPlayers] = dpId;
 	PINFLOC[NPlayers].PlayerID = dpId;
-	DWORD pisize = sizeof( PlayerInfo ) - 36;
+	unsigned long pisize = sizeof( PlayerInfo ) - 36;
 	strcpy( PINFLOC[NPlayers].name, lpName->lpszShortNameA );
 	lpDirectPlay3A->GetPlayerData( dpId, &PINFLOC[NPlayers].NationID, &pisize, DPGET_REMOTE );
 	if (PINFLOC[NPlayers].Host)ServerDPID = dpId;
@@ -342,7 +342,7 @@ void SortPLIDS()
 int prevtime = 0;
 
 //Recieves lobby player data via IPCORE.GetUserData and stores it in PINFLOC[]
-BOOL __stdcall IPCORE_EnumProc( const PEER_ID PeerID, LPCSTR lpcszPeerName )
+int __stdcall IPCORE_EnumProc( const PEER_ID PeerID, const char* lpcszPeerName )
 {
 	if (NPlayers >= 7)
 	{
@@ -353,7 +353,7 @@ BOOL __stdcall IPCORE_EnumProc( const PEER_ID PeerID, LPCSTR lpcszPeerName )
 	PINFLOC[NPlayers].PlayerID = PeerID;
 	strcpy( PINFLOC[NPlayers].name, lpcszPeerName );
 
-	word pisize = sizeof( PlayerInfo ) - 36;
+	unsigned short pisize = sizeof( PlayerInfo ) - 36;
 	memset( &PINFLOC[NPlayers].NationID, 0, pisize );
 	IPCORE.GetUserData( PeerID, &PINFLOC[NPlayers].NationID, &pisize );
 
@@ -366,7 +366,7 @@ BOOL __stdcall IPCORE_EnumProc( const PEER_ID PeerID, LPCSTR lpcszPeerName )
 	return true;
 }
 
-int GetLastAnswerT( DWORD ID );
+int GetLastAnswerT( unsigned long ID );
 void ShowCentralMessage( char* Message, int GPIDX );
 void DelBADPL();
 
@@ -440,7 +440,7 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 	return true;
 }
 
-bool SendToPlayer( DWORD Size, LPVOID lpData, DWORD DPID );
+bool SendToPlayer( unsigned long Size, void* lpData, unsigned long DPID );
 PingSumm PSUMM;
 int LastStartTime[8];
 int CurrentStartTime[8];
@@ -452,11 +452,11 @@ int NextStartTime[8];
 int CurStatus = 0;
 int PlState[MaxPL];
 int NPings = 0;
-DWORD LastAccess[MaxPL];
-bool SendToAllPlayers( DWORD Size, LPVOID lpData );
+unsigned long LastAccess[MaxPL];
+bool SendToAllPlayers( unsigned long Size, void* lpData );
 bool LockPing = 0;
 int CurrentMaxPing[8] = { -1,-1,-1,-1,-1,-1,-1,-1 };
-extern DWORD MAPREPL[8];
+extern unsigned long MAPREPL[8];
 int GetMapSUMM( char* Name );
 extern int AutoTime;
 
@@ -491,10 +491,10 @@ void ClearFAILS()
 
 int ExitNI = -1;
 
-void HandleApplicationMessage(void* lpMsg, DWORD dwMsgSize,
+void HandleApplicationMessage(void* lpMsg, unsigned long dwMsgSize,
 	CDPID idFrom, CDPID idTo )
 {
-	DWORD SDP = idTo == 0 /* DPID_ALLPLAYERS */ ? MyDPID : idTo;
+	unsigned long SDP = idTo == 0 /* DPID_ALLPLAYERS */ ? MyDPID : idTo;
 	if (SDP == MyDPID)
 	{
 		int player_index = GetPIndex( idFrom );
@@ -505,8 +505,8 @@ void HandleApplicationMessage(void* lpMsg, DWORD dwMsgSize,
 
 		NTOTFROM[player_index]++;
 
-		DWORD* lp = (DWORD*) (LPMSG_CHATSTRING) lpMsg;
-		byte* BUF = (byte*) (LPMSG_CHATSTRING) lpMsg;
+		unsigned long* lp = (unsigned long*) (LPMSG_CHATSTRING) lpMsg;
+		unsigned char* BUF = (unsigned char*) (LPMSG_CHATSTRING) lpMsg;
 
 		bool CheckRetrans = 0;
 		CDPID RealIDFROM = idFrom;
@@ -521,17 +521,17 @@ void HandleApplicationMessage(void* lpMsg, DWORD dwMsgSize,
 			CheckRetrans = 1;
 		}
 
-		byte* BUFX = BUF;
-		word* WWW = (word*) ( BUFX + 1 );
-		byte STAGE = 0;
+		unsigned char* BUFX = BUF;
+		unsigned short* WWW = (unsigned short*) ( BUFX + 1 );
+		unsigned char STAGE = 0;
 		if (BUFX[0] == 0xBA && BUFX[1] == BUFX[2])
 		{
-			byte msk = BUFX[1];
+			unsigned char msk = BUFX[1];
 			for (int i = 0; i < NPlayers; i++)
 			{
 				if (msk&( 1 << i ))
 				{
-					PBACK.SendInfoAboutTo( PINFO[i].PlayerID, idFrom, *( (DWORD*) ( BUFX + 3 ) ) );
+					PBACK.SendInfoAboutTo( PINFO[i].PlayerID, idFrom, *( (unsigned long*) ( BUFX + 3 ) ) );
 				}
 			}
 		}
@@ -574,9 +574,9 @@ STAGENEXT:
 					mycl = j;
 				}
 			}
-			word s = ( (word*) ( BUF + 1 ) )[0];
-			word s1 = 0xAE;
-			for (DWORD j = 3; j < dwMsgSize; j++)
+			unsigned short s = ( (unsigned short*) ( BUF + 1 ) )[0];
+			unsigned short s1 = 0xAE;
+			for (unsigned long j = 3; j < dwMsgSize; j++)
 			{
 				s1 += BUF[j];
 			}
@@ -594,13 +594,13 @@ STAGENEXT:
 						mycl = j;
 					}
 				}
-				word s = ( (word*) ( BUF + 1 ) )[0];
-				word s1 = 0xAE;
-				for (DWORD j = 3; j < dwMsgSize; j++)
+				unsigned short s = ( (unsigned short*) ( BUF + 1 ) )[0];
+				unsigned short s1 = 0xAE;
+				for (unsigned long j = 3; j < dwMsgSize; j++)
 				{
 					s1 += BUF[j];
 				}
-				byte rtx = RealTime;
+				unsigned char rtx = RealTime;
 				if (rtx == BUF[3])
 				{
 					NFROMID1[player_index]++;
@@ -612,11 +612,11 @@ STAGENEXT:
 				}
 				if (s1 == s)
 				{
-					byte rt = RealTime;
+					unsigned char rt = RealTime;
 					if (rt == BUF[3])
 					{
 						EBufs[player_index].Size = dwMsgSize - 7;
-						EBufs[player_index].RandIndex = ( (word*) ( BUF + 4 ) )[0];
+						EBufs[player_index].RandIndex = ( (unsigned short*) ( BUF + 4 ) )[0];
 						int dt = int( BUF[6] ) << 3;
 						if (CurrentStartTime[mycl] == -1)
 						{
@@ -629,7 +629,7 @@ STAGENEXT:
 						PBACK.AddInf( BUF, dwMsgSize, idFrom, RealTime );
 						if (CheckRetrans&&prt == -1)
 						{
-							DWORD RTR[2];
+							unsigned long RTR[2];
 							RTR[0] = 'RETR';
 							RTR[1] = idFrom;
 							SendToPlayer( 8, &RTR, RealIDFROM );
@@ -642,7 +642,7 @@ STAGENEXT:
 					if (rt == BUF[3])
 					{
 						EBufs1[player_index].Size = dwMsgSize - 7;
-						EBufs1[player_index].RandIndex = ( (word*) ( BUF + 4 ) )[0];
+						EBufs1[player_index].RandIndex = ( (unsigned short*) ( BUF + 4 ) )[0];
 						int dt = int( BUF[6] ) << 3;
 						if (NextStartTime[mycl] == -1)
 						{
@@ -655,7 +655,7 @@ STAGENEXT:
 						PBACK.AddInf( BUF, dwMsgSize, idFrom, RealTime + 1 );
 						if (CheckRetrans&&prt == -1)
 						{
-							DWORD RTR[2];
+							unsigned long RTR[2];
 							RTR[0] = 'RETR';
 							RTR[1] = idFrom;
 							SendToPlayer( 8, &RTR, RealIDFROM );
@@ -745,7 +745,7 @@ STAGENEXT:
 										{
 											if (lp[0] == 'ALIV')
 											{//Alive request recieved, send answer
-												DWORD ANSW[4];
+												unsigned long ANSW[4];
 												ANSW[0] = 'ALIA';
 												ANSW[1] = MyDPID;
 												ANSW[2] = CurStatus;
@@ -817,7 +817,7 @@ STAGENEXT:
 						free( MyData );
 					}
 
-					MyData = new byte[dwMsgSize];
+					MyData = new unsigned char[dwMsgSize];
 					memcpy( MyData, lp, dwMsgSize );
 					MyDSize = dwMsgSize;
 				}
@@ -826,14 +826,14 @@ STAGENEXT:
 	}
 }
 
-void HandleSystemMessage(void* lpMsg, DWORD dwMsgSize,
+void HandleSystemMessage(void* lpMsg, unsigned long dwMsgSize,
 	CDPID idFrom, CDPID idTo )
 {
 	LPSTR lpszStr = nullptr;
 
 	// The body of each case is there so you can set a breakpoint and examine
 	// the contents of the message received.
-	switch (*(DWORD*)lpMsg)
+	switch (*(unsigned long*)lpMsg)
 	{
 	case 0x0003 /*DPSYS_CREATEPLAYERORGROUP*/:
 	{
@@ -914,12 +914,12 @@ void HandleSystemMessage(void* lpMsg, DWORD dwMsgSize,
 
 int COUN = 0;
 bool NeedMoreReceive;
-byte BUFFERX[40000];
+unsigned char BUFFERX[40000];
 //--------------Temporary for testing---------------
 int NMessM;
 int MessSize[64];
-DWORD MessIDFrom[64];
-DWORD MessIDTo[64];
+unsigned long MessIDFrom[64];
+unsigned long MessIDTo[64];
 int MessData[64][64];
 int NSysM;
 //--------------------------------------------------
@@ -936,8 +936,8 @@ int PREVTIME = 0;
 void ReceiveMessage()
 {
 	CDPID idFrom, idTo;
-	LPVOID lpvMsgBuffer;
-	DWORD dwMsgBufferSize;
+	void* lpvMsgBuffer;
+	unsigned long dwMsgBufferSize;
 	bool success;
 	bool bufferTooSmall = false;
 
@@ -972,7 +972,7 @@ void ReceiveMessage()
 		if (DoNewInet)
 		{
 			u_short peer;
-			dwMsgBufferSize = IPCORE.ReceiveData( (byte*) lpvMsgBuffer, &peer );
+			dwMsgBufferSize = IPCORE.ReceiveData( (unsigned char*) lpvMsgBuffer, &peer );
 			idFrom = peer;
 			idTo = MyDPID;
 
@@ -1021,7 +1021,7 @@ void ReceiveMessage()
 	} while (bufferTooSmall);
 
 	if (( success ) && // successfully read a message
-		( dwMsgBufferSize >= sizeof( DWORD ) )) // and it is big enough
+		( dwMsgBufferSize >= sizeof( unsigned long ) )) // and it is big enough
 	{
 		// check for system message
 		int tt = GetTickCount();
@@ -1198,7 +1198,7 @@ HRESULT CreateDirectPlayInterface()
 	hr = CoInitialize( nullptr );
 	// Create an IDirectPlay3 interface
 	hr = CoCreateInstance( CLSID_DirectPlay, nullptr, CLSCTX_INPROC_SERVER,
-		IID_IDirectPlay3A, (LPVOID*) &lpDirectPlay3Alocal );
+		IID_IDirectPlay3A, (void**) &lpDirectPlay3Alocal );
 
 	// return interface created
 	*lpDirectPlay3A = lpDirectPlay3Alocal;
@@ -1223,13 +1223,13 @@ HRESULT CreateDirectPlayInterface()
 };*/
 
 #ifndef NODPLAY
-BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(
+int FAR PASCAL DirectPlayEnumConnectionsCallback(
 	LPCGUID lpguidSP,
-	LPVOID lpConnection,
-	DWORD dwConnectionSize,
+	void* lpConnection,
+	unsigned long dwConnectionSize,
 	LPCDPNAME lpName,
-	DWORD dwFlags,
-	LPVOID lpContext )
+	unsigned long dwFlags,
+	void* lpContext )
 {
 	HWND hWnd = (HWND) lpContext;
 
@@ -1239,13 +1239,13 @@ BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(
 	// make space for connection shortcut
 	if (*lpguidSP == DPSPGUID_IPX)
 	{
-		lplpConnectionBuffer[0] = new byte[dwConnectionSize];
+		lplpConnectionBuffer[0] = new unsigned char[dwConnectionSize];
 		memcpy( lplpConnectionBuffer[0], lpConnection, dwConnectionSize );
 	}
 
 	if (*lpguidSP == DPSPGUID_TCPIP)
 	{
-		lplpConnectionBuffer[1] = new byte[dwConnectionSize];
+		lplpConnectionBuffer[1] = new unsigned char[dwConnectionSize];
 		memcpy( lplpConnectionBuffer[1], lpConnection, dwConnectionSize );
 	}
 
@@ -1312,11 +1312,11 @@ bool CreateMultiplaterInterface()
 
 ListBox* LBBX;
 #ifndef NODPLAY
-BOOL FAR PASCAL LBEnumSessionsCallback(
+int FAR PASCAL LBEnumSessionsCallback(
 	LPCDPSESSIONDESC2 lpSessionDesc,
 	LPDWORD lpdwTimeOut,
-	DWORD dwFlags,
-	LPVOID lpContext )
+	unsigned long dwFlags,
+	void* lpContext )
 {
 	HWND hWnd = (HWND) lpContext;
 
@@ -1353,11 +1353,11 @@ BOOL FAR PASCAL LBEnumSessionsCallback(
 int GMTYPE = 0;
 int SSMAXPL = 0;
 #ifndef NODPLAY
-BOOL FAR PASCAL SR_EnumSessionsCallback(
+int FAR PASCAL SR_EnumSessionsCallback(
 	LPCDPSESSIONDESC2 lpSessionDesc,
 	LPDWORD lpdwTimeOut,
-	DWORD dwFlags,
-	LPVOID lpContext )
+	unsigned long dwFlags,
+	void* lpContext )
 {
 	HWND hWnd = (HWND) lpContext;
 	char* Name = (char*) lpContext;
@@ -1441,7 +1441,7 @@ bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port )
 	do
 	{
 		lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
-			SR_EnumSessionsCallback, LPVOID( Name ),
+			SR_EnumSessionsCallback, void*( Name ),
 			DPENUMSESSIONS_AVAILABLE | DPENUMSESSIONS_ASYNC );
 		ProcessMessages();
 	} while (!( NSessions || GetTickCount() - T0 > 10000 ));
@@ -1451,13 +1451,13 @@ bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port )
 		if FAILED( JoinSession( SessionsGUID, Nick ) )
 		{
 			lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
-				SR_EnumSessionsCallback, LPVOID( Name ),
+				SR_EnumSessionsCallback, void*( Name ),
 				DPENUMSESSIONS_AVAILABLE | DPENUMSESSIONS_STOPASYNC );
 			return false;
 		}
 
 		lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
-			SR_EnumSessionsCallback, LPVOID( Name ),
+			SR_EnumSessionsCallback, void*( Name ),
 			DPENUMSESSIONS_AVAILABLE | DPENUMSESSIONS_STOPASYNC );
 
 		PIEnumeratePlayers( PINFO, 0 );
@@ -1499,12 +1499,12 @@ void LBEnumerateSessions( ListBox* LB, int ID )
 	sessionDesc.guidApplication = DPCHAT_GUID;
 	// start enumerating the sessions
 	lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
-		LBEnumSessionsCallback, LPVOID( ID ),
+		LBEnumSessionsCallback, void*( ID ),
 		DPENUMSESSIONS_AVAILABLE );
 #endif
 };
 #ifndef NODPLAY
-HRESULT HostSession( LPSTR lpszSessionName, LPSTR lpszPlayerName, DWORD User2 )
+HRESULT HostSession( LPSTR lpszSessionName, LPSTR lpszPlayerName, unsigned long User2 )
 {
 	DPID dpidPlayer;
 	DPNAME dpName;
@@ -1563,7 +1563,7 @@ void StopConnectionToSession()
 #ifndef NODPLAY
 	if (!lpDirectPlay3A)return;
 	DPSESSIONDESC2 sessionDesc[4];
-	DWORD SDSize = sizeof( sessionDesc );
+	unsigned long SDSize = sizeof( sessionDesc );
 	lpDirectPlay3A->GetSessionDesc( nullptr, &SDSize );
 	HRESULT hr = lpDirectPlay3A->GetSessionDesc( sessionDesc, &SDSize );
 	int v = -1;
@@ -1635,11 +1635,11 @@ OPEN_FAILURE:
 	return ( hr );
 };
 #endif
-bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers )
+bool CreateSession( char* SessName, char* Name, unsigned long User2, int MaxPlayers )
 {
 	NORMNICK1( Name );
 	// use computer name for session name
-	DWORD dwNameSize = MAXNAMELEN;
+	unsigned long dwNameSize = MAXNAMELEN;
 	// host a new session on this service provider
 	if (DoNewInet && !NETWORK_INIT)
 	{
@@ -1675,7 +1675,7 @@ bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers )
 #endif
 }
 
-bool CreateNamedSession( char* Name, DWORD User2, int Max )
+bool CreateNamedSession( char* Name, unsigned long User2, int Max )
 {
 	// use computer name for session name
 	if (DoNewInet && !NETWORK_INIT)
@@ -1683,7 +1683,7 @@ bool CreateNamedSession( char* Name, DWORD User2, int Max )
 		IPCORE.InitNetwork();
 		NETWORK_INIT = 1;
 	};
-	DWORD dwNameSize = MAXNAMELEN;
+	unsigned long dwNameSize = MAXNAMELEN;
 	if (!GetComputerName( szSessionName, &dwNameSize ))
 		lstrcpy( szSessionName, "Session" );
 	// host a new session on this service provider
@@ -1718,9 +1718,9 @@ bool JoinNameToSession( int ns, char* Name )
 
 struct NetCell
 {
-	byte* Data;
+	unsigned char* Data;
 	int size;
-	DWORD SendTime;
+	unsigned long SendTime;
 	CDPID idTo;
 };
 
@@ -1732,9 +1732,9 @@ public:
 	NetCell* CELLS;
 	NetCash();
 	~NetCash();
-	void Add( byte* Data, int size, CDPID idTo );
-	void AddOne( byte* Data, int size, CDPID idTo );
-	void AddWithDelay( byte* Data, int size, CDPID idTo, int TimeDelay );
+	void Add( unsigned char* Data, int size, CDPID idTo );
+	void AddOne( unsigned char* Data, int size, CDPID idTo );
+	void AddWithDelay( unsigned char* Data, int size, CDPID idTo, int TimeDelay );
 	void Process();
 };
 
@@ -1753,7 +1753,7 @@ NetCash::~NetCash()
 
 bool ProcessMessagesEx();
 
-bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
+bool SendToAllPlayersEx( unsigned long Size, void* lpData, bool G )
 {
 	if (( !DoNewInet ) && ( ( !int(
 #ifndef NODPLAY
@@ -1769,7 +1769,7 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 	{
 		if (DoNewInet)
 		{
-			success = IPCORE.SendToAll( (byte*) lpData, Size, G );
+			success = IPCORE.SendToAll( (unsigned char*) lpData, Size, G );
 		}
 #ifndef NODPLAY
 		else
@@ -1810,7 +1810,7 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 	return success;
 }
 
-bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
+bool SendToAllPlayersExNew( unsigned long Size, void* lpData, bool G )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -1823,8 +1823,8 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	int Type = 0;
 	if (Size >= 7)
 	{
-		byte rt = RealTime;
-		byte* BUF = (byte*) lpData;
+		unsigned char rt = RealTime;
+		unsigned char* BUF = (unsigned char*) lpData;
 		if (rt == BUF[3])Type = 2;
 		rt--;
 		if (rt == BUF[3])Type = 1;
@@ -1836,7 +1836,7 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	int ttt = GetRealTime();
 	if (DoNewInet)
 	{
-		success = IPCORE.SendToAll((byte*)lpData, Size, G);
+		success = IPCORE.SendToAll((unsigned char*)lpData, Size, G);
 	}
 #ifndef NODPLAY
 	else
@@ -1895,7 +1895,7 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	return !busy;
 }
 
-bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
+bool SendToPlayerEx( unsigned long Size, void* lpData, unsigned long DPID )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -1910,7 +1910,7 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 	{
 		if (DoNewInet)
 		{
-			success = IPCORE.SendToPeer(DPID, (byte*)lpData, Size, 0);
+			success = IPCORE.SendToPeer(DPID, (unsigned char*)lpData, Size, 0);
 		}
 #ifndef NODPLAY
 		else
@@ -1948,7 +1948,7 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 	return success;
 }
 
-bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
+bool SendToPlayerExNew( unsigned long Size, void* lpData, unsigned long DPID )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -1962,7 +1962,7 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 	bool busy = false;
 	if (DoNewInet)
 	{
-		success = IPCORE.SendToPeer(DPID, (byte*)lpData, Size, 0);
+		success = IPCORE.SendToPeer(DPID, (unsigned char*)lpData, Size, 0);
 	}
 #ifndef NODPLAY
 	else
@@ -2002,7 +2002,7 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 
 int srando();
 
-void NetCash::AddOne( byte* Data, int size, CDPID idTo )
+void NetCash::AddOne( unsigned char* Data, int size, CDPID idTo )
 {
 	int idf = 0;
 	int idt = 0;
@@ -2024,7 +2024,7 @@ void NetCash::AddOne( byte* Data, int size, CDPID idTo )
 		T0 = 1;
 	}
 
-	CELLS[NCells].Data = new byte[size];
+	CELLS[NCells].Data = new unsigned char[size];
 	memcpy( CELLS[NCells].Data, Data, size );
 	CELLS[NCells].size = size;
 	CELLS[NCells].idTo = idTo;
@@ -2032,7 +2032,7 @@ void NetCash::AddOne( byte* Data, int size, CDPID idTo )
 	NCells++;
 }
 
-void NetCash::AddWithDelay( byte* Data, int size, CDPID idTo, int dt )
+void NetCash::AddWithDelay( unsigned char* Data, int size, CDPID idTo, int dt )
 {
 	if (NCells >= MaxCells)
 	{
@@ -2040,7 +2040,7 @@ void NetCash::AddWithDelay( byte* Data, int size, CDPID idTo, int dt )
 		CELLS = (NetCell*) realloc( CELLS, MaxCells * sizeof NetCell );
 	}
 
-	CELLS[NCells].Data = new byte[size];
+	CELLS[NCells].Data = new unsigned char[size];
 	memcpy( CELLS[NCells].Data, Data, size );
 	CELLS[NCells].size = size;
 	CELLS[NCells].idTo = idTo;
@@ -2048,7 +2048,7 @@ void NetCash::AddWithDelay( byte* Data, int size, CDPID idTo, int dt )
 	NCells++;
 }
 
-void NetCash::Add( byte* Data, int size, CDPID idTo )
+void NetCash::Add( unsigned char* Data, int size, CDPID idTo )
 {
 	if (idTo == 0 /* DPID_ALLPLAYERS */)
 	{
@@ -2103,7 +2103,7 @@ void ProcessNetCash()
 	NCASH.Process();
 }
 
-bool SendToAllPlayers( DWORD Size, LPVOID lpData )
+bool SendToAllPlayers( unsigned long Size, void* lpData )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -2115,13 +2115,13 @@ bool SendToAllPlayers( DWORD Size, LPVOID lpData )
 
 	if (!SendToAllPlayersExNew( Size, lpData, 0 ))
 	{
-		NCASH.AddWithDelay( (byte*) lpData, Size, 0 /* DPID_ALLPLAYERS */, 0);
+		NCASH.AddWithDelay( (unsigned char*) lpData, Size, 0 /* DPID_ALLPLAYERS */, 0);
 	}
 
 	return true;
 }
 
-bool SendToAllPlayersWithDelay( DWORD Size, LPVOID lpData, int dt )
+bool SendToAllPlayersWithDelay( unsigned long Size, void* lpData, int dt )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -2131,13 +2131,13 @@ bool SendToAllPlayersWithDelay( DWORD Size, LPVOID lpData, int dt )
 #endif
 		)) || NPlayers < 2))return false;
 
-	NCASH.AddWithDelay( (byte*) lpData, Size, 0, dt );
+	NCASH.AddWithDelay( (unsigned char*) lpData, Size, 0, dt );
 	//SendToAllPlayersEx(Size,lpData,0);
 
 	return true;
 }
 
-bool SendToAllPlayers( DWORD Size, LPVOID lpData, bool G )
+bool SendToAllPlayers( unsigned long Size, void* lpData, bool G )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -2152,7 +2152,7 @@ bool SendToAllPlayers( DWORD Size, LPVOID lpData, bool G )
 	return true;
 }
 
-bool SendToPlayer( DWORD Size, LPVOID lpData, DWORD DPID )
+bool SendToPlayer( unsigned long Size, void* lpData, unsigned long DPID )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -2167,7 +2167,7 @@ bool SendToPlayer( DWORD Size, LPVOID lpData, DWORD DPID )
 	return true;
 }
 
-bool SendToServer( DWORD Size, LPVOID lpData )
+bool SendToServer( unsigned long Size, void* lpData )
 {
 	if ((!DoNewInet) && ((!int(
 #ifndef NODPLAY
@@ -2183,7 +2183,7 @@ bool SendToServer( DWORD Size, LPVOID lpData )
 	{
 		if (DoNewInet)
 		{
-			success = IPCORE.SendToPeer(ServerDPID, (byte*)lpData, Size, 1);
+			success = IPCORE.SendToPeer(ServerDPID, (unsigned char*)lpData, Size, 1);
 		}
 #ifndef NODPLAY
 		else
@@ -2220,7 +2220,7 @@ extern int LastKey;
 extern bool KeyPressed;
 extern int GLOBALTIME;
 extern int PGLOBALTIME;
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void CreateNationalMaskForRandomMap( char* );
 void CreateMaskForSaveFile( char* );
 void CreateNationalMaskForMap( char* );
@@ -2265,7 +2265,7 @@ void ComeInGame()
 		}
 	}
 
-	byte NRTBL[8];
+	unsigned char NRTBL[8];
 	memcpy( NRTBL, NatRefTBL, 8 );
 
 	PrepareGameMedia( myid, 1 );
@@ -2286,7 +2286,7 @@ void ComeInGame()
 	GLOBALTIME = 0;
 	PGLOBALTIME = 0;
 
-	byte* BUF = (byte*) ExBuf1;
+	unsigned char* BUF = (unsigned char*) ExBuf1;
 	BUF[0] = 0xAE;
 	BUF[1] = 0;
 	BUF[2] = 0;
@@ -2297,12 +2297,12 @@ void ComeInGame()
 	BUF[7] = 81;
 	*( (int*) ( BUF + 8 ) ) = GetRealTime() - NeedCurrentTime + 4000;
 
-	word s = 0;
+	unsigned short s = 0;
 	for (int i = 0; i < 12; i++)
 	{
 		s += BUF[i];
 	}
-	( (word*) ( BUF + 1 ) )[0] = s;
+	( (unsigned short*) ( BUF + 1 ) )[0] = s;
 
 	rpos = 0;
 
@@ -2322,7 +2322,7 @@ void ComeInGame()
 
 bool StartGame()
 {
-	DWORD BUF[36];
+	unsigned long BUF[36];
 	if (NPlayers < 2)
 	{
 		return false;
@@ -2332,7 +2332,7 @@ bool StartGame()
 	BUF[1] = MyDPID;
 	BUF[2] = NPlayers;
 	memcpy( &BUF[3], PlayersID, 32 * 4 );
-	DWORD SUM = 0;
+	unsigned long SUM = 0;
 	for (int i = 0; i < 35; i++)
 	{
 		SUM += BUF[i];
@@ -2352,7 +2352,7 @@ bool StartGame()
 				{
 					xx = true;
 				}
-				if (int( PData[j] ) && ( *(DWORD*) PData ) != 0x773F2945)
+				if (int( PData[j] ) && ( *(unsigned long*) PData ) != 0x773F2945)
 				{
 					xx = true;
 				}
@@ -2385,7 +2385,7 @@ void CreateStartTime()
 	memset( StartTime, 0, sizeof StartTime );
 	for (int i = 0; i < NPlayers; i++)
 	{
-		DWORD DPID = PINFO[i].PlayerID;
+		unsigned long DPID = PINFO[i].PlayerID;
 		if (DPID != MyDPID)
 		{
 			int dt = PSUMM.GetTimeDifference( PINFO[i].PlayerID );
@@ -2416,7 +2416,7 @@ void ReCreateStartTime()
 	int ST0 = 0;
 	for (int i = 0; i < NPlayers; i++)
 	{
-		DWORD DPID = PINFO[i].PlayerID;
+		unsigned long DPID = PINFO[i].PlayerID;
 		if (DPID == MyDPID)
 		{
 			//ST0=StartTime[PINFO[i].ColorID];
@@ -2425,7 +2425,7 @@ void ReCreateStartTime()
 	}
 	for (int i = 0; i < NPlayers; i++)
 	{
-		DWORD DPID = PINFO[i].PlayerID;
+		unsigned long DPID = PINFO[i].PlayerID;
 		//int c=PINFO[i].ColorID;
 		int c = i;//!!!CHANGED!!!
 		int dt = PSUMM.GetTimeDifference( PINFO[i].PlayerID );
@@ -2458,11 +2458,11 @@ bool CheckSender()
 	return MINVAL == MyDPID;
 }
 
-word COMPSTART[8];
+unsigned short COMPSTART[8];
 
 extern int MaxPingTime;
 
-extern byte MPL_NatRefTBL[8];
+extern unsigned char MPL_NatRefTBL[8];
 
 __declspec( dllexport ) bool StartIGame( bool SINGLE )
 {
@@ -2490,13 +2490,13 @@ __declspec( dllexport ) bool StartIGame( bool SINGLE )
 	[11]
 		 46 ColorID, GroupID 16 bytes overwrites COMPINFO!
 	[16] 64 MyDPID 4 bytes
-	[17] 68 NPlayers 1 byte
+	[17] 68 NPlayers 1 unsigned char
 	[18] 72 PlayersID[0 to 22] 88 bytes
 	[50] 200 StartTime 32 bytes
 	[58] 232 MaxPingTime 4 bytes
 	[59] 236 lpdata_buf_checksum 4 bytes
 	*/
-	DWORD BUF[48 + 8 + 8 + 1];
+	unsigned long BUF[48 + 8 + 8 + 1];
 	memset( BUF, 0, sizeof BUF );
 
 	PrepareToGame();
@@ -2521,10 +2521,10 @@ __declspec( dllexport ) bool StartIGame( bool SINGLE )
 	BUF[8 + 8] = MyDPID;
 	BUF[9 + 8] = NPlayers;
 	memcpy( &BUF[10 + 8], PlayersID, ( 32 - 10 ) * 4 );
-	byte* BUFB = (byte*) ( BUF + 10 + 8 + 32 - 10 );
+	unsigned char* BUFB = (unsigned char*) ( BUF + 10 + 8 + 32 - 10 );
 	memcpy( BUFB, MPL_NatRefTBL, 8 );
 
-	BUFB = (byte*) ( BUF + 10 + 8 + 32 - 8 );
+	BUFB = (unsigned char*) ( BUF + 10 + 8 + 32 - 8 );
 
 	int HostID = 0;
 	for (int i = 0; i < NPlayers; i++)
@@ -2540,7 +2540,7 @@ __declspec( dllexport ) bool StartIGame( bool SINGLE )
 
 	memcpy( COMPSTART, BUFB, 16 );
 
-	BUFB = (byte*) ( BUF + 10 + 8 + 32 - 4 );
+	BUFB = (unsigned char*) ( BUF + 10 + 8 + 32 - 4 );
 	for (int p = 0; p < 8; p++)
 	{
 		BUFB[p + p] = PINFO[p].ColorID;
@@ -2550,7 +2550,7 @@ __declspec( dllexport ) bool StartIGame( bool SINGLE )
 	memcpy( &BUF[10 + 8 + 32], StartTime, 8 * 4 );
 	BUF[10 + 8 + 32 + 8] = MaxPingTime;
 
-	DWORD SUM = 0;
+	unsigned long SUM = 0;
 	for (int i = 0; i < 42 + 8 + 8 + 1; i++)
 	{
 		SUM += BUF[i];
@@ -2607,12 +2607,12 @@ void AnalyseMessages()
 		ReceiveMessage();
 		if (MyDPID != ServerDPID)
 		{
-			DWORD* lp = (DWORD*) MyData;
+			unsigned long* lp = (unsigned long*) MyData;
 			if (lp)
 			{
 				if (lp[0] == 0x037242F3 && !GameInProgress)
 				{
-					DWORD SUM = 0;
+					unsigned long SUM = 0;
 					for (int i = 0; i < ( 42 + 8 + 8 + 1 ); i++)
 					{
 						SUM += lp[i];
@@ -2621,13 +2621,13 @@ void AnalyseMessages()
 					{
 						//start game
 						ServerDPID = lp[8 + 8];
-						NPlayers = word( lp[9 + 8] );
+						NPlayers = unsigned short( lp[9 + 8] );
 						memcpy( PlayersID, &lp[10 + 8], ( 32 - 10 ) * 4 );
-						byte* BUFB = (byte*) ( lp + 10 + 8 + 32 - 10 );
+						unsigned char* BUFB = (unsigned char*) ( lp + 10 + 8 + 32 - 10 );
 						memcpy( NatRefTBL, BUFB, 8 );
-						BUFB = (byte*) ( lp + 10 + 8 + 32 - 8 );
+						BUFB = (unsigned char*) ( lp + 10 + 8 + 32 - 8 );
 						memcpy( COMPSTART, BUFB, 16 );
-						BUFB = (byte*) ( lp + 10 + 8 + 32 - 4 );
+						BUFB = (unsigned char*) ( lp + 10 + 8 + 32 - 4 );
 						strcpy( CurrentMap, (char*) &lp[2] );
 						memcpy( StartTime, &lp[10 + 8 + 32], 4 * 8 );
 						MaxPingTime = lp[10 + 8 + 32 + 8];
@@ -2685,14 +2685,14 @@ void xAnalyseMessages()
 	ReceiveMessage();
 	if (MyDPID != ServerDPID)
 	{
-		DWORD* lp = (DWORD*) MyData;
+		unsigned long* lp = (unsigned long*) MyData;
 		if (lp)
 		{
 			if (lp[0] == 0x037242F3 && !GameInProgress)
 			{
 				//start game
 				ServerDPID = lp[1];
-				NPlayers = word( lp[2] );
+				NPlayers = unsigned short( lp[2] );
 				memcpy( PlayersID, &lp[3], 32 * 4 );
 				GameInProgress = true;
 				StartMultiplayer.Close();
@@ -2711,7 +2711,7 @@ void IAmLeft()
 	{
 		if (IPCORE.IsServer() || IPCORE.IsClient())
 		{
-			DWORD Left = PlExitID;
+			unsigned long Left = PlExitID;
 			SendToAllPlayers( 4, (void*) &PlExitID, 1 );
 		}
 	}
@@ -2720,7 +2720,7 @@ void IAmLeft()
 	{
 		if (lpDirectPlay3A)
 		{
-			DWORD Left = PlExitID;
+			unsigned long Left = PlExitID;
 			SendToAllPlayers( 4, (void*) &PlExitID, 1 );
 		}
 	}
@@ -2732,7 +2732,7 @@ extern int LastKey;
 extern bool KeyPressed;
 void RetryNet( bool GUAR );
 
-void DumpDataTo( char* str, byte* Data, int Size )
+void DumpDataTo( char* str, unsigned char* Data, int Size )
 {
 	int sz = Size;
 	if (sz > 64)
@@ -2755,7 +2755,7 @@ void ShowCString( int x, int y, char* cc, lpRLCFont f )
 }
 
 extern bool PreNoPause;
-void CmdEndGame( byte NI, byte state, byte cause );
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause );
 __declspec( dllexport ) void SendPings();
 
 int PREVPINGT = 0;
@@ -2787,9 +2787,9 @@ char* ALTTAB = nullptr;
 char* txALTTAB = "ALT-TAB";
 extern bool MiniActive;
 extern int NeedAddTime;
-void CmdDoItSlow( word DT );
+void CmdDoItSlow( unsigned short DT );
 
-void SHOWDUMP( char* Message, int x, int y, int L, byte* Data, int Lx )
+void SHOWDUMP( char* Message, int x, int y, int L, unsigned char* Data, int Lx )
 {
 	char ccc[2048];
 	sprintf( ccc, "%s : %d", Message, L );
@@ -2813,11 +2813,10 @@ void SHOWDUMP( char* Message, int x, int y, int L, byte* Data, int Lx )
 extern int SUBTIME;
 extern int NPROCM;
 extern int TPROCM;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 void DontMakeRaiting();
 bool IsGameActive();
 void DontMakeRaiting();
-bool CheckInternet();
 void StopRaiting();
 extern City CITY[8];
 extern int SumAccount[8];
@@ -2889,7 +2888,7 @@ void HandleMultiplayer()
 		return;
 	}
 
-	DWORD ii = GetPIndex( MyDPID );
+	unsigned long ii = GetPIndex( MyDPID );
 	if (ii < 0 || ii >= NPlayers || !EBufs[ii].Enabled)
 	{
 		return;
@@ -2897,7 +2896,7 @@ void HandleMultiplayer()
 
 	EBufs[ii].RealTime = RealTime;
 	EBufs[ii].RandIndex = PrevRpos;
-	memcpy( &EBufs[ii].Data, ( (byte*) ExBuf1 ) + 7, EBPos1 );
+	memcpy( &EBufs[ii].Data, ( (unsigned char*) ExBuf1 ) + 7, EBPos1 );
 	EBufs[ii].Size = EBPos1;
 	int mpl_time_4 = GetRealTime();
 
@@ -2963,8 +2962,8 @@ void HandleMultiplayer()
 
 				if (PStart)
 				{
-					byte TRY = 0;
-					byte REC = 0;
+					unsigned char TRY = 0;
+					unsigned char REC = 0;
 					PINGS.RecvEcho();
 					PINGS.GetStatistic( &REC, &TRY );
 					NPRECV = REC;
@@ -2985,8 +2984,8 @@ void HandleMultiplayer()
 
 				mpl_time_3 = GetRealTime();
 
-				DWORD ANSW = 'ALIV';
-				byte mask = 0;
+				unsigned long ANSW = 'ALIV';
+				unsigned char mask = 0;
 				for (int i = 0; i < NPlayers; i++)
 				{
 					if (EBufs[i].Enabled && NON == EBufs[i].RealTime)
@@ -2998,11 +2997,11 @@ void HandleMultiplayer()
 
 				if (mask)
 				{
-					byte GETIN[7];
+					unsigned char GETIN[7];
 					GETIN[0] = 0xBA;
 					GETIN[1] = mask;
 					GETIN[2] = mask;
-					*( (DWORD*) ( GETIN + 3 ) ) = RealTime;
+					*( (unsigned long*) ( GETIN + 3 ) ) = RealTime;
 					for (int i = 0; i < NPlayers; i++)
 					{
 						if (EBufs[i].Enabled && NON != EBufs[i].RealTime)
@@ -3043,7 +3042,7 @@ void HandleMultiplayer()
 
 				int Problem = -1;
 
-				byte Erased[8] = { 0,0,0,0,0,0,0,0 };
+				unsigned char Erased[8] = { 0,0,0,0,0,0,0,0 };
 
 				for (int i = 0; i < NPlayers; i++)
 				{
@@ -3104,8 +3103,8 @@ void HandleMultiplayer()
 								if (mpl_time_1 > 650 && GLOBALTIME > 40)
 								{
 									int NS = 0;
-									byte ms = 0;
-									byte PColor = PINFO[i].ColorID;
+									unsigned char ms = 0;
+									unsigned char PColor = PINFO[i].ColorID;
 									for (int v = 0; v < 7; v++)
 									{
 										if (NATIONS[v].ThereWasUnit && NATIONS[v].VictState == 0 && v != PColor && ( !Erased[v] ))
@@ -3135,8 +3134,8 @@ void HandleMultiplayer()
 										{
 											//checking if disconnected player has maximal score
 											//1.search for maximal account
-											byte NI = PINFO[i].ColorID;
-											byte NIR = NatRefTBL[NI];
+											unsigned char NI = PINFO[i].ColorID;
+											unsigned char NIR = NatRefTBL[NI];
 											if (SumAccount[NIR] == MAXACC)
 											{
 												if (IsGameActive())
@@ -3278,12 +3277,12 @@ void HandleMultiplayer()
 	}
 
 	EBPos1 = EBPos;
-	byte* BUF = (byte*) ExBuf1;
+	unsigned char* BUF = (unsigned char*) ExBuf1;
 	BUF[0] = 0xAE;
 	BUF[1] = 0;
 	BUF[2] = 0;
 	BUF[3] = ( RealTime + 1 ) & 255;
-	( (word*) ( BUF + 4 ) )[0] = rpos;
+	( (unsigned short*) ( BUF + 4 ) )[0] = rpos;
 	int TT = GRTBW - SUBTIME;
 	if (TT < NeedCurrentTime)
 	{
@@ -3309,7 +3308,7 @@ void HandleMultiplayer()
 
 	BUF[6] = dt;
 	memcpy( BUF + 7, ExBuf, EBPos1 );
-	word s = 0;
+	unsigned short s = 0;
 	int szz1 = 7 + EBPos1;
 
 	for (int i = 0; i < szz1; i++)
@@ -3317,7 +3316,7 @@ void HandleMultiplayer()
 		s += BUF[i];
 	}
 
-	( (word*) ( BUF + 1 ) )[0] = s;
+	( (unsigned short*) ( BUF + 1 ) )[0] = s;
 
 	PrevRpos = rpos;
 
@@ -3356,12 +3355,12 @@ void HandleMultiplayer()
 
 void RetryNet( bool GUAR )
 {
-	//FUNNY: srsly? byte COMP -> (word*) (COMP + 2*i+1)?!
-	byte COMP[4096];
+	//FUNNY: srsly? unsigned char COMP -> (unsigned short*) (COMP + 2*i+1)?!
+	unsigned char COMP[4096];
 	COMP[0] = 0xBB;
-	*( (word*) ( COMP + 1 ) ) = PrevPrevEBSize;
-	*( (word*) ( COMP + 3 ) ) = PrevEBSize;
-	*( (word*) ( COMP + 5 ) ) = PrevEBSize + PrevPrevEBSize;
+	*( (unsigned short*) ( COMP + 1 ) ) = PrevPrevEBSize;
+	*( (unsigned short*) ( COMP + 3 ) ) = PrevEBSize;
+	*( (unsigned short*) ( COMP + 5 ) ) = PrevEBSize + PrevPrevEBSize;
 	memcpy( COMP + 7, PrevPrevEB, PrevPrevEBSize );
 	memcpy( COMP + 7 + PrevPrevEBSize, PrevEB, PrevEBSize );
 
@@ -3384,7 +3383,7 @@ void RetryNet( bool GUAR )
 
 void SendChat( char* str, bool Ally )
 {
-	DWORD ps[300];
+	unsigned long ps[300];
 	if (Ally)ps[0] = 'ALLY';
 	else ps[0] = 'CHAT';
 	ps[1] = strlen( str ) + 1;
@@ -3422,7 +3421,7 @@ int PS_TIME2 = 0;
 bool PS1_change = 0;
 bool PS2_change = 0;
 
-void SETPLAYERDATA( DWORD ID, void* Data, int size, bool change )
+void SETPLAYERDATA( unsigned long ID, void* Data, int size, bool change )
 {
 	if (change)
 	{
@@ -3438,7 +3437,7 @@ void SETPLAYERDATA( DWORD ID, void* Data, int size, bool change )
 
 	if (DoNewInet)
 	{
-		IPCORE.SetUserData( (byte*) Data, size );
+		IPCORE.SetUserData( (unsigned char*) Data, size );
 		if (PS1_change)
 		{
 			if (TT - PS_TIME1 > 10000)
@@ -3521,7 +3520,7 @@ bool ProcessSyncroMain( SaveBuf* SB )
 	int MYIND = 0;
 	for (int u = 0; u < NPlayers; u++)if (MyDPID == PlayersID[u])MYIND = u;
 	int TMP[8210];
-	byte PlReady[8];
+	unsigned char PlReady[8];
 	for (int i = 0; i < NPlayers; i++)PlReady[i] = 0;
 	PlReady[MYIND] = 2;
 	int SEND[8];
@@ -3535,11 +3534,11 @@ bool ProcessSyncroMain( SaveBuf* SB )
 		ReceiveMessage();
 		if (MyData)
 		{
-			DWORD* MDTI = (DWORD*) MyData;
+			unsigned long* MDTI = (unsigned long*) MyData;
 			if (MDTI[0] == 'IRDY')
 			{
-				DWORD ID1 = MDTI[1];
-				DWORD ID2 = MDTI[2] ^ 0x3765431F;
+				unsigned long ID1 = MDTI[1];
+				unsigned long ID2 = MDTI[2] ^ 0x3765431F;
 				if (ID1 == ID2)
 				{
 					for (int j = 0; j < NPlayers; j++)if (PlayersID[j] == ID1)PlReady[j] = 1;
@@ -3640,8 +3639,8 @@ bool ProcessSyncroMain( SaveBuf* SB )
 
 				if (INDA[0] == 'OBSY')
 				{
-					DWORD ID1 = INDA[1];
-					DWORD ID2 = INDA[2] ^ 0x3765431F;
+					unsigned long ID1 = INDA[1];
+					unsigned long ID2 = INDA[2] ^ 0x3765431F;
 
 					if (ID1 == ID2&&INDA[3] == INDA[4])
 					{
@@ -3826,7 +3825,7 @@ char SaveFileName[128];
 
 void LoadSaveFileMain( char* Name )
 {
-	byte NMA = MyNation;
+	unsigned char NMA = MyNation;
 	SaveBuf SB;
 	ResFile f1 = RReset( Name );
 	SB.LoadFromFile( f1 );
@@ -3849,7 +3848,7 @@ void LoadSaveFileMain( char* Name )
 void LoadSaveFileChild()
 {
 	SaveBuf SB;
-	byte MNA = MyNation;
+	unsigned char MNA = MyNation;
 
 	if (ProcessSyncroChild( &SB ))
 	{
@@ -3867,7 +3866,7 @@ void LoadSaveFile()
 	SaveFileName[0] = 0;
 }
 
-void CmdLoadNetworkGame( byte NI, int ID, char* Name );
+void CmdLoadNetworkGame( unsigned char NI, int ID, char* Name );
 int LastSynTime = 0;
 extern char LASTSAVEFILE[64];
 void DontMakeRaiting();
@@ -3919,7 +3918,7 @@ PingSumm::~PingSumm()
 		free( PSET );
 	};
 };
-void PingSumm::AddPing( DWORD DPID, DWORD From, DWORD To, DWORD Back )
+void PingSumm::AddPing( unsigned long DPID, unsigned long From, unsigned long To, unsigned long Back )
 {
 	if (Back - From > 2500)return;
 	int curr = -1;
@@ -3949,7 +3948,7 @@ void PingSumm::AddPing( DWORD DPID, DWORD From, DWORD To, DWORD Back )
 	PSET[curr].Pings[np].ToTime = int( To );
 	PSET[curr].NPings++;
 };
-int PingSumm::GetTimeDifference( DWORD DPID )
+int PingSumm::GetTimeDifference( unsigned long DPID )
 {
 	for (int i = 0; i < NPL; i++)
 	{
@@ -3976,9 +3975,9 @@ int PingSumm::GetTimeDifference( DWORD DPID )
 	return 0;
 };
 int GetPing( CDPID pid );
-void StartPing( DWORD DPID, int ID );
+void StartPing( unsigned long DPID, int ID );
 void EndPing( int ID );
-char* GetLString( DWORD DPID );
+char* GetLString( unsigned long DPID );
 char* LOSS_PN = nullptr;
 void CreateDiffStr( char* str )
 {
@@ -4027,7 +4026,7 @@ void CreateDiffStr( char* str )
 	}
 }
 
-int PingSumm::CheckPlayer( DWORD DPID )
+int PingSumm::CheckPlayer( unsigned long DPID )
 {
 	for (int i = 0; i < NPL; i++)
 	{
@@ -4040,7 +4039,7 @@ int PingSumm::CheckPlayer( DWORD DPID )
 	return 0;
 }
 
-void PingSumm::AddPlayer( DWORD DPID )
+void PingSumm::AddPlayer( unsigned long DPID )
 {
 	for (int i = 0; i < NPL; i++)
 	{
@@ -4089,7 +4088,7 @@ __declspec( dllexport ) void SendPings()
 	{
 		if (PINFO[i].PlayerID != MyDPID)
 		{
-			DWORD lp[6];
+			unsigned long lp[6];
 			lp[0] = 'PING';
 			lp[1] = MyDPID;
 			lp[2] = stv;
@@ -4287,11 +4286,11 @@ int GetPing( CDPID pid )
 //-------------------------------Kicking one player-----------------------//
 /*
 struct LSockInfo{
- DWORD ID;
+ unsigned long ID;
  int MaxLink;
  int NMess;
  int* L;
- byte** Data;
+ unsigned char** Data;
 };
 class LongSocket{
  int NSINF;
@@ -4299,12 +4298,12 @@ class LongSocket{
 public:
  LongSocket();
  ~LongSocket();
- void ClearSocket(DWORD ID);
- void RegisterSocket(DWORD ID,int MaxLink);
- void CloseSocket(DWORD ID);
+ void ClearSocket(unsigned long ID);
+ void RegisterSocket(unsigned long ID,int MaxLink);
+ void CloseSocket(unsigned long ID);
  void CloseAllSockets();
- bool ReadSocket(byte* Data,int* Len,DWORD ID);
- void AddData(byte* Data,int Len,DWORD ID);
+ bool ReadSocket(unsigned char* Data,int* Len,unsigned long ID);
+ void AddData(unsigned char* Data,int Len,unsigned long ID);
 };
 LongSocket::LongSocket(){
  NSINF=0;
@@ -4329,7 +4328,7 @@ void LongSocket::CloseAllSockets(){
  LSI=nullptr;
  NSINF=0;
 };
-void LongSocket::CloseSocket(DWORD ID){
+void LongSocket::CloseSocket(unsigned long ID){
  for(int i=0;i<NSINF;i++)if(LSI[i].ID==ID){
  if(LSI[i].Data){
  for(int j=0;j<LSI[i].NMess){
@@ -4348,7 +4347,7 @@ void LongSocket::CloseSocket(DWORD ID){
  return;
  };
 };
-void LongSocket::ClearSocket(DWORD ID){
+void LongSocket::ClearSocket(unsigned long ID){
  for(int i=0;i<NSINF;i++)if(LSI[i].ID==ID){
  if(LSI[i].Data){
  for(int j=0;j<LSI[i].NMess){
@@ -4364,7 +4363,7 @@ void LongSocket::ClearSocket(DWORD ID){
  return;
  };
 };
-void LongSocket::RegisterSocket(DWORD ID,int MaxLink){
+void LongSocket::RegisterSocket(unsigned long ID,int MaxLink){
  for(int i=0;i<NSINF;i++)if(LSI[i].ID==ID)return;
  LSI=(LSockInfo*)realloc(LSI,(NSINF+1)<<2);
  LSI[NSINF].ID=ID;
@@ -4374,7 +4373,7 @@ void LongSocket::RegisterSocket(DWORD ID,int MaxLink){
  LSI[NSINF].NMess=0;
  NSINF++;
 };
-bool LongSocket::ReadSocket(byte* Data,int* Len,DWORD ID){
+bool LongSocket::ReadSocket(unsigned char* Data,int* Len,unsigned long ID){
  for(int i=0;i<NSINF;i++)if(LSI[i].ID==ID){
  if(LSI[i].Data){
  LSI[i].
@@ -4405,7 +4404,7 @@ void PLAYERSBACKUP::Clear()
 	};
 	NBDATA = 0;
 };
-void PLAYERSBACKUP::AddInf( byte* BUF, int L, CDPID ID, int RT )
+void PLAYERSBACKUP::AddInf( unsigned char* BUF, int L, CDPID ID, int RT )
 {
 	if (!L)
 	{
@@ -4413,7 +4412,7 @@ void PLAYERSBACKUP::AddInf( byte* BUF, int L, CDPID ID, int RT )
 	}
 	for (int i = 0; i < NBDATA; i++)
 	{
-		if (BSTR[i].ID == (DWORD) ID && BSTR[i].RealTime == (DWORD) RT)
+		if (BSTR[i].ID == (unsigned long) ID && BSTR[i].RealTime == (unsigned long) RT)
 		{
 			return;
 		}
@@ -4424,7 +4423,7 @@ void PLAYERSBACKUP::AddInf( byte* BUF, int L, CDPID ID, int RT )
 		memcpy( BSTR, BSTR + 1, 31 * sizeof BACKUPSTR );
 		NBDATA--;
 	}
-	BSTR[NBDATA].Data = new byte[L];
+	BSTR[NBDATA].Data = new unsigned char[L];
 	memcpy( BSTR[NBDATA].Data, BUF, L );
 	BSTR[NBDATA].ID = ID;
 	BSTR[NBDATA].RealTime = RT;
@@ -4432,11 +4431,11 @@ void PLAYERSBACKUP::AddInf( byte* BUF, int L, CDPID ID, int RT )
 	NBDATA++;
 }
 
-void PLAYERSBACKUP::SendInfoAboutTo( CDPID ID, CDPID TO, DWORD RT )
+void PLAYERSBACKUP::SendInfoAboutTo( CDPID ID, CDPID TO, unsigned long RT )
 {
 	for (int i = 0; i < NBDATA; i++)if (BSTR[i].ID == ID&&BSTR[i].RealTime == RT)
 	{
-		DWORD* DATA = new DWORD[( BSTR[i].L >> 2 ) + 8];
+		unsigned long* DATA = new unsigned long[( BSTR[i].L >> 2 ) + 8];
 		DATA[0] = 'SIAP';
 		DATA[1] = ID;
 		memcpy( DATA + 2, BSTR[i].Data, BSTR[i].L );
@@ -4466,7 +4465,7 @@ void RETRANS::Clear()
 	NRET = 0;
 	MaxRET = 0;
 };
-void RETRANS::AddOneRet( DWORD TO, DWORD FROM, DWORD RT )
+void RETRANS::AddOneRet( unsigned long TO, unsigned long FROM, unsigned long RT )
 {
 	for (int i = 0; i < NRET; i++)if (TOT[i].IDFROM == FROM&&TOT[i].IDTO == TO&&TOT[i].RT == RT)return;
 	if (NRET >= MaxRET)
@@ -4479,11 +4478,11 @@ void RETRANS::AddOneRet( DWORD TO, DWORD FROM, DWORD RT )
 	TOT[NRET].RT = RT;
 	NRET++;
 };
-void RETRANS::AddSection( DWORD TO, DWORD FROM, DWORD RT )
+void RETRANS::AddSection( unsigned long TO, unsigned long FROM, unsigned long RT )
 {
 	for (int i = 0; i < 50; i++)AddOneRet( TO, FROM, RT + i );
 };
-void RETRANS::CheckRetr( DWORD From, DWORD RT )
+void RETRANS::CheckRetr( unsigned long From, unsigned long RT )
 {
 	for (int i = 0; i < NRET; i++)if (TOT[i].IDFROM == From&&TOT[i].RT == RT)
 	{
@@ -4501,13 +4500,13 @@ RETRANS RETSYS;
 #define PingTimeout 2000
 struct OneLPing
 {
-	DWORD UniqID;
+	unsigned long UniqID;
 	int StartTime;
 };
 class OneLostID
 {
 public:
-	DWORD DPID;
+	unsigned long DPID;
 	int NSent;
 	int NReceived;
 	OneLPing* PING;
@@ -4521,11 +4520,11 @@ public:
 	LoosedPack();
 	~LoosedPack();
 	OneLostID OLID[16];
-	int GetLoosePercent( DWORD ID );
-	int GetLastAnswerTime( DWORD ID );
+	int GetLoosePercent( unsigned long ID );
+	int GetLastAnswerTime( unsigned long ID );
 	void Clear();
 	void DeleteBadPlayers();
-	void Add( DWORD DPID, int ID );
+	void Add( unsigned long DPID, int ID );
 	void Remove( int ID );
 	void Process();
 };
@@ -4566,7 +4565,7 @@ void LoosedPack::DeleteBadPlayers()
 		}
 	}
 }
-int LoosedPack::GetLoosePercent( DWORD ID )
+int LoosedPack::GetLoosePercent( unsigned long ID )
 {
 	for (int i = 0; i < 16; i++)if (OLID[i].DPID == ID)
 	{
@@ -4585,7 +4584,7 @@ void LoosedPack::Clear()
 	};
 	memset( OLID, 0, 8 * sizeof OneLostID );
 };
-void LoosedPack::Add( DWORD DPID, int ID )
+void LoosedPack::Add( unsigned long DPID, int ID )
 {
 	int idx = -1;
 	int CurTime = GetTickCount();
@@ -4650,7 +4649,7 @@ void LoosedPack::Remove( int ID )
 		int N = OLID[i].NPings;
 		for (int j = 0; j < N; j++)
 		{
-			if (OLID[i].PING[j].UniqID == (DWORD) ID)
+			if (OLID[i].PING[j].UniqID == (unsigned long) ID)
 			{
 				OLID[i].NReceived++;
 				OLID[i].NSent++;
@@ -4698,7 +4697,7 @@ void LoosedPack::Process()
 		};
 	};
 };
-int LoosedPack::GetLastAnswerTime( DWORD ID )
+int LoosedPack::GetLastAnswerTime( unsigned long ID )
 {
 	for (int i = 0; i < 16; i++)if (OLID[i].DPID == ID)
 	{
@@ -4707,7 +4706,7 @@ int LoosedPack::GetLastAnswerTime( DWORD ID )
 	return 0;
 };
 LoosedPack LPACK;
-void StartPing( DWORD DPID, int ID )
+void StartPing( unsigned long DPID, int ID )
 {
 	LPACK.Add( DPID, ID );
 	LPACK.Process();
@@ -4718,20 +4717,20 @@ void EndPing( int ID )
 	LPACK.Remove( ID );
 };
 char tmp1[12];
-char* GetLString( DWORD DPID )
+char* GetLString( unsigned long DPID )
 {
 	int p = LPACK.GetLoosePercent( DPID );
 	if (p == -1)strcpy( tmp1, "???" );
 	else sprintf( tmp1, "%d%%", p );
 	return tmp1;
 };
-void StartPing( DWORD DPID, int ID );
+void StartPing( unsigned long DPID, int ID );
 void EndPing( int ID );
-int GetLastAnswerT( DWORD ID )
+int GetLastAnswerT( unsigned long ID )
 {
 	return LPACK.GetLastAnswerTime( ID );
 };
-char* GetLString( DWORD DPID );
+char* GetLString( unsigned long DPID );
 int LastTMT = 0;
 int PrevTx = 0;
 int PrevRx = 0;
@@ -4750,12 +4749,12 @@ void DelBADPL()
 	LPACK.DeleteBadPlayers();
 }
 
-void DeepDeletePeer( DWORD ID )
+void DeepDeletePeer( unsigned long ID )
 {
 	IPCORE.DeletePeer( ID );
 }
 
-DWORD CalcPassHash( char* pass );
+unsigned long CalcPassHash( char* pass );
 extern char SessPassword[64];
 extern unsigned short dwVersion;
 
@@ -4792,7 +4791,7 @@ void CreateAnswerString( char* s )
 };
 
 #ifndef NODPLAY
-bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+bool MLP_CreateCompoundAddress(int selected_network_protocol, unsigned char* AddrBuf)
 {
 	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
 	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
@@ -4803,7 +4802,7 @@ bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 	}
 
 	// get ANSI DirectPlayLobby2 interface
-	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (LPVOID*)&lpDPlayLobby2A);
+	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (void**)&lpDPlayLobby2A);
 	if FAILED(hr)
 	{
 		return false;
@@ -4814,7 +4813,7 @@ bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 	lpDPlayLobbyA = nullptr;
 
 	DPCOMPOUNDADDRESSELEMENT	addressElements[3];
-	DWORD sz = 128;
+	unsigned long sz = 128;
 	char* cc = "";
 
 	if (selected_network_protocol == 1)
@@ -4825,10 +4824,10 @@ bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 
 	addressElements[0].guidDataType = DPAID_ServiceProvider;
 	addressElements[0].dwDataSize = sizeof(GUID);
-	addressElements[0].lpData = (LPVOID)&DPSPGUID_TCPIP;
+	addressElements[0].lpData = (void*)&DPSPGUID_TCPIP;
 	addressElements[1].guidDataType = DPAID_INet;
 	addressElements[1].dwDataSize = strlen(IPADDR) + 1;
-	addressElements[1].lpData = (LPVOID)IPADDR;
+	addressElements[1].lpData = (void*)IPADDR;
 
 	lpDPlayLobby2A->CreateCompoundAddress(addressElements, 2, AddrBuf, &sz);
 	lpDPlayLobby2A->Release();
@@ -4838,7 +4837,7 @@ bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf)
 #endif
 
 #ifndef NODPLAY
-bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf)
+bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, unsigned char* AddrBuf)
 {
 	LPDIRECTPLAYLOBBYA	lpDPlayLobbyA = nullptr;
 	LPDIRECTPLAYLOBBY2A	lpDPlayLobby2A = nullptr;
@@ -4849,7 +4848,7 @@ bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBu
 	}
 
 	// get ANSI DirectPlayLobby2 interface
-	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (LPVOID*)&lpDPlayLobby2A);
+	HRESULT hr = lpDPlayLobbyA->QueryInterface(IID_IDirectPlayLobby2A, (void**)&lpDPlayLobby2A);
 	if FAILED(hr)
 	{
 		return false;
@@ -4859,7 +4858,7 @@ bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBu
 	lpDPlayLobbyA->Release();
 	lpDPlayLobbyA = nullptr;
 	DPCOMPOUNDADDRESSELEMENT addressElements[3];
-	DWORD sz = 128;
+	unsigned long sz = 128;
 	char* cc = "";
 
 	switch (selected_network_protocol)
@@ -4868,10 +4867,10 @@ bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBu
 	case 2://Direct TCP/IP
 		addressElements[0].guidDataType = DPAID_ServiceProvider;
 		addressElements[0].dwDataSize = sizeof(GUID);
-		addressElements[0].lpData = (LPVOID)&DPSPGUID_TCPIP;
+		addressElements[0].lpData = (void*)&DPSPGUID_TCPIP;
 		addressElements[1].guidDataType = DPAID_INet;
 		addressElements[1].dwDataSize = strlen(IPADDR) + 1;
-		addressElements[1].lpData = (LPVOID)IPADDR;
+		addressElements[1].lpData = (void*)IPADDR;
 		lpDPlayLobby2A->CreateCompoundAddress(addressElements, 2, AddrBuf, &sz);
 		break;
 	}
@@ -4884,11 +4883,11 @@ bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBu
 
 #ifndef NODPLAY
 //--------------ALL GAME IS IN THIS PROCEDURE!-------------//
-BOOL FAR PASCAL EnumAddressCallback1(
+int FAR PASCAL EnumAddressCallback1(
 	REFGUID guidDataType,
-	DWORD dwDataSize,
+	unsigned long dwDataSize,
 	LPCVOID lpData,
-	LPVOID lpContext
+	void* lpContext
 )
 {
 	if (guidDataType == DPAID_INet)

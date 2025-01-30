@@ -4,27 +4,27 @@
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::QueuePacketExists(u_long lStamp)
+int CCommCore::QueuePacketExists(unsigned long lStamp)
 {
 	//	_log_message("QueuePacketExists()");
 
 	for (int i = 0; i < m_uFrameCount; i++)
 		if (m_FrameList[i].m_lpFrame->m_lStamp == lStamp)
-			return TRUE;
-	return FALSE;
+			return 1;
+	return 0;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::QueueAddPacket(PEER_ADDR			PeerAddr,
+int CCommCore::QueueAddPacket(PEER_ADDR			PeerAddr,
 	PEER_PORT			PeerPort,
 	LPCC_PK_RAW_FRAME	lpRawFrame,
-	u_short				uSize)
+	unsigned short				uSize)
 {
 	//	_log_message("QueueAddPacket()");
 
 	if (m_uFrameCount >= MAX_QUEUE_LEN)
-		return FALSE;
+		return 0;
 
 	m_FrameList[m_uFrameCount].m_lpFrame = lpRawFrame;
 	m_FrameList[m_uFrameCount].m_uSize = uSize;
@@ -35,11 +35,11 @@ BOOL CCommCore::QueueAddPacket(PEER_ADDR			PeerAddr,
 
 	m_uFrameCount++;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
-BOOL CCommCore::QueueDropPacket(int iFrameNum)
+int CCommCore::QueueDropPacket(int iFrameNum)
 {
 	//	_log_message("QueueDropPacket()");
 
@@ -51,12 +51,12 @@ BOOL CCommCore::QueueDropPacket(int iFrameNum)
 
 	m_uFrameCount--;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::QueueDropConfirmedPacket(u_long lStamp)
+int CCommCore::QueueDropConfirmedPacket(unsigned long lStamp)
 {
 	//	_log_message("QueueDropConfirmedPacket()");
 
@@ -65,26 +65,26 @@ BOOL CCommCore::QueueDropConfirmedPacket(u_long lStamp)
 			return QueueDropPacket(i);
 			break;
 		};
-	return FALSE;
+	return 0;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::QueueProcess()
+int CCommCore::QueueProcess()
 {
-	DWORD dwTime;
-	BOOL bDrops;
+	unsigned long dwTime;
+	int bDrops;
 
 	int j = 0;
 	do 
 	{
-		bDrops = FALSE;
+		bDrops = 0;
 		for (int i = j; i < m_uFrameCount; i++) 
 		{
 			if (m_FrameList[i].m_uRetrCount > RETRY_COUNT) 
 			{
 				QueueDropPacket(i);
-				bDrops = TRUE;
+				bDrops = 1;
 				j = i;
 				break;
 			}
@@ -93,7 +93,7 @@ BOOL CCommCore::QueueProcess()
 
 	dwTime = GetTickCount();
 
-	for (u_short i = 0; i < m_uFrameCount; i++)
+	for (unsigned short i = 0; i < m_uFrameCount; i++)
 	{
 		if ((dwTime - m_FrameList[i].m_dwSendTime) > RETRY_TIME)
 		{
@@ -103,12 +103,12 @@ BOOL CCommCore::QueueProcess()
 		}
 	}
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::QueueClearAll()
+int CCommCore::QueueClearAll()
 {
 	//	_log_message("QueueClearAll()");
 
@@ -117,7 +117,7 @@ BOOL CCommCore::QueueClearAll()
 
 	m_uFrameCount = 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------

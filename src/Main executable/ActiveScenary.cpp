@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include <stdlib.h>
 #include "ResFile.h"
@@ -8,7 +9,6 @@
 #include "fog.h"
 #include "walls.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include <math.h>
 
 #include "Megapolis.h"
@@ -43,7 +43,7 @@ extern PlayerInfo PINFO[8];
 extern bool NOPAUSE;
 extern bool LockPause;
 extern int CurrentAnswer;
-byte AssignTBL[8] = { 0,1,2,3,4,5,6,7 };
+unsigned char AssignTBL[8] = { 0,1,2,3,4,5,6,7 };
 void AIER( char* Mess );
 bool AiIsRunNow = false;
 
@@ -243,7 +243,7 @@ void ScenaryInterface::UnLoading()
 		free( PageBMP );
 		free( PageSize );
 	}
-	if ( hLib )FreeLibrary( hLib );
+	if ( hLib )FreeLibrary( (HMODULE)hLib );
 	memset( this, 0, sizeof ScenaryInterface );
 }
 
@@ -351,7 +351,7 @@ int ReadStr( char* Dst, char* Src, char c )
 
 extern bool ProtectionMode;
 
-extern word COMPSTART[8];
+extern unsigned short COMPSTART[8];
 
 void ScenaryInterface::Load( char* Name, char* Text )
 {
@@ -425,7 +425,7 @@ void ScenaryInterface::Load( char* Name, char* Text )
 	}
 	else
 	{
-		if ( hLib )FreeLibrary( hLib );
+		if ( hLib )FreeLibrary( (HMODULE)hLib );
 		hLib = LoadLibrary( Name );
 	}
 	ScenaryHandler = NULL;
@@ -436,7 +436,7 @@ void ScenaryInterface::Load( char* Name, char* Text )
 	else
 	{
 		NErrors = 0;
-		ScenaryHandler = (StdVoid*) GetProcAddress( hLib, "ProcessScenary" );
+		ScenaryHandler = (StdVoid*) GetProcAddress( (HMODULE)hLib, "ProcessScenary" );
 		if ( !ScenaryHandler )
 		{
 			ScenErr( "%s: can't find function:void ProcessScenary()", Name );
@@ -478,11 +478,11 @@ void TestUnitsGroup( int id )
 {
 	UnitsGroup* AG = SCENINF.UGRP + id;
 	int N = AG->N;
-	word* idx = AG->IDS;
-	word* sns = AG->SNS;
+	unsigned short* idx = AG->IDS;
+	unsigned short* sns = AG->SNS;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = idx[i];
+		unsigned short MID = idx[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -493,7 +493,7 @@ void TestUnitsGroup( int id )
 		}
 	}
 }
-extern "C" __declspec( dllexport ) void AssignNation( byte Src, byte Dst )
+extern "C" __declspec( dllexport ) void AssignNation( unsigned char Src, unsigned char Dst )
 {
 	if ( Src < 8 && Dst < 8 )AssignTBL[Src] = Dst;
 }
@@ -509,8 +509,8 @@ extern "C" __declspec( dllexport ) bool RegisterUnits( GAMEOBJ* GOBJ, char* Name
 		}
 		GOBJ->Index = SCENINF.NUGRP;
 		UnitsGroup* UG = SCENINF.UGRP + SCENINF.NUGRP;
-		UG->IDS = new word[AGroups[i].N];
-		UG->SNS = new word[AGroups[i].N];
+		UG->IDS = new unsigned short[AGroups[i].N];
+		UG->SNS = new unsigned short[AGroups[i].N];
 		UG->N = AGroups[i].N;
 		memcpy( UG->IDS, AGroups[i].Units, 2 * UG->N );
 		memcpy( UG->SNS, AGroups[i].Serials, 2 * UG->N );
@@ -588,7 +588,7 @@ extern "C" __declspec( dllexport ) void RegisterVar( void* Var, int size )
 extern "C" __declspec( dllexport ) void RegisterZone( GAMEOBJ* GOBJ, char* Name )
 {
 	int NZON = 0;
-	word ZIDS[64];
+	unsigned short ZIDS[64];
 	for ( int i = 0; i < NAZones; i++ )
 	{
 		if ( !strcmp( Name, AZones[i].Name ) )
@@ -611,7 +611,7 @@ extern "C" __declspec( dllexport ) void RegisterZone( GAMEOBJ* GOBJ, char* Name 
 		}
 
 		SCENINF.ZGRP[SCENINF.NZGRP].N = NZON;
-		SCENINF.ZGRP[SCENINF.NZGRP].ZoneID = new word[NZON * 2];
+		SCENINF.ZGRP[SCENINF.NZGRP].ZoneID = new unsigned short[NZON * 2];
 		memcpy( SCENINF.ZGRP[SCENINF.NZGRP].ZoneID, ZIDS, NZON * 2 );
 		GOBJ->Index = SCENINF.NZGRP;
 		GOBJ->Serial = 0;
@@ -628,7 +628,7 @@ extern "C" __declspec( dllexport ) void RegisterZone( GAMEOBJ* GOBJ, char* Name 
 extern "C" __declspec( dllexport ) void RegisterVisibleZone( GAMEOBJ* GOBJ, char* Name )
 {
 	int NZON = 0;
-	word ZIDS[64];
+	unsigned short ZIDS[64];
 	for ( int i = 0; i < NAZones; i++ )
 	{
 		if ( !strcmp( Name, AZones[i].Name ) )
@@ -651,7 +651,7 @@ extern "C" __declspec( dllexport ) void RegisterVisibleZone( GAMEOBJ* GOBJ, char
 		}
 
 		SCENINF.ZGRP[SCENINF.NZGRP].N = NZON;
-		SCENINF.ZGRP[SCENINF.NZGRP].ZoneID = new word[NZON * 2];
+		SCENINF.ZGRP[SCENINF.NZGRP].ZoneID = new unsigned short[NZON * 2];
 		memcpy( SCENINF.ZGRP[SCENINF.NZGRP].ZoneID, ZIDS, NZON * 2 );
 		GOBJ->Index = SCENINF.NZGRP;
 		GOBJ->Serial = 0;
@@ -737,11 +737,11 @@ extern "C" __declspec( dllexport ) void InitialUpgrade( char* Grp, char* Upgrade
 			if ( RegisterUpgrade( &UP, Upgrade ) )
 			{
 				int Nu = AGroups[i].N;
-				word* SNS = AGroups[i].Serials;
-				word* UNI = AGroups[i].Units;
+				unsigned short* SNS = AGroups[i].Serials;
+				unsigned short* UNI = AGroups[i].Units;
 				for ( int j = 0; j < Nu; j++ )
 				{
-					word MID = UNI[j];
+					unsigned short MID = UNI[j];
 					if ( MID != 0xFFFF )
 					{
 						OneObject* OB = Group[MID];
@@ -767,7 +767,7 @@ extern "C" __declspec( dllexport ) void InitialUpgrade( char* Grp, char* Upgrade
 	IntErr( "InitialUpgrade : Unknown <Group>" );
 }
 
-extern "C" __declspec( dllexport ) void DisableUpgrade( byte Nat, GAMEOBJ* Upg )
+extern "C" __declspec( dllexport ) void DisableUpgrade( unsigned char Nat, GAMEOBJ* Upg )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 )
@@ -783,7 +783,7 @@ extern "C" __declspec( dllexport ) void DisableUpgrade( byte Nat, GAMEOBJ* Upg )
 	}
 }
 
-extern "C" __declspec( dllexport ) void EnableUpgrade( byte Nat, GAMEOBJ* Upg )
+extern "C" __declspec( dllexport ) void EnableUpgrade( unsigned char Nat, GAMEOBJ* Upg )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 )
@@ -799,7 +799,7 @@ extern "C" __declspec( dllexport ) void EnableUpgrade( byte Nat, GAMEOBJ* Upg )
 	}
 }
 
-extern "C" __declspec( dllexport ) void EnableUnit( byte Nat, GAMEOBJ* Type, bool State )
+extern "C" __declspec( dllexport ) void EnableUnit( unsigned char Nat, GAMEOBJ* Type, bool State )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 )
@@ -839,7 +839,7 @@ extern "C" __declspec( dllexport ) bool RegisterFormation( GAMEOBJ* GOBJ, char* 
 
 //---------------Checking commands----------------
 //1.In zones
-extern "C" __declspec( dllexport ) int GetUnitsAmount0( GAMEOBJ* Zone, byte Nation )
+extern "C" __declspec( dllexport ) int GetUnitsAmount0( GAMEOBJ* Zone, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( Nation >= 8 )
@@ -880,7 +880,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount0( GAMEOBJ* Zone, byte Nati
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -940,7 +940,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount0( GAMEOBJ* Zone, byte Nati
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -963,7 +963,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount0( GAMEOBJ* Zone, byte Nati
 }
 
 //1.In zones
-void AddUnitToSelected( byte NI, OneObject* OB )
+void AddUnitToSelected( unsigned char NI, OneObject* OB )
 {
 	if ( OB->Selected & GM( NI ) )
 	{
@@ -971,16 +971,16 @@ void AddUnitToSelected( byte NI, OneObject* OB )
 	}
 
 	int N = NSL[NI];
-	Selm[NI] = (word*) realloc( Selm[NI], ( N + 1 ) << 1 );
-	SerN[NI] = (word*) realloc( SerN[NI], ( N + 1 ) << 1 );
+	Selm[NI] = (unsigned short*) realloc( Selm[NI], ( N + 1 ) << 1 );
+	SerN[NI] = (unsigned short*) realloc( SerN[NI], ( N + 1 ) << 1 );
 	NSL[NI]++;
 	Selm[NI][N] = OB->Index;
 	SerN[NI][N] = OB->Serial;
 }
 
-void CopyReIm( byte NI );
+void CopyReIm( unsigned char NI );
 
-extern "C" __declspec( dllexport ) void ClearSelection( byte Nat );
+extern "C" __declspec( dllexport ) void ClearSelection( unsigned char Nat );
 
 extern short AlarmSoundID;
 extern int AlarmDelay;
@@ -1016,7 +1016,7 @@ extern "C" __declspec( dllexport ) void ShowAlarm( GAMEOBJ* Zone )
 	AlarmDelay = 60;
 }
 
-extern "C" __declspec( dllexport ) void SelectUnitsInZone( GAMEOBJ* Zone, byte Nation, bool add )
+extern "C" __declspec( dllexport ) void SelectUnitsInZone( GAMEOBJ* Zone, unsigned char Nation, bool add )
 {
 	Nation = AssignTBL[Nation];
 	if ( Nation >= 8 )
@@ -1062,7 +1062,7 @@ extern "C" __declspec( dllexport ) void SelectUnitsInZone( GAMEOBJ* Zone, byte N
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1123,7 +1123,7 @@ extern "C" __declspec( dllexport ) void SelectUnitsInZone( GAMEOBJ* Zone, byte N
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1148,7 +1148,7 @@ extern "C" __declspec( dllexport ) void SelectUnitsInZone( GAMEOBJ* Zone, byte N
 }
 
 extern "C" __declspec( dllexport ) void ChangeUnitParam( GAMEOBJ* Type,
-	byte NI, int AddDamage, int DamType, int AddShield )
+	unsigned char NI, int AddDamage, int DamType, int AddShield )
 {
 	if ( NI >= 8 || DamType > 4 )
 	{
@@ -1166,7 +1166,7 @@ extern "C" __declspec( dllexport ) void ChangeUnitParam( GAMEOBJ* Type,
 }
 
 extern "C" __declspec( dllexport ) void SelectTypeOfUnitsInZone( GAMEOBJ* Zone,
-	GAMEOBJ* Type, byte Nation, bool add )
+	GAMEOBJ* Type, unsigned char Nation, bool add )
 {
 	Nation = AssignTBL[Nation];
 	if ( Nation >= 8 )
@@ -1216,7 +1216,7 @@ extern "C" __declspec( dllexport ) void SelectTypeOfUnitsInZone( GAMEOBJ* Zone,
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1277,7 +1277,7 @@ extern "C" __declspec( dllexport ) void SelectTypeOfUnitsInZone( GAMEOBJ* Zone,
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1311,13 +1311,13 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount1( GAMEOBJ* Zone, GAMEOBJ* 
 		int cx = int( Zone->Index ) << 4;
 		int cy = int( Zone->Serial ) << 4;
 		int R = R0 << 4;
-		word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-		word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+		unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+		unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 		int Nu = SCENINF.UGRP[Units->Index].N;
 		int NU = 0;
 		for ( int p = 0; p < Nu; p++ )
 		{
-			word MID = UIDS[p];
+			unsigned short MID = UIDS[p];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1331,8 +1331,8 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount1( GAMEOBJ* Zone, GAMEOBJ* 
 		IntErr( "GetUnitsAmount(Zone,Units) : Incorrect parameter <Zone>" );
 		return 0;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	ZonesGroup* ZGRP = SCENINF.ZGRP + Zone->Index;
 	assert( SCENINF.NZGRP >= Zone->Index );
@@ -1345,7 +1345,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount1( GAMEOBJ* Zone, GAMEOBJ* 
 		int cy = AZ->y << 4;
 		for ( int p = 0; p < Nu; p++ )
 		{
-			word MID = UIDS[p];
+			unsigned short MID = UIDS[p];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1355,7 +1355,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount1( GAMEOBJ* Zone, GAMEOBJ* 
 	}
 	return NU;
 }
-extern "C" __declspec( dllexport ) int GetUnitsAmount2( GAMEOBJ* Zone, GAMEOBJ* UnitType, byte Nation )
+extern "C" __declspec( dllexport ) int GetUnitsAmount2( GAMEOBJ* Zone, GAMEOBJ* UnitType, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( Nation >= 8 )
@@ -1401,7 +1401,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount2( GAMEOBJ* Zone, GAMEOBJ* 
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1457,7 +1457,7 @@ extern "C" __declspec( dllexport ) int GetUnitsAmount2( GAMEOBJ* Zone, GAMEOBJ* 
 					if ( NMon )
 					{
 						int ofs1 = cell << SHFCELL;
-						word MID;
+						unsigned short MID;
 						for ( int i = 0; i < NMon; i++ )
 						{
 							MID = GetNMSL( ofs1 + i );
@@ -1485,13 +1485,13 @@ extern "C" __declspec( dllexport ) int GetTotalAmount0( GAMEOBJ* Units )
 		return 0;
 	}
 	TestUnitsGroup( Units->Index );
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NU = 0;
 	for ( int i = 0; i < Nu; i++ )
 	{
-		word MID = UIDS[i];
+		unsigned short MID = UIDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1500,7 +1500,7 @@ extern "C" __declspec( dllexport ) int GetTotalAmount0( GAMEOBJ* Units )
 	}
 	return NU;
 }
-extern "C" __declspec( dllexport ) int GetTotalAmount1( GAMEOBJ* UnitType, byte Nation )
+extern "C" __declspec( dllexport ) int GetTotalAmount1( GAMEOBJ* UnitType, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( UnitType->Type != 'UTYP' )
@@ -1517,7 +1517,7 @@ extern "C" __declspec( dllexport ) int GetTotalAmount1( GAMEOBJ* UnitType, byte 
 	}
 	return NATIONS[Nation].CITY->UnitAmount[UnitType->Index];
 }
-extern "C" __declspec( dllexport ) int GetTotalAmount2( GAMEOBJ* Units, GAMEOBJ* UnitType, byte Nation )
+extern "C" __declspec( dllexport ) int GetTotalAmount2( GAMEOBJ* Units, GAMEOBJ* UnitType, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( UnitType->Type != 'UTYP' )
@@ -1533,14 +1533,14 @@ extern "C" __declspec( dllexport ) int GetTotalAmount2( GAMEOBJ* Units, GAMEOBJ*
 		return 0;
 	}
 	TestUnitsGroup( Units->Index );
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NU = 0;
 	int uid = UnitType->Index;
 	for ( int i = 0; i < Nu; i++ )
 	{
-		word MID = UIDS[i];
+		unsigned short MID = UIDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1549,7 +1549,7 @@ extern "C" __declspec( dllexport ) int GetTotalAmount2( GAMEOBJ* Units, GAMEOBJ*
 	}
 	return NU;
 }
-extern "C" __declspec( dllexport ) int GetReadyAmount( GAMEOBJ* UnitType, byte Nation )
+extern "C" __declspec( dllexport ) int GetReadyAmount( GAMEOBJ* UnitType, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( UnitType->Type != 'UTYP' )
@@ -1566,7 +1566,7 @@ extern "C" __declspec( dllexport ) int GetReadyAmount( GAMEOBJ* UnitType, byte N
 	}
 	return NATIONS[Nation].CITY->ReadyAmount[UnitType->Index];
 }
-extern "C" __declspec( dllexport ) int GetAmountOfWarriors( byte Nat )
+extern "C" __declspec( dllexport ) int GetAmountOfWarriors( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -1574,7 +1574,7 @@ extern "C" __declspec( dllexport ) int GetAmountOfWarriors( byte Nat )
 		IntErr( "GetAmountOfWarriors : Invalid <Nat>" );
 		return 0;
 	}
-	word* Mons = NatList[Nat];
+	unsigned short* Mons = NatList[Nat];
 	int N = NtNUnits[Nat];
 	int NU = 0;
 	for ( int i = 0; i < N; i++ )
@@ -1591,7 +1591,7 @@ extern "C" __declspec( dllexport ) int GetAmountOfWarriors( byte Nat )
 	return NU;
 }
 //3.Upgrades
-extern "C" __declspec( dllexport ) bool IsUpgradeDoing( GAMEOBJ* Upgrade, byte Nation )
+extern "C" __declspec( dllexport ) bool IsUpgradeDoing( GAMEOBJ* Upgrade, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( Upgrade->Type != 'UPGR' )
@@ -1608,7 +1608,7 @@ extern "C" __declspec( dllexport ) bool IsUpgradeDoing( GAMEOBJ* Upgrade, byte N
 	}
 	return NATIONS[Nation].UPGRADE[Upgrade->Index]->IsDoing;
 }
-extern "C" __declspec( dllexport ) bool IsUpgradeDone( GAMEOBJ* Upgrade, byte Nation )
+extern "C" __declspec( dllexport ) bool IsUpgradeDone( GAMEOBJ* Upgrade, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( Upgrade->Type != 'UPGR' )
@@ -1625,7 +1625,7 @@ extern "C" __declspec( dllexport ) bool IsUpgradeDone( GAMEOBJ* Upgrade, byte Na
 	}
 	return NATIONS[Nation].UPGRADE[Upgrade->Index]->Done;
 }
-extern "C" __declspec( dllexport ) bool IsUpgradeEnabled( GAMEOBJ* Upgrade, byte Nation )
+extern "C" __declspec( dllexport ) bool IsUpgradeEnabled( GAMEOBJ* Upgrade, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( Upgrade->Type != 'UPGR' )
@@ -1643,7 +1643,7 @@ extern "C" __declspec( dllexport ) bool IsUpgradeEnabled( GAMEOBJ* Upgrade, byte
 	return NATIONS[Nation].UPGRADE[Upgrade->Index]->Enabled;
 }
 //4.Died units
-extern "C" __declspec( dllexport ) int GetDied( GAMEOBJ* UnitType, byte Nation )
+extern "C" __declspec( dllexport ) int GetDied( GAMEOBJ* UnitType, unsigned char Nation )
 {
 	Nation = AssignTBL[Nation];
 	if ( UnitType->Type != 'UNIT' )
@@ -1661,8 +1661,8 @@ extern "C" __declspec( dllexport ) int GetDied( GAMEOBJ* UnitType, byte Nation )
 	return NATIONS[Nation].NKilled[UnitType->Index];
 }
 //---------------Creating/Erasure commands--------------
-int CreateNewTerrMons2( byte NI, int x, int y, word Type );
-extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ* Form, GAMEOBJ* UnitType, byte NatID, GAMEOBJ* Zone, byte Direction )
+int CreateNewTerrMons2( unsigned char NI, int x, int y, unsigned short Type );
+extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ* Form, GAMEOBJ* UnitType, unsigned char NatID, GAMEOBJ* Zone, unsigned char Direction )
 {
 	NatID = AssignTBL[NatID];
 	if ( NatID >= 8 )
@@ -1706,7 +1706,7 @@ extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ*
 	int N = ODS->NUnits;
 	PORD.CreateSimpleOrdPos( xc, yc, Direction, ODS->NUnits, NULL, ODS );
 	Nation* Nat = NATIONS + NatID;
-	word NewIds[1024];
+	unsigned short NewIds[1024];
 	int NU = 0;
 	for ( int j = 0; j < N; j++ )
 	{
@@ -1727,8 +1727,8 @@ extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ*
 	SCENINF.NUGRP++;
 	if ( NU )
 	{
-		UG->IDS = new word[NU];
-		UG->SNS = new word[NU];
+		UG->IDS = new unsigned short[NU];
+		UG->SNS = new unsigned short[NU];
 		UG->N = NU;
 		for ( int j = 0; j < NU; j++ )
 		{
@@ -1738,8 +1738,8 @@ extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ*
 	}
 	else
 	{
-		UG->IDS = new word;
-		UG->SNS = new word;
+		UG->IDS = new unsigned short;
+		UG->SNS = new unsigned short;
 		UG->N = 0;
 	}
 	DstObj->Index = SCENINF.NUGRP - 1;
@@ -1748,7 +1748,7 @@ extern "C" __declspec( dllexport ) bool CreateObject0( GAMEOBJ* DstObj, GAMEOBJ*
 	return true;
 }
 //---------------------Action commands----------------------
-void ImClearSelection( byte Nat )
+void ImClearSelection( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -1757,14 +1757,14 @@ void ImClearSelection( byte Nat )
 		SCENINF.NErrors++;
 		return;
 	}
-	word* SMon = ImSelm[Nat];
-	word* SN = ImSerN[Nat];
+	unsigned short* SMon = ImSelm[Nat];
+	unsigned short* SN = ImSerN[Nat];
 	int N = ImNSL[Nat];
 	if ( N )
 	{
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMon[i];
+			unsigned short MID = SMon[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1781,7 +1781,7 @@ void ImClearSelection( byte Nat )
 	ImSerN[Nat] = NULL;
 	ImNSL[Nat] = NULL;
 }
-void ReClearSelection( byte Nat )
+void ReClearSelection( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -1790,14 +1790,14 @@ void ReClearSelection( byte Nat )
 		SCENINF.NErrors++;
 		return;
 	}
-	word* SMon = Selm[Nat];
-	word* SN = SerN[Nat];
+	unsigned short* SMon = Selm[Nat];
+	unsigned short* SN = SerN[Nat];
 	int N = NSL[Nat];
 	if ( N )
 	{
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMon[i];
+			unsigned short MID = SMon[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1814,21 +1814,21 @@ void ReClearSelection( byte Nat )
 	SerN[Nat] = NULL;
 	NSL[Nat] = NULL;
 }
-extern "C" __declspec( dllexport ) void ClearSelection( byte Nat )
+extern "C" __declspec( dllexport ) void ClearSelection( unsigned char Nat )
 {
 	ReClearSelection( Nat );
 	ImClearSelection( Nat );
 }
-void CopyReIm( byte NI )
+void CopyReIm( unsigned char NI )
 {
 	int Ni = ImNSL[NI];
 	if ( Ni )
 	{
-		word* mid = ImSelm[NI];
-		word* msn = ImSerN[NI];
+		unsigned short* mid = ImSelm[NI];
+		unsigned short* msn = ImSerN[NI];
 		for ( int i = 0; i < Ni; i++ )
 		{
-			word MID = mid[i];
+			unsigned short MID = mid[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1844,8 +1844,8 @@ void CopyReIm( byte NI )
 	{
 		ImNSL[NI] = NSL[NI];
 		N *= 2;
-		ImSelm[NI] = (word*) realloc( ImSelm[NI], N );
-		ImSerN[NI] = (word*) realloc( ImSerN[NI], N );
+		ImSelm[NI] = (unsigned short*) realloc( ImSelm[NI], N );
+		ImSerN[NI] = (unsigned short*) realloc( ImSerN[NI], N );
 		memcpy( ImSelm[NI], Selm[NI], N );
 		memcpy( ImSerN[NI], SerN[NI], N );
 	}
@@ -1863,11 +1863,11 @@ void CopyReIm( byte NI )
 	Ni = ImNSL[NI];
 	if ( Ni )
 	{
-		word* mid = ImSelm[NI];
-		word* msn = ImSerN[NI];
+		unsigned short* mid = ImSelm[NI];
+		unsigned short* msn = ImSerN[NI];
 		for ( int i = 0; i < Ni; i++ )
 		{
-			word MID = mid[i];
+			unsigned short MID = mid[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1893,7 +1893,7 @@ extern "C" __declspec( dllexport ) void SelectUnits( GAMEOBJ* Units, bool Add )
 	int NU = 0;
 	for ( int i = 0; i < UG->N; i++ )
 	{
-		word MID = UG->IDS[i];
+		unsigned short MID = UG->IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1910,17 +1910,17 @@ extern "C" __declspec( dllexport ) void SelectUnits( GAMEOBJ* Units, bool Add )
 		if ( NU )
 		{
 			int N = NSL[Nat];
-			Selm[Nat] = (word*) realloc( Selm[Nat], ( N + NU ) * 2 );
-			SerN[Nat] = (word*) realloc( SerN[Nat], ( N + NU ) * 2 );
+			Selm[Nat] = (unsigned short*) realloc( Selm[Nat], ( N + NU ) * 2 );
+			SerN[Nat] = (unsigned short*) realloc( SerN[Nat], ( N + NU ) * 2 );
 
-			word* SMon = Selm[Nat];
-			word* SN = SerN[Nat];
+			unsigned short* SMon = Selm[Nat];
+			unsigned short* SN = SerN[Nat];
 			NSL[Nat] += NU;
 
 			NU = 0;
 			for ( int i = 0; i < UG->N; i++ )
 			{
-				word MID = UG->IDS[i];
+				unsigned short MID = UG->IDS[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -1941,7 +1941,7 @@ extern "C" __declspec( dllexport ) void SelectUnits( GAMEOBJ* Units, bool Add )
 		CopyReIm( Nat );
 	}
 }
-extern "C" __declspec( dllexport ) void SelectUnits1( byte Nat, GAMEOBJ* Units, bool Add )
+extern "C" __declspec( dllexport ) void SelectUnits1( unsigned char Nat, GAMEOBJ* Units, bool Add )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat > 7 )return;
@@ -1957,7 +1957,7 @@ extern "C" __declspec( dllexport ) void SelectUnits1( byte Nat, GAMEOBJ* Units, 
 	if ( !Add )ClearSelection( Nat );
 	for ( int i = 0; i < UG->N; i++ )
 	{
-		word MID = UG->IDS[i];
+		unsigned short MID = UG->IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1967,16 +1967,16 @@ extern "C" __declspec( dllexport ) void SelectUnits1( byte Nat, GAMEOBJ* Units, 
 	if ( NU )
 	{
 		int N = NSL[Nat];
-		Selm[Nat] = (word*) realloc( Selm[Nat], ( N + NU ) * 2 );
-		SerN[Nat] = (word*) realloc( SerN[Nat], ( N + NU ) * 2 );
-		word* SMon = Selm[Nat];
-		word* SN = SerN[Nat];
+		Selm[Nat] = (unsigned short*) realloc( Selm[Nat], ( N + NU ) * 2 );
+		SerN[Nat] = (unsigned short*) realloc( SerN[Nat], ( N + NU ) * 2 );
+		unsigned short* SMon = Selm[Nat];
+		unsigned short* SN = SerN[Nat];
 		NSL[Nat] += NU;
 
 		NU = 0;
 		for ( int i = 0; i < UG->N; i++ )
 		{
-			word MID = UG->IDS[i];
+			unsigned short MID = UG->IDS[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1992,7 +1992,7 @@ extern "C" __declspec( dllexport ) void SelectUnits1( byte Nat, GAMEOBJ* Units, 
 	}
 	CopyReIm( Nat );
 }
-extern "C" __declspec( dllexport ) void SelectUnitsType( GAMEOBJ* UnitsType, byte Nat, bool Add )
+extern "C" __declspec( dllexport ) void SelectUnitsType( GAMEOBJ* UnitsType, unsigned char Nat, bool Add )
 {
 	Nat = AssignTBL[Nat];
 	if ( UnitsType->Type != 'UTYP' )
@@ -2018,11 +2018,11 @@ extern "C" __declspec( dllexport ) void SelectUnitsType( GAMEOBJ* UnitsType, byt
 	if ( NU )
 	{
 		int N = NSL[Nat];
-		Selm[Nat] = (word*) realloc( Selm[Nat], ( N + NU ) * 2 );
-		SerN[Nat] = (word*) realloc( SerN[Nat], ( N + NU ) * 2 );
+		Selm[Nat] = (unsigned short*) realloc( Selm[Nat], ( N + NU ) * 2 );
+		SerN[Nat] = (unsigned short*) realloc( SerN[Nat], ( N + NU ) * 2 );
 
-		word* SMon = Selm[Nat];
-		word* SN = SerN[Nat];
+		unsigned short* SMon = Selm[Nat];
+		unsigned short* SN = SerN[Nat];
 		NSL[Nat] += NU;
 
 		NU = 0;
@@ -2041,9 +2041,9 @@ extern "C" __declspec( dllexport ) void SelectUnitsType( GAMEOBJ* UnitsType, byt
 	CopyReIm( Nat );
 }
 
-void DieSelected( byte NI );
-void EraseSelected( byte NI );
-extern "C" __declspec( dllexport ) bool SelDie( byte Nat )
+void DieSelected( unsigned char NI );
+void EraseSelected( unsigned char NI );
+extern "C" __declspec( dllexport ) bool SelDie( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2060,7 +2060,7 @@ extern "C" __declspec( dllexport ) void DoMessagesBrief()
 {
 	BreefUInfo = 1;
 }
-extern "C" __declspec( dllexport ) void SelErase( byte NI )
+extern "C" __declspec( dllexport ) void SelErase( unsigned char NI )
 {
 	if ( NI >= 8 )
 	{
@@ -2070,7 +2070,7 @@ extern "C" __declspec( dllexport ) void SelErase( byte NI )
 	}
 	EraseSelected( NI );
 }
-extern "C" __declspec( dllexport ) void SelAttackGroup( byte Nat, GAMEOBJ* Enemy )
+extern "C" __declspec( dllexport ) void SelAttackGroup( unsigned char Nat, GAMEOBJ* Enemy )
 {
 	Nat = AssignTBL[Nat];
 	if ( Enemy->Type != 'UNIT' )
@@ -2088,15 +2088,15 @@ extern "C" __declspec( dllexport ) void SelAttackGroup( byte Nat, GAMEOBJ* Enemy
 	TestUnitsGroup( Enemy->Index );
 	UnitsGroup* AG = SCENINF.UGRP + Enemy->Index;
 	int N = AG->N;
-	word* Uids = AG->IDS;
-	word* Sns = AG->SNS;
-	word* MyUnits = Selm[Nat];
-	word* MySN = SerN[Nat];
+	unsigned short* Uids = AG->IDS;
+	unsigned short* Sns = AG->SNS;
+	unsigned short* MyUnits = Selm[Nat];
+	unsigned short* MySN = SerN[Nat];
 	int NU = NSL[Nat];
 	if ( !NSL )return;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Uids[i];
+		unsigned short MID = Uids[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2104,7 +2104,7 @@ extern "C" __declspec( dllexport ) void SelAttackGroup( byte Nat, GAMEOBJ* Enemy
 			{
 				for ( int j = 0; j < NU; j++ )
 				{
-					word MyMid = MyUnits[j];
+					unsigned short MyMid = MyUnits[j];
 					if ( MyMid != 0xFFFF )
 					{
 						OneObject* MyObj = Group[MyMid];
@@ -2118,9 +2118,9 @@ extern "C" __declspec( dllexport ) void SelAttackGroup( byte Nat, GAMEOBJ* Enemy
 		}
 	}
 }
-void ComOpenGates( byte NI );
-void ComCloseGates( byte NI );
-extern "C" __declspec( dllexport ) bool SelOpenGates( byte Nat )
+void ComOpenGates( unsigned char NI );
+void ComCloseGates( unsigned char NI );
+extern "C" __declspec( dllexport ) bool SelOpenGates( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2132,16 +2132,16 @@ extern "C" __declspec( dllexport ) bool SelOpenGates( byte Nat )
 	ComOpenGates( Nat );
 	return true;
 }
-extern "C" __declspec( dllexport ) int GetNInside( byte Nat )
+extern "C" __declspec( dllexport ) int GetNInside( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int Ni = 0;
 	int N = NSL[Nat];
-	word* SM = Selm[Nat];
-	word* SR = SerN[Nat];
+	unsigned short* SM = Selm[Nat];
+	unsigned short* SR = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SM[i];
+		unsigned short MID = SM[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2153,16 +2153,16 @@ extern "C" __declspec( dllexport ) int GetNInside( byte Nat )
 	}
 	return Ni;
 }
-extern "C" __declspec( dllexport ) int GetMaxInside( byte Nat )
+extern "C" __declspec( dllexport ) int GetMaxInside( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int Ni = 0;
 	int N = NSL[Nat];
-	word* SM = Selm[Nat];
-	word* SR = SerN[Nat];
+	unsigned short* SM = Selm[Nat];
+	unsigned short* SR = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SM[i];
+		unsigned short MID = SM[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2174,15 +2174,15 @@ extern "C" __declspec( dllexport ) int GetMaxInside( byte Nat )
 	}
 	return Ni;
 }
-extern "C" __declspec( dllexport ) void PushUnitAway( byte Nat )
+extern "C" __declspec( dllexport ) void PushUnitAway( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int N = NSL[Nat];
-	word* SM = Selm[Nat];
-	word* SR = SerN[Nat];
+	unsigned short* SM = Selm[Nat];
+	unsigned short* SR = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SM[i];
+		unsigned short MID = SM[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2195,7 +2195,7 @@ extern "C" __declspec( dllexport ) void PushUnitAway( byte Nat )
 	}
 }
 void LeaveAll( OneObject* OB );
-extern "C" __declspec( dllexport ) void PushAllUnitsAway( byte Nat )
+extern "C" __declspec( dllexport ) void PushAllUnitsAway( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( NSL[Nat] )
@@ -2203,7 +2203,7 @@ extern "C" __declspec( dllexport ) void PushAllUnitsAway( byte Nat )
 		int N = NSL[Nat];
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = Selm[Nat][i];
+			unsigned short MID = Selm[Nat][i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2215,16 +2215,16 @@ extern "C" __declspec( dllexport ) void PushAllUnitsAway( byte Nat )
 		}
 	}
 }
-extern "C" __declspec( dllexport ) void SendUnitsToTransport( byte Nat )
+extern "C" __declspec( dllexport ) void SendUnitsToTransport( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
-	word TransID = 0xFFFF;
+	unsigned short TransID = 0xFFFF;
 	if ( NSL[Nat] )
 	{
 		int N = NSL[Nat];
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = Selm[Nat][i];
+			unsigned short MID = Selm[Nat][i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2238,7 +2238,7 @@ extern "C" __declspec( dllexport ) void SendUnitsToTransport( byte Nat )
 		{
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Selm[Nat][i];
+				unsigned short MID = Selm[Nat][i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -2251,15 +2251,15 @@ extern "C" __declspec( dllexport ) void SendUnitsToTransport( byte Nat )
 		}
 	}
 }
-extern "C" __declspec( dllexport ) bool CheckLeaveAbility( byte Nat )
+extern "C" __declspec( dllexport ) bool CheckLeaveAbility( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int N = NSL[Nat];
-	word* SM = Selm[Nat];
-	word* SR = SerN[Nat];
+	unsigned short* SM = Selm[Nat];
+	unsigned short* SR = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SM[i];
+		unsigned short MID = SM[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2268,7 +2268,7 @@ extern "C" __declspec( dllexport ) bool CheckLeaveAbility( byte Nat )
 	}
 	return false;
 }
-word SearchUnitInZone( int zx, int zy, int Rz, byte Nat )
+unsigned short SearchUnitInZone( int zx, int zy, int Rz, unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int R = ( Rz >> 11 ) + 2;
@@ -2295,7 +2295,7 @@ word SearchUnitInZone( int zx, int zy, int Rz, byte Nat )
 				if ( NMon )
 				{
 					int ofs1 = cell << SHFCELL;
-					word MID;
+					unsigned short MID;
 					for ( int i = 0; i < NMon; i++ )
 					{
 						MID = GetNMSL( ofs1 + i );
@@ -2314,7 +2314,7 @@ word SearchUnitInZone( int zx, int zy, int Rz, byte Nat )
 	return 0xFFFF;
 }
 
-extern "C" __declspec( dllexport ) void AttackZoneByArtillery( GAMEOBJ* ArtGroup, GAMEOBJ* Zone, byte Nat )
+extern "C" __declspec( dllexport ) void AttackZoneByArtillery( GAMEOBJ* ArtGroup, GAMEOBJ* Zone, unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int xc, yc, R;
@@ -2350,7 +2350,7 @@ extern "C" __declspec( dllexport ) void AttackZoneByArtillery( GAMEOBJ* ArtGroup
 		}
 	}
 
-	word MID = SearchUnitInZone( xc, yc, R, Nat );
+	unsigned short MID = SearchUnitInZone( xc, yc, R, Nat );
 
 	if ( MID != 0xFFFF )
 	{
@@ -2358,13 +2358,13 @@ extern "C" __declspec( dllexport ) void AttackZoneByArtillery( GAMEOBJ* ArtGroup
 		int EnX = Enm->RealX >> 4;
 		int EnY = Enm->RealY >> 4;
 		int EnZ = GetHeight( EnX, EnY ) + 32;
-		word* AMID = SCENINF.UGRP[ArtGroup->Index].IDS;
-		word* AUSN = SCENINF.UGRP[ArtGroup->Index].SNS;
+		unsigned short* AMID = SCENINF.UGRP[ArtGroup->Index].IDS;
+		unsigned short* AUSN = SCENINF.UGRP[ArtGroup->Index].SNS;
 		int AUN = SCENINF.UGRP[ArtGroup->Index].N;
 
 		for ( int j = 0; j < AUN; j++ )
 		{
-			word MMID = AMID[j];
+			unsigned short MMID = AMID[j];
 			if ( MMID != 0xFFFF )
 			{
 				OneObject* OB = Group[MMID];
@@ -2380,12 +2380,12 @@ extern "C" __declspec( dllexport ) void AttackZoneByArtillery( GAMEOBJ* ArtGroup
 	}
 }
 
-word FindShipInZone( int x0, int y0, byte Nat )
+unsigned short FindShipInZone( int x0, int y0, unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
-	word* Uni = NatList[Nat];
+	unsigned short* Uni = NatList[Nat];
 	int N = NtNUnits[Nat];
-	word UNIT = 0xFFFF;
+	unsigned short UNIT = 0xFFFF;
 	int RMIN = 1000000;
 
 	for ( int i = 0; i < N; i++ )
@@ -2393,7 +2393,7 @@ word FindShipInZone( int x0, int y0, byte Nat )
 		OneObject* OB = Group[Uni[i]];
 		if ( OB && OB->LockType && !OB->Sdoxlo )
 		{
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			if ( Usage != FisherID )
 			{
 				int R0 = Norma( OB->RealX - x0, OB->RealY - y0 );
@@ -2409,13 +2409,13 @@ word FindShipInZone( int x0, int y0, byte Nat )
 	return UNIT;
 }
 
-OneObject* SearchUnitInCell( int cell, byte nmask )
+OneObject* SearchUnitInCell( int cell, unsigned char nmask )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
 	if ( NMon < 3 )return NULL;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -2427,13 +2427,13 @@ OneObject* SearchUnitInCell( int cell, byte nmask )
 	}
 	return NULL;
 }
-OneObject* SearchShipInCell( int cell, byte nmask )
+OneObject* SearchShipInCell( int cell, unsigned char nmask )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
 	if ( NMon < 3 )return NULL;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -2445,10 +2445,10 @@ OneObject* SearchShipInCell( int cell, byte nmask )
 	}
 	return NULL;
 }
-OneObject* SearchBuildingInCell( int cell, byte nmask )
+OneObject* SearchBuildingInCell( int cell, unsigned char nmask )
 {
 	cell += VAL_MAXCX + 1;
-	word MID = BLDList[cell];
+	unsigned short MID = BLDList[cell];
 	if ( MID != 0xFFFF )
 	{
 		OneObject* OB = Group[MID];
@@ -2456,12 +2456,12 @@ OneObject* SearchBuildingInCell( int cell, byte nmask )
 	}
 	return NULL;
 }
-bool CheckVisibility( int x1, int y1, int x2, int y2, word MyID );
+bool CheckVisibility( int x1, int y1, int x2, int y2, unsigned short MyID );
 void SearchEnemyForAIArtillery( OneObject* OB );
 void AIArtilleryAgainstTowers( OneObject* OB );
 void SearchEnemyForMortira( OneObject* OB );
 void EraseBrigade( Brigade* BR );
-OneObject* TryToFindEnemy( int x, int y, int r0, int r1, byte mask )
+OneObject* TryToFindEnemy( int x, int y, int r0, int r1, unsigned char mask )
 {
 	int cell = ( ( y >> 11 ) << VAL_SHFCX ) + ( x >> 11 );
 	int mindx = -( x >> 11 );
@@ -2469,7 +2469,7 @@ OneObject* TryToFindEnemy( int x, int y, int r0, int r1, byte mask )
 	int mindy = -( y >> 11 );
 	int maxdy = ( msx >> 2 ) + mindy;
 	int rx1 = ( r1 >> 7 ) + 1;
-	byte nmask = ~mask;
+	unsigned char nmask = ~mask;
 	OneObject* DestObj = NULL;
 	OneObject* DestShip = NULL;
 	OneObject* DestBld = NULL;
@@ -2539,7 +2539,7 @@ OneObject* TryToFindEnemy( int x, int y, int r0, int r1, byte mask )
 	if ( DestObj )return DestObj;
 	return NULL;
 }
-extern "C" __declspec( dllexport ) void AttackBuildingsInZone( GAMEOBJ* ArtGroup, GAMEOBJ* Zone, byte Nat )
+extern "C" __declspec( dllexport ) void AttackBuildingsInZone( GAMEOBJ* ArtGroup, GAMEOBJ* Zone, unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	int xc, yc, R;
@@ -2571,12 +2571,12 @@ extern "C" __declspec( dllexport ) void AttackBuildingsInZone( GAMEOBJ* ArtGroup
 	int XC = 0;
 	int YC = 0;
 	int NU0 = 0;
-	word* AMID = SCENINF.UGRP[ArtGroup->Index].IDS;
-	word* AUSN = SCENINF.UGRP[ArtGroup->Index].SNS;
+	unsigned short* AMID = SCENINF.UGRP[ArtGroup->Index].IDS;
+	unsigned short* AUSN = SCENINF.UGRP[ArtGroup->Index].SNS;
 	int AUN = SCENINF.UGRP[ArtGroup->Index].N;
 	for ( int j = 0; j < AUN; j++ )
 	{
-		word MID = AMID[j];
+		unsigned short MID = AMID[j];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2592,8 +2592,8 @@ extern "C" __declspec( dllexport ) void AttackBuildingsInZone( GAMEOBJ* ArtGroup
 		}
 	}
 }
-void ProduceObject( byte NI, word Type );
-extern "C" __declspec( dllexport ) void ProduceOneUnit( byte Nat, GAMEOBJ* UnitType )
+void ProduceObject( unsigned char NI, unsigned short Type );
+extern "C" __declspec( dllexport ) void ProduceOneUnit( unsigned char Nat, GAMEOBJ* UnitType )
 {
 	Nat = AssignTBL[Nat];
 	if ( UnitType->Type != 'UTYP' )
@@ -2603,7 +2603,7 @@ extern "C" __declspec( dllexport ) void ProduceOneUnit( byte Nat, GAMEOBJ* UnitT
 	}
 	ProduceObject( Nat, UnitType->Index );
 }
-extern "C" __declspec( dllexport ) bool SelCloseGates( byte Nat )
+extern "C" __declspec( dllexport ) bool SelCloseGates( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2615,8 +2615,8 @@ extern "C" __declspec( dllexport ) bool SelCloseGates( byte Nat )
 	ComCloseGates( Nat );
 	return true;
 }
-void SendSelectedToXY( byte NI, int xx, int yy, short Dir, byte Prio, byte Type );
-extern "C" __declspec( dllexport ) bool SelSendTo( byte Nat, GAMEOBJ* Zone, byte Dir, byte Type )
+void SendSelectedToXY( unsigned char NI, int xx, int yy, short Dir, unsigned char Prio, unsigned char Type );
+extern "C" __declspec( dllexport ) bool SelSendTo( unsigned char Nat, GAMEOBJ* Zone, unsigned char Dir, unsigned char Type )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2640,7 +2640,7 @@ extern "C" __declspec( dllexport ) bool SelSendTo( byte Nat, GAMEOBJ* Zone, byte
 	SendSelectedToXY( Nat, AZ->x << 4, AZ->y << 4, Dir, 16, Type );
 	return true;
 }
-extern "C" __declspec( dllexport ) bool SelSendAndKill( byte Nat, GAMEOBJ* Zone, byte Dir, byte Type )
+extern "C" __declspec( dllexport ) bool SelSendAndKill( unsigned char Nat, GAMEOBJ* Zone, unsigned char Dir, unsigned char Type )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2664,8 +2664,8 @@ extern "C" __declspec( dllexport ) bool SelSendAndKill( byte Nat, GAMEOBJ* Zone,
 	SendSelectedToXY( Nat, AZ->x << 4, AZ->y << 4, Dir, 128, Type );
 	return true;
 }
-void PatrolGroup( byte NI, int x1, int y1, byte Dir );
-extern "C" __declspec( dllexport ) bool Patrol( byte Nat, GAMEOBJ* Zone, byte Dir )
+void PatrolGroup( unsigned char NI, int x1, int y1, unsigned char Dir );
+extern "C" __declspec( dllexport ) bool Patrol( unsigned char Nat, GAMEOBJ* Zone, unsigned char Dir )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2689,7 +2689,7 @@ extern "C" __declspec( dllexport ) bool Patrol( byte Nat, GAMEOBJ* Zone, byte Di
 	PatrolGroup( Nat, AZ->x << 4, AZ->y << 4, Dir );
 	return true;
 }
-extern "C" __declspec( dllexport ) void ChangeFriends( byte Nat, byte Flags )
+extern "C" __declspec( dllexport ) void ChangeFriends( unsigned char Nat, unsigned char Flags )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2708,7 +2708,7 @@ extern "C" __declspec( dllexport ) void ChangeFriends( byte Nat, byte Flags )
 	}
 	NATIONS[Nat].NMask = Flags;
 }
-extern "C" __declspec( dllexport ) void SelChangeNation( byte SrcNat, byte DstNat )
+extern "C" __declspec( dllexport ) void SelChangeNation( unsigned char SrcNat, unsigned char DstNat )
 {
 	if ( SrcNat >= 8 || DstNat >= 8 )
 	{
@@ -2723,12 +2723,12 @@ extern "C" __declspec( dllexport ) void SelChangeNation( byte SrcNat, byte DstNa
 		return;
 	}
 	int N = NSL[SrcNat];
-	word* SMon = Selm[SrcNat];
-	word* SN = SerN[SrcNat];
+	unsigned short* SMon = Selm[SrcNat];
+	unsigned short* SN = SerN[SrcNat];
 	Nation* DNat = NATIONS + DstNat;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2755,7 +2755,7 @@ extern "C" __declspec( dllexport ) void SelChangeNation( byte SrcNat, byte DstNa
 	}
 	ClearSelection( SrcNat );
 }
-extern "C" __declspec( dllexport ) void SelAutoKill( byte Nat )
+extern "C" __declspec( dllexport ) void SelAutoKill( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -2765,11 +2765,11 @@ extern "C" __declspec( dllexport ) void SelAutoKill( byte Nat )
 		return;
 	}
 	int N = NSL[Nat];
-	word* SMon = Selm[Nat];
-	word* SN = SerN[Nat];
+	unsigned short* SMon = Selm[Nat];
+	unsigned short* SN = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2780,10 +2780,10 @@ extern "C" __declspec( dllexport ) void SelAutoKill( byte Nat )
 		}
 	}
 }
-void MakeStandGround( byte NI );
-void CancelStandGround( byte NI );
-void SetSearchVictim( byte NI, byte Val );
-extern "C" __declspec( dllexport ) void SetStandGround( byte Nat, byte val )
+void MakeStandGround( unsigned char NI );
+void CancelStandGround( unsigned char NI );
+void SetSearchVictim( unsigned char NI, unsigned char Val );
+extern "C" __declspec( dllexport ) void SetStandGround( unsigned char Nat, unsigned char val )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat > 7 )
@@ -2795,7 +2795,7 @@ extern "C" __declspec( dllexport ) void SetStandGround( byte Nat, byte val )
 	if ( val )MakeStandGround( Nat );
 	else CancelStandGround( Nat );
 }
-extern "C" __declspec( dllexport ) void AllowAttack( byte Nat, byte val )
+extern "C" __declspec( dllexport ) void AllowAttack( unsigned char Nat, unsigned char val )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat > 7 )
@@ -2865,7 +2865,7 @@ extern "C" __declspec( dllexport ) void SetLooseText( char* ID )
 }
 
 extern bool ShowStat;
-void CmdEndGame( byte NI, byte state, byte cause );
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause );
 extern int HISPEED;
 
 extern "C" __declspec( dllexport ) void ShowVictory()
@@ -2956,7 +2956,7 @@ extern "C" __declspec( dllexport ) void ShowPageParam( char* Name, ... )
 	}
 }
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 bool AskMissionQuestion( char* Bmp, char* Text );
 
 extern "C" __declspec( dllexport ) bool AskQuestion( char* Name )
@@ -2982,14 +2982,14 @@ extern "C" __declspec( dllexport ) bool AskQuestion( char* Name )
 	return 0;
 }
 
-int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp2, byte or2, char* Text2, char* Quest );
+int ProcessComplexQuestion( int Nx, char* Bmp1, unsigned char or1, char* Text1, char* Bmp2, unsigned char or2, char* Text2, char* Quest );
 int _pr_q1 = -1;
 int _pr_q2 = -1;
 int _pr_Nx = -1;
-byte _pr_or1;
-byte _pr_or2;
+unsigned char _pr_or1;
+unsigned char _pr_or2;
 
-extern "C" __declspec( dllexport ) int AskComplexQuestion( int Nx, char* Name1, byte or1, char* Name2, byte or2, char* Quest )
+extern "C" __declspec( dllexport ) int AskComplexQuestion( int Nx, char* Name1, unsigned char or1, char* Name2, unsigned char or2, char* Quest )
 {
 	if ( PlayGameMode )RGAME.Extract();
 	int q1 = -1;
@@ -3102,7 +3102,7 @@ void ShowHistory()
 }
 
 //-----------------------------Resource functions------------------------//
-extern "C" __declspec( dllexport ) int GetResource( byte Nat, byte ID )
+extern "C" __declspec( dllexport ) int GetResource( unsigned char Nat, unsigned char ID )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 && ID < 6 )
@@ -3117,7 +3117,7 @@ extern "C" __declspec( dllexport ) int GetResource( byte Nat, byte ID )
 	return 0;
 }
 
-extern "C" __declspec( dllexport ) void AddResource( byte Nat, byte ID, int Amount )
+extern "C" __declspec( dllexport ) void AddResource( unsigned char Nat, unsigned char ID, int Amount )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 && ID < 6 )
@@ -3133,7 +3133,7 @@ extern "C" __declspec( dllexport ) void AddResource( byte Nat, byte ID, int Amou
 
 }
 
-extern "C" __declspec( dllexport ) void SetResource( byte Nat, byte ID, int Amount )
+extern "C" __declspec( dllexport ) void SetResource( unsigned char Nat, unsigned char ID, int Amount )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 8 && ID < 6 )
@@ -3149,9 +3149,9 @@ extern "C" __declspec( dllexport ) void SetResource( byte Nat, byte ID, int Amou
 
 }
 
-void GetUnitCost( byte NI, word NIndex, int* Cost );
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost );
 
-extern "C" __declspec( dllexport ) int GetUnitCost( byte Nat, GAMEOBJ* UnitType, byte ResID )
+extern "C" __declspec( dllexport ) int GetUnitCost( unsigned char Nat, GAMEOBJ* UnitType, unsigned char ResID )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -3177,7 +3177,7 @@ extern "C" __declspec( dllexport ) int GetUnitCost( byte Nat, GAMEOBJ* UnitType,
 	return Cost[ResID];
 }
 
-extern "C" __declspec( dllexport ) int GetUpgradeCost( byte Nat, GAMEOBJ* Upgrade, byte ResID )
+extern "C" __declspec( dllexport ) int GetUpgradeCost( unsigned char Nat, GAMEOBJ* Upgrade, unsigned char ResID )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat >= 8 )
@@ -3202,7 +3202,7 @@ extern "C" __declspec( dllexport ) int GetUpgradeCost( byte Nat, GAMEOBJ* Upgrad
 }
 
 //----------------------------TRIGGER FUNCTION---------------------------//
-extern "C" __declspec( dllexport ) byte Trigg( byte ID )
+extern "C" __declspec( dllexport ) unsigned char Trigg( unsigned char ID )
 {
 	if ( ID > 511 )
 	{
@@ -3213,7 +3213,7 @@ extern "C" __declspec( dllexport ) byte Trigg( byte ID )
 	return ~SCENINF.TRIGGER[ID];
 }
 
-extern "C" __declspec( dllexport ) void SetTrigg( byte ID, byte Val )
+extern "C" __declspec( dllexport ) void SetTrigg( unsigned char ID, unsigned char Val )
 {
 	if ( ID > 511 )
 	{
@@ -3224,7 +3224,7 @@ extern "C" __declspec( dllexport ) void SetTrigg( byte ID, byte Val )
 	SCENINF.TRIGGER[ID] = ~Val;
 }
 
-extern "C" __declspec( dllexport ) word WTrigg( byte ID )
+extern "C" __declspec( dllexport ) unsigned short WTrigg( unsigned char ID )
 {
 	if ( ID > 511 )
 	{
@@ -3235,7 +3235,7 @@ extern "C" __declspec( dllexport ) word WTrigg( byte ID )
 	return ~SCENINF.TRIGGER[ID];
 }
 
-extern "C" __declspec( dllexport ) void SetWTrigg( byte ID, word Val )
+extern "C" __declspec( dllexport ) void SetWTrigg( unsigned char ID, unsigned short Val )
 {
 	if ( ID > 511 )
 	{
@@ -3247,9 +3247,9 @@ extern "C" __declspec( dllexport ) void SetWTrigg( byte ID, word Val )
 }
 
 //------------------------------AI Functions-----------------------------//
-void LoadAIFromDLL( byte Nat, char* Name );
+void LoadAIFromDLL( unsigned char Nat, char* Name );
 
-extern "C" __declspec( dllexport ) void RunAI( byte Nat )
+extern "C" __declspec( dllexport ) void RunAI( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 1 || Nat>7 )
@@ -3290,7 +3290,7 @@ extern "C" __declspec( dllexport ) void RunAI( byte Nat )
 		}
 	}
 }
-extern "C" __declspec( dllexport ) void RunAIWithPeasants( byte Nat, char* P_Name )
+extern "C" __declspec( dllexport ) void RunAIWithPeasants( unsigned char Nat, char* P_Name )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat < 1 || Nat>7 )
@@ -3323,7 +3323,7 @@ extern "C" __declspec( dllexport ) void RunAIWithPeasants( byte Nat, char* P_Nam
 	}
 }
 //-----------------------------Timer commands----------------------------//
-extern "C" __declspec( dllexport ) void RunTimer( byte ID, int Long )
+extern "C" __declspec( dllexport ) void RunTimer( unsigned char ID, int Long )
 {
 	if ( ID >= 32 )
 	{
@@ -3336,7 +3336,7 @@ extern "C" __declspec( dllexport ) void RunTimer( byte ID, int Long )
 	TM->Used = true;
 	TM->First = false;
 }
-extern "C" __declspec( dllexport ) bool TimerDone( byte ID )
+extern "C" __declspec( dllexport ) bool TimerDone( unsigned char ID )
 {
 	if ( ID >= 32 )
 	{
@@ -3347,7 +3347,7 @@ extern "C" __declspec( dllexport ) bool TimerDone( byte ID )
 	GTimer* TM = SCENINF.TIME + ID;
 	return TM->Time == 0 && TM->Used;
 }
-extern "C" __declspec( dllexport ) bool TimerDoneFirst( byte ID )
+extern "C" __declspec( dllexport ) bool TimerDoneFirst( unsigned char ID )
 {
 	if ( ID >= 32 )
 	{
@@ -3364,7 +3364,7 @@ extern "C" __declspec( dllexport ) bool TimerDoneFirst( byte ID )
 	else return false;
 
 }
-extern "C" __declspec( dllexport ) bool TimerIsEmpty( byte ID )
+extern "C" __declspec( dllexport ) bool TimerIsEmpty( unsigned char ID )
 {
 	if ( ID >= 32 )
 	{
@@ -3375,7 +3375,7 @@ extern "C" __declspec( dllexport ) bool TimerIsEmpty( byte ID )
 	GTimer* TM = SCENINF.TIME + ID;
 	return !TM->Used;
 }
-extern "C" __declspec( dllexport ) void FreeTimer( byte ID )
+extern "C" __declspec( dllexport ) void FreeTimer( unsigned char ID )
 {
 	if ( ID >= 32 )
 	{
@@ -3388,7 +3388,7 @@ extern "C" __declspec( dllexport ) void FreeTimer( byte ID )
 	TM->Time = 0;
 	TM->Used = 0;
 }
-extern "C" __declspec( dllexport ) int GetTime( byte ID )
+extern "C" __declspec( dllexport ) int GetTime( unsigned char ID )
 {
 	if ( ID >= 32 )
 	{
@@ -3405,7 +3405,7 @@ extern "C" __declspec( dllexport ) int GetGlobalTime()
 	return REALTIME;
 }
 //---------------------------Dynamical zones-----------------------------//
-extern "C" __declspec( dllexport ) bool UnitsCenter( GAMEOBJ* DstZone, GAMEOBJ* Units, word R )
+extern "C" __declspec( dllexport ) bool UnitsCenter( GAMEOBJ* DstZone, GAMEOBJ* Units, unsigned short R )
 {
 	if ( Units->Type != 'UNIT' )
 	{
@@ -3420,7 +3420,7 @@ extern "C" __declspec( dllexport ) bool UnitsCenter( GAMEOBJ* DstZone, GAMEOBJ* 
 	UnitsGroup* UG = SCENINF.UGRP + Units->Index;
 	for ( int i = 0; i < UG->N; i++ )
 	{
-		word MID = UG->IDS[i];
+		unsigned short MID = UG->IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3455,24 +3455,24 @@ extern "C" __declspec( dllexport ) void RefreshScreen()
 	GSYSDRAW();
 }
 
-extern "C" __declspec( dllexport ) bool SelCenter( GAMEOBJ* DstZone, byte Nat, int R )
+extern "C" __declspec( dllexport ) bool SelCenter( GAMEOBJ* DstZone, unsigned char Nat, int R )
 {
 	Nat = AssignTBL[Nat];
 	if ( Nat > 7 )
 	{
-		IntErr( "SelCenter(DstZone,byte Nat,R) : invalid <Nat>" );
+		IntErr( "SelCenter(DstZone,unsigned char Nat,R) : invalid <Nat>" );
 		SCENINF.NErrors++;
 		return false;
 	}
 	int xs = 0;
 	int ys = 0;
 	int N = 0;
-	word* SNS = SerN[Nat];
-	word* IDS = Selm[Nat];
+	unsigned short* SNS = SerN[Nat];
+	unsigned short* IDS = Selm[Nat];
 	int NU = NSL[Nat];
 	for ( int i = 0; i < NU; i++ )
 	{
-		word MID = IDS[i];
+		unsigned short MID = IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3499,7 +3499,7 @@ extern "C" __declspec( dllexport ) bool SelCenter( GAMEOBJ* DstZone, byte Nat, i
 	}
 	return true;
 }
-extern "C" __declspec( dllexport ) bool CreateZoneNearUnit( GAMEOBJ* DstZone, GAMEOBJ* Zone, GAMEOBJ* UnitType, byte Nat, int R )
+extern "C" __declspec( dllexport ) bool CreateZoneNearUnit( GAMEOBJ* DstZone, GAMEOBJ* Zone, GAMEOBJ* UnitType, unsigned char Nat, int R )
 {
 	Nat = AssignTBL[Nat];
 	if ( UnitType->Type != 'UTYP' )
@@ -3510,7 +3510,7 @@ extern "C" __declspec( dllexport ) bool CreateZoneNearUnit( GAMEOBJ* DstZone, GA
 		return false;
 	}
 	GeneralObject* GO = NATIONS[Nat].Mon[UnitType->Index];
-	word* Mons = NatList[Nat];
+	unsigned short* Mons = NatList[Nat];
 	int N = NtNUnits[Nat];
 	if ( Zone )
 	{
@@ -3616,7 +3616,7 @@ extern "C" __declspec( dllexport ) bool CreateZoneNearGroup( GAMEOBJ* DstZone, G
 		UnitsGroup* UG = SCENINF.UGRP + Grp->Index;
 		for ( int i = 0; i < UG->N; i++ )
 		{
-			word MID = UG->IDS[i];
+			unsigned short MID = UG->IDS[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3648,7 +3648,7 @@ extern "C" __declspec( dllexport ) bool CreateZoneNearGroup( GAMEOBJ* DstZone, G
 	return false;
 }
 
-extern "C" __declspec( dllexport ) void SetLightSpot( GAMEOBJ* Zone, int R, byte index )
+extern "C" __declspec( dllexport ) void SetLightSpot( GAMEOBJ* Zone, int R, unsigned char index )
 {
 	int x0 = 0;
 	int y0 = 0;
@@ -3681,7 +3681,7 @@ extern "C" __declspec( dllexport ) void SetLightSpot( GAMEOBJ* Zone, int R, byte
 	SCENINF.LSpot[index].y = y0;
 	SCENINF.LSpot[index].Type = R;
 }
-extern "C" __declspec( dllexport ) void ClearLightSpot( byte index )
+extern "C" __declspec( dllexport ) void ClearLightSpot( unsigned char index )
 {
 	if ( index > 63 )
 	{
@@ -3728,9 +3728,9 @@ extern "C" __declspec( dllexport ) void SetStartPoint( GAMEOBJ* Zone )
 
 void AttackObjLink( OneObject* OBJ );
 int GetTopDistance( int xa, int ya, int xb, int yb );
-bool CheckVisibility( int x1, int y1, int x2, int y2, word MyID );
+bool CheckVisibility( int x1, int y1, int x2, int y2, unsigned short MyID );
 
-extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ* Zone, byte EnmNation )
+extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ* Zone, unsigned char EnmNation )
 {
 	int xc, yc, R;
 	if ( ( Zone->Type & 0xFF000000 ) == ( '@   ' - 0x202020 ) )
@@ -3755,12 +3755,12 @@ extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ
 			R = AZ->R << 4;
 		}
 	}
-	word ENLIST[800];
+	unsigned short ENLIST[800];
 	int NEN = 0;
-	word* enm = NatList[EnmNation];
+	unsigned short* enm = NatList[EnmNation];
 	int Nu = NtNUnits[EnmNation];
 	int MinR = 100000000;
-	word EMID = 0xFFFF;
+	unsigned short EMID = 0xFFFF;
 	for ( int i = 0; i < Nu; i++ )
 	{
 		OneObject* OB = Group[enm[i]];
@@ -3779,7 +3779,7 @@ extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ
 		UnitsGroup* UG = SCENINF.UGRP + Grp->Index;
 		for ( int i = 0; i < UG->N; i++ )
 		{
-			word MID = UG->IDS[i];
+			unsigned short MID = UG->IDS[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3792,9 +3792,9 @@ extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ
 						AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
 						int R0 = ADC->MinR_Attack;
 						int R1 = ADC->MaxR_Attack;
-						byte kmask = OB->newMons->KillMask;
+						unsigned char kmask = OB->newMons->KillMask;
 						bool KBUI = OB->newMons->AttBuild;
-						word EMID = 0xFFFF;
+						unsigned short EMID = 0xFFFF;
 						int Dist = 10000;
 						int Type = -1;
 						int tx0 = OB->RealX >> 10;
@@ -3841,7 +3841,7 @@ extern "C" __declspec( dllexport ) void AttackEnemyInZone( GAMEOBJ* Grp, GAMEOBJ
 							}
 						}
 						bool Vis = true;
-						word OldEMID = EMID;
+						unsigned short OldEMID = EMID;
 						if ( EMID != 0xFFFF && ( KBUI || R1 > 150 ) )
 						{
 							OneObject* EOB = Group[EMID];
@@ -3956,11 +3956,11 @@ extern "C" __declspec( dllexport ) int GetTopDst( GAMEOBJ* Z1, GAMEOBJ* Z2 )
 }
 extern City CITY[8];
 extern GlobalEnemyInfo GNFO;
-void ResearchCurrentIsland( byte Nat );
-void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
-extern "C" __declspec( dllexport ) void StartAI( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty )
+void ResearchCurrentIsland( unsigned char Nat );
+void StartAIEx( unsigned char Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
+extern "C" __declspec( dllexport ) void StartAI( unsigned char Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty )
 {
-	byte MSKS[8];
+	unsigned char MSKS[8];
 	for ( int i = 0; i < 8; i++ )
 	{
 		MSKS[i] = NATIONS[i].NMask;
@@ -3981,7 +3981,7 @@ extern "C" __declspec( dllexport ) void StartAI( byte Nat, char* Name, int Land,
 	}
 	StartAIEx( Nat, Name, Land, Money, ResOnMap, Difficulty );
 }
-void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty )
+void StartAIEx( unsigned char Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty )
 {
 	Nat = AssignTBL[Nat];
 	LoadAIFromDLL( Nat, GetTextByID( Name ) );
@@ -3992,7 +3992,7 @@ void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Dif
 	strcpy( CITY[Nat].AIID, Name );
 	NATIONS[Nat].AI_Enabled = 1;
 	for ( int i = 0; i < 8; i++ )ResearchCurrentIsland( i );
-	word* Units = NatList[Nat];
+	unsigned short* Units = NatList[Nat];
 	int N = NtNUnits[Nat];
 	int NML = 0;
 	int cxi[4];
@@ -4002,7 +4002,7 @@ void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Dif
 		OneObject* OB = Group[Units[i]];
 		if ( OB )
 		{
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			if ( Usage == MelnicaID&&NML < 4 )
 			{
 				if ( CITY[Nat].NMeln < 4 )
@@ -4061,15 +4061,15 @@ void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Dif
 	//registering storages&centers
 
 }
-extern "C" __declspec( dllexport ) void DoNotUseSelInAI( byte Nat )
+extern "C" __declspec( dllexport ) void DoNotUseSelInAI( unsigned char Nat )
 {
 	Nat = AssignTBL[Nat];
-	word* SL = Selm[Nat];
-	word* SN = SerN[Nat];
+	unsigned short* SL = Selm[Nat];
+	unsigned short* SN = SerN[Nat];
 	int N = NSL[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SL[i];
+		unsigned short MID = SL[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4104,7 +4104,7 @@ extern "C" __declspec( dllexport ) bool GetQuestPressed()
 #define TOWN_DEFENCE   0x1005
 #define MINES_UPGRADE  0x1006
 #define FAST_DIVERSION 0x1007
-extern "C" __declspec( dllexport ) void SetAIProperty( byte NAT, int Prop, int Val )
+extern "C" __declspec( dllexport ) void SetAIProperty( unsigned char NAT, int Prop, int Val )
 {
 	City* CT = CITY + NAT;
 	switch ( Prop )
@@ -4134,8 +4134,8 @@ extern "C" __declspec( dllexport ) void SetAIProperty( byte NAT, int Prop, int V
 		IntErr( "SetAIProperty : Unknown property" );
 	}
 }
-int ProcessMultilineQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Quest );
-extern "C" __declspec( dllexport ) int AskMultilineQuestion( int Nx, char* Name1, byte or1, char* Quest )
+int ProcessMultilineQuestion( int Nx, char* Bmp1, unsigned char or1, char* Text1, char* Quest );
+extern "C" __declspec( dllexport ) int AskMultilineQuestion( int Nx, char* Name1, unsigned char or1, char* Quest )
 {
 	if ( PlayGameMode )RGAME.Extract();
 	int q1 = -1;
@@ -4166,12 +4166,12 @@ extern "C" __declspec( dllexport ) void SetReadyState( GAMEOBJ* Units, bool Stat
 		IntErr( "TakeFood(Units) : Incorrect parameter" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4189,12 +4189,12 @@ extern "C" __declspec( dllexport ) void TakeFood( GAMEOBJ* Units )
 		IntErr( "TakeFood(Units) : Incorrect parameter" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4212,12 +4212,12 @@ extern "C" __declspec( dllexport ) void TakeWood( GAMEOBJ* Units )
 		IntErr( "TakeWood(Units) : Incorrect parameter" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4235,12 +4235,12 @@ extern "C" __declspec( dllexport ) void TakeStone( GAMEOBJ* Units )
 		IntErr( "TakeStone(Units) : Incorrect parameter" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4251,8 +4251,8 @@ extern "C" __declspec( dllexport ) void TakeStone( GAMEOBJ* Units )
 		}
 	}
 }
-void BuildWithSelected( byte NI, word ObjID, byte OrdType );
-extern "C" __declspec( dllexport ) void RepairBuildingsBySel( byte Nat, GAMEOBJ* Buildings )
+void BuildWithSelected( unsigned char NI, unsigned short ObjID, unsigned char OrdType );
+extern "C" __declspec( dllexport ) void RepairBuildingsBySel( unsigned char Nat, GAMEOBJ* Buildings )
 {
 	if ( Nat > 7 )return;
 	if ( Buildings->Type != 'UNIT' )
@@ -4260,13 +4260,13 @@ extern "C" __declspec( dllexport ) void RepairBuildingsBySel( byte Nat, GAMEOBJ*
 		IntErr( "RepairBuildings(Nat,Buildings) : Incorrect parameter <Buildings>" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Buildings->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Buildings->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Buildings->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Buildings->Index].SNS;
 	int Nu = SCENINF.UGRP[Buildings->Index].N;
-	byte otp = 0;
+	unsigned char otp = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4285,13 +4285,13 @@ extern "C" __declspec( dllexport ) bool CheckBuildingsComplete( GAMEOBJ* Buildin
 		IntErr( "CheckBuildingsComplete(Buildings) : Incorrect parameter <Buildings>" );
 		return false;
 	}
-	word* UIDS = SCENINF.UGRP[Buildings->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Buildings->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Buildings->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Buildings->Index].SNS;
 	int Nu = SCENINF.UGRP[Buildings->Index].N;
-	byte otp = 0;
+	unsigned char otp = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4308,13 +4308,13 @@ extern "C" __declspec( dllexport ) int GetKilled( GAMEOBJ* Units )
 		IntErr( "GetKilled(Units) : Incorrect parameter <Units>" );
 		return 0;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NK = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4326,20 +4326,20 @@ extern "C" __declspec( dllexport ) int GetKilled( GAMEOBJ* Units )
 	}
 	return NK;
 }
-extern "C" __declspec( dllexport ) int GetUnitsByNation( GAMEOBJ* Units, byte Nat )
+extern "C" __declspec( dllexport ) int GetUnitsByNation( GAMEOBJ* Units, unsigned char Nat )
 {
 	if ( Units->Type != 'UNIT' )
 	{
 		IntErr( "GetUnitsByNation(Units,Nat) : Incorrect parameter <Units>" );
 		return 0;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NK = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4365,13 +4365,13 @@ extern "C" __declspec( dllexport ) void ProduceUnit( GAMEOBJ* Units, GAMEOBJ* Un
 		IntErr( "ProduceUnit(Units,UnitType,Dest) : Invalid parameter <UnitType>" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NK = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4400,13 +4400,13 @@ extern "C" __declspec( dllexport ) void ProduceUnitFast( GAMEOBJ* Units, GAMEOBJ
 		IntErr( "ProduceUnit(Units,UnitType,Dest) : Invalid parameter <UnitType>" );
 		return;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NK = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4419,19 +4419,19 @@ extern "C" __declspec( dllexport ) void ProduceUnitFast( GAMEOBJ* Units, GAMEOBJ
 }
 void AddOneUnitToGroup( GAMEOBJ* Units, OneObject* OB )
 {
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int i = 0; i < Nu; i++ )if ( OB->Index == UIDS[i] )return;
-	UIDS = (word*) realloc( UIDS, ( Nu + 1 ) << 1 );
+	UIDS = (unsigned short*) realloc( UIDS, ( Nu + 1 ) << 1 );
 	SCENINF.UGRP[Units->Index].IDS = UIDS;
-	SIDS = (word*) realloc( SIDS, ( Nu + 1 ) << 1 );
+	SIDS = (unsigned short*) realloc( SIDS, ( Nu + 1 ) << 1 );
 	SCENINF.UGRP[Units->Index].SNS = SIDS;
 	SCENINF.UGRP[Units->Index].N = Nu + 1;
 	UIDS[Nu] = OB->Index;
 	SIDS[Nu] = OB->Serial;
 }
-extern "C" __declspec( dllexport ) void SaveSelectedUnits( byte NI, GAMEOBJ* Units, bool add )
+extern "C" __declspec( dllexport ) void SaveSelectedUnits( unsigned char NI, GAMEOBJ* Units, bool add )
 {
 	if ( Units->Type != 'UNIT' )
 	{
@@ -4451,11 +4451,11 @@ extern "C" __declspec( dllexport ) void SaveSelectedUnits( byte NI, GAMEOBJ* Uni
 		}
 	}
 	int NS = NSL[NI];
-	word* uni = Selm[NI];
-	word* sns = SerN[NI];
+	unsigned short* uni = Selm[NI];
+	unsigned short* sns = SerN[NI];
 	for ( int i = 0; i < NS; i++ )
 	{
-		word MID = uni[i];
+		unsigned short MID = uni[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4473,12 +4473,12 @@ extern "C" __declspec( dllexport ) bool CheckProduction( GAMEOBJ* Units )
 		IntErr( "CheckProduction : Invalid <Units>" );
 		return false;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	for ( int i = 0; i < Nu; i++ )
 	{
-		word MID = UIDS[i];
+		unsigned short MID = UIDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4488,7 +4488,7 @@ extern "C" __declspec( dllexport ) bool CheckProduction( GAMEOBJ* Units )
 	}
 	return false;
 }
-extern "C" __declspec( dllexport ) bool CreateBuilding( byte Nat, GAMEOBJ* Zone, GAMEOBJ* UnitType, GAMEOBJ* DestGroup )
+extern "C" __declspec( dllexport ) bool CreateBuilding( unsigned char Nat, GAMEOBJ* Zone, GAMEOBJ* UnitType, GAMEOBJ* DestGroup )
 {
 	if ( Nat > 7 )return false;
 	if ( UnitType->Type != 'UTYP' )
@@ -4527,8 +4527,8 @@ extern "C" __declspec( dllexport ) bool CreateBuilding( byte Nat, GAMEOBJ* Zone,
 	{
 		OneObject* OB = Group[id];
 		int N = SCENINF.UGRP[DestGroup->Index].N;
-		SCENINF.UGRP[DestGroup->Index].IDS = (word*) realloc( SCENINF.UGRP[DestGroup->Index].IDS, ( N + 1 ) * 2 );
-		SCENINF.UGRP[DestGroup->Index].SNS = (word*) realloc( SCENINF.UGRP[DestGroup->Index].SNS, ( N + 1 ) * 2 );
+		SCENINF.UGRP[DestGroup->Index].IDS = (unsigned short*) realloc( SCENINF.UGRP[DestGroup->Index].IDS, ( N + 1 ) * 2 );
+		SCENINF.UGRP[DestGroup->Index].SNS = (unsigned short*) realloc( SCENINF.UGRP[DestGroup->Index].SNS, ( N + 1 ) * 2 );
 		SCENINF.UGRP[DestGroup->Index].IDS[N] = id;
 		SCENINF.UGRP[DestGroup->Index].SNS[N] = OB->Serial;
 		SCENINF.UGRP[DestGroup->Index].N++;
@@ -4565,13 +4565,13 @@ extern "C" __declspec( dllexport ) void SetDestPoint( GAMEOBJ* Units, GAMEOBJ* Z
 			return;
 		}
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	int NK = 0;
 	for ( int p = 0; p < Nu; p++ )
 	{
-		word MID = UIDS[p];
+		unsigned short MID = UIDS[p];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4613,20 +4613,20 @@ extern "C" __declspec( dllexport ) int GetNUnits( GAMEOBJ* Units )
 
 struct OneUnit
 {
-	word Index;
-	word Serial;
-	word Life;
-	word MaxLife;
-	byte AddDamage;
-	byte AddShield;
-	word Stage;
-	word MaxStage;
-	word Kills;
-	word NIndex;
-	byte Usage;
-	byte Building;
+	unsigned short Index;
+	unsigned short Serial;
+	unsigned short Life;
+	unsigned short MaxLife;
+	unsigned char AddDamage;
+	unsigned char AddShield;
+	unsigned short Stage;
+	unsigned short MaxStage;
+	unsigned short Kills;
+	unsigned short NIndex;
+	unsigned char Usage;
+	unsigned char Building;
 	int  x, y;
-	byte Reserved[16];
+	unsigned char Reserved[16];
 };
 
 extern "C" __declspec( dllexport ) bool GetUnitInfo( GAMEOBJ* Units, int Index, OneUnit* Uni )
@@ -4637,8 +4637,8 @@ extern "C" __declspec( dllexport ) bool GetUnitInfo( GAMEOBJ* Units, int Index, 
 		IntErr( "GetUnitInfo(Units,Index,Uni) : Incorrect parameter <Units>" );
 		return false;
 	}
-	word* UIDS = SCENINF.UGRP[Units->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Units->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Units->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Units->Index].SNS;
 	int Nu = SCENINF.UGRP[Units->Index].N;
 	if ( Index >= Nu )
 	{
@@ -4701,14 +4701,14 @@ extern "C" __declspec( dllexport ) void RemoveGroup( GAMEOBJ* Source, GAMEOBJ* D
 		return;
 	}
 
-	word* UIDS = SCENINF.UGRP[Source->Index].IDS;
-	word* SIDS = SCENINF.UGRP[Source->Index].SNS;
+	unsigned short* UIDS = SCENINF.UGRP[Source->Index].IDS;
+	unsigned short* SIDS = SCENINF.UGRP[Source->Index].SNS;
 	int Ns = SCENINF.UGRP[Source->Index].N;
 	int Nd = SCENINF.UGRP[Dest->Index].N;
 	if ( Ns )
 	{
-		SCENINF.UGRP[Dest->Index].IDS = (word*) realloc( SCENINF.UGRP[Dest->Index].IDS, ( Ns + Nd ) * 2 );
-		SCENINF.UGRP[Dest->Index].SNS = (word*) realloc( SCENINF.UGRP[Dest->Index].SNS, ( Ns + Nd ) * 2 );
+		SCENINF.UGRP[Dest->Index].IDS = (unsigned short*) realloc( SCENINF.UGRP[Dest->Index].IDS, ( Ns + Nd ) * 2 );
+		SCENINF.UGRP[Dest->Index].SNS = (unsigned short*) realloc( SCENINF.UGRP[Dest->Index].SNS, ( Ns + Nd ) * 2 );
 		memcpy( SCENINF.UGRP[Dest->Index].IDS + Nd, SCENINF.UGRP[Source->Index].IDS, Ns * 2 );
 		memcpy( SCENINF.UGRP[Dest->Index].SNS + Nd, SCENINF.UGRP[Source->Index].SNS, Ns * 2 );
 		free( SCENINF.UGRP[Source->Index].IDS );
@@ -4722,7 +4722,7 @@ extern "C" __declspec( dllexport ) void RemoveGroup( GAMEOBJ* Source, GAMEOBJ* D
 
 //-------------------------AI Low level functions------------------------//
 const int AI_PROB[4] = { 32768 / 100, 32768 / 50, 32768 / 10, 32768 };
-byte CurAINation = 1;
+unsigned char CurAINation = 1;
 City* CCIT = NULL;
 Nation* CNAT;
 #define PRC(x) ((32768*##x##)/100)
@@ -4764,9 +4764,9 @@ extern "C" __declspec( dllexport ) int GetAINation()
 	}
 }
 
-extern byte CannonState;
+extern unsigned char CannonState;
 
-extern "C" __declspec( dllexport ) bool TryUnit( GAMEOBJ* UnitType, int Max, byte CostPercent, byte Probability )
+extern "C" __declspec( dllexport ) bool TryUnit( GAMEOBJ* UnitType, int Max, unsigned char CostPercent, unsigned char Probability )
 {
 	if ( AiIsRunNow )
 	{
@@ -4798,7 +4798,7 @@ extern "C" __declspec( dllexport ) bool TryUnit( GAMEOBJ* UnitType, int Max, byt
 		GO->Branch = 0xFF;
 		if ( Max > CCIT->UnitAmount[UID] )
 		{
-			word prid = CCIT->PRPIndex[UID];
+			unsigned short prid = CCIT->PRPIndex[UID];
 			if ( prid != 0xFFFF )
 			{
 				ProposedProject* PRP = &CCIT->Prop[prid];
@@ -4857,7 +4857,7 @@ extern "C" __declspec( dllexport ) bool TryUpgrade( GAMEOBJ* Upgrade, int CostPe
 
 		NewUpgrade* NU = CNAT->UPGRADE[UID];
 		NU->Branch = 0xFF;
-		word prid = CCIT->UPGIndex[UID];
+		unsigned short prid = CCIT->UPGIndex[UID];
 		if ( prid != 0xFFFF )
 		{
 			ProposedProject* PRP = &CCIT->Prop[prid];
@@ -4877,7 +4877,7 @@ extern "C" __declspec( dllexport ) bool TryUpgrade( GAMEOBJ* Upgrade, int CostPe
 	}
 }
 
-extern "C" __declspec( dllexport ) void SetMineBalanse( int N, word* Bal )
+extern "C" __declspec( dllexport ) void SetMineBalanse( int N, unsigned short* Bal )
 {
 	if ( AiIsRunNow )
 	{
@@ -4907,8 +4907,8 @@ extern "C" __declspec( dllexport ) void AssignAmountOfMineUpgrades( int MU )
 	if ( AiIsRunNow )
 	{
 		CNAT->UGRP_MINEUP.N = MU;
-		CNAT->UGRP_MINEUP.UIDS = new word[MU];
-		CNAT->UGRP_MINEUP.UVAL = new word[MU];
+		CNAT->UGRP_MINEUP.UIDS = new unsigned short[MU];
+		CNAT->UGRP_MINEUP.UVAL = new unsigned short[MU];
 		memset( CNAT->UGRP_MINEUP.UIDS, 0xFF, MU * 2 );
 		memset( CNAT->UGRP_MINEUP.UVAL, 0xFF, MU * 2 );
 	}
@@ -4917,7 +4917,7 @@ extern "C" __declspec( dllexport ) void AssignAmountOfMineUpgrades( int MU )
 		AI_Error();
 	}
 }
-extern "C" __declspec( dllexport ) bool AssignMineUpgrade( word U, char* Str, word val )
+extern "C" __declspec( dllexport ) bool AssignMineUpgrade( unsigned short U, char* Str, unsigned short val )
 {
 	if ( AiIsRunNow )
 	{
@@ -5100,7 +5100,7 @@ extern "C" __declspec( dllexport ) void SET_MIN_PEASANT_BRIGADE( int x )
 	}
 }
 
-extern "C" __declspec( dllexport ) int GetMoney( byte id )
+extern "C" __declspec( dllexport ) int GetMoney( unsigned char id )
 {
 
 	if ( AiIsRunNow )
@@ -5137,17 +5137,17 @@ extern "C" __declspec( dllexport ) int GetUnits( GAMEOBJ* UnitType )
 	}
 }
 
-extern "C" __declspec( dllexport )int GetUnitsByUsage( byte Nat, byte Usage )
+extern "C" __declspec( dllexport )int GetUnitsByUsage( unsigned char Nat, unsigned char Usage )
 {
 	Nat = AssignTBL[Nat];
 	if ( AiIsRunNow )
 	{
 		int N = NtNUnits[Nat];
-		word* Units = NatList[Nat];
+		unsigned short* Units = NatList[Nat];
 		int NUN = 0;
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = Units[i];
+			unsigned short MID = Units[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -5166,22 +5166,22 @@ extern "C" __declspec( dllexport )int GetUnitsByUsage( byte Nat, byte Usage )
 	}
 }
 
-void CmdTorg( byte NI, byte SellRes, byte BuyRes, int SellAmount );
+void CmdTorg( unsigned char NI, unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 
-byte INVECO[6] = { 2,5,4,0,1,3 };
+unsigned char INVECO[6] = { 2,5,4,0,1,3 };
 
-void PerformTorg( byte Nation, byte SellRes, byte BuyRes, int SellAmount );
+void PerformTorg( unsigned char Nation, unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 
 //Performs market exchange for bots
-extern "C" __declspec( dllexport ) void AI_Torg( byte SellRes, byte BuyRes, int SellAmount )
+extern "C" __declspec( dllexport ) void AI_Torg( unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	PerformTorg( CNAT->NNUM, INVECO[SellRes], INVECO[BuyRes], SellAmount );
 }
 
-int GetTorgResultEx( byte SellRes, byte BuyRes, int SellAmount );
+int GetTorgResultEx( unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 
 //Calculates market exchange results for bots
-extern "C" __declspec( dllexport ) int GetTorgResult( byte SellRes, byte BuyRes, int SellAmount )
+extern "C" __declspec( dllexport ) int GetTorgResult( unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	return GetTorgResultEx( INVECO[SellRes], INVECO[BuyRes], SellAmount );
 }
@@ -5205,7 +5205,7 @@ extern "C" __declspec( dllexport )int GetReadyUnits( GAMEOBJ* UnitType )
 	}
 }
 
-extern "C" __declspec( dllexport )void SetUpgradeLock( byte Res, byte Val )
+extern "C" __declspec( dllexport )void SetUpgradeLock( unsigned char Res, unsigned char Val )
 {
 	if ( Res < 8 )
 	{
@@ -5229,7 +5229,7 @@ extern "C" __declspec( dllexport )void SetDefSettings( int p1, int p2 )
 extern "C" __declspec( dllexport )int GetMaxPeasantsInMines()
 {
 	int N = NtNUnits[CNAT->NNUM];
-	word* Uni = NatList[CNAT->NNUM];
+	unsigned short* Uni = NatList[CNAT->NNUM];
 	int Max = 0;
 	for ( int i = 0; i < N; i++ )
 	{
@@ -5356,7 +5356,7 @@ extern "C" __declspec( dllexport )int GetStartRes()
 	return CCIT->StartRes;
 }
 
-extern "C" __declspec( dllexport )int GetDiff( byte NI )
+extern "C" __declspec( dllexport )int GetDiff( unsigned char NI )
 {
 	return CITY[NI].Difficulty;
 }
@@ -5376,7 +5376,7 @@ extern "C" __declspec( dllexport )void SetStandartVictory()
 	SCENINF.StandartVictory = 1;
 }
 
-extern "C" __declspec( dllexport )bool NationIsErased( byte Nat )
+extern "C" __declspec( dllexport )bool NationIsErased( unsigned char Nat )
 {
 	if ( Nat < 8 )
 	{
@@ -5393,7 +5393,7 @@ extern "C" __declspec( dllexport )bool NationIsErased( byte Nat )
 			OneObject* OB = Group[i];
 			if ( OB && !( OB->Sdoxlo && !OB->Hidden ) )
 			{
-				byte USE = OB->newMons->Usage;
+				unsigned char USE = OB->newMons->Usage;
 				if ( USE == PeasantID )
 				{
 					if ( OB->NNUM == Nat )NMyPeasants++;
@@ -5430,7 +5430,7 @@ extern "C" __declspec( dllexport ) void AssignFormUnit( char* Name )
 	IntErr( "AssignFormUnit : Unknown unit type : %s", Name );
 	SCENINF.NErrors++;
 }
-extern "C" __declspec( dllexport ) void SetPlayerName( byte Nat, char* ID )
+extern "C" __declspec( dllexport ) void SetPlayerName( unsigned char Nat, char* ID )
 {
 	for ( int i = 0; i < 8; i++ )if ( PINFO[i].ColorID == Nat )
 	{
@@ -5453,9 +5453,9 @@ extern "C" __declspec( dllexport ) int GetPeaceTimeLeft()
 	return PeaceTimeStage;
 }
 extern bool RecordMode;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 int PrevRand = -1;
-extern word NPlayers;
+extern unsigned short NPlayers;
 
 extern "C" __declspec( dllexport ) int GetRandomIndex()
 {
@@ -5507,7 +5507,7 @@ extern int WasInIron[8];
 extern int WasInCoal[8];
 
 //Returns resource amount based on gathering speed
-extern "C" __declspec( dllexport ) int GetExtraction( byte ResID )
+extern "C" __declspec( dllexport ) int GetExtraction( unsigned char ResID )
 {
 	if ( !AiIsRunNow )
 	{
@@ -5546,7 +5546,7 @@ extern "C" __declspec( dllexport ) int GetExtraction( byte ResID )
 						else return 0;
 }
 
-extern "C" __declspec( dllexport ) void SetDefenseState( byte State )
+extern "C" __declspec( dllexport ) void SetDefenseState( unsigned char State )
 {
 	if ( AiIsRunNow )
 	{
@@ -5582,7 +5582,8 @@ void ErrM( char* s, char* s1 )
 	else LoadPalette( "0\\agew_1.pal" );
 	char cc2[200];
 	sprintf( cc2, s, s1 );
-	MessageBox( hwnd, cc2, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "LOADING FAILED...", cc2, nullptr);
+	//MessageBox( hwnd, cc2, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
 	assert( false );
 }
 
@@ -5748,8 +5749,8 @@ CampaginPack::CampaginPack()
 				z = sscanf( cc, "%d", &SCamp[i].NMiss );
 				if ( z != 1 )InvCamp();
 				SCamp[i].Miss = new int[SCamp[i].NMiss];
-				SCamp[i].OpenIndex = new DWORD[SCamp[i].NMiss];
-				DWORD op0, op1, op2, op3;
+				SCamp[i].OpenIndex = new unsigned long[SCamp[i].NMiss];
+				unsigned long op0, op1, op2, op3;
 				char ONOFF[32];
 				char MISSID[64];
 				for ( int q = 0; q < SCamp[i].NMiss; q++ )
@@ -5793,7 +5794,7 @@ CampaginPack::~CampaginPack()
 	}
 }
 
-void LoadAIFromDLL( byte Nat, char* Name )
+void LoadAIFromDLL( unsigned char Nat, char* Name )
 {
 	Nat = AssignTBL[Nat];
 	Nation* NT = NATIONS + Nat;
@@ -5805,7 +5806,7 @@ void LoadAIFromDLL( byte Nat, char* Name )
 	AiIsRunNow = false;
 	if ( NT->hLibAI )
 	{
-		NT->ProcessAIinDLL = (VoidProc*) GetProcAddress( NT->hLibAI, "ProcessAI" );
+		NT->ProcessAIinDLL = (VoidProc*) GetProcAddress( (HMODULE)NT->hLibAI, "ProcessAI" );
 		if ( !NT->ProcessAIinDLL )
 		{
 			char cc[128];
@@ -5815,7 +5816,7 @@ void LoadAIFromDLL( byte Nat, char* Name )
 		}
 		else
 		{
-			VoidProc* INITAI = (VoidProc*) GetProcAddress( NT->hLibAI, "InitAI" );
+			VoidProc* INITAI = (VoidProc*) GetProcAddress( (HMODULE)NT->hLibAI, "InitAI" );
 			if ( !INITAI )
 			{
 				char cc[128];
@@ -6097,7 +6098,8 @@ WarPack::~WarPack()
 
 extern "C" __declspec( dllexport ) void MissErrorMessage( char* Header, char* Message )
 {
-	MessageBox( hwnd, Message, Header, 0 );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, Header, Message, nullptr);
+	//MessageBox( hwnd, Message, Header, 0 );
 }
 
 //Is the map editor running?
@@ -6232,8 +6234,8 @@ extern "C" __declspec( dllexport ) int InsertUnitToGroup( GAMEOBJ* Src, GAMEOBJ*
 				int Id = UG->IDS[Index];
 				int Sn = UG->SNS[Index];
 				UnitsGroup* DG = SCENINF.UGRP + Dst->Index;
-				DG->IDS = (word*) realloc( DG->IDS, ( DG->N + 1 ) << 1 );
-				DG->SNS = (word*) realloc( DG->SNS, ( DG->N + 1 ) << 1 );
+				DG->IDS = (unsigned short*) realloc( DG->IDS, ( DG->N + 1 ) << 1 );
+				DG->SNS = (unsigned short*) realloc( DG->SNS, ( DG->N + 1 ) << 1 );
 				DG->IDS[DG->N] = Id;
 				DG->SNS[DG->N] = Sn;
 				DG->N++;
@@ -6249,8 +6251,8 @@ extern "C" __declspec( dllexport ) int InsertUnitToGroup( GAMEOBJ* Src, GAMEOBJ*
 			if ( OB && !OB->Sdoxlo )
 			{
 				UnitsGroup* DG = SCENINF.UGRP + Dst->Index;
-				DG->IDS = (word*) realloc( DG->IDS, ( DG->N + 1 ) << 1 );
-				DG->SNS = (word*) realloc( DG->SNS, ( DG->N + 1 ) << 1 );
+				DG->IDS = (unsigned short*) realloc( DG->IDS, ( DG->N + 1 ) << 1 );
+				DG->SNS = (unsigned short*) realloc( DG->SNS, ( DG->N + 1 ) << 1 );
 				DG->IDS[DG->N] = OB->Index;
 				DG->SNS[DG->N] = OB->Serial;
 				DG->N++;
@@ -6311,7 +6313,7 @@ extern "C" __declspec( dllexport ) void PastePiece( GAMEOBJ* Zone, char* Name )
 	}
 }
 
-extern "C" __declspec( dllexport ) void SelectBuildingsInZone( byte NI, GAMEOBJ* Zone, GAMEOBJ* UTP, bool Add )
+extern "C" __declspec( dllexport ) void SelectBuildingsInZone( unsigned char NI, GAMEOBJ* Zone, GAMEOBJ* UTP, bool Add )
 {
 	if ( !Add )
 	{

@@ -1,4 +1,4 @@
-
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -26,7 +26,6 @@
 #include "CDirSnd.h"
 #include "NewAI.h"
 #include "StrategyResearch.h"
-#include <crtdbg.h>
 #include "TopoGraf.h"
 
 #include "Safety.h"
@@ -39,31 +38,31 @@
 #define DamShf (5+ADDSH)
 #define DamSize (DamSx*DamSy)
 class DamageMap(){
-	word DIndex[DamSize];
+	unsigned short DIndex[DamSize];
 
 };
 */
 extern int COUNTER;
-const byte StrCod[26] = { 0xFF,0xFF,0xFF,0xFF,0xFF,5,0xFF,0xFF,2,4,3,0,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0,1,2,2,0xFF,0xFF };
+const unsigned char StrCod[26] = { 0xFF,0xFF,0xFF,0xFF,0xFF,5,0xFF,0xFF,2,4,3,0,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0,1,2,2,0xFF,0xFF };
 /*
-void GlobalArmyInfo::ResearchArmyDistribution(byte NI){
+void GlobalArmyInfo::ResearchArmyDistribution(unsigned char NI){
 #ifdef NOSTRATINF
 	return;
 #endif
 	int tt=GetTickCount();
 	int N=NtNUnits[NI];
-	word* Units=NatList[NI];
+	unsigned short* Units=NatList[NI];
 	memset(ArmDistr,0xFFFF,sizeof ArmDistr);
 	NCIN=0;
 	NArmy=0;
 	if(N){
 		for(int i=0;i<N;i++){
-			word MID=Units[i];
+			unsigned short MID=Units[i];
 			if(MID!=0xFFFF){
 				OneObject* OB=Group[MID];
 				if(OB&&!OB->Sdoxlo){
 					NewMonster* NM=OB->newMons;
-					byte ID=StrCod[NM->Usage];
+					unsigned char ID=StrCod[NM->Usage];
 					if(ID!=0xFF){
 						int xx1=OB->RealX>>10;
 						int yy1=OB->RealY>>10;
@@ -90,7 +89,7 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI){
 								SINFO->y=yy;
 								NCIN++;
 							}else SINFO=CIN+sdx;
-							((word*)SINFO)[ID]++;
+							((unsigned short*)SINFO)[ID]++;
 							SINFO->Total+=NM->Force;//++
 						}else OB->Die();
 					};
@@ -111,10 +110,10 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI){
 				change=false;
 				CellInfo* CINFO=CIN;
 				for(int i=0;i<NCIN;i++){
-					word AID=CINFO->ArmyID;
+					unsigned short AID=CINFO->ArmyID;
 					if(AID!=0xFFFF){
 						int cell=int(CINFO->x)+(int(CINFO->y)<<StratSH);
-						word ARMD=ArmDistr[cell+1];
+						unsigned short ARMD=ArmDistr[cell+1];
 						if(ARMD!=0xFFFF){
 							CellInfo* CI1=CIN+ARMD;
 							if(CI1->ArmyID>AID){
@@ -165,7 +164,7 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI){
 			NArmy=0;
 			int CurArmy=0;
 			for(i=0;i<NCIN;i++){
-				word ARID=CIN[i].ArmyID;
+				unsigned short ARID=CIN[i].ArmyID;
 				if(ARID>=8192){
 					if(NArmy>=MaxArmy){
 						MaxArmy+=32;
@@ -205,26 +204,26 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI){
 	//COUNTER=GetTickCount()-tt;
 };
 */
-void GlobalArmyInfo::ResearchArmyDistribution(byte NI) {
+void GlobalArmyInfo::ResearchArmyDistribution(unsigned char NI) {
 #ifdef NOSTRATINF
 	return;
 #endif
-	byte ms = 1 << NI;
+	unsigned char ms = 1 << NI;
 	int tt = GetTickCount();
 	//int N=NtNUnits[NI];
-	//word* Units=NatList[NI];
+	//unsigned short* Units=NatList[NI];
 	memset(ArmDistr, 0xFF, StratLx*StratLy * 2);
 	if (!GNFO.EINF[NI])return;
 	NCIN = 0;
 	NArmy = 0;
-	DWORD* __InflMap = GNFO.EINF[NI]->InflMap;
+	unsigned long* __InflMap = GNFO.EINF[NI]->InflMap;
 	//if(N){
 	EnemyInfo* GN0 = GNFO.EINF[NI];
 	for (int MID = 0; MID < MAXOBJECT; MID++) {
 		OneObject* OB = Group[MID];
 		if (OB && (!OB->Sdoxlo) && GN0 != GNFO.EINF[OB->NNUM]) {
 			NewMonster* NM = OB->newMons;
-			byte ID = StrCod[NM->Usage];
+			unsigned char ID = StrCod[NM->Usage];
 			if (ID != 0xFF) {
 				int xx1 = OB->RealX >> 10;
 				int yy1 = OB->RealY >> 10;
@@ -252,7 +251,7 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI) {
 						NCIN++;
 					}
 					else SINFO = CIN + sdx;
-					((word*)SINFO)[ID]++;
+					((unsigned short*)SINFO)[ID]++;
 					SINFO->Total += NM->Force;//++
 				}
 				else OB->Die();
@@ -272,10 +271,10 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI) {
 			change = false;
 			CellInfo* CINFO = CIN;
 			for (int i = 0; i < NCIN; i++) {
-				word AID = CINFO->ArmyID;
+				unsigned short AID = CINFO->ArmyID;
 				if (AID != 0xFFFF) {
 					int cell = int(CINFO->x) + (int(CINFO->y) << StratSH);
-					word ARMD = ArmDistr[cell + 1];
+					unsigned short ARMD = ArmDistr[cell + 1];
 					if (ARMD != 0xFFFF) {
 						CellInfo* CI1 = CIN + ARMD;
 						if (CI1->ArmyID > AID) {
@@ -326,7 +325,7 @@ void GlobalArmyInfo::ResearchArmyDistribution(byte NI) {
 		NArmy = 0;
 		int CurArmy = 0;
 		for (int i = 0; i < NCIN; i++) {
-			word ARID = CIN[i].ArmyID;
+			unsigned short ARID = CIN[i].ArmyID;
 			if (ARID >= 8192) {
 				if (NArmy >= MaxArmy) {
 					MaxArmy += 32;

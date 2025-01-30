@@ -23,13 +23,12 @@
 #include "3DmapEd.h"
 #include "NewMon.h"
 #include "ZBuffer.h"
-#include <crtdbg.h>
 #include "TopoGraf.h"
 
 int GetTopology( int x, int y );
 bool CheckSpritesInArea( int x, int y, int r );
 int MAXSPR;
-word GetDir( int dx, int dy );
+unsigned short GetDir( int dx, int dy );
 void UnregisterSprite( int N );
 int Prop43( int y );
 SprGroup TREES;
@@ -44,18 +43,18 @@ int GetUnitHeight( int x, int y )
 	return GetHeight( x, y );
 }
 
-byte* NSpri;//16384
+unsigned char* NSpri;//16384
 
 int** SpRefs;
 OneSprite* Sprites = nullptr;
 
-word OneObject::FindNearestBase()
+unsigned short OneObject::FindNearestBase()
 {
 	OneObject* OB;
-	byte ResID = RType;
-	byte msk = 1 << ResID;
+	unsigned char ResID = RType;
+	unsigned char msk = 1 << ResID;
 	int dist = 10000000;
-	word OID = 0xFFFF;
+	unsigned short OID = 0xFFFF;
 
 	for (int i = 0; i < MAXOBJECT; i++)
 	{
@@ -185,7 +184,7 @@ int GetMinDist( int x, int y )
 	return md;
 }
 
-bool CheckDist( int x, int y, word r )
+bool CheckDist( int x, int y, unsigned short r )
 {
 	if (CheckBar( x / 16, y / 16, ( r / 16 ) + 3, ( r / 16 ) + 3 ))
 		return false;
@@ -242,7 +241,7 @@ bool CheckTPointInside( int x, int y, T_Curve* TC )
 	};
 	return ncr & 1;
 };
-bool AddLockPts( int x0, int y0, int NPT, short* xi, short* yi, byte add )
+bool AddLockPts( int x0, int y0, int NPT, short* xi, short* yi, unsigned char add )
 {
 	T_Curve TC;
 	TC.x0 = x0;
@@ -291,7 +290,7 @@ bool AddLockPts( int x0, int y0, int NPT, short* xi, short* yi, byte add )
 	};
 	return false;
 };
-void addSprite( int x, int y, SprGroup* SG, word id )
+void addSprite( int x, int y, SprGroup* SG, unsigned short id )
 {
 	SpriteSuccess = false;
 	LastSpriteIndex = -1;
@@ -349,7 +348,7 @@ void addSprite( int x, int y, SprGroup* SG, word id )
 		AddLockPts( OSP->x - SG->Dx[id], ( OSP->y >> 1 ) - SG->Dy[id], OC->NLockPt, OC->LockX, OC->LockY, 1 );
 	};
 };
-void addSpriteAnyway( int x, int y, SprGroup* SG, word id )
+void addSpriteAnyway( int x, int y, SprGroup* SG, unsigned short id )
 {
 	SpriteSuccess = false;
 	int i = LastAddSpr;
@@ -744,7 +743,7 @@ void PreShowSprites()
 	}
 }
 
-void addScrSprite( int x, int y, SprGroup* SG, word id )
+void addScrSprite( int x, int y, SprGroup* SG, unsigned short id )
 {
 	int yy = y;
 	if (Mode3D)yy = ConvScrY( x, y );
@@ -943,7 +942,7 @@ public:
 	int BestOld;
 	int NewDist;//unit : pix
 	int OldDist;//unit : pix
-	byte ResType;
+	unsigned char ResType;
 	void InitCSR();
 };
 void CellSearch::InitCSR()
@@ -1116,7 +1115,7 @@ bool CheckSpritesInAreaNew( int x, int y, int r, bool Erase )
 	return true;
 }
 
-int CheckSpritesInCellForMine( int cell, int* xi, int* yi, int r, byte rmask )
+int CheckSpritesInCellForMine( int cell, int* xi, int* yi, int r, unsigned char rmask )
 {
 	if (cell < 0 || cell >= VAL_SPRSIZE)return true;
 	int x = *xi;
@@ -1124,7 +1123,7 @@ int CheckSpritesInCellForMine( int cell, int* xi, int* yi, int r, byte rmask )
 	int* CEL = SpRefs[cell];
 	int   NCEL = NSpri[cell];
 	if (!( CEL&&NCEL ))return -2;
-	byte rm;
+	unsigned char rm;
 	int ID = -1;
 	for (int i = 0; i < NCEL; i++)
 	{
@@ -1155,7 +1154,7 @@ int CheckMinePosition( NewMonster* NM, int* xi, int* yi, int r )
 	int x = ( *xi ) >> 4;
 	int y = ( *yi ) >> 4;
 	r >>= 4;
-	byte RMask = NM->ProdType;
+	unsigned char RMask = NM->ProdType;
 	int nr = ( r >> 7 ) + 1;
 	int nr1 = nr + nr + 1;
 	int cell = ( ( x - nr ) >> 7 ) + ( ( ( y - nr ) >> 7 ) << SprShf );
@@ -1187,7 +1186,7 @@ int GetCell( int xs, int ys )
 //xp,yp-coordinates of peasant(min units)
 //RType-resource type
 //-----Notes-------
-int FindResourceObject( int* xd, int* yd, int xp, int yp, byte RType )
+int FindResourceObject( int* xd, int* yd, int xp, int yp, unsigned char RType )
 {
 	CellSearch CSR1;
 	CSR1.xd = *xd;
@@ -1347,7 +1346,7 @@ int FindResourceObject( int* xd, int* yd, int xp, int yp, byte RType )
 	rando();
 	return INITBEST;
 };
-void FindLimResInCell( CellSearch* CSR, int cell, word Lim, int Top )
+void FindLimResInCell( CellSearch* CSR, int cell, unsigned short Lim, int Top )
 {
 	if (cell < 0 || cell >= VAL_SPRSIZE)return;
 	int* CEL = SpRefs[cell];
@@ -1398,7 +1397,7 @@ void FindLimResInCell( CellSearch* CSR, int cell, word Lim, int Top )
 	};
 };
 
-int FindLimResourceObject( int* xd, int* yd, int xp, int yp, byte RType, word Lim )
+int FindLimResourceObject( int* xd, int* yd, int xp, int yp, unsigned char RType, unsigned short Lim )
 {
 
 
@@ -1553,7 +1552,7 @@ int FindLimResourceObject( int* xd, int* yd, int xp, int yp, byte RType, word Li
 	} while (rr < 4);
 	return INITBEST;
 };
-int OneSprite::PerformWork( word Effect )
+int OneSprite::PerformWork( unsigned short Effect )
 {
 	ObjCharacter* OCR = OC;
 	WorkOver++;
@@ -1603,10 +1602,10 @@ void OneSprite::PerformDamage( int Dam )
 		Damage = 0;
 	};
 };
-//word FindResBase
+//unsigned short FindResBase
 void TakeResLink( OneObject* OBJ );
 
-int OneObject::TakeResource( int px, int py, byte ResID, int Prio, byte OrdType )
+int OneObject::TakeResource( int px, int py, unsigned char ResID, int Prio, unsigned char OrdType )
 {
 	if (UnlimitedMotion)
 		return false;
@@ -1691,7 +1690,7 @@ void TakeResLink( OneObject* OBJ )
 	int DObj = OBJ->LocalOrder->info.TakeRes.SprObj;
 	int xx = OBJ->LocalOrder->info.TakeRes.x;
 	int yy = OBJ->LocalOrder->info.TakeRes.y;
-	byte ResType = OBJ->LocalOrder->info.TakeRes.ResID;
+	unsigned char ResType = OBJ->LocalOrder->info.TakeRes.ResID;
 
 	if (ResType != 0xFF && OBJ->RAmount >= NM->MaxResPortion[ResType])
 	{
@@ -2013,7 +2012,7 @@ FindNow:
 	}
 }
 
-byte FindAnyResInCell( int x, int y, int cell, int* Dist, byte Res )
+unsigned char FindAnyResInCell( int x, int y, int cell, int* Dist, unsigned char Res )
 {
 	if (cell < 0 || cell >= VAL_SPRSIZE)return Res;
 	int* CEL = SpRefs[cell];
@@ -2021,7 +2020,7 @@ byte FindAnyResInCell( int x, int y, int cell, int* Dist, byte Res )
 	if (!( CEL&&NCEL ))return Res;
 	int dst;
 	int dist = *Dist;
-	byte rsr = Res;
+	unsigned char rsr = Res;
 	for (int i = 0; i < NCEL; i++)
 	{
 		OneSprite* OS = &Sprites[CEL[i]];
@@ -2040,11 +2039,11 @@ byte FindAnyResInCell( int x, int y, int cell, int* Dist, byte Res )
 	*Dist = dist;
 	return rsr;
 };
-byte DetermineResource( int x, int y )
+unsigned char DetermineResource( int x, int y )
 {
 	int cell = ( x >> 7 ) + ( ( y >> 7 ) << SprShf );
 	int DistR = 10000;
-	byte res = 0xFF;
+	unsigned char res = 0xFF;
 	res = FindAnyResInCell( x, y, cell, &DistR, res );
 	res = FindAnyResInCell( x, y, cell + 1, &DistR, res );
 	res = FindAnyResInCell( x, y, cell - 1, &DistR, res );
@@ -2178,13 +2177,13 @@ TimeReq::~TimeReq()
 	Kinds = 0;
 	MaxMembers = 0;
 };
-void TimeReq::Add( int ID, byte kind )
+void TimeReq::Add( int ID, unsigned char kind )
 {
 	if (!MaxMembers)
 	{
 		MaxMembers = 32;
 		IDS = new int[MaxMembers];
-		Kinds = new byte[MaxMembers];
+		Kinds = new unsigned char[MaxMembers];
 	}
 	else
 	{
@@ -2193,14 +2192,14 @@ void TimeReq::Add( int ID, byte kind )
 		{
 			MaxMembers += 32;
 			IDS = (int*) realloc( (void*) IDS, MaxMembers << 2 );
-			Kinds = (byte*) realloc( (void*) Kinds, MaxMembers );
+			Kinds = (unsigned char*) realloc( (void*) Kinds, MaxMembers );
 		};
 	};
 	IDS[NMembers] = ID;
 	Kinds[NMembers] = kind;
 	NMembers++;
 };
-void TimeReq::Del( int ID, byte Kind )
+void TimeReq::Del( int ID, unsigned char Kind )
 {
 	for (int i = 0; i < NMembers; i++)
 	{
@@ -2220,7 +2219,7 @@ void TimeReq::Handle()
 	for (int i = 0; i < NMembers; i++)
 	{
 		int ID = IDS[i];
-		byte Kind = Kinds[i];
+		unsigned char Kind = Kinds[i];
 		if (!Kind )
 		{
 			OneSprite* OS = &Sprites[ID];

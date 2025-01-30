@@ -59,7 +59,7 @@ void miniShowDestn()
 	if (( tmtmt & 7 ) < 3)return;
 	int smx = mapx + smaplx;
 	int smy = mapy + smaply;
-	byte x, y;
+	unsigned char x, y;
 	for (int i = 0; i < NDestn; i++)
 	{
 		x = DestnX[i];
@@ -125,11 +125,11 @@ void ShowMiniDestn()
 class GreenPulse
 {
 public:
-	word GreenObjs[256];
-	word GreenTime[256];
-	byte ObjColor[256];
-	byte ObjOpt[256];
-	void AddObj( word ID, byte Color );
+	unsigned short GreenObjs[256];
+	unsigned short GreenTime[256];
+	unsigned char ObjColor[256];
+	unsigned char ObjOpt[256];
+	void AddObj( unsigned short ID, unsigned char Color );
 	void AddXY( int x, int y );
 	GreenPulse();
 	void Clear();
@@ -142,7 +142,7 @@ GreenPulse::GreenPulse()
 	memset( GreenTime, 0, 512 );
 }
 
-void GreenPulse::AddObj( word ID, byte Color )
+void GreenPulse::AddObj( unsigned short ID, unsigned char Color )
 {
 	int i;
 	for (i = 0; i < 256 && GreenObjs[i] != 0xFFFF; i++);
@@ -178,7 +178,7 @@ void GreenPulse::Clear()
 }
 
 extern int AnmCursorGP;
-void DrawColorMarker( OneObject* OB, byte cl );
+void DrawColorMarker( OneObject* OB, unsigned char cl );
 extern bool Mode3D;
 
 void GreenPulse::Show()
@@ -189,7 +189,7 @@ void GreenPulse::Show()
 	{
 		if (ObjOpt[i] == 255)
 		{
-			word ID = GreenObjs[i];
+			unsigned short ID = GreenObjs[i];
 			if (ID != 0xFFFF && show)
 			{
 				GreenTime[i]--;
@@ -237,7 +237,7 @@ void InitPulse()
 	PULSAR.Clear();
 }
 
-void AddPulse( word ObjID, byte c )
+void AddPulse( unsigned short ObjID, unsigned char c )
 {
 	PULSAR.AddObj( ObjID, c );
 }
@@ -253,16 +253,16 @@ void ShowPulse()
 }
 
 //-----------------------------------National list---------------------------------
-word* NatList[8];
+unsigned short* NatList[8];
 int   NtNUnits[8];
 int   NtMaxUnits[8];
-byte NUnitsCHK[8192];
+unsigned char NUnitsCHK[8192];
 bool HealDoubleUnits()
 {
 	for (int i = 0; i < 8; i++)
 	{
 		int N = NtNUnits[i];
-		word* units = NatList[i];
+		unsigned short* units = NatList[i];
 		for (int j = 0; j < N; j++)
 		{
 			OneObject* OB = Group[units[j]];
@@ -286,7 +286,7 @@ void SetupNatList()
 	{
 		NtNUnits[i] = 0;
 		NtMaxUnits[i] = 256;
-		NatList[i] = new word[256];
+		NatList[i] = new unsigned short[256];
 	}
 }
 
@@ -301,13 +301,13 @@ void InitNatList()
 
 void AddObject( OneObject* OB )
 {
-	word ID = OB->Index;
-	word NNUM = OB->NNUM;
+	unsigned short ID = OB->Index;
+	unsigned short NNUM = OB->NNUM;
 
 	if (NtNUnits[NNUM] == NtMaxUnits[NNUM])
 	{
 		NtMaxUnits[NNUM] += 1024;
-		NatList[NNUM] = (word*) realloc( NatList[NNUM], 2 * NtMaxUnits[NNUM] );
+		NatList[NNUM] = (unsigned short*) realloc( NatList[NNUM], 2 * NtMaxUnits[NNUM] );
 	}
 
 	NatList[NNUM][NtNUnits[NNUM]] = ID;
@@ -316,11 +316,11 @@ void AddObject( OneObject* OB )
 
 void DelObject( OneObject* OB )
 {
-	word ID = OB->Index;
+	unsigned short ID = OB->Index;
 	for (int NNUM = 0; NNUM < 8; NNUM++)
 	{
 		int N = NtNUnits[NNUM];
-		word* UList = NatList[NNUM];
+		unsigned short* UList = NatList[NNUM];
 		for (int j = 0; j < N; j++)
 		{
 			if (UList[j] == ID)

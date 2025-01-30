@@ -41,9 +41,10 @@ void NLine(GFILE* f)
 	} while (tt[0] != 10 && zz == 1);
 }
 
-void Errx(LPCSTR s)
+void Errx(const char* s)
 {
-	MessageBox(hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nation loading failed...", s, nullptr);
+	//MessageBox(hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK);
 	assert(false);
 }
 
@@ -169,7 +170,7 @@ int GetWeaponIndex(char* str) {
 	return SearchStr(mbm, str, nmbm);
 };
 extern char* SoundID[512];
-extern word NSounds;
+extern unsigned short NSounds;
 
 void LoadWeapon()
 {
@@ -509,7 +510,7 @@ void LoadWeapon()
 					sprintf(gy, "%d (Weapon.nds) : Unknown explosion media type : %s", line, mtype);
 					Errx(gy);
 				};
-				CWP->Type = byte(typ);
+				CWP->Type = unsigned char(typ);
 				CWP->MinChild = p1;
 				CWP->MaxChild = p2;
 				WP->HotFrame = p3;
@@ -759,11 +760,11 @@ bool CreateGOByName(GeneralObject* GO, char* name, char* newName);
 extern int NNations;
 extern char** NatScripts;
 
-void LoadNation(char* fn, byte NIndex, byte);
+void LoadNation(char* fn, unsigned char NIndex, unsigned char);
 
-typedef word* lpWORD;
+typedef unsigned short* lpWORD;
 
-void InitNation(byte msk, byte NIndex)
+void InitNation(unsigned char msk, unsigned char NIndex)
 {
 	Nation* nat = &NATIONS[NIndex];
 	memset(nat, 0, sizeof Nation);
@@ -797,9 +798,9 @@ StrHash ico;
 
 extern City CITY[8];
 
-void LoadAIFromDLL(byte Nat, char* Name);
+void LoadAIFromDLL(unsigned char Nat, char* Name);
 
-DWORD LOADNATMASK = 0;
+unsigned long LOADNATMASK = 0;
 
 bool ProcessMessages();
 
@@ -831,7 +832,7 @@ void ListAllUnits()
 	fclose(f);
 }
 
-void LoadAllNations(byte NIndex)
+void LoadAllNations(unsigned char NIndex)
 {
 	if (NIndex)
 	{
@@ -883,7 +884,7 @@ void LoadAllNations(byte NIndex)
 	}
 }
 
-void LoadNation(char* fn, byte NIndex, byte NatID)
+void LoadNation(char* fn, unsigned char NIndex, unsigned char NatID)
 {
 	if (NIndex)
 	{
@@ -967,7 +968,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 				};
 				for (cp = 0; cp < 8; cp++) {
 					nat[cp].PACount[zz1] = wid;
-					nat[cp].PAble[zz1] = new word[wid];
+					nat[cp].PAble[zz1] = new unsigned short[wid];
 					nat[cp].AIndex[zz1] = new char[wid];
 					nat[cp].AHotKey[zz1] = new char[wid];
 				};
@@ -1008,7 +1009,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 				for (cp = 0; cp < 8; cp++)
 				{
 					nat[cp].UnitNames[zz1] = new lpCHAR[parm1];
-					nat[cp].UnitsIDS[zz1] = new word[parm1];
+					nat[cp].UnitsIDS[zz1] = new unsigned short[parm1];
 					nat[cp].NUnits[zz1] = parm1;
 				}
 				if (z != 1)
@@ -1107,7 +1108,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 			}
 			for (cp = 0; cp < 8; cp++)
 			{
-				nat[cp].UPGRADE[parm2]->AutoPerform = new word[parm1];
+				nat[cp].UPGRADE[parm2]->AutoPerform = new unsigned short[parm1];
 				nat[cp].UPGRADE[parm2]->NAutoPerform = parm1;
 			}
 			for (parm3 = 0; parm3 < parm1; parm3++)
@@ -1155,7 +1156,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 			}
 			for (cp = 0; cp < 8; cp++)
 			{
-				nat[cp].UPGRADE[parm2]->AutoEnable = new word[parm1];
+				nat[cp].UPGRADE[parm2]->AutoEnable = new unsigned short[parm1];
 				nat[cp].UPGRADE[parm2]->NAutoEnable = parm1;
 			}
 			for (parm3 = 0; parm3 < parm1; parm3++)
@@ -1197,7 +1198,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 				for (cp = 0; cp < 8; cp++)
 				{
 					nat[cp].PACount[zz1] = wid;
-					nat[cp].PAble[zz1] = new word[wid];
+					nat[cp].PAble[zz1] = new unsigned short[wid];
 					nat[cp].AIndex[zz1] = new char[wid];
 					nat[cp].AHotKey[zz1] = new char[wid];
 				};
@@ -1436,7 +1437,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 				{
 					GeneralObject* GO = nat[cp].Mon[zz2];
 					GO->NUpgrades = zz1;
-					GO->Upg = new word[zz1];
+					GO->Upg = new unsigned short[zz1];
 				}
 				for (int i = 0; i < zz1; i++)
 				{
@@ -1537,13 +1538,13 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 					sprintf(gx, "%d (%s) : Invalid [ASSESCONTROL] for %s", line, fn, gg);
 					Errx(gx);
 				}
-				word nc = nat->NCOND;
+				unsigned short nc = nat->NCOND;
 				for (cp = 0; cp < 8; cp++)
 				{
 					nat[cp].NCOND++;
 					nat[cp].CLSize[nc] = parm1;
-					nat[cp].CLRef[nc] = new word[parm1 + 1];
-					word* CRF = nat[cp].CLRef[nc];
+					nat[cp].CLRef[nc] = new unsigned short[parm1 + 1];
+					unsigned short* CRF = nat[cp].CLRef[nc];
 					CRF[0] = zz1;
 				}
 				for (int i = 0; i < parm1; i++)
@@ -1634,8 +1635,8 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 					{
 						StroiDescription* SDI = nat[cp].Mon[zz1]->OFCR->SDES + j;
 						SDI->NAmount = na;
-						SDI->Amount = new word[na];
-						SDI->LocalID = new word[na];
+						SDI->Amount = new unsigned short[na];
+						SDI->LocalID = new unsigned short[na];
 					}
 
 					for (int p = 0; p < na; p++)
@@ -1666,7 +1667,7 @@ void LoadNation(char* fn, byte NIndex, byte NatID)
 					{
 						StroiDescription* SDI = nat[cp].Mon[zz1]->OFCR->SDES + j;
 						SDI->NUnits = na;
-						SDI->Units = new word[na];
+						SDI->Units = new unsigned short[na];
 					}
 					for (int p = 0; p < na; p++)
 					{
@@ -1864,8 +1865,8 @@ void Read_UIDG(Nation* NT, U_Grp* UG, char* Name, GFILE* f1, char* fn, int line)
 		Errx(gx);
 	};
 	UG->N = n;
-	UG->UIDS = new word[n];
-	UG->UVAL = new word[n];
+	UG->UIDS = new unsigned short[n];
+	UG->UVAL = new unsigned short[n];
 	int v;
 	for (int i = 0; i < n; i++) {
 		z = Gscanf(f1, "%s%d", gg, &v);
@@ -1877,7 +1878,7 @@ void Read_UIDG(Nation* NT, U_Grp* UG, char* Name, GFILE* f1, char* fn, int line)
 		UG->UVAL[i] = v;
 	};
 };
-word ReadWORD(char* Name, char* gy, char* fn, int Line) {
+unsigned short ReadWORD(char* Name, char* gy, char* fn, int Line) {
 	int n;
 	char gx[128];
 	int z = sscanf(gy, "%d", &n);
@@ -2000,7 +2001,7 @@ void LoadAI(char* fn, Nation* NT) {
 					case 3:
 					{//#TODO
 						if (gg[0] == '$') {
-							byte Kind = 0xFF;
+							unsigned char Kind = 0xFF;
 							int Arg1 = 0;
 							if (!strcmp(gg, "$SELO"))Kind = 1;
 							else if (!strcmp(gg, "$ARMY"))Kind = 2;
@@ -2152,7 +2153,7 @@ void LoadAI(char* fn, Nation* NT) {
 							Errx(gy);
 						};
 						NT->NPBal = parm1;
-						NT->PBalance = new word[parm1 << 2];
+						NT->PBalance = new unsigned short[parm1 << 2];
 						for (i = 0; i < parm1; i++) {
 							int n1, n2, n3, n4;
 							int t = i << 2;

@@ -7,13 +7,13 @@ public:
 	char HashName[128];
 	bool Open(char* Name);
 	void Close();
-	int ReadSomething(byte* Buf,int MaxLen,bool Scroll,bool Blocking);
+	int ReadSomething(unsigned char* Buf,int MaxLen,bool Scroll,bool Blocking);
 	int Error();
 };
 class RecordGame{
 public:
 	InternetStream STREAM;
-	byte* Stream;
+	unsigned char* Stream;
 	int Size;
 	int MaxSize;
 	int Pos;
@@ -24,9 +24,9 @@ public:
 	void CloseRecord();
 	void AddRecord();
 	void AddEmptyRecord();
-	void AddByte(byte v);
+	void AddByte(unsigned char v);
 	void AddShort(short v);
-	void AddBuf(byte* Data,int Size);
+	void AddBuf(unsigned char* Data,int Size);
 	void ReadStream(char* Name);
 	void TryToFlushNetworkStream(bool Final);
 	bool Extract();

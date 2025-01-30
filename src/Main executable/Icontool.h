@@ -1,7 +1,7 @@
 class OneIcon{
 public:
-	word FileID;
-	word SpriteID;
+	unsigned short FileID;
+	unsigned short SpriteID;
 	//Type:
 	//0  -simple icon
 	//1  -icon with colored rectangle
@@ -12,17 +12,17 @@ public:
 	//32 -right button active
 	//64 -left  button active
     //128-memory for hint was allocated
-	byte  Color;
+	unsigned char  Color;
 	int   Health;
 	int   MaxHealth;
 	int   Stage;
 	int   MaxStage;
 	int   IntVal;
-	byte  Level;
+	unsigned char  Level;
 	bool  Disabled:1;
 	bool  Selected:1;
-	word MoreSprite;
-    word Type;
+	unsigned short MoreSprite;
+    unsigned short Type;
 	bool Visible:1;
 	bool NoPress:1;
 	char* Hint;
@@ -36,18 +36,18 @@ public:
 	int   IntParam;
 
     void InitIcon();
-    void AssignIcon(word FileID,word SpriteID);
+    void AssignIcon(unsigned short FileID,unsigned short SpriteID);
     void AssignHint(char* str);
     void CreateHint(char* str);
 	void CreateHintLo(char* str);
-    void AssignColor(byte c);
+    void AssignColor(unsigned char c);
     void AssignHealth(int Health,int MaxHeath);
     void AssignStage(int Stage,int MaxStage);
     void AssignIntVal(int ival);
     void AssignLeft(HandlePro* Lpro,int param);
     void AssignRight(HandlePro* Hpro,int param);
 	void AssignMoveOver(HandlePro* Hpro,int param);
-	void AssignLevel(byte Level);
+	void AssignLevel(unsigned char Level);
 	void AssignIntParam(int i);
 	void AssignRedPulse();
 	void SelectIcon();
@@ -63,11 +63,11 @@ public:
     ~IconSet();
     void InitIconSet();
     void ClearIconSet();
-	OneIcon* AddIconFixed(word FileID,word SpriteID,int Index);
-    OneIcon* AddIcon(word FileID,word SpriteID);
-    OneIcon* AddIcon(word FileID,word SpriteID,char* Hint);
-    OneIcon* AddIcon(word FileID,word SpriteID,char* Hint,byte Color);
-    OneIcon* AddIcon(word FileID,word SpriteID,byte Color,char* Hint);
+	OneIcon* AddIconFixed(unsigned short FileID,unsigned short SpriteID,int Index);
+    OneIcon* AddIcon(unsigned short FileID,unsigned short SpriteID);
+    OneIcon* AddIcon(unsigned short FileID,unsigned short SpriteID,char* Hint);
+    OneIcon* AddIcon(unsigned short FileID,unsigned short SpriteID,char* Hint,unsigned char Color);
+    OneIcon* AddIcon(unsigned short FileID,unsigned short SpriteID,unsigned char Color,char* Hint);
 	int GetMaxX(int Lx);
     void DrawIconSet(int x,int y,int Nx,int Ny,int NyStart);
 };

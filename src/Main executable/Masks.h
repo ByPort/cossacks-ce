@@ -1,5 +1,5 @@
 #define MaskLx 64
-extern byte ResultMask[MaskLx*256];
+extern unsigned char ResultMask[MaskLx*256];
 // 1(x0,y0)
 //  |\
 //  |  \ s1
@@ -17,7 +17,7 @@ extern byte ResultMask[MaskLx*256];
 void PrepareIntersection1(int bm1,int bm2,int bm3,
 						  int x0,int y0,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray);
+						  RLCTable Masks,unsigned char* BitmapsArray);
 //
 //                1
 //         s1   /|
@@ -30,6 +30,6 @@ void PrepareIntersection1(int bm1,int bm2,int bm3,
 void PrepareIntersection2(int bm1,int bm2,int bm3,
 						  int x0,int y01,
 						  int s1,int s2,int s3,
-						  RLCTable Masks,byte* BitmapsArray);
+						  RLCTable Masks,unsigned char* BitmapsArray);
 void ShowIntersectionBuffer();
 int GetBmOfst(int i);

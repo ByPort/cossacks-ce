@@ -8,25 +8,25 @@ public:
 	{
 		struct foo
 		{
-			byte Peasants;//кол-во крестьян на этой клетке
-			byte Towers;//------//------башен
-			byte Warriors;
-			byte Farms;
-			byte Buildings;
-			byte Fly;
-			byte WaterPeas;
-			byte WaterObj;
+			unsigned char Peasants;//кол-во крестьян на этой клетке
+			unsigned char Towers;//------//------башен
+			unsigned char Warriors;
+			unsigned char Farms;
+			unsigned char Buildings;
+			unsigned char Fly;
+			unsigned char WaterPeas;
+			unsigned char WaterObj;
 		};
-		byte UnitsAmount[8];
+		unsigned char UnitsAmount[8];
 	};
-	//byte P_MoveUp;//кол-во пересечений верхней границы
-	//byte P_MoveDn;
-	//byte P_MoveLf;
-	//byte P_MoveRi;
-	//byte Protection;  //=4*Towers+Warriors
-	//byte Agressivity; //=Warriors
-	//byte Importance;  //=Farms+Buildings
-	word Neighbor;    //(0x001)  bit0 - UP
+	//unsigned char P_MoveUp;//кол-во пересечений верхней границы
+	//unsigned char P_MoveDn;
+	//unsigned char P_MoveLf;
+	//unsigned char P_MoveRi;
+	//unsigned char Protection;  //=4*Towers+Warriors
+	//unsigned char Agressivity; //=Warriors
+	//unsigned char Importance;  //=Farms+Buildings
+	unsigned short Neighbor;    //(0x001)  bit0 - UP
 					  //(0x002)  bit1 - UP-RIGHT
 					  //(0x004)  bit2 - RIGHT
 					  //(0x008)  bit3 - DN-RIGHT
@@ -38,9 +38,9 @@ public:
 					  //(0x200)  bit9 - RIGHT+2
 					  //(0x400)  bit10- DN+2
 					  //(0x800)  bit11- RIGHT+2
-	//byte Resrv[3];
-	//word Enemy;
-	//word EnemyTime;
+	//unsigned char Resrv[3];
+	//unsigned short Enemy;
+	//unsigned short EnemyTime;
 	Cell8x8();
 };
 typedef Cell8x8 CellsInfo[64][64];
@@ -54,10 +54,10 @@ public:
 class ProposedProject
 {
 public:
-	byte PKind;//=0-Monster,==1-Upgrade
-	word NIndex;//номер типа монстра/Upgrade index
-	word ProducerIndex;//индекс свободного производителя
-	word Percent;//процент денег, употребляемый на производство
+	unsigned char PKind;//=0-Monster,==1-Upgrade
+	unsigned short NIndex;//номер типа монстра/Upgrade index
+	unsigned short ProducerIndex;//индекс свободного производителя
+	unsigned short Percent;//процент денег, употребляемый на производство
 	//int Cost;//цена 
 	//int Useful[NBRANCH];
 };
@@ -67,24 +67,24 @@ struct BuildProject
 	bool PlaceFound : 1;
 	bool Founded : 1;
 	bool PeasantsCalled : 1;
-	byte Usage;
+	unsigned char Usage;
 	short NearX;
 	short NearY;
 	int  x, y;
 	int Options;
-	word AttemptsToStand;
-	word AttemptsToFindApprPlace;
-	word Index;
-	word NIndex;
-	byte MaxPeasants;
-	byte MinPeasants;
-	byte NPeasantsCalled;
+	unsigned short AttemptsToStand;
+	unsigned short AttemptsToFindApprPlace;
+	unsigned short Index;
+	unsigned short NIndex;
+	unsigned char MaxPeasants;
+	unsigned char MinPeasants;
+	unsigned char NPeasantsCalled;
 };
 class CityCell
 {
 public:
 	int x, y;
-	word WorkTimes;//==0xFFFF if inside the city
+	unsigned short WorkTimes;//==0xFFFF if inside the city
 	CityCell* NextCell;
 };
 class CityCluster
@@ -93,7 +93,7 @@ public:
 	CityCell* FirstCell;
 	void AddCell( int x, int y );
 };
-typedef int Functional( int* x, int* y, int Lx, int Ly, byte NI );
+typedef int Functional( int* x, int* y, int Lx, int Ly, unsigned char NI );
 typedef int CheckWorkFn( OneObject* OB, City* CT );
 class SmartGroup;
 class Brigade;
@@ -103,47 +103,47 @@ class BrigadeOrder;
 class BrigadeOrder
 {
 public:
-	byte OrdType;
-	byte Prio;
-	word Size;
+	unsigned char OrdType;
+	unsigned char Prio;
+	unsigned short Size;
 	char* Message;
 	BrigadeOrder* Next;
 	BrigadeLink* BLink;
 };
 struct BrigMemb
 {
-	word Peons;
-	word Infantry;
-	word Strelkov;
-	word Mortir;
-	word Pushek;
-	word Grenaderov;
-	word Other;
-	word reserv;
+	unsigned short Peons;
+	unsigned short Infantry;
+	unsigned short Strelkov;
+	unsigned short Mortir;
+	unsigned short Pushek;
+	unsigned short Grenaderov;
+	unsigned short Other;
+	unsigned short reserv;
 };
 int GetBMIndex( OneObject* OB );
 class Brigade
 {
 public:
 	City* CT;
-	word* Memb;
-	word* MembSN;
-	word  SN;
+	unsigned short* Memb;
+	unsigned short* MembSN;
+	unsigned short  SN;
 	int* posX;
 	int* posY;
-	word NMemb;
-	word MaxMemb;
-	word MembID;
+	unsigned short NMemb;
+	unsigned short MaxMemb;
+	unsigned short MembID;
 	char AddDamage;
 	char AddShield;
-	byte WarType;
-	byte Direction;
-	word ID;
-	word BrigDelay;
-	word LastTopology;
+	unsigned char WarType;
+	unsigned char Direction;
+	unsigned short ID;
+	unsigned short BrigDelay;
+	unsigned short LastTopology;
 	int LastOrderTime;
-	word ArmyID;
-	word ErasureTime;
+	unsigned short ArmyID;
+	unsigned short ErasureTime;
 	bool Enabled : 1;
 	bool PosCreated : 1;
 	bool Precise : 1;
@@ -152,12 +152,12 @@ public:
 	BrigMemb BM;
 	CheckWorkFn* CFN;
 	BrigadeOrder* BOrder;
-	word LastEnemyID;
-	word LastEnemySN;
+	unsigned short LastEnemyID;
+	unsigned short LastEnemySN;
 
 
 	void SetIndex();
-	void Init( City* CT, word ID );
+	void Init( City* CT, unsigned short ID );
 	void AddObject( OneObject* OB );
 	void CheckMembers( City* CT );
 	void RemoveObjects( int NObj, Brigade* Dest );
@@ -166,30 +166,30 @@ public:
 	void FreeMember( int Idx );
 	void DeleteAll();
 	void CreateSquare();
-	void CreateConvoy( byte Type );
+	void CreateConvoy( unsigned char Type );
 	int AddInRadius( int x, int y, int r, BrigMemb* BMem, Brigade* Dest );
 	int AddInRadius( int x, int y, int r, BrigMemb* BMemb );
-	BrigadeOrder* CreateOrder( byte OrdType, int Size );
-	int SelectPeasants( byte NI );
+	BrigadeOrder* CreateOrder( unsigned char OrdType, int Size );
+	int SelectPeasants( unsigned char NI );
 	void Rospusk();
 	bool GetCenter( int* x, int* y );
 	//----------------------ORDERS----------------------//
-	bool LocalSendTo( int x, int y, byte prio, byte OrdType );
-	bool LinearLocalSendTo( int x, int y, byte prio, byte OrdType );
-	bool WideLocalSendTo( int x, int y, byte prio, byte OrdType );
-	bool GlobalSendTo( int x, int y, byte prio, byte OrdType );
-	bool CaptureMine( int SID, byte prio, byte OrdType );
-	bool AttackEnemy( int x, int y, byte prio, byte OrdType );
+	bool LocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType );
+	bool LinearLocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType );
+	bool WideLocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType );
+	bool GlobalSendTo( int x, int y, unsigned char prio, unsigned char OrdType );
+	bool CaptureMine( int SID, unsigned char prio, unsigned char OrdType );
+	bool AttackEnemy( int x, int y, unsigned char prio, unsigned char OrdType );
 	void MakeBattle();
 	void ProtectFarMines();
 	//-----------------Human functions------------------//
-	bool CreateNearOfficer( OneObject* OB, word Type, int ODIndex );
+	bool CreateNearOfficer( OneObject* OB, unsigned short Type, int ODIndex );
 	void CreateOrderedPositions( int x, int y, char dir );
 	void CreateSimpleOrderedPositions( int x, int y, char dir );
 	void HumanCheckUnits();
-	void HumanLocalSendTo( int x, int y, short Dir, byte Prio, byte OrdType );
-	void HumanGlobalSendTo( int x, int y, short Dir, byte Prio, byte OrdType );
-	void KeepPositions( byte OrdType, byte Prio );
+	void HumanLocalSendTo( int x, int y, short Dir, unsigned char Prio, unsigned char OrdType );
+	void HumanGlobalSendTo( int x, int y, short Dir, unsigned char Prio, unsigned char OrdType );
+	void KeepPositions( unsigned char OrdType, unsigned char Prio );
 	void Bitva();
 	//--------------------------------------------------//
 	void ClearBOrders();
@@ -200,7 +200,7 @@ class GroupOrder;
 class GroupOrder
 {
 public:
-	byte		OrderType;
+	unsigned char		OrderType;
 	GroupOrder* NextOrder;
 	GroupMaker* GroupLink;
 	void*       GroupData;
@@ -229,36 +229,36 @@ typedef void I_Clear( Inform* Inf );
 class Inform
 {
 public:
-	word ID;
-	word Essence;
+	unsigned short ID;
+	unsigned short Essence;
 	Inform* Next;
 	Inform* Previous;
 	City*   CT;
 	I_Clear* IClr;
-	word Size;
+	unsigned short Size;
 };
 class MineBase :public Inform
 {
 public:
-	word   M_ID;
-	word   M_SN;
+	unsigned short   M_ID;
+	unsigned short   M_SN;
 	short  topx;
 	short  topy;
-	byte   ResKind;
-	byte   UpgLevel;
-	byte   PSend;
-	word   DefendersID;
-	word   DefendersSN;
-	word   MinersID;
-	word   MinersSN;
+	unsigned char   ResKind;
+	unsigned char   UpgLevel;
+	unsigned char   PSend;
+	unsigned short   DefendersID;
+	unsigned short   DefendersSN;
+	unsigned short   MinersID;
+	unsigned short   MinersSN;
 	/*
-	word   TowID;
-	word   TowSN;
-	word   NWalls;
+	unsigned short   TowID;
+	unsigned short   TowSN;
+	unsigned short   NWalls;
 	short* Walls;
-	word   NGateProj;
+	unsigned short   NGateProj;
 	short* GateProj;
-	word   NGates;
+	unsigned short   NGates;
 	short* Gates;
 	*/
 };
@@ -266,17 +266,17 @@ class PRM_Info :public Inform
 {
 public:
 	int NBrigs;
-	word BrigsID[5];
-	word BrigsSN[5];
+	unsigned short BrigsID[5];
+	unsigned short BrigsSN[5];
 };
 class SmartGroup : public Brigade
 {
 	bool Enabled;
-	word Index;
-	word NFarInf;
-	word NNearInf;
-	word NFarCav;
-	word NNearCav;
+	unsigned short Index;
+	unsigned short NFarInf;
+	unsigned short NNearInf;
+	unsigned short NFarCav;
+	unsigned short NNearCav;
 	short CenterX;
 	short CenterY;
 	GroupOrder* Order;
@@ -287,13 +287,13 @@ class SmartGroup : public Brigade
 class DefendInfo
 {
 public:
-	byte  x;
-	byte  y;
-	byte  Importance;
-	word  NDefenders;
-	word  MaxDefs;
-	word* Def;
-	word* DefSN;
+	unsigned char  x;
+	unsigned char  y;
+	unsigned char  Importance;
+	unsigned short  NDefenders;
+	unsigned short  MaxDefs;
+	unsigned short* Def;
+	unsigned short* DefSN;
 	void AddUnit( OneObject* OB );
 };
 class AI_Army;
@@ -304,7 +304,7 @@ class AI_Army;
 class ExtendedBrigade
 {
 public:
-	byte BrigadeType;
+	unsigned char BrigadeType;
 	//0-Short range infantry
 	//1-Long range infantry
 	//2-Fast cavalry
@@ -315,7 +315,7 @@ public:
 	//7-Builders
 	int Force;
 	int NeedMembers;
-	word NextBrigade;
+	unsigned short NextBrigade;
 	Brigade* Brig;
 };
 typedef void ArmyLink( AI_Army* ARM );
@@ -323,19 +323,19 @@ class ArmyOrder;
 class ArmyOrder
 {
 public:
-	byte OrdType;
-	byte Prio;
-	word Size;
+	unsigned char OrdType;
+	unsigned char Prio;
+	unsigned short Size;
 	char* Message;
 	ArmyOrder* Next;
 	ArmyLink*  ALink;
 };
 struct FormInfo
 {
-	word ComID;
-	word ComSN;
-	word BarID;
-	word BarSN;
+	unsigned short ComID;
+	unsigned short ComSN;
+	unsigned short BarID;
+	unsigned short BarSN;
 };
 class AI_Army
 {
@@ -347,25 +347,25 @@ public:
 	int TopPos;
 	int x, y;
 	int Force;
-	byte Spec;
-	word ArmyID;
+	unsigned char Spec;
+	unsigned short ArmyID;
 	ExtendedBrigade* ExBrigs;
 	//Additional information
 	City* CT;
 	Nation* NT;
-	byte NI;
+	unsigned char NI;
 	int LastBitvaTime;
-	word FirstBrig;
+	unsigned short FirstBrig;
 	//Order information
 	ArmyOrder* AOrder;
 	//Formation info;
-	word ComID[8];
-	word ComSN[8];
-	word NCom;
-	word BarID[8];
-	word BarSN[8];
-	word NBar;
-	word NFreeUnits;
+	unsigned short ComID[8];
+	unsigned short ComSN[8];
+	unsigned short NCom;
+	unsigned short BarID[8];
+	unsigned short BarSN[8];
+	unsigned short NBar;
+	unsigned short NFreeUnits;
 	//Functions
 	void InitArmy( City* CT );
 	void ClearArmy();
@@ -376,29 +376,29 @@ public:
 	void MoveArmyTo( int x, int y );
 	void CreateBrigLink();
 	void AttackArea( int x, int y );
-	ArmyOrder* CreateOrder( byte OrdType, int Size );
+	ArmyOrder* CreateOrder( unsigned char OrdType, int Size );
 	void DeleteAOrder();
 	void ClearAOrders();
-	void LocalSendTo( int x, int y, byte Prio, byte OrdType );
+	void LocalSendTo( int x, int y, unsigned char Prio, unsigned char OrdType );
 	int  GetArmyDanger( int x, int y );
 	void SendToMostSafePosition();
-	void WideLocalSendTo( int x, int y, byte Prio, byte OrdType );
+	void WideLocalSendTo( int x, int y, unsigned char Prio, unsigned char OrdType );
 	void Parad();
-	void ConnectToArmy( int ID, byte Prio, byte OrdType );
+	void ConnectToArmy( int ID, unsigned char Prio, unsigned char OrdType );
 	void MakeBattle();
 	void Bitva();
 	void Diversia();
 	void SetZombi();
 	void ClearZombi();
 	bool CheckArtillery();
-	int  GetAmountOfBrigs( byte Type );
+	int  GetAmountOfBrigs( unsigned char Type );
 	void SendGrenaders();
 };
 class City
 {
 public:
 	Nation* Nat;
-	byte NI;
+	unsigned char NI;
 	//int InX,InY,InX1,InY1,OutX,OutY,OutX1,OutY1;
 	//int TryTimes;
 	//int ExpandSize;
@@ -406,45 +406,45 @@ public:
 	//int GoldPeasPart;
 	//int WoodPeasPart;
 	//int BuildPeasPart;
-	//word KindMax[N_KINDS];//макс. кол-во тварей типа Kind
-	//word *MKList[N_KINDS];//массив указателей на массивы с индексами монстров данного типа
+	//unsigned short KindMax[N_KINDS];//макс. кол-во тварей типа Kind
+	//unsigned short *MKList[N_KINDS];//массив указателей на массивы с индексами монстров данного типа
 	//Functional* FNC[N_KINDS];//массив функционалов для выбора места, если место вообще не подходит, то возвр. -1
-	//word BranchPart[NBRANCH];
+	//unsigned short BranchPart[NBRANCH];
 	int AutoEraseTime;
-	word BestProj[128];
-	word NBestProjects;
-	byte NWoodSklads;
-	byte NStoneSklads;
-	word WoodSkladID[8];
-	word WoodSkladSN[8];
-	word StoneSkladID[8];
-	word StoneSkladSN[8];
+	unsigned short BestProj[128];
+	unsigned short NBestProjects;
+	unsigned char NWoodSklads;
+	unsigned char NStoneSklads;
+	unsigned short WoodSkladID[8];
+	unsigned short WoodSkladSN[8];
+	unsigned short StoneSkladID[8];
+	unsigned short StoneSkladSN[8];
 	char AIID[48];
-	byte StartRes;
-	byte ResOnMap;
-	byte Difficulty;
-	byte LandType;
-	word TransportID;
-	word TransportSN;
+	unsigned char StartRes;
+	unsigned char ResOnMap;
+	unsigned char Difficulty;
+	unsigned char LandType;
+	unsigned short TransportID;
+	unsigned short TransportSN;
 
-	byte NMeln;
-	word MelnID[4];
-	word MelnSN[4];
+	unsigned char NMeln;
+	unsigned short MelnID[4];
+	unsigned short MelnSN[4];
 
 	int  MelnCoorX[4];
 	int  MelnCoorY[4];
 	int  NMelnCoor;
 
 	int  FieldsID[512];
-	word FieldsSN[512];
-	word NFields;
+	unsigned short FieldsSN[512];
+	unsigned short NFields;
 
-	word Construction[64];
-	word ConstructionSN[64];
-	word ConstructionTime[64];
-	word NConstructions;
+	unsigned short Construction[64];
+	unsigned short ConstructionSN[64];
+	unsigned short ConstructionTime[64];
+	unsigned short NConstructions;
 
-	word FarmsUnderConstruction;
+	unsigned short FarmsUnderConstruction;
 	int Account;
 
 	bool FieldReady;
@@ -453,12 +453,12 @@ public:
 	bool AllowMine;
 	bool DefenceStage;
 
-	word NeedOnField;
-	word NeedOnStone;
-	word NeedOnWood;
+	unsigned short NeedOnField;
+	unsigned short NeedOnStone;
+	unsigned short NeedOnWood;
 
-	word** GroupsSet;
-	word*  NGroupsInSet;
+	unsigned short** GroupsSet;
+	unsigned short*  NGroupsInSet;
 	int    NGroups;
 
 	Brigade Brigs[MaxBrig - 11];
@@ -473,18 +473,18 @@ public:
 	Brigade Free;
 	Brigade InMines;
 	Brigade FreeArmy;
-	byte N_mineUp[10];
-	word MaxFields;
-	word BestOnField;
-	word WaterBrigs[128];
+	unsigned char N_mineUp[10];
+	unsigned short MaxFields;
+	unsigned short BestOnField;
+	unsigned short WaterBrigs[128];
 	//------------------ARMIES-------------------//
 	AI_Army ARMS[MaxArm];
-	word* DefArms;
+	unsigned short* DefArms;
 	int NDefArms;
 	int MaxDefArms;
 	int NDivr;
-	byte LockUpgrade[8];
-	byte MyIsland;
+	unsigned char LockUpgrade[8];
+	unsigned char MyIsland;
 	//-------------Peasants balance--------------//
 	short NPeas;
 	short NeedPF;
@@ -504,7 +504,7 @@ public:
 	short FarmLX;
 	short FarmLY;
 	//-------------------------------------------//
-	word  MAX_WORKERS;
+	unsigned short  MAX_WORKERS;
 	//-------------------------------------------//
 	bool AI_DEVELOPMENT : 1;
 	bool AI_WATER_BATTLE : 1;
@@ -520,23 +520,23 @@ public:
 	int MaxGuards;
 	int AbsMaxGuards;
 	//-------------------------------------------//
-	word NP;
-	word NAgressors;
-	word MinType;
-	word MaxType;
-	word UnitAmount[2048];//Amount of units of some kind
-	word ReadyAmount[2048];
-	word PRPIndex[2048];//index of project to produce this type of monster,if not proposed,0xFFFF
-	word UPGIndex[2048];
-	word UnBusyAmount[2048];//сколько модулей простаивает
-	word Producer[2048];
+	unsigned short NP;
+	unsigned short NAgressors;
+	unsigned short MinType;
+	unsigned short MaxType;
+	unsigned short UnitAmount[2048];//Amount of units of some kind
+	unsigned short ReadyAmount[2048];
+	unsigned short PRPIndex[2048];//index of project to produce this type of monster,if not proposed,0xFFFF
+	unsigned short UPGIndex[2048];
+	unsigned short UnBusyAmount[2048];//сколько модулей простаивает
+	unsigned short Producer[2048];
 	bool PresentProject : 1;
 	bool IntellectEnabled : 1;
 	bool CenterFound : 1;
 	short CenterX;
 	short CenterY;
 	BuildProject BPR;
-	word NProp;
+	unsigned short NProp;
 	ProposedProject Prop[100];
 	Idea* IDEA;
 	Inform* INFORM;
@@ -544,22 +544,22 @@ public:
 	void AddInform( Inform* Inf, I_Clear* ICL );
 	void DelInform();
 	void DelInform( Inform* Inf );
-	Inform* SearchInform( word ID, word Essence, Inform* inf );
-	Inform* SearchInform( word ID, Inform* inf );
+	Inform* SearchInform( unsigned short ID, unsigned short Essence, Inform* inf );
+	Inform* SearchInform( unsigned short ID, Inform* inf );
 	void HandleIdeas();
 	void DelIdeas();
-	word EnemyList[32];
-	void CreateCity( byte NI );
+	unsigned short EnemyList[32];
+	void CreateCity( unsigned char NI );
 	bool CheckTZone( int x, int y, int Lx, int Ly );
-	bool TryToFindPlace( int* x, int* y, int Lx, int Ly, byte Kind );
+	bool TryToFindPlace( int* x, int* y, int Lx, int Ly, unsigned char Kind );
 	void EnumUnits();
-	void AddProp( word NIN, GeneralObject* GO, word prop, word per );
-	void AddUpgr( word NIN, word prod, word per );
+	void AddProp( unsigned short NIN, GeneralObject* GO, unsigned short prop, unsigned short per );
+	void AddUpgr( unsigned short NIN, unsigned short prod, unsigned short per );
 	void EnumProp();
 	void ProcessCreation();
-	void HelpMe( word ID );
+	void HelpMe( unsigned short ID );
 	void HandleFly();
-	word FindNeedProject();
+	unsigned short FindNeedProject();
 	void RefreshAbility();
 	bool FindApproximateBuildingPlace( GeneralObject* GO );
 	bool FindPreciseBuildingPlace( GeneralObject* GO );
@@ -593,8 +593,8 @@ public:
 	void BuildWallsNearMines();
 	//----------------defending--------------//
 	void HandleDefending();
-	int  CheckDefending( byte x, byte y );
-	void AddDefending( byte x, byte y, byte Importance );
+	int  CheckDefending( unsigned char x, unsigned char y );
+	void AddDefending( unsigned char x, unsigned char y, unsigned char Importance );
 	void AddUnitDefender( OneObject* OB );
 };
 class Forces
@@ -623,12 +623,12 @@ public:
 };
 struct DangerInfo
 {
-	word ID;
-	word SN;
-	word Kind;
-	word UpgradeLevel;
-	word Life;
-	word MaxLife;
+	unsigned short ID;
+	unsigned short SN;
+	unsigned short Kind;
+	unsigned short UpgradeLevel;
+	unsigned short Life;
+	unsigned short MaxLife;
 	int x, y, z;
 	int MinR;
 	int MaxR;
@@ -638,9 +638,9 @@ extern Forces NForces[8];
 extern int BestForce;
 extern int BestNat;
 extern int NextBest;
-void OutCInf( byte x, byte y );
+void OutCInf( unsigned char x, unsigned char y );
 extern int COUNTER;
-extern DWORD BMASK[MBR4];
+extern unsigned long BMASK[MBR4];
 void InitSuperMortiraCells();
 void CreateEnmBuildList();
 void CreateProtectionMap();
@@ -648,10 +648,10 @@ struct CostPlace
 {
 	int xw, yw;
 	int xc, yc;
-	byte Island;
-	byte R;
-	byte Access;
-	word Transport;
+	unsigned char Island;
+	unsigned char R;
+	unsigned char Access;
+	unsigned short Transport;
 };
 extern CostPlace* COSTPL;
 extern int NCost;

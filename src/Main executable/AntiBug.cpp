@@ -10,13 +10,13 @@
 #include "walls.h"
 #include "Nature.h"
 #include <assert.h>
-#include <crtdbg.h>
+
 #define CHECKMODE
 struct AskMove{
-	word ReqID;//индекс перемещаемого
-	word PreID;//индекс жаждущего дорваться в эту клетку
-	byte x;
-	byte y;
+	unsigned short ReqID;//индекс перемещаемого
+	unsigned short PreID;//индекс жаждущего дорваться в эту клетку
+	unsigned char x;
+	unsigned char y;
 	char dx;
 	char dy;
 };
@@ -73,7 +73,7 @@ void GETALL(){
 //Asks array integrity checking
 void CheckAsks(){
 	for(int i=0;i<NAsk;i++){
-		word ID=Ask[i].ReqID;
+		unsigned short ID=Ask[i].ReqID;
 		OneObject* OB=Group[ID];
 		//assert(OB&&OB->x==Ask[i].x&&Ask[i].y==OB->y);
 	};
@@ -128,7 +128,7 @@ void CHKALL(){
 //	CheckAsks();
 	/*for(int i=1;i<msx;i++)
 		for(int j=1;j<msy;j++){
-			word MID=Mops[j][i];
+			unsigned short MID=Mops[j][i];
 			if(MID!=0xFFFF){
 				OneObject* OB=Group[MID];
 				if(!OB->capBuilding)assert(OB->x==i&&OB->y==j);//

@@ -1,5 +1,6 @@
 //Properties of the selected objects viewering and corresponding mouse handling
 
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -30,21 +31,21 @@ void ClearEconomy();
 extern int UNGROUP_ICON;
 extern int DOGROUP_ICON;
 extern int GroupIconPos;
-bool CheckGroupPossibility( byte NI );
-bool CheckUnGroupPossibility( byte NI );
+bool CheckGroupPossibility( unsigned char NI );
+bool CheckUnGroupPossibility( unsigned char NI );
 
 IconSet  PrpPanel;
 IconSet  AblPanel;
 IconSet  UpgPanel;
 IconSet BrigPanel;
 
-extern byte   WeaponFlags[32];
+extern unsigned char   WeaponFlags[32];
 extern int MessageUX;
 extern int MessageUY;
 extern int SGenIcon;
 extern int PanelY;
 extern int IconLx;
-void GetMonCost( byte NI, word NIndex, char* st );
+void GetMonCost( unsigned char NI, unsigned short NIndex, char* st );
 extern short WeaponIcn[32];
 extern short ProtectIcn[32];
 char* GetSprResourceName( OneObject* OB );
@@ -81,30 +82,30 @@ struct MonInf
 	int Magic;
 	int MaxMag;
 	int N;
-	word Last;
-	word ID;
+	unsigned short Last;
+	unsigned short ID;
 };
 
 struct AblInf
 {
 	Nation* NT;
-	word OInd;
-	word Kind;
-	word UPIND;
+	unsigned short OInd;
+	unsigned short Kind;
+	unsigned short UPIND;
 	char HotKey;
 	char IconIndex;
 };
 
 MonInf MList[MaxO];
 AblInf AList[MaxO];
-word ArmList[MaxO];
-int GetProgress( word ID, int* MaxProgress );
-int GetAmount( word ID );
+unsigned short ArmList[MaxO];
+int GetProgress( unsigned short ID, int* MaxProgress );
+int GetAmount( unsigned short ID );
 int SubIcon;
 static GeneralObject* LastGO;
 static Nation* LastNT;
-static word LastAmount;
-static word LastID;
+static unsigned short LastAmount;
+static unsigned short LastID;
 extern int curptr;
 extern int curdx;
 extern int curdy;
@@ -132,8 +133,8 @@ int NINF;
 
 int NABL;
 int NARMINF;
-void GetUnitCost( byte NI, word NIndex, int* Cost );
-void GetMonCost( byte NI, word NIndex, char* st )
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost );
+void GetMonCost( unsigned char NI, unsigned short NIndex, char* st )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -159,7 +160,7 @@ void GeneralObject::GetMonsterCostString( char* st )
 {
 	st[0] = 0;
 };
-void Nation::GetUpgradeCostString( char* st, word UI )
+void Nation::GetUpgradeCostString( char* st, unsigned short UI )
 {
 	char uu[128];
 	bool AddSp = false;
@@ -174,7 +175,7 @@ void Nation::GetUpgradeCostString( char* st, word UI )
 		};
 	};
 };
-word SELSET[32];
+unsigned short SELSET[32];
 int NSelSet = 0;
 void HPSEL( int i )
 {
@@ -222,7 +223,7 @@ void HPSELBRIG( int i )
 	}
 }
 
-bool IsItInSelSet( word ID )
+bool IsItInSelSet( unsigned short ID )
 {
 	for (int i = 0; i < NSelSet; i++)
 	{
@@ -278,7 +279,7 @@ void SELBRIG( int i )
 	}
 }
 
-void CmdSetSrVictim( byte NI, byte val );
+void CmdSetSrVictim( unsigned char NI, unsigned char val );
 
 void PreBrig( int i )
 {
@@ -309,14 +310,14 @@ void PATROL_Pro( int i )
 void GOATTA_Pro( int i )
 {}
 
-void CmdMakeReformation( byte, word, byte );
+void CmdMakeReformation( unsigned char, unsigned short, unsigned char );
 
 void REFORMA( int i )
 {
 	CmdMakeReformation( MyNation, i & 65535, i >> 16 );
 }
 
-void CmdFillFormation( byte NI, word BrigadeID );
+void CmdFillFormation( unsigned char NI, unsigned short BrigadeID );
 
 void FILLFORM( int i )
 {
@@ -355,9 +356,9 @@ extern int AttGrPos;
 
 void ATTGR_PRO( int p );
 
-void CmdDoGroup( byte );
+void CmdDoGroup( unsigned char );
 
-void CmdUnGroup( byte );
+void CmdUnGroup( unsigned char );
 
 
 void COM_DOGROUP( int i )
@@ -372,7 +373,7 @@ void COM_UNGROUP( int i )
 
 void ShowProp()
 {
-	byte c;
+	unsigned char c;
 	NINF = 0;
 
 	//Number of currently selected formations
@@ -385,12 +386,12 @@ void ShowProp()
 	UpgPanel.ClearIconSet();
 	BrigPanel.ClearIconSet();
 
-	word MID;
+	unsigned short MID;
 	OneObject* OBJ;
 	GeneralObject* GO;
 	MonInf* MI;
-	word Nsel = ImNSL[MyNation];
-	word* SMon = ImSelm[MyNation];
+	unsigned short Nsel = ImNSL[MyNation];
+	unsigned short* SMon = ImSelm[MyNation];
 
 	int j;
 	if (Nsel)
@@ -421,7 +422,7 @@ void ShowProp()
 		bool NoSrVictim = false;
 		bool PrTowers = 0;
 		bool PrBuildings = 0;
-		word CurBrig = 0xFFFE;
+		unsigned short CurBrig = 0xFFFE;
 		for (int i = 0; i < Nsel; i++)
 		{
 			MID = SMon[i];
@@ -481,7 +482,7 @@ void ShowProp()
 					int MyID = OBJ->NIndex;
 					if (OBJ->InArmy && NARMINF < MaxO)
 					{
-						word id = OBJ->BrigadeID;
+						unsigned short id = OBJ->BrigadeID;
 						int k;
 
 						for (k = 0; k < NARMINF && ArmList[k] != id; k++);
@@ -618,7 +619,7 @@ void ShowProp()
 				int NU = BR->NMemb;
 				for (int j = 2; j < NU; j++)
 				{
-					word MID = BR->Memb[j];
+					unsigned short MID = BR->Memb[j];
 					if (MID != 0xFFFF)
 					{
 						OneObject* OB = Group[MID];
@@ -865,7 +866,7 @@ void ShowProp()
 					bool SEL = false;
 					for (int i = 2; i < BR->NMemb&&UNFND; i++)
 					{
-						word MID = BR->Memb[i];
+						unsigned short MID = BR->Memb[i];
 						if (MID != 0xFFFF)
 						{
 							OneObject* OB = Group[MID];
@@ -902,7 +903,7 @@ void ShowProp()
 }
 
 int GetRLCStrWidth( char* str, lpRLCFont lpf );
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 char* ARTCAPS[8] = { NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL };
 void ShowTextDiscription()
 {
@@ -937,13 +938,13 @@ void ShowTextDiscription()
 				int MAXS = OBJ->Ref.General->MoreCharacter->MaxInside;
 				for (int i = 0; i < OBJ->NInside; i++)
 				{
-					word MID = OBJ->Inside[i];
+					unsigned short MID = OBJ->Inside[i];
 					if (MID != 0xFFFF)
 					{
 						OneObject* IOB = Group[MID];
 						if (IOB && !IOB->Sdoxlo)
 						{
-							byte USE = IOB->newMons->Usage;
+							unsigned char USE = IOB->newMons->Usage;
 							if (USE == StrelokID || USE == HorseStrelokID || USE == ArcherID )NS++;
 						};
 					};
@@ -1095,18 +1096,18 @@ void ShowTextDiscription()
 };
 extern bool BuildMode;
 extern OneSlide* OSB;
-extern byte blx;
-extern byte bly;
-extern word BuildingID;
+extern unsigned char blx;
+extern unsigned char bly;
+extern unsigned short BuildingID;
 extern Nation* BNat;
-void CmdUnProduceObj( byte NI, word Type );
+void CmdUnProduceObj( unsigned char NI, unsigned short Type );
 
 //Decreases procudtion order corresponding to specified tile number
 void RHPR( int n )
 {
 	AblInf* AI = &AList[n];
 	Nation* nation = AI->NT;
-	word type = AI->OInd;
+	unsigned short type = AI->OInd;
 	GeneralObject* GO = nation->Mon[type];
 
 	if (!GO->newMons->Building)
@@ -1119,8 +1120,8 @@ void RHPR( int n )
 	}
 }
 
-void CmdFieldBar( byte NI, word n );
-bool CheckCostHint( byte NI, word NIndex );
+void CmdFieldBar( unsigned char NI, unsigned short n );
+bool CheckCostHint( unsigned char NI, unsigned short NIndex );
 int GetTotalUnits();
 extern bool NOPAUSE;
 
@@ -1134,7 +1135,7 @@ void HPR( int n )
 
 	AblInf* AI = &AList[n];
 	Nation* nation = AI->NT;
-	word ai_index = AI->OInd;
+	unsigned short ai_index = AI->OInd;
 	GeneralObject* GO = nation->Mon[ai_index];
 	NewMonster* NM = GO->newMons;
 	if (NM->SpriteObject && !NM->Wall)
@@ -1198,7 +1199,7 @@ void DoUPG( int i )
 {
 	AblInf* AI = &AList[i];
 	Nation* NT = AI->NT;
-	word j = AI->OInd;
+	unsigned short j = AI->OInd;
 	CmdPerformUpgrade( MyNation, j );
 }
 
@@ -1229,7 +1230,7 @@ void OrderPatrol( int x, int y )
 	CmdPatrol( MyNation, x, y );
 }
 
-void CmdSetRprState( byte NI, byte State );
+void CmdSetRprState( unsigned char NI, unsigned char State );
 
 void OrderRepair( int x, int y )
 {
@@ -1246,7 +1247,7 @@ void OrderSetDst( int x, int y )
 	CmdSetDst( MyNation, x, y );
 }
 
-word MaxMagic;
+unsigned short MaxMagic;
 
 void UNIPARAM( int i )
 {
@@ -1300,9 +1301,9 @@ void NOPARAM( int i )
 	}
 }
 
-bool CreateInsideList( IconSet* IS, byte NI );
+bool CreateInsideList( IconSet* IS, unsigned char NI );
 bool ECOSHOW;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 
 int ShowUniqAbility()
 {
@@ -1442,8 +1443,8 @@ bool ShowCommonAbl()
 	}
 
 	Nation* NT = &NATIONS[MyNation];
-	word NIcons = 0;
-	word* Icons = nullptr;
+	unsigned short NIcons = 0;
+	unsigned short* Icons = nullptr;
 
 	if (isAir && !( isLand || isWater ))
 	{
@@ -1547,13 +1548,13 @@ bool ShowCommonAbl()
 
 	return true;
 }
-bool CheckCost( byte NI, word NIndex );
-extern byte BalloonState;
-extern byte CannonState;
-extern byte NoArtilleryState;
-extern byte XVIIIState;
-extern byte DipCentreState;
-extern byte ShipyardState;
+bool CheckCost( unsigned char NI, unsigned short NIndex );
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char NoArtilleryState;
+extern unsigned char XVIIIState;
+extern unsigned char DipCentreState;
+extern unsigned char ShipyardState;
 
 //Determines which tiles to show when selecting a unit or building
 //Handles abilities, unit production, building construction and upgrades
@@ -1573,7 +1574,7 @@ void ShowAbility()
 	GeneralObject* general_object;
 	AblInf* tile_info;
 	Nation* nation;
-	word s;
+	unsigned short s;
 
 	//Remember for restriction checking
 	bool shipyard_selected = false;
@@ -1760,7 +1761,7 @@ void ShowAbility()
 			//Shipyard Options
 			if (shipyard_selected && ShipyardState)
 			{
-				word id = general_object->newMons->IconID;
+				unsigned short id = general_object->newMons->IconID;
 				if (1 == ShipyardState && 106 != id)
 				{//Fishing boats only
 					break;

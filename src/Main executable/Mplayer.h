@@ -1,15 +1,13 @@
-#include "dplay.h"
-
 #define MaxPL 8
 
 struct EXBUFFER
 {
-	DWORD Size;
+	unsigned long Size;
 	bool Enabled;
-	DWORD Sign;//0xF376425E
-	DWORD RealTime;//if(??==0xFFFFFFFF)-empty buffer
-	DWORD RandIndex;
-	byte  Data[4096];
+	unsigned long Sign;//0xF376425E
+	unsigned long RealTime;//if(??==0xFFFFFFFF)-empty buffer
+	unsigned long RandIndex;
+	unsigned char  Data[4096];
 };
 
 struct OnePing
@@ -22,7 +20,7 @@ struct OnePing
 class PingsSet
 {
 public:
-	DWORD DPID;
+	unsigned long DPID;
 	int NPings;
 	int MaxPings;
 	OnePing* Pings;
@@ -36,18 +34,18 @@ public:
 	PingSumm();
 	~PingSumm();
 	void ClearPingInfo();
-	void AddPing( DWORD DPID, DWORD From, DWORD To, DWORD Back );
-	void AddPlayer( DWORD DPID );
-	int GetTimeDifference( DWORD DPID );
-	int CheckPlayer( DWORD DPID );
+	void AddPing( unsigned long DPID, unsigned long From, unsigned long To, unsigned long Back );
+	void AddPlayer( unsigned long DPID );
+	int GetTimeDifference( unsigned long DPID );
+	int CheckPlayer( unsigned long DPID );
 };
 extern PingSumm PSUMM;
 
 struct BACKUPSTR
 {
-	DWORD  ID;
-	DWORD RealTime;
-	byte* Data;
+	unsigned long  ID;
+	unsigned long RealTime;
+	unsigned char* Data;
 	int   L;
 };
 
@@ -59,15 +57,15 @@ public:
 	PLAYERSBACKUP();
 	~PLAYERSBACKUP();
 	void Clear();
-	void AddInf( byte* BUF, int L, DWORD ID, int RT );
-	void SendInfoAboutTo( DWORD ID, DWORD TO, DWORD RT );
+	void AddInf( unsigned char* BUF, int L, unsigned long ID, int RT );
+	void SendInfoAboutTo( unsigned long ID, unsigned long TO, unsigned long RT );
 };
 
 struct SingleRetr
 {
-	DWORD IDTO;
-	DWORD IDFROM;
-	DWORD RT;
+	unsigned long IDTO;
+	unsigned long IDFROM;
+	unsigned long RT;
 };
 
 class RETRANS
@@ -78,9 +76,9 @@ public:
 	int MaxRET;
 	RETRANS();
 	~RETRANS();
-	void AddOneRet( DWORD TO, DWORD From, DWORD RT );
-	void AddSection( DWORD TO, DWORD From, DWORD RT );
-	void CheckRetr( DWORD From, DWORD RT );
+	void AddOneRet( unsigned long TO, unsigned long From, unsigned long RT );
+	void AddSection( unsigned long TO, unsigned long From, unsigned long RT );
+	void CheckRetr( unsigned long From, unsigned long RT );
 	void Clear();
 };
 
@@ -92,7 +90,7 @@ struct RoomInfo
 	char Name[128];
 	char Nick[64];
 	char RoomIP[32];
-	DWORD Profile;
+	unsigned long Profile;
 	char GameID[64];
 	int MaxPlayers;
 
@@ -114,13 +112,13 @@ __declspec( dllimport ) void StartGSCGame( char* Options, char* Map,
 
 struct OnePlayerReport
 {
-	DWORD Profile;
-	byte State;
-	word Score;
-	word Population;
-	DWORD ReachRes[6];
-	word NBornP;
-	word NBornUnits;
+	unsigned long Profile;
+	unsigned char State;
+	unsigned short Score;
+	unsigned short Population;
+	unsigned long ReachRes[6];
+	unsigned short NBornP;
+	unsigned short NBornUnits;
 };
 
 // IChat library exports these
@@ -130,16 +128,16 @@ __declspec( dllimport ) void ReportAliveState( int NPlayers, int* Profiles );
 void SETPLAYERNAME(char* name, bool);
 
 #ifndef NODPLAY
-bool MLP_CreateCompoundAddress(int selected_network_protocol, byte* AddrBuf);
-bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, byte* AddrBuf);
+bool MLP_CreateCompoundAddress(int selected_network_protocol, unsigned char* AddrBuf);
+bool MLP_CreateBattleCompoundAddress(int selected_network_protocol, unsigned char* AddrBuf);
 #endif
 
 #ifndef NODPLAY
 BOOL FAR PASCAL EnumAddressCallback1(
 	REFGUID guidDataType,
-	DWORD dwDataSize,
+	unsigned long dwDataSize,
 	LPCVOID lpData,
-	LPVOID lpContext
+	void* lpContext
 );
 #endif
 
@@ -157,50 +155,50 @@ typedef unsigned long CDPID;
 
 typedef struct
 {
-	DWORD   dwSize;             // Size of structure
-	DWORD   dwFlags;            // Not used. Must be zero.
+	unsigned long   dwSize;             // Size of structure
+	unsigned long   dwFlags;            // Not used. Must be zero.
 	union
 	{                           // The short or friendly name
-		LPWSTR  lpszShortName;  // Unicode
-		LPSTR   lpszShortNameA; // ANSI
+		wchar_t*  lpszShortName;  // Unicode
+		char*   lpszShortNameA; // ANSI
 	};
 	union
 	{                           // The long or formal name
-		LPWSTR  lpszLongName;   // Unicode
-		LPSTR   lpszLongNameA;  // ANSI
+		wchar_t*  lpszLongName;   // Unicode
+		char* lpszLongNameA;  // ANSI
 	};
 
 } CDPNAME;
 
 typedef struct
 {
-	DWORD       dwType;         // Message type
-	DWORD       dwPlayerType;   // Is it a player or group
+	unsigned long       dwType;         // Message type
+	unsigned long       dwPlayerType;   // Is it a player or group
 	CDPID        dpId;           // ID of the player or group
-	DWORD       dwCurrentPlayers;   // current # players & groups in session
-	LPVOID      lpData;         // pointer to remote data
-	DWORD       dwDataSize;     // size of remote data
+	unsigned long       dwCurrentPlayers;   // current # players & groups in session
+	void*      lpData;         // pointer to remote data
+	unsigned long       dwDataSize;     // size of remote data
 	CDPNAME      dpnName;        // structure with name info
 	// the following fields are only available when using
 	// the IDirectPlay3 interface or greater
 	CDPID	    dpIdParent;     // id of parent group
-	DWORD		dwFlags;		// player or group flags
+	unsigned long		dwFlags;		// player or group flags
 } * CLPDPMSG_CREATEPLAYERORGROUP;
 
 typedef struct
 {
-	DWORD       dwType;         // Message type
-	DWORD       dwPlayerType;   // Is it a player or group
+	unsigned long       dwType;         // Message type
+	unsigned long       dwPlayerType;   // Is it a player or group
 	CDPID        dpId;           // player ID being deleted
-	LPVOID      lpLocalData;    // copy of players local data
-	DWORD       dwLocalDataSize; // sizeof local data
-	LPVOID      lpRemoteData;   // copy of players remote data
-	DWORD       dwRemoteDataSize; // sizeof remote data
+	void*      lpLocalData;    // copy of players local data
+	unsigned long       dwLocalDataSize; // sizeof local data
+	void*      lpRemoteData;   // copy of players remote data
+	unsigned long       dwRemoteDataSize; // sizeof remote data
 	// the following fields are only available when using
 	// the IDirectPlay3 interface or greater
 	CDPNAME      dpnName;        // structure with name info
 	CDPID	    dpIdParent;     // id of parent group	
-	DWORD		dwFlags;		// player or group flags
+	unsigned long		dwFlags;		// player or group flags
 } * CLPDPMSG_DESTROYPLAYERORGROUP;
 #endif
 

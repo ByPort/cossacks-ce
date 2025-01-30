@@ -8,9 +8,6 @@
 #ifndef __DDINI_H_
 #define __DDINI_H_
 
-#include <windows.h>
-#include <windowsx.h>
-//#include <ddraw.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <stdlib.h>
@@ -35,7 +32,6 @@ inline void __cdecl operator delete(void *ptr)
 
 #define MAKE_PTC
 
-//#ifndef __ddini_cpp_
 //extern LPDIRECTDRAW            lpDD;			   // DirectDraw object
 //extern LPDIRECTDRAWSURFACE     lpDDSPrimary;   // DirectDraw primary surface
 //extern LPDIRECTDRAWSURFACE     lpDDSBack;      // DirectDraw back surface
@@ -43,15 +39,11 @@ extern SDL_Renderer* renderer;                 // SDL Renderer object
 extern SDL_Surface* primarySurface;            // SDL primary surface
 extern SDL_Texture* primaryTexture;            // SDL primary texture
 extern SDL_Surface* backSurface;               // SDL back surface
-extern BOOL                    bActive;        // is application active?
-extern BOOL                    CurrentSurface; //=FALSE if backbuffer
-											   // is active (Primary surface is visible)
-											   //=TRUE if  primary surface is active
-											   // (but backbuffer is visible)
+extern int                    bActive;        // is application active?
 //extern BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 extern bool                    SDLError;       // false if SDL works normally 
 //extern DDSURFACEDESC   ddsd;
-extern HWND hwnd;
+extern void* hwnd;
 extern SDL_Window* sdlWindow;
 extern bool window_mode;
 extern SDL_Palette* sdlPal;
@@ -93,7 +85,7 @@ void UnlockSurface(void);
  */
  //HDC GetSDC(void);//OBSOLETE
  //Sttting the palette
-void LoadPalette(LPCSTR lpFileName);
+void LoadPalette(const char* lpFileName);
 void SetDebugMode();
 void NoDebugMode();
 

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include <stdlib.h>
 #include "ResFile.h"
@@ -8,7 +9,6 @@
 #include "fog.h"
 #include "walls.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include <math.h>
 
 #include "Megapolis.h"
@@ -62,17 +62,17 @@ bool LockPause = 0;
 bool MiniActive = 0;
 void ShowShipsDest( Brigade* BR );
 
-word GetDir( int, int );
+unsigned short GetDir( int, int );
 void HandleGeology();
 void HandleShar( Nation* NT );
-word CurZone;
+unsigned short CurZone;
 int MRealX, MRealY;
 void TestBlob();
 bool NoText = false;
 void DrawFog();
 void ShowAllBars();
 extern bool MEditMode;
-extern byte EditMedia;
+extern unsigned char EditMedia;
 extern bool BuildWall;
 extern int LOADED;
 extern bool SHOWSLIDE;
@@ -80,8 +80,8 @@ extern bool CINFMOD;
 void ShowMines( NewMonster* NM );
 void ShowRLCItemDarkN( int x, int y, lpRLCTable lprt, int n, int Ints );
 void ShowRLCItemRedN( int x, int y, lpRLCTable lprt, int n, int Ints );
-int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD, int NBLD );
-void CmdGoToTransport( byte NI, word ID );
+int CheckCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i, unsigned short* BLD, int NBLD );
+void CmdGoToTransport( unsigned char NI, unsigned short ID );
 bool GetRealCoords( int xs, int ys, int* xr, int* yr );
 extern bool KeyPressed;
 extern bool Mode3D;
@@ -99,13 +99,13 @@ extern RLCFont FPassive;
 extern RLCFont FActive;
 extern RLCFont FDisable;
 int GetRLen( char* s, RLCFont* font );
-word GetEnemy( int x, int y, byte NI );
+unsigned short GetEnemy( int x, int y, unsigned char NI );
 int COUNTER;
 extern int BlobMode;
 extern int LASTRAND, LASTIND;
 void ShowRMap();
 
-word GetFog( int x, int y );
+unsigned short GetFog( int x, int y );
 extern int FogMode;
 
 extern int RealLx;
@@ -132,9 +132,9 @@ extern bool HelpMode;
 extern bool ChoosePosition;
 extern int LastKey;
 extern bool PeaceMode;
-extern byte LockMode;
+extern unsigned char LockMode;
 
-const byte CLRT[8] = //IMPORTANT: hardcoded color values
+const unsigned char CLRT[8] = //IMPORTANT: hardcoded color values
 {
 	0xD0,//red
 	0xD4,//blue
@@ -148,17 +148,17 @@ const byte CLRT[8] = //IMPORTANT: hardcoded color values
 
 void ShowDestn();
 void ShowMiniDestn();
-extern byte RNTB[64][256];
+extern unsigned char RNTB[64][256];
 void CreateMiniMap();
-word Nsel;
+unsigned short Nsel;
 int TerrHi;
 
 bool BuildMode;
-byte SpecCmd;
+unsigned char SpecCmd;
 OneSlide* OSB;
-byte blx;
-byte bly;
-word BuildingID;
+unsigned char blx;
+unsigned char bly;
+unsigned short BuildingID;
 Nation* BNat;
 extern int NAsk;
 extern int curptr;
@@ -188,10 +188,10 @@ bool MiniMade;
 char Prompt[80];
 int PromptTime;
 
-byte minimap[maxmap][maxmap];
+unsigned char minimap[maxmap][maxmap];
 
 //Инф. о блокировании поверхности
-byte Locking[1024];
+unsigned char Locking[1024];
 
 #define ScreenSizeX32 ScreenSizeX-32
 
@@ -529,11 +529,12 @@ void WhiteMiniBar( int x, int y, int lx, int ly )
 			WhiteMiniSquare( x + i, y + j );
 };
 extern int CurPalette;
-void OutErr( LPCSTR s )
+void OutErr( const char* s )
 {
 	if (CurPalette == 2)LoadPalette( "2\\agew_1.pal" );
 	else LoadPalette( "0\\agew_1.pal" );
-	MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
 };
 
 void CreateTimedHint( char* s, int time );
@@ -633,7 +634,7 @@ void SaveWalls( ResFile ff1 );
 //void LoadWalls(ResFile ff1);
 char MapName[128];
 extern short HiMap[256][256];//Height of surface
-byte mapPos[16];
+unsigned char mapPos[16];
 int RES[8][8];
 
 void PostLoadExtendedMap( char* s )
@@ -648,8 +649,8 @@ void PostLoadExtendedMap( char* s )
 	pos += ( NU + 1 ) << 2;
 	RSeek( f1, pos );
 	RBlockRead( f1, &NU, 4 );
-	byte NNUM, xu, yu;
-	word NIndex;
+	unsigned char NNUM, xu, yu;
+	unsigned short NIndex;
 
 	for (int i = 0; i < NU; i++)
 	{
@@ -731,11 +732,11 @@ void DrawMarker( OneObject* OB )
 		GetRect( OB, &x, &y, &Lx, &Ly );
 		x += smapx - ( int( mapx ) << 5 );
 		y += smapy - ( mul3( int( mapy ) ) << 3 );
-		byte cl = clrYello;
+		unsigned char cl = clrYello;
 		if (OB->ForceX || OB->ForceY)cl = clrRed;
-		byte c1 = 0;
-		byte c2 = 2;
-		byte dc = 4;
+		unsigned char c1 = 0;
+		unsigned char c2 = 2;
+		unsigned char dc = 4;
 		int ddy = -12;
 		Hline( x + c1, y, x + c2, cl );
 		Hline( x + Lx - 1 - c2, y, x + Lx - 1 - c1, cl );
@@ -780,11 +781,11 @@ void DrawImMarker( OneObject* OB )
 		Ly += 2;
 		x += smapx - ( int( mapx ) << 5 );
 		y += smapy - ( mul3( int( mapy ) ) << 3 );
-		byte cl = 0xCD;
+		unsigned char cl = 0xCD;
 		//if(OB->ForceX||OB->ForceY)cl=0xCD;
-		byte c1 = 0;
-		byte c2 = 2;
-		byte dc = 4;
+		unsigned char c1 = 0;
+		unsigned char c2 = 2;
+		unsigned char dc = 4;
 		int ddy = -12;
 		Hline( x + c1, y, x + c2, cl );
 		Hline( x + Lx - 1 - c2, y, x + Lx - 1 - c1, cl );
@@ -803,9 +804,9 @@ void DrawHealth( OneObject* OB )
 	GetRect( OB, &x, &y, &Lx, &Ly );
 	x += smapx - ( int( mapx ) << 5 );
 	y += smapy - ( mul3( int( mapy ) ) << 3 );
-	byte c1 = 0;
-	byte c2 = 2;
-	byte dc = 4;
+	unsigned char c1 = 0;
+	unsigned char c2 = 2;
+	unsigned char dc = 4;
 	int ddy = -12;
 	int mhs = Lx - c2 - c2 - dc - dc;
 	int hs = mhs;
@@ -833,7 +834,7 @@ void DrawHealth( OneObject* OB )
 		Vline( -2 + x + Lx - 1 - c2, y + ddy, y + ddy + 1, 255 );
 	};
 };
-void DrawColorMarker( OneObject* OB, byte cl )
+void DrawColorMarker( OneObject* OB, unsigned char cl )
 {
 	if (OB)
 	{
@@ -842,9 +843,9 @@ void DrawColorMarker( OneObject* OB, byte cl )
 		x += smapx - ( int( mapx ) << 5 );
 		y += smapy - ( mul3( int( mapy ) ) << 3 );
 		if (OB->ForceX || OB->ForceY)cl = clrRed;
-		byte c1 = 0;
-		byte c2 = 5;
-		byte dc = 4;
+		unsigned char c1 = 0;
+		unsigned char c2 = 5;
+		unsigned char dc = 4;
 		int ddy = -12;
 		Hline( x + c1, y, x + c2, cl );
 		Hline( x + Lx - 1 - c2, y, x + Lx - 1 - c1, cl );
@@ -873,10 +874,10 @@ void DrawMiniMarker( OneObject* OB )
 		Ly = Ly >> 1;
 		x += smapx - ( int( mapx ) << 4 );
 		y += smapy - ( mul3( int( mapy ) ) << 2 );
-		byte cl = clrYello;
-		byte c1 = 0;
-		byte c2 = 2;
-		byte dc = 4;
+		unsigned char cl = clrYello;
+		unsigned char c1 = 0;
+		unsigned char c2 = 2;
+		unsigned char dc = 4;
 		int ddy = -12;
 		Hline( x + c1, y, x + c2, cl );
 		Hline( x + Lx - 1 - c2, y, x + Lx - 1 - c1, cl );
@@ -924,7 +925,7 @@ void ShowMiniHealth( OneObject* ZZ )
 
 static int tmt = 0;
 char* GetTextByID( char* ID );
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void GetDiscreta( int* x, int* y, int val );
 char* WINNER = nullptr;
@@ -938,15 +939,15 @@ int NatSquare[8] = { 0,0,0,0,0,0,0,0 };
 int SumSquare[8];
 int SumAccount[8];
 extern City CITY[8];
-extern word NPlayers;
+extern unsigned short NPlayers;
 void CreateSumm()
 {
 	memset( SumSquare, 0, 7 * 4 );
 	memset( SumAccount, 0, 7 * 4 );
 	for (int i = 0; i < 7; i++)
 	{
-		byte ms0 = 1 << i;
-		byte ms = NATIONS[i].NMask;
+		unsigned char ms0 = 1 << i;
+		unsigned char ms = NATIONS[i].NMask;
 		if (ms == ms0)
 		{
 			SumSquare[i] = NatSquare[i];
@@ -1024,20 +1025,20 @@ int GetBestPlayer()
 		}
 		else return -1;
 };
-int SortPlayers( byte* Res, int* par )
+int SortPlayers( unsigned char* Res, int* par )
 {
 	CreateSumm();
 	int con = PINFO[0].VictCond;
 	SortClass SC;
 	SC.CheckSize( 8 );
 	int np = 0;
-	byte usemask = 0;
+	unsigned char usemask = 0;
 	for (int q = 0; q < 7; q++)
 	{
 		int xx = NatRefTBL[q];
 		if (NATIONS[xx].ThereWasUnit/*NtNUnits[xx]*/)
 		{
-			byte ms = NATIONS[xx].NMask;
+			unsigned char ms = NATIONS[xx].NMask;
 			if (!( usemask&ms ))
 			{
 				usemask |= ms;
@@ -1050,14 +1051,14 @@ int SortPlayers( byte* Res, int* par )
 	};
 	SC.NUids = np;
 	SC.Sort();
-	word msks[8];
+	unsigned short msks[8];
 	SC.Copy( msks );
 	int ps = 0;
 	for (int q = 0; q < np; q++)
 	{
-		byte msk = byte( msks[q] );
+		unsigned char msk = unsigned char( msks[q] );
 		int mp = 0;
-		byte m0 = 1;
+		unsigned char m0 = 1;
 		for (int p = 0; p < 7; p++)
 		{
 			int xx = NatRefTBL[p];
@@ -1087,7 +1088,7 @@ int SortPlayers( byte* Res, int* par )
 	return ps;
 }
 
-void ShowVictInFormat( char* Res, int idx, byte Type )
+void ShowVictInFormat( char* Res, int idx, unsigned char Type )
 {
 	switch (Type)
 	{
@@ -1102,12 +1103,12 @@ void ShowVictInFormat( char* Res, int idx, byte Type )
 bool NoWinner = 0;
 bool ShowStat = 0;
 extern bool NOPAUSE;
-void CmdEndGame( byte NI, byte state, byte cause );
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause );
 unsigned long GetRealTime();
 extern int WaitState;
 extern bool EnterChatMode;
 extern int ShowGameScreen;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 
 void ShowCentralText0( char* sss )
 {
@@ -1122,7 +1123,7 @@ void ShowCentralText0( char* sss )
 		}
 	}
 	int MaxLx = 0;
-	byte c;
+	unsigned char c;
 	int MaxCur = 0;
 	int p = 0;
 	do
@@ -1132,7 +1133,7 @@ void ShowCentralText0( char* sss )
 		if (c != '\\'&&c)
 		{
 			int L = 1;
-			MaxCur += GetRLCWidthUNICODE( BigYellowFont.RLC, (byte*) ( sss + p ), &L );
+			MaxCur += GetRLCWidthUNICODE( BigYellowFont.RLC, (unsigned char*) ( sss + p ), &L );
 			p += L - 1;
 		}
 		else
@@ -1451,11 +1452,11 @@ void ShowWinner()
 //final procedures for graphics output
 void ProcessWaveFrames();
 void ShowVisualLess( int yend );
-extern word rpos;
+extern unsigned short rpos;
 int time0;
-word PreRpos;
+unsigned short PreRpos;
 void ShowPulse();
-void AddPulse( word ObjID, byte c );
+void AddPulse( unsigned short ObjID, unsigned char c );
 void ProcessFog1();
 void CreateFogImage();
 extern int DoLink_Time, SearchVictim_Time, CheckCapture_Time;
@@ -1472,7 +1473,7 @@ extern int NInGold[8];
 extern int NInIron[8];
 extern int NInCoal[8];
 void ShowCostPlaces();
-int CheckSmartCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i );
+int CheckSmartCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i );
 bool Tutorial = 0;
 bool NoPress = 0;
 bool TutOver = 0;
@@ -1486,7 +1487,7 @@ extern int LastStartTime[8];
 extern int LastGameLength[8];
 extern int CurrentStepTime;
 void ShowChat();
-void xLine( int x, int y, int x1, int y1, byte c );
+void xLine( int x, int y, int x1, int y1, unsigned char c );
 void ShowExpl();
 extern int BrigPnX;
 extern int BrigPnY;
@@ -1499,10 +1500,10 @@ extern int AddTime;
 extern int NeedAddTime;
 extern int NSTT;
 int PRVGT = 0;
-int GetPing( DWORD pid );
-extern DWORD RealTime;
+int GetPing( unsigned long pid );
+extern unsigned long RealTime;
 extern bool LockFog;
-extern byte SYNBAD[8];
+extern unsigned char SYNBAD[8];
 void ProcessRivEditor();
 extern int NPROCM;
 extern int TPROCM;
@@ -1516,12 +1517,12 @@ int GameTime = 0;
 char* TMMS_NOPT = nullptr;
 char* TMMS_PT = nullptr;
 extern int CURTMTMT;
-extern byte BalloonState;
-extern byte CannonState;
-extern byte XVIIIState;
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char XVIIIState;
 extern int COUNTER1;
 extern int COUNTER2;
-void DottedLine( int x1, int y1, int x2, int y2, byte c )
+void DottedLine( int x1, int y1, int x2, int y2, unsigned char c )
 {
 	if (y1 == y2)
 	{
@@ -1609,7 +1610,7 @@ void GFieldShow()
 	{
 		for (int i = 0; i < MBR4; i++)
 		{
-			DWORD p = BMASK[i];
+			unsigned long p = BMASK[i];
 			if (p)
 			{
 				for (int j = 0; j < 32; j++)
@@ -2152,10 +2153,10 @@ void GFieldShow()
 			DY = -14;
 		}
 
-		byte ord[8];
+		unsigned char ord[8];
 		int  par[8];
 		int no = SortPlayers( ord, par );
-		byte prevms = 0;
+		unsigned char prevms = 0;
 
 		if (!( SCENINF.hLib || PlayGameMode == 1 ))
 		{
@@ -2200,8 +2201,8 @@ void GFieldShow()
 				int y = miniy - 22 - 4 - no * 14 + DY;
 				for (int q = 0; q < no; q++)
 				{
-					byte ms = NATIONS[NatRefTBL[ord[q]]].NMask;
-					byte c = 0xD0 + 4 * NatRefTBL[ord[q]];
+					unsigned char ms = NATIONS[NatRefTBL[ord[q]]].NMask;
+					unsigned char c = 0xD0 + 4 * NatRefTBL[ord[q]];
 					if (!( ms&prevms ))
 					{
 						int w;
@@ -2329,7 +2330,7 @@ void GFieldShow()
 
 	if (NSL[MyNation])
 	{
-		word MID = Selm[MyNation][0];
+		unsigned short MID = Selm[MyNation][0];
 		if (MID != 0xFFFF)
 		{
 			OneObject* OB = Group[MID];
@@ -2383,7 +2384,7 @@ int MiniLy;
 //Additional offsets for jump-scrolling on small minimap
 int MiniX, MiniY;
 
-DWORD BMASK[MBR4] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+unsigned long BMASK[MBR4] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 void DrawMiniFog();
 void ViewRoads( int x, int y );
 extern int NROADS;
@@ -2488,12 +2489,12 @@ void GMiniShow()
 	OneObject* OO;
 	int mxx, myy;
 
-	byte val;
-	byte mycl = CLRT[MyNation];
+	unsigned char val;
+	unsigned char mycl = CLRT[MyNation];
 
 	memset( BMASK, 0, sizeof BMASK );
 
-	byte mmsk = GM( MyNation );
+	unsigned char mmsk = GM( MyNation );
 
 	for (int g = 0; g < MAXOBJECT; g++)
 	{
@@ -2579,7 +2580,7 @@ void GMiniShow()
 
 		for (int p = 0; p < BR->NMemb; p++)
 		{
-			word MID = BR->Memb[p];
+			unsigned short MID = BR->Memb[p];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -2636,7 +2637,7 @@ void GMiniShow()
 	Xbar( minix + ( mapx >> ADDSH ) - MiniX, miniy + ( mapy >> ADDSH ) - MiniY, smaplx >> ADDSH, smaply >> ADDSH, 0xFF );//14
 	int mx2 = MiniLx;
 	int my2 = MiniLy;
-	byte ccc = 0xD0 + ( NatRefTBL[MyNation] << 2 );
+	unsigned char ccc = 0xD0 + ( NatRefTBL[MyNation] << 2 );
 	Hline( minix - 1, miniy - 1, minix + mx2, ccc );
 	Hline( minix - 1, miniy + my2, minix + mx2, ccc );
 	Vline( minix - 1, miniy - 1, miniy + my2, ccc );
@@ -2687,9 +2688,9 @@ void MFix()
 	}
 }
 
-void CmdCreateNewTerr( byte NI, int x, int y, word ID );
-word GetNewEnemy( int xr, int yr, byte NI );
-void ShowPen( int x, int y, int r, byte c );
+void CmdCreateNewTerr( unsigned char NI, int x, int y, unsigned short ID );
+unsigned short GetNewEnemy( int xr, int yr, unsigned char NI );
+void ShowPen( int x, int y, int r, unsigned char c );
 void AddHi( int x, int y1, int r, int h );
 void AverageHi( int x, int y1, int r );
 void PlanarHi( int x, int y1, int r );
@@ -2717,10 +2718,10 @@ void RandomHi( int x, int y1, int r, int ms, int fnd );
 void AddHiPlanar( int x, int y1, int r, int h );
 void CreatePlane( int x, int y1, int r );
 void SetSpot( int x, int y );
-word GetNewFriend( int xr, int yr, byte NI );
+unsigned short GetNewFriend( int xr, int yr, unsigned char NI );
 bool LockMouse = false;
 bool WasSelectionBar = false;
-void CmdSelectBuildings( byte NI );
+void CmdSelectBuildings( unsigned char NI );
 int LastMx;
 int LastMy;
 void CHKS()
@@ -2748,8 +2749,8 @@ extern bool SetDestMode;
 extern char* FormationStr;
 void ControlAZones( int x, int y );
 void GoToCurSelPosition();
-void CmdSelectIdlePeasants( byte );
-void CmdSelectIdleMines( byte );
+void CmdSelectIdlePeasants( unsigned char );
+void CmdSelectIdleMines( unsigned char );
 
 void ProcessInformation();
 
@@ -2758,15 +2759,15 @@ int InfDY = 32 + InfAddY;
 int InfDX = 10 + 243;
 int InfY1 = 450 + InfAddY;
 int InfY2 = 450 - 22 + InfAddY;
-void CmdPause( byte NI );
-word AdvancedGetNewEnemy( int rex, int rey, int xr, int yr, byte NI );
-word AdvancedGetNewFriend( int rex, int rey, int xr, int yr, byte NI );
+void CmdPause( unsigned char NI );
+unsigned short AdvancedGetNewEnemy( int rex, int rey, int xr, int yr, unsigned char NI );
+unsigned short AdvancedGetNewFriend( int rex, int rey, int xr, int yr, unsigned char NI );
 extern bool MouseOverZone;
 bool MouseOverMiniMenu = 0;
 int TestCapture( OneObject* OBJ );
 bool CheckWallClick( int x, int y );
-void CmdSelAllUnits( byte NI );
-void CmdSelAllShips( byte NI );
+void CmdSelAllUnits( unsigned char NI );
+void CmdSelAllShips( unsigned char NI );
 void HandleMouse( int x, int y );
 void EDGETEST();
 void ControlZones();
@@ -2801,7 +2802,7 @@ void ClearModes();
 extern bool MultiTvar;
 extern bool OptHidden;
 bool CheckFlagsNeed();
-void CmdVote( byte result );
+void CmdVote( unsigned char result );
 
 extern int ExitNI;
 
@@ -3008,13 +3009,13 @@ int PatrolPtr = 13;
 int AttGrPtr = 9;
 int EnterTrPtr = 11;
 bool CheckTransportEntering( OneObject* OB );
-void CmdSetGuardState( byte, word );
+void CmdSetGuardState( unsigned char, unsigned short );
 extern char HEIGHTSTR[12];
 bool CheckCurveLinked( int x, int y );
-void CmdAttackGround( byte NI, int x, int y );
+void CmdAttackGround( unsigned char NI, int x, int y );
 char EXCOMM[1024];
 bool HaveExComm = 0;
-void CmdAddMoney( byte, DWORD );
+void CmdAddMoney( unsigned char, unsigned long );
 
 extern const int kChatMessageDisplayTime;
 
@@ -3039,7 +3040,7 @@ void HandleMouse( int x, int y )
 			break;
 
 		case 1://money bonus
-			CmdAddMoney( MyNation, *( (DWORD*) ( EXCOMM + 1 ) ) );
+			CmdAddMoney( MyNation, *( (unsigned long*) ( EXCOMM + 1 ) ) );
 			break;
 		}
 
@@ -3074,8 +3075,8 @@ void HandleMouse( int x, int y )
 		UnPress();
 	}
 
-	byte MyMask = NATIONS[MyNation].NMask;
-	byte LastSCMD = SpecCmd;
+	unsigned char MyMask = NATIONS[MyNation].NMask;
+	unsigned char LastSCMD = SpecCmd;
 
 	NoPress = false;
 
@@ -3098,19 +3099,19 @@ void HandleMouse( int x, int y )
 	bool CanAttBLD = 0;
 	bool CanEnter = 0;
 	bool CanShoot = 0;
-	byte MTMASK = 0;
+	unsigned char MTMASK = 0;
 
 	//Check for special actions on pointed spot
 	//e.g. gather resource, build / repair, capture, enter transport
 	if (!( MouseOverZone || OverInform || MouseOverMiniMenu ))
 	{
 		int N = ImNSL[MyNation];
-		word* uni = ImSelm[MyNation];
-		word* sns = ImSerN[MyNation];
+		unsigned short* uni = ImSelm[MyNation];
+		unsigned short* sns = ImSerN[MyNation];
 
 		for (int i = 0; i < N; i++)
 		{
-			word MID = uni[i];
+			unsigned short MID = uni[i];
 			if (MID != 0xFFFF)
 			{
 				OneObject* ME = Group[MID];
@@ -3166,10 +3167,10 @@ void HandleMouse( int x, int y )
 		int N = ImNSL[MyNation];
 		if (N)
 		{
-			word* seli = ImSelm[MyNation];
+			unsigned short* seli = ImSelm[MyNation];
 			for (int k = 0; k < N; k++)
 			{
-				word MID = seli[k];
+				unsigned short MID = seli[k];
 				if (MID != 0xFFFF)
 				{
 					OneObject* OB = Group[MID];
@@ -3450,10 +3451,10 @@ void HandleMouse( int x, int y )
 
 	if (SpecCmd == 11)
 	{
-		word NSel = ImNSL[MyNation];
+		unsigned short NSel = ImNSL[MyNation];
 		if (NSel)
 		{
-			word MID = ImSelm[MyNation][0];
+			unsigned short MID = ImSelm[MyNation][0];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -3470,10 +3471,10 @@ void HandleMouse( int x, int y )
 	if (SpecCmd == 241)
 	{
 		//Select all units of selected type on screen
-		word NSel = ImNSL[MyNation];
+		unsigned short NSel = ImNSL[MyNation];
 		if (NSel)
 		{
-			word MID = ImSelm[MyNation][0];
+			unsigned short MID = ImSelm[MyNation][0];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -3640,8 +3641,8 @@ void HandleMouse( int x, int y )
 		};
 		if (WaterEditMode&&WaterEditMode < 3)
 		{
-			byte cc1 = 0xB4;
-			byte cc2 = 0xBA;
+			unsigned char cc1 = 0xB4;
+			unsigned char cc2 = 0xBA;
 			if (WaterEditMode == 2)
 			{
 				cc1 = 0xA8;
@@ -3788,7 +3789,7 @@ void HandleMouse( int x, int y )
 			else
 			{
 				//Show hint when clicking on enemy unit, building or formation
-				word ENMI = GetNewEnemy( gx, gy, MyNation );
+				unsigned short ENMI = GetNewEnemy( gx, gy, MyNation );
 				if (ENMI != 0xFFFF)
 				{
 					OneObject* OBBE = Group[ENMI];
@@ -3807,7 +3808,7 @@ void HandleMouse( int x, int y )
 							//Get unit name and count formation strength
 							for (int i = 2; i < BR->NMemb; i++)
 							{
-								word MID = BR->Memb[i];
+								unsigned short MID = BR->Memb[i];
 								if (MID != 0xFFFF)
 								{
 									OneObject* BOB = Group[MID];
@@ -3901,7 +3902,7 @@ void HandleMouse( int x, int y )
 
 		if (ImNSL[MyNation] > 0 && !mini)
 		{
-			word Att = 0xFFFF;
+			unsigned short Att = 0xFFFF;
 			if (MTMASK || CanAttBLD || CanCapt)
 			{
 				Att = AdvancedGetNewEnemy( xmx, yreal, xmx, ( yreal >> 1 ) - GetHeight( xmx, yreal ), NatRefTBL[MyNation] );
@@ -3947,7 +3948,7 @@ void HandleMouse( int x, int y )
 				}
 			}
 
-			word Friend = AdvancedGetNewFriend( xmx, yreal, xmx, ( yreal >> 1 ) - GetHeight( xmx, yreal ), MyNation );
+			unsigned short Friend = AdvancedGetNewFriend( xmx, yreal, xmx, ( yreal >> 1 ) - GetHeight( xmx, yreal ), MyNation );
 			if (SETDEST)
 			{
 				CmdSetDst( MyNation, xmx << 4, yreal << 4 );
@@ -3964,7 +3965,7 @@ void HandleMouse( int x, int y )
 					curptr = EnterTrPtr;
 				}
 			}
-			byte rk = 0xFF;
+			unsigned char rk = 0xFF;
 			if (CanWork)
 			{
 				if (Friend != 0xFFFF)
@@ -4444,7 +4445,7 @@ void GoToCurSelPosition()
 		OneObject* OBJ = nullptr;
 		do
 		{
-			word MID = ImSelm[MyNation][CurSelPos];
+			unsigned short MID = ImSelm[MyNation][CurSelPos];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -4471,7 +4472,7 @@ void GoToCurSelPosition()
 			MaxSteps = ImNSL[MyNation];
 			do
 			{
-				word MID = ImSelm[MyNation][CurSelPos];
+				unsigned short MID = ImSelm[MyNation][CurSelPos];
 				if (MID != 0xFFFF)
 				{
 					OneObject* OB = Group[MID];
@@ -4520,11 +4521,11 @@ char* MMITM[5] = { "UM_MENU","UM_INF1","UM_INF2","UM_MINI","UM_HIST" };
 void ShowHistory();
 extern int MenuType;
 extern bool MakeMenu;
-extern byte LockGrid;
-byte ShowHSTR = 0;
+extern unsigned char LockGrid;
+unsigned char ShowHSTR = 0;
 extern bool TransMode;
 void CreateNEWMAP();
-void PrepareGameMedia( byte myid, bool );
+void PrepareGameMedia( unsigned char myid, bool );
 void ShowLoading();
 void RetryCQuest();
 void CmdOfferVoting();
@@ -4875,8 +4876,8 @@ void CreateMiniMenu()
 	}
 }
 
-int DetermineNationAI( byte Nat );
-void LoadAIFromDLL( byte Nat, char* Name );
+int DetermineNationAI( unsigned char Nat );
+void LoadAIFromDLL( unsigned char Nat, char* Name );
 void REPLAY()
 {
 	bool lib = SCENINF.hLib != nullptr;
@@ -5006,7 +5007,7 @@ void ProcessMiniMenu()
 
 struct TrainInfo
 {
-	word Cost[6];
+	unsigned short Cost[6];
 	int CostTo[6];
 	char* Name;
 	short AddValue[8];
@@ -5028,10 +5029,10 @@ public:
 	int NATT;
 	TrainInfo SHIELD[6];
 	int NSHL;
-	byte ATTMask;
-	byte SHLMask;
+	unsigned char ATTMask;
+	unsigned char SHLMask;
 	int NMoreUpg;
-	word UPID[15];
+	unsigned short UPID[15];
 	int Cost[6];
 	short Shield;
 	short GoldUpkeep;
@@ -5041,9 +5042,9 @@ public:
 	short WoodUpkeep;
 	//short FoodUpkeep;
 	short BuildStages;
-	byte* Picture;
+	unsigned char* Picture;
 	short Lx, Ly;
-	word  UnitID;
+	unsigned short  UnitID;
 	SD_Strip* SDS;
 	int N_SD;
 	int MaxSD;
@@ -5147,7 +5148,7 @@ void UnitInfo::Create( int ID )
 		int Max = ( RFileSize( F ) - 0x436 ) / Lx / Ly;
 		if (pid < Max)
 		{
-			Picture = new byte[Lx*Ly];
+			Picture = new unsigned char[Lx*Ly];
 			RSeek( F, ( Max - pid - 1 )*Lx*Ly + 0x436 );
 			for (int i = 0; i < Ly; i++)RBlockRead( F, Picture + Lx*( Ly - i - 1 ), Lx );
 		};
@@ -5372,7 +5373,7 @@ void ClearUINF()
 	UINF.Close();
 };
 extern short WeaponIcn[32];
-void GetCostString( word* Cost, char* str )
+void GetCostString( unsigned short* Cost, char* str )
 {
 	int zp = 0;
 	for (int i = 0; i < 6; i++)
@@ -5991,13 +5992,13 @@ void GetSquare()
 	};
 	/*
 	memset(NatSquare,0,4*8);
-	byte nms[256];
+	unsigned char nms[256];
 	memset(nms,0,256);
 	for(int i=0;i<MAXOBJECT;i++){
 		OneObject* OB=Group[i];
 		if(OB&&!OB->Sdoxlo){
 			if(!OB->NewBuilding){
-				byte Usage=OB->newMons->Usage;
+				unsigned char Usage=OB->newMons->Usage;
 				if(Usage==GaleraID||Usage==FregatID||Usage==LinkorID||Usage==ShebekaID||Usage==IaxtaID){
 					NatFlot[OB->NNUM]++;
 				}else{
@@ -6061,13 +6062,13 @@ int ShowNationalForces( int x, int y, bool Header )
 		memset( NatFlot, 0, 4 * 8 );
 		/*
 		memset(NatSquare,0,4*8);
-		byte nms[256];
+		unsigned char nms[256];
 		memset(nms,0,256);
 		for(int i=0;i<MAXOBJECT;i++){
 			OneObject* OB=Group[i];
 			if(OB&&!OB->Sdoxlo){
 				if(!OB->NewBuilding){
-					byte Usage=OB->newMons->Usage;
+					unsigned char Usage=OB->newMons->Usage;
 					if(Usage==GaleraID||Usage==FregatID||Usage==LinkorID||Usage==ShebekaID||Usage==IaxtaID){
 						NatFlot[OB->NNUM]++;
 					}else{
@@ -6200,7 +6201,7 @@ int ShowNationalForces( int x, int y, bool Header )
 		y0 += 18;
 	}
 
-	byte res[8];
+	unsigned char res[8];
 	int par[8];
 	int np = SortPlayers( res, par );
 	for (int q = 0; q < np; q++)
@@ -6231,7 +6232,7 @@ int ShowNationalForces( int x, int y, bool Header )
 struct HashItem
 {
 	char* Message;
-	DWORD HashKey;
+	unsigned long HashKey;
 	int Param1;
 	int Param2;
 };
@@ -6281,10 +6282,10 @@ void NamesHash::AddString( char* Str, int Parm1, int Parm2 )
 	HASH[NHash].Message = Str;
 	NHash++;
 };
-int ShowUnitsList( int x, int y, int Lx, word* Value )
+int ShowUnitsList( int x, int y, int Lx, unsigned short* Value )
 {
 	Nation* NTM = NATIONS + MyNation;
-	//word* KILL=NTM->NKilled;
+	//unsigned short* KILL=NTM->NKilled;
 	int DY = 15 + UNI_LINEDLY1;
 	int DDY = UNI_LINEDY1;
 
@@ -6349,7 +6350,7 @@ int ShowUnitsList( int x, int y, int Lx, word* Value )
 int ShowDeathList( int x, int y, bool Header )
 {
 	//Nation* NTM=NATIONS+MyNation;
-	//word* KILL=NTM->NKilled;
+	//unsigned short* KILL=NTM->NKilled;
 	//int N2=NTM->NMon;
 	//int y0=y+14;
 	//char cc[100];
@@ -6411,10 +6412,10 @@ int ShowDeathList( int x, int y, bool Header )
 	*/
 };
 
-int GetCurrentCost( byte Buy, byte Sell, int Amount );
-int GetNominalCost( byte Buy, byte Sell, int Amount );
-byte DECO[6] = { 0,3,2,1,4,5 };
-byte EECO[6] = { 2,0,4,5,1,3 };
+int GetCurrentCost( unsigned char Buy, unsigned char Sell, int Amount );
+int GetNominalCost( unsigned char Buy, unsigned char Sell, int Amount );
+unsigned char DECO[6] = { 0,3,2,1,4,5 };
+unsigned char EECO[6] = { 2,0,4,5,1,3 };
 
 //Displays market information and exchange rates
 int ShowEconomy( int x, int y, bool Header )
@@ -6576,7 +6577,7 @@ int ShowDoxod( int x, int y, bool Header1 )
 	y0 += 10;
 	bool Header = false;
 	int N = NATIONS[NatRefTBL[MyNation]].NMon;
-	word* RAM = CITY[NatRefTBL[MyNation]].ReadyAmount;
+	unsigned short* RAM = CITY[NatRefTBL[MyNation]].ReadyAmount;
 	GeneralObject** GO = NATIONS[NatRefTBL[MyNation]].Mon;
 	int Itog = 0;
 	NamesHash RASXODB;
@@ -6686,7 +6687,7 @@ int ShowDoxod( int x, int y, bool Header1 )
 	};
 	return y0 - y;
 };
-word LastSelID = 0xFFFF;
+unsigned short LastSelID = 0xFFFF;
 
 void ProcessInformation()
 {
@@ -6703,7 +6704,7 @@ void ProcessInformation()
 
 		if (ImNSL[MyNation])
 		{
-			word MID = ImSelm[MyNation][0];
+			unsigned short MID = ImSelm[MyNation][0];
 			if (MID != 0xFFFF)
 			{
 				OneObject* OB = Group[MID];
@@ -6933,7 +6934,7 @@ void CreateRESSEND()
 }
 
 void DrawHdrTable( int x0, int y0, int x1, int y1 );
-void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount );
+void CmdGiveMoney( unsigned char SrcNI, unsigned char DstNI, unsigned char Res, int Amount );
 int ReadKey();
 
 //Process resource transfer dialog

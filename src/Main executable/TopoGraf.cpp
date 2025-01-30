@@ -25,7 +25,6 @@
 #include "CDirSnd.h"
 #include "NewAI.h"
 #include "TopoGraf.h"
-#include <CrtDbg.h>
 #include "fonts.h"
 MediaTop GTOP[2];
 Radio Rarr[RRad];
@@ -57,14 +56,14 @@ void CreateRadio() {
 	};
 }
 void CreateLinkInfo();
-word* TopRef;
+unsigned short* TopRef;
 Area* TopMap;
 int   NAreas;
 int MaxArea;
-word* MotionLinks;
-word* LinksDist;
+unsigned short* MotionLinks;
+unsigned short* LinksDist;
 
-bool AddArea(short x, short y, byte Sliv)
+bool AddArea(short x, short y, unsigned char Sliv)
 {
 	if (NAreas > 1016)
 	{
@@ -116,7 +115,7 @@ bool AddArea(short x, short y, byte Sliv)
 		AR->NLinks = 0;
 		AR->NMines = 0;
 		AR->MaxLink = 6;
-		AR->Link = new word[AR->MaxLink << 1];
+		AR->Link = new unsigned short[AR->MaxLink << 1];
 		NAreas++;
 		return true;
 	}
@@ -130,7 +129,7 @@ void AddLink(int N1, int N2) {
 	};
 	if (AR->NLinks == AR->MaxLink) {
 		AR->MaxLink += 4;
-		AR->Link = (word*)realloc(AR->Link, AR->MaxLink << 2);
+		AR->Link = (unsigned short*)realloc(AR->Link, AR->MaxLink << 2);
 	};
 	N = AR->NLinks;
 	AR->Link[N + N] = N2;
@@ -234,7 +233,7 @@ void CreateAreas() {
 	//creating linking between areas
 	for (int i = 0; i < NAreas; i++)TopRef[TopMap[i].x + int(TopMap[i].y)*TopLx] = i;
 	bool Change = false;
-	//word TempTop[TopLx*TopLy];
+	//unsigned short TempTop[TopLx*TopLy];
 	Change = true;
 	for (int i = 1; i < RRad&&Change; i++) {
 		//memcpy(TempTop,TopRef,sizeof(TopRef));
@@ -250,11 +249,11 @@ void CreateAreas() {
 				int y = yy + yi[k];
 				if (x > 0 && y > 0 && x < mmx&&y < mmy) {
 					int ofst = x + y*TopLx;
-					word ZZ = TopRef[ofst];
-					word ZU = TopRef[ofst - TopLx];
-					word ZD = TopRef[ofst + TopLx];
-					word ZL = TopRef[ofst - 1];
-					word ZR = TopRef[ofst + 1];
+					unsigned short ZZ = TopRef[ofst];
+					unsigned short ZU = TopRef[ofst - TopLx];
+					unsigned short ZD = TopRef[ofst + TopLx];
+					unsigned short ZL = TopRef[ofst - 1];
+					unsigned short ZR = TopRef[ofst + 1];
 					if (ZZ == 0xFFFE) {
 						if (ZU == j || ZD == j || ZL == j || ZR == j ||
 							TopRef[ofst - TopLx - 1] == j ||
@@ -295,7 +294,7 @@ void CreateAreas() {
 		SprGroup* SG = OS->SG;
 		ObjCharacter* OC = &SG->ObjChar[OS->SGIndex];
 		if (OC->IntResType < 8) {
-			byte imp = 0;
+			unsigned char imp = 0;
 			int ort = OC->IntResType;
 			if (ort == GoldID)imp = 1;
 			else if (ort == IronID)imp = 2;
@@ -303,7 +302,7 @@ void CreateAreas() {
 			int xx = OS->x >> 6;
 			int yy = OS->y >> 6;
 			int ofs = xx + yy*TopLx;
-			word TZ = TopRef[ofs];
+			unsigned short TZ = TopRef[ofs];
 			if (TZ < 4096) {
 				Area* AR = TopMap + TZ;
 				AR->NMines++;
@@ -312,7 +311,7 @@ void CreateAreas() {
 		};
 	};
 	for (int i = 0; i < NAreas; i++)if (TopMap[i].NMines) {
-		TopMap[i].MinesIdx = new word[TopMap[i].NMines];
+		TopMap[i].MinesIdx = new unsigned short[TopMap[i].NMines];
 		TopMap[i].NMines = 0;
 	};
 	for (int i = 0; i < MAXSPR; i++) {
@@ -323,7 +322,7 @@ void CreateAreas() {
 			int xx = OS->x >> 6;
 			int yy = OS->y >> 6;
 			int ofs = xx + yy*TopLx;
-			word TZ = TopRef[ofs];
+			unsigned short TZ = TopRef[ofs];
 			if (TZ < 4096) {
 				Area* AR = TopMap + TZ;
 				AR->MinesIdx[AR->NMines] = i;
@@ -332,8 +331,8 @@ void CreateAreas() {
 		};
 	};
 	ProcessMessages();
-	MotionLinks = new word[NAreas*NAreas];
-	LinksDist = new word[NAreas*NAreas];
+	MotionLinks = new unsigned short[NAreas*NAreas];
+	LinksDist = new unsigned short[NAreas*NAreas];
 	memset(MotionLinks, 0xFFFF, NAreas*NAreas * 2);
 	memset(LinksDist, 0xFFFF, NAreas*NAreas * 2);
 	CreateLinkInfo();
@@ -365,11 +364,11 @@ int OneIteration() {
 			if (i != j) {
 				Area* AR = TopMap + i;
 				int N = AR->NLinks;
-				word* LINK = AR->Link;
+				unsigned short* LINK = AR->Link;
 				int CurDis = LinksDist[ofs];
 				for (int k = 0; k < N; k++) {
-					word N2 = LINK[k + k];
-					word adds = LINK[k + k + 1];
+					unsigned short N2 = LINK[k + k];
+					unsigned short adds = LINK[k + k + 1];
 					if (N2 != j) {
 						int ofs1 = j + N2*NAreas;
 						int dst = LinksDist[ofs1];
@@ -435,7 +434,7 @@ void EraseAreas() {
 	WTopMap = NULL;
 }
 
-extern word CurZone;
+extern unsigned short CurZone;
 
 #define xTopLx (256<<2)
 
@@ -462,12 +461,12 @@ void CreateStrategyInfo()
 			int ofs = xx + (yy << TopSH);
 			if (ofs >= 0 && ofs < MaxTop)
 			{
-				word TR = TopRef[ofs];
+				unsigned short TR = TopRef[ofs];
 				if (TR < 0xFFFE)
 				{
 					Area* AR = TopMap + TR;
 					StrategyInfo* STINF = &AR->SINF[OB->NNUM];
-					byte USAGE = OB->newMons->Usage;
+					unsigned char USAGE = OB->newMons->Usage;
 					switch (USAGE)
 					{
 					case MelnicaID:
@@ -532,7 +531,7 @@ void CreateStrategyInfo()
 		StrategyInfo* ST = AR->SINF;
 		if (N)
 		{
-			word* Lin = AR->Link;
+			unsigned short* Lin = AR->Link;
 			for (int j = 0; j < N; j++)
 			{
 				Area* AR2 = TopMap + Lin[j];
@@ -550,14 +549,14 @@ void CreateStrategyInfo()
 }
 
 bool WasOnlyOpen;
-word NChAreas;
-word MaxChAreas;
-word* ChAreas;
+unsigned short NChAreas;
+unsigned short MaxChAreas;
+unsigned short* ChAreas;
 //procesing variables
 int CurIStart;
 int TmpChanges;
-word* TmpMLinks;
-word* TmpMDist;
+unsigned short* TmpMLinks;
+unsigned short* TmpMDist;
 int MinChX;
 int MaxChX;
 int MinChY;
@@ -587,16 +586,16 @@ void ClearTopChange() {
 	InitTopChange();
 	WasOnlyOpen = true;
 };
-void AddChTop(word TopID) {
+void AddChTop(unsigned short TopID) {
 	for (int i = 0; i < NChAreas; i++)if (ChAreas[i] == TopID)return;
 	if (NChAreas >= MaxChAreas) {
 		MaxChAreas += 32;
-		ChAreas = (word*)realloc(ChAreas, MaxChAreas << 1);
+		ChAreas = (unsigned short*)realloc(ChAreas, MaxChAreas << 1);
 	};
 	ChAreas[NChAreas] = TopID;
 	NChAreas++;
 };
-void AddSurroundingAreas(word TopID) {
+void AddSurroundingAreas(unsigned short TopID) {
 	if (!NAreas)return;
 	AddChTop(TopID);
 	Area* AR = TopMap + TopID;
@@ -605,7 +604,7 @@ void AddSurroundingAreas(word TopID) {
 };
 void DynamicalLockTopCell(int x, int y) {
 	NeedProcessTop = true;
-	word topo = GetTopology(x << 6, y << 6);
+	unsigned short topo = GetTopology(x << 6, y << 6);
 	if (topo < 0xFFFE) {
 		AddSurroundingAreas(topo);
 	};
@@ -619,7 +618,7 @@ void DynamicalLockTopCell(int x, int y) {
 };
 void DynamicalUnLockTopCell(int x, int y) {
 	NeedProcessTop = true;
-	word topo = GetTopology(x << 6, y << 6);
+	unsigned short topo = GetTopology(x << 6, y << 6);
 	if (topo < 0xFFFE) {
 		AddSurroundingAreas(topo);
 	};
@@ -640,12 +639,12 @@ void OnePartIteration(int Nitr) {
 			if (i != j) {
 				Area* AR = TopMap + i;
 				int N = AR->NLinks;
-				word* LINK = AR->Link;
+				unsigned short* LINK = AR->Link;
 				int CurDis = TmpMDist[ofs];
 				//int CurDis=LinksDist[ofs];//
 				for (int k = 0; k < N; k++) {
-					word N2 = LINK[k + k];
-					word adds = LINK[k + k + 1];
+					unsigned short N2 = LINK[k + k];
+					unsigned short adds = LINK[k + k + 1];
 					if (N2 != j&&adds != 0xFFFF) {
 						int ofs1 = j + N2*NAreas;
 						int dst = TmpMDist[ofs1];
@@ -687,7 +686,7 @@ void OnePartIteration(int Nitr) {
 		CurIStart = 0;
 	};
 };
-void LimitedClearBadLinks(word* AList, int Na, word* MLinks, word* MDist) {
+void LimitedClearBadLinks(unsigned short* AList, int Na, unsigned short* MLinks, unsigned short* MDist) {
 
 	int Change;
 	int p = 0;
@@ -697,7 +696,7 @@ void LimitedClearBadLinks(word* AList, int Na, word* MLinks, word* MDist) {
 			int Ai = AList[i];
 			Area* ARi = TopMap + Ai;
 			int N = ARi->NLinks;
-			word* LINK = ARi->Link;
+			unsigned short* LINK = ARi->Link;
 			int ofs0 = int(AList[i])*NAreas;
 			for (int j = 0; j < Na; j++) {
 				if (i != j) {
@@ -706,8 +705,8 @@ void LimitedClearBadLinks(word* AList, int Na, word* MLinks, word* MDist) {
 					int CurDis = MDist[ofs];
 					if (CurDis != 0xFFFF) {
 						for (int k = 0; k < N; k++) {
-							word N2 = LINK[k + k];
-							//word adds=LINK[k+k+1];
+							unsigned short N2 = LINK[k + k];
+							//unsigned short adds=LINK[k+k+1];
 							if (N2 != Aj) {
 								int ofs1 = Aj + N2*NAreas;
 								int dst = TmpMDist[ofs1];
@@ -726,7 +725,7 @@ void LimitedClearBadLinks(word* AList, int Na, word* MLinks, word* MDist) {
 		p++;
 	} while (Change&&p < 100);
 };
-void TotalClearBadLinks(word* MLinks, word* MDist) {
+void TotalClearBadLinks(unsigned short* MLinks, unsigned short* MDist) {
 
 	int Change;
 	int p = 0;
@@ -736,7 +735,7 @@ void TotalClearBadLinks(word* MLinks, word* MDist) {
 			int Ai = i;
 			Area* ARi = TopMap + Ai;
 			int N = ARi->NLinks;
-			word* LINK = ARi->Link;
+			unsigned short* LINK = ARi->Link;
 			int ofs0 = int(i)*NAreas;
 			for (int j = 0; j < NAreas; j++) {
 				if (i != j) {
@@ -745,8 +744,8 @@ void TotalClearBadLinks(word* MLinks, word* MDist) {
 					int CurDis = MDist[ofs];
 					if (CurDis != 0xFFFF) {
 						for (int k = 0; k < N; k++) {
-							word N2 = LINK[k + k];
-							//word adds=LINK[k+k+1];
+							unsigned short N2 = LINK[k + k];
+							//unsigned short adds=LINK[k+k+1];
 							if (N2 != Aj) {
 								int ofs1 = Aj + N2*NAreas;
 								int dst = TmpMDist[ofs1];
@@ -765,9 +764,9 @@ void TotalClearBadLinks(word* MLinks, word* MDist) {
 		p++;
 	} while (Change&&p < 100);
 };
-void LimitedSetNewLinks(word* AList, int Na, word* MLinks, word* MDist) {
+void LimitedSetNewLinks(unsigned short* AList, int Na, unsigned short* MLinks, unsigned short* MDist) {
 
-	byte* aropt = new byte[NAreas];
+	unsigned char* aropt = new unsigned char[NAreas];
 	memset(aropt, 0, NAreas);
 	for (int i = 0; i < Na; i++)aropt[AList[i]] = 1;
 
@@ -779,7 +778,7 @@ void LimitedSetNewLinks(word* AList, int Na, word* MLinks, word* MDist) {
 			int Ai = AList[i];
 			Area* ARi = TopMap + Ai;
 			int N = ARi->NLinks;
-			word* LINK = ARi->Link;
+			unsigned short* LINK = ARi->Link;
 			int ofs0 = int(AList[i])*NAreas;
 			for (int j = 0; j < Na; j++) {
 				if (i != j) {
@@ -787,9 +786,9 @@ void LimitedSetNewLinks(word* AList, int Na, word* MLinks, word* MDist) {
 					int ofs = ofs0 + Aj;
 					int CurDis = MDist[ofs];
 					for (int k = 0; k < N; k++) {
-						word N2 = LINK[k + k];
+						unsigned short N2 = LINK[k + k];
 						if (aropt[N2]) {
-							word adds = LINK[k + k + 1];
+							unsigned short adds = LINK[k + k + 1];
 							if (N2 != Aj&&adds != 0xFFFF) {
 								int ofs1 = Aj + N2*NAreas;
 								int dst = MDist[ofs1];
@@ -815,9 +814,9 @@ void LimitedSetNewLinks(word* AList, int Na, word* MLinks, word* MDist) {
 	} while (Change&&p < 100);
 	free(aropt);
 };
-void FastReduceWays(word* MLinks, word* MDist, word* StartChange, int NStartChange) {
-	word Changes[1000];
-	word PrevChanges[1000];
+void FastReduceWays(unsigned short* MLinks, unsigned short* MDist, unsigned short* StartChange, int NStartChange) {
+	unsigned short Changes[1000];
+	unsigned short PrevChanges[1000];
 	memcpy(PrevChanges, StartChange, NStartChange << 1);
 	int NPrev = NStartChange;
 	int Change = 0;
@@ -828,18 +827,18 @@ void FastReduceWays(word* MLinks, word* MDist, word* StartChange, int NStartChan
 		NChanges = NPrev;
 		NPrev = 0;
 		//extend changes
-		byte ChMap[1000];
+		unsigned char ChMap[1000];
 		memset(ChMap, 0, NAreas);
-		byte PrevMap[1000];
+		unsigned char PrevMap[1000];
 		memset(PrevMap, 0, NAreas);
 		for (int i = 0; i < NChanges; i++)ChMap[Changes[i]] = 1;
 		int N1 = NChanges;
 		for (int i = 0; i < N1; i++) {
 			Area* AR = TopMap + Changes[i];
 			int N = AR->NLinks;
-			word* ids = AR->Link;
+			unsigned short* ids = AR->Link;
 			for (int j = 0; j < N; j++) {
-				word id = ids[j];
+				unsigned short id = ids[j];
 				if (!ChMap[id]) {
 					ChMap[id] = 1;
 					Changes[NChanges] = id;
@@ -853,7 +852,7 @@ void FastReduceWays(word* MLinks, word* MDist, word* StartChange, int NStartChan
 			int Ai = Changes[i];
 			Area* ARi = TopMap + Ai;
 			int N = ARi->NLinks;
-			word* LINK = ARi->Link;
+			unsigned short* LINK = ARi->Link;
 			int ofs0 = int(Changes[i])*NAreas;
 			for (int j = 0; j < NChanges; j++) {
 				if (i != j) {
@@ -861,9 +860,9 @@ void FastReduceWays(word* MLinks, word* MDist, word* StartChange, int NStartChan
 					int ofs = ofs0 + Aj;
 					int CurDis = MDist[ofs];
 					for (int k = 0; k < N; k++) {
-						word N2 = LINK[k + k];
+						unsigned short N2 = LINK[k + k];
 						//if(aropt[N2]){
-						word adds = LINK[k + k + 1];
+						unsigned short adds = LINK[k + k + 1];
 						if (N2 != Aj&&adds != 0xFFFF) {
 							int ofs1 = Aj + N2*NAreas;
 							int dst = MDist[ofs1];
@@ -899,7 +898,7 @@ void FastReduceWays(word* MLinks, word* MDist, word* StartChange, int NStartChan
 	} while (Change&&p < 200);
 };
 void OnePartIterationNew(int Nitr);
-void RemakeGroupOfAreas(word* Grp, int Na);
+void RemakeGroupOfAreas(unsigned short* Grp, int Na);
 int NeedITR = 100;
 
 void ProcessDynamicalTopology()
@@ -913,10 +912,10 @@ void ProcessDynamicalTopology()
 
 	if (MinChX <= MaxChX)
 	{
-		word LimAreas[200];
+		unsigned short LimAreas[200];
 		int xc = (MaxChX + MinChX) >> 1;
 		int yc = (MaxChY + MinChY) >> 1;
-		word NLim = 0;
+		unsigned short NLim = 0;
 		for (int i = 0; i < NAreas; i++)
 		{
 			Area* AR1 = TopMap + i;
@@ -981,7 +980,7 @@ public:
 	int MaxSegs;
 	int NSegs;
 	int CheckSumm;
-	word* Segs;
+	unsigned short* Segs;
 	void Erase();
 	void CreateCheckSumm();
 	void CheckSize(int N);
@@ -993,7 +992,7 @@ public:
 	//void CheckDanger();
 	void CreateMostSafeWay();
 	bool Compare(Road* ROAD);
-	void View(int x, int y, byte c);
+	void View(int x, int y, unsigned char c);
 };
 Road::Road() {
 	MaxSegs = 0;
@@ -1012,7 +1011,7 @@ void Road::Erase() {
 void Road::CheckSize(int N) {
 	if (N >= MaxSegs) {
 		MaxSegs += 64;
-		Segs = (word*)realloc(Segs, MaxSegs << 1);
+		Segs = (unsigned short*)realloc(Segs, MaxSegs << 1);
 	};
 };
 void Road::CreateRandomWay(int Start, int Finish, int N) {
@@ -1023,7 +1022,7 @@ void Road::CreateRandomWay(int Start, int Finish, int N) {
 	NSegs = 1;
 	int PreTop = -1;
 	for (int i = 0; i < N; i++) {
-		word Top = 0xFFFF;
+		unsigned short Top = 0xFFFF;
 		while (Top == 0xFFFF) {
 			Top = (int(rando())*NAreas) >> 15;
 			if (LinksDist[Start + Top*NAreas] == 0xFFFF || PreTop == Top || Top == Start || Top == Finish)Top = 0xFFFF;
@@ -1078,7 +1077,7 @@ void Road::ErasePart(int Start, int Finish) {
 	NSegs -= Finish - Start + 1;
 };
 void Road::EraseCrossing() {
-	word NCross[512];
+	unsigned short NCross[512];
 	assert(NAreas < 512);
 STRT:
 	memset(NCross, 0xFFFF, NAreas << 1);
@@ -1109,7 +1108,7 @@ void Road::Simplify() {
 		CreateCheckSumm();
 	} while (CheckSumm != PreSumm);
 };
-void Road::View(int x, int y, byte c) {
+void Road::View(int x, int y, unsigned char c) {
 	int prevx = -1;
 	int prevy = -1;
 	for (int i = 0; i < NSegs - 1; i++) {
@@ -1125,12 +1124,12 @@ void Road::View(int x, int y, byte c) {
 extern int tmtmt;
 
 //Water topology
-word* WTopRef;
+unsigned short* WTopRef;
 Area* WTopMap;
 int   WNAreas;
 int WMaxArea;
-word* WMotionLinks;
-word* WLinksDist;
+unsigned short* WMotionLinks;
+unsigned short* WLinksDist;
 #define MinWNorm (8<<(ADDSH-1))
 bool AddWArea(short x, short y) {
 	for (int i = 0; i < WNAreas; i++) {
@@ -1152,7 +1151,7 @@ bool AddWArea(short x, short y) {
 	AR->NLinks = 0;
 	AR->NMines = 0;
 	AR->MaxLink = 6;
-	AR->Link = new word[AR->MaxLink << 1];
+	AR->Link = new unsigned short[AR->MaxLink << 1];
 	WNAreas++;
 	return true;
 };
@@ -1164,7 +1163,7 @@ void AddWLink(int N1, int N2) {
 	};
 	if (AR->NLinks == AR->MaxLink) {
 		AR->MaxLink += 4;
-		AR->Link = (word*)realloc(AR->Link, AR->MaxLink << 2);
+		AR->Link = (unsigned short*)realloc(AR->Link, AR->MaxLink << 2);
 	};
 	N = AR->NLinks;
 	AR->Link[N + N] = N2;
@@ -1180,11 +1179,11 @@ int WOneIteration() {
 			if (i != j) {
 				Area* AR = WTopMap + i;
 				int N = AR->NLinks;
-				word* LINK = AR->Link;
+				unsigned short* LINK = AR->Link;
 				int CurDis = WLinksDist[ofs];
 				for (int k = 0; k < N; k++) {
-					word N2 = LINK[k + k];
-					word adds = LINK[k + k + 1];
+					unsigned short N2 = LINK[k + k];
+					unsigned short adds = LINK[k + k + 1];
 					if (N2 != j) {
 						int ofs1 = j + N2*WNAreas;
 						int dst = WLinksDist[ofs1];
@@ -1259,7 +1258,7 @@ void CreateWTopMap() {
 	//splitting...
 	for (int i = 0; i < WNAreas; i++)WTopRef[WTopMap[i].x + int(WTopMap[i].y)*WTopLx] = i;
 	bool Change = false;
-	//word TempTop[TopLx*TopLy];
+	//unsigned short TempTop[TopLx*TopLy];
 	Change = true;
 	for (int i = 1; i < RRad&&Change; i++) {
 		//memcpy(TempTop,TopRef,sizeof(TopRef));
@@ -1275,11 +1274,11 @@ void CreateWTopMap() {
 				int y = yy + yi[k];
 				if (x > 0 && y > 0 && x < mmx&&y < mmy) {
 					int ofst = x + y*WTopLx;
-					word ZZ = WTopRef[ofst];
-					word ZU = WTopRef[ofst - WTopLx];
-					word ZD = WTopRef[ofst + WTopLx];
-					word ZL = WTopRef[ofst - 1];
-					word ZR = WTopRef[ofst + 1];
+					unsigned short ZZ = WTopRef[ofst];
+					unsigned short ZU = WTopRef[ofst - WTopLx];
+					unsigned short ZD = WTopRef[ofst + WTopLx];
+					unsigned short ZL = WTopRef[ofst - 1];
+					unsigned short ZR = WTopRef[ofst + 1];
 					if (ZZ == 0xFFFE) {
 						if (ZU == j || ZD == j || ZL == j || ZR == j ||
 							WTopRef[ofst - WTopLx - 1] == j ||
@@ -1315,8 +1314,8 @@ void CreateWTopMap() {
 	};
 	ProcessMessages();
 	if (WNAreas) {
-		WMotionLinks = new word[WNAreas*WNAreas];
-		WLinksDist = new word[WNAreas*WNAreas];
+		WMotionLinks = new unsigned short[WNAreas*WNAreas];
+		WLinksDist = new unsigned short[WNAreas*WNAreas];
 		memset(WMotionLinks, 0xFFFF, WNAreas*WNAreas * 2);
 		memset(WLinksDist, 0xFFFF, WNAreas*WNAreas * 2);
 		CreateWLinkInfo();
@@ -1337,10 +1336,10 @@ void CreateWTopMap() {
 	GTOP[1].TopRef = WTopRef;
 }
 
-extern word TopAreasDanger[2048];
-extern word WTopNear[64];
+extern unsigned short TopAreasDanger[2048];
+extern unsigned short WTopNear[64];
 extern int NWTopNear;
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 extern int NIslands;
 
 #define MaxIsl 64
@@ -1348,11 +1347,11 @@ extern int NIslands;
 extern int IslandX[MaxIsl];
 extern int IslandY[MaxIsl];
 
-extern word* TopIslands;
-extern word* NearWater;
+extern unsigned short* TopIslands;
+extern unsigned short* NearWater;
 
 //Dynamic zones remarking
-int SearchID(word* Set, int N, word ID)
+int SearchID(unsigned short* Set, int N, unsigned short ID)
 {
 	for (int i = 0; i < N; i++)
 	{
@@ -1368,9 +1367,9 @@ bool Stop = 0;
 void EraseAllLinks(int Strat, int Fin);
 struct OLDLINK {
 	int  NAr;
-	word* Links[2048];
-	word NLinks[2048];
-	word LinkBuf[40000];
+	unsigned short* Links[2048];
+	unsigned short NLinks[2048];
+	unsigned short LinkBuf[40000];
 	int LBPOS;
 };
 OLDLINK* OLN = NULL;
@@ -1385,14 +1384,14 @@ void SymmetrizeLinks() {
 	};
 }
 
-void RemakeGroupOfAreas(word* Grp, int Na)
+void RemakeGroupOfAreas(unsigned short* Grp, int Na)
 {
 	if (!Na)
 	{
 		return;
 	}
 
-	byte* LSET = new byte[Na*Na];
+	unsigned char* LSET = new unsigned char[Na*Na];
 	memset(LSET, 0, Na*Na);
 
 	for (int q = 0; q < Na; q++)
@@ -1431,7 +1430,7 @@ void RemakeGroupOfAreas(word* Grp, int Na)
 	int mmy = msy >> 1;
 	for (int i = 0; i < Na; i++)
 	{
-		word ID = Grp[i];
+		unsigned short ID = Grp[i];
 		int minr = 1000;
 		Area* AR = TopMap + ID;
 		int x0 = AR->x;
@@ -1479,11 +1478,11 @@ void RemakeGroupOfAreas(word* Grp, int Na)
 				int y = yy + yi[k];
 				if (x > 0 && y > 0 && x < mmx&&y < mmy) {
 					int ofst = x + y*TopLx;
-					word ZZ = TopRef[ofst];
-					word ZU = TopRef[ofst - TopLx];
-					word ZD = TopRef[ofst + TopLx];
-					word ZL = TopRef[ofst - 1];
-					word ZR = TopRef[ofst + 1];
+					unsigned short ZZ = TopRef[ofst];
+					unsigned short ZU = TopRef[ofst - TopLx];
+					unsigned short ZD = TopRef[ofst + TopLx];
+					unsigned short ZL = TopRef[ofst - 1];
+					unsigned short ZR = TopRef[ofst + 1];
 					if (ZZ == 0xFFFE) {
 						if (ZU == j || ZD == j || ZL == j || ZR == j ||
 							(ZU != 0xFFFF && ZL != 0xFFFF && TopRef[ofst - TopLx - 1] == j) ||
@@ -1535,7 +1534,7 @@ void RemakeGroupOfAreas(word* Grp, int Na)
 	}
 
 	int NBadLinks = 0;
-	word BadLinks[1024];
+	unsigned short BadLinks[1024];
 
 	for (int q = 0; q < Na; q++) {
 		for (int p = 0; p < q; p++) {
@@ -1591,12 +1590,12 @@ void OnePartIterationNew(int Nitr)
 			{
 				Area* AR = TopMap + i;
 				int N = AR->NLinks;
-				word* LINK = AR->Link;
+				unsigned short* LINK = AR->Link;
 				int CurDis = LinksDist[ofs];
 				for (int k = 0; k < N; k++)
 				{
-					word N2 = LINK[k + k];
-					word adds = LINK[k + k + 1];
+					unsigned short N2 = LINK[k + k];
+					unsigned short adds = LINK[k + k + 1];
 					if (N2 != j&&adds != 0xFFFF)
 					{
 						int ofs1 = j + N2*NAreas;
@@ -1634,7 +1633,7 @@ void OnePartIterationNew(int Nitr)
 
 void EraseLinks(int X, int A) {
 	int N = OLN->NLinks[A];
-	word* LINKS = OLN->Links[A];
+	unsigned short* LINKS = OLN->Links[A];
 	for (int j = 0; j < N; j++) {
 		int W = LINKS[j];
 		int ofs = W*NAreas + X;

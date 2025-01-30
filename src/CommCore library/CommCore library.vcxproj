@@ -147,7 +147,6 @@
     <ClCompile Include="CommInet.cpp" />
     <ClCompile Include="CommInit.cpp" />
     <ClCompile Include="CommPeers.cpp" />
-    <ClCompile Include="CommPing.cpp" />
     <ClCompile Include="CommQueue.cpp" />
     <ClCompile Include="CommRaw.cpp" />
     <ClCompile Include="CommRecv.cpp" />

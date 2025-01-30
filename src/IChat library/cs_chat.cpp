@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #pragma pack(4)
 #include "Chat\chat.h"
@@ -345,7 +346,7 @@ void ChatSystem::CheckMessage( char* message )
 {
 	char *cc;
 	char cc3[128];
-	BOOL PRESENT;
+	int PRESENT;
 	int i;
 	cc = strstr( message, "@@@ADDABPL " );
 	if (cc)
@@ -546,7 +547,7 @@ void ChatSystem::SortPlayers( OneChatPlayer* PL, int N )
 			int r = stricmp( PL[i].Nick, PL[i - 1].Nick );
 			if (r < 0)
 			{
-				byte PLX[sizeof OneChatPlayer];
+				unsigned char PLX[sizeof OneChatPlayer];
 				memcpy( &PLX, PL + i, sizeof OneChatPlayer );
 				memcpy( PL + i, PL + i - 1, sizeof OneChatPlayer );
 				memcpy( PL + i - 1, &PLX, sizeof OneChatPlayer );

@@ -1,6 +1,6 @@
 struct BlockCell{
-	word x;
-	word y;
+	unsigned short x;
+	unsigned short y;
 };
 
 class BlockBars{
@@ -11,16 +11,16 @@ public:
 	BlockBars();
 	~BlockBars();
 	void Clear();
-	bool Add(word x,word y);
-	bool FastAdd(word x,word y);
-	bool Delete(word x,word y);
+	bool Add(unsigned short x,unsigned short y);
+	bool FastAdd(unsigned short x,unsigned short y);
+	bool Delete(unsigned short x,unsigned short y);
 };
-void AddLockBar(word x,word y);
-void AddUnLockbar(word x,word y);
-void AddDefaultBar(word x,word y);
-void SetTexturedRound(int x,int y,int r,byte Tex);
+void AddLockBar(unsigned short x,unsigned short y);
+void AddUnLockbar(unsigned short x,unsigned short y);
+void AddDefaultBar(unsigned short x,unsigned short y);
+void SetTexturedRound(int x,int y,int r,unsigned char Tex);
 int ConvScrY(int x,int y);
 extern int NCurves;
-void AddPointToCurve(int x,int y,bool Final,byte Type);
-extern word TexList[128];
-extern word NTextures;
+void AddPointToCurve(int x,int y,bool Final,unsigned char Type);
+extern unsigned short TexList[128];
+extern unsigned short NTextures;

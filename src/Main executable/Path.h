@@ -11,8 +11,8 @@ public:
 };
 class MotionField{
 public:
-	//byte* MapH;//(x,y)-bit matrix(1point=16x12 pix)
-	byte* MapV;//(y,x)-T bit matrix //1024*128=131072 bytes big
+	//unsigned char* MapH;//(x,y)-bit matrix(1point=16x12 pix)
+	unsigned char* MapV;//(y,x)-T bit matrix //1024*128=131072 bytes big
 	//----Methods-----
 	void Allocate();
 	void FreeAlloc();

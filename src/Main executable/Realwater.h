@@ -1,5 +1,5 @@
-//extern byte WaterDeep [(MAPSX*MAPSY)>>2];
-extern byte* WaterDeep;
+//extern unsigned char WaterDeep [(MAPSX*MAPSY)>>2];
+extern unsigned char* WaterDeep;
 void HandleWater();
 void InitWater();
 void SetWaterSpot(int x,int y,int r);
@@ -9,6 +9,6 @@ void MakeBrod(int x,int y,int r);
 extern int WaterEditMode;
 extern int CostThickness;
 void SetupSpot();
-void SpotByUnit(int x,int y,int r,byte dir);
+void SpotByUnit(int x,int y,int r, unsigned char dir);
 void SetBrightSpot(int x,int y,int Brightness,bool dir);
 void CreateWaterLocking(int x,int y,int x1,int y1);

@@ -4,7 +4,7 @@
 //08-empty from locking
 //16-plane zone
 //32-high plate
-extern byte* InfoMap;
+extern unsigned char* InfoMap;
 //01-sklad
 //02-farm
 //04-tower
@@ -16,11 +16,11 @@ extern byte* InfoMap;
 #define CB_Building 8
 #define CB_Melnica  16
 #define CB_Port     32
-extern byte* CantBuild;
+extern unsigned char* CantBuild;
 
 extern int* MineList;
-extern word NMines;
-extern word MaxMine;
+extern unsigned short NMines;
+extern unsigned short MaxMine;
 void CreateInfoMap();
 void RenewInfoMap(int x,int y);
 typedef bool SearchFunction(int xx,int yy);
@@ -32,5 +32,5 @@ bool CheckFarm(int x,int y);
 bool CheckBuilding(int x,int y);
 bool CheckPort(int x,int y);
 bool SearchPlace(int* xx,int* yy,SearchFunction* SFN,int r);
-bool FindCenter(int* xx,int *yy,byte NI);
-void SetUnusable(int x,int y,byte Mask);
+bool FindCenter(int* xx,int *yy,unsigned char NI);
+void SetUnusable(int x,int y,unsigned char Mask);

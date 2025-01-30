@@ -23,8 +23,8 @@
 
 OneBar* OBARS[8192];
 int NBars;
-word** Obj3Map;
-word*  NObj3;
+unsigned short** Obj3Map;
+unsigned short*  NObj3;
 //Zero 3D Bars variables (?)
 void InitObjs3()
 {
@@ -53,11 +53,11 @@ void ClearObjs3()
 	};
 	InitObjs3();
 };
-void AddObj3( int CX, int CY, word BarID )
+void AddObj3( int CX, int CY, unsigned short BarID )
 {
 	if (CX < 0 || CY < 0 || CX >= B3SX || CY >= B3SY)return;
 	int Cell = CX + ( CY*B3SX );
-	word* CEMAP = Obj3Map[Cell];
+	unsigned short* CEMAP = Obj3Map[Cell];
 	if (CEMAP)
 	{
 		int NCE = NObj3[Cell];
@@ -66,7 +66,7 @@ void AddObj3( int CX, int CY, word BarID )
 			if (CEMAP[j] == BarID)return;
 		};
 	};
-	Obj3Map[Cell] = (word*) realloc( Obj3Map[Cell], ( NObj3[Cell] + 1 ) << 1 );
+	Obj3Map[Cell] = (unsigned short*) realloc( Obj3Map[Cell], ( NObj3[Cell] + 1 ) << 1 );
 	Obj3Map[Cell][NObj3[Cell]] = BarID;
 	NObj3[Cell]++;
 	OneBar* ONB = OBARS[BarID];
@@ -78,11 +78,11 @@ void AddObj3( int CX, int CY, word BarID )
 		if (CY > ONB->MaxBY)ONB->MaxBY = CY;
 	};
 };
-void DelObj3( int CX, int CY, word BarID )
+void DelObj3( int CX, int CY, unsigned short BarID )
 {
 	if (CX < 0 || CY < 0 || CX >= B3SX || CY >= B3SY)return;
 	int Cell = CX + ( CY*B3SX );
-	word* CEMAP = Obj3Map[Cell];
+	unsigned short* CEMAP = Obj3Map[Cell];
 	if (CEMAP)
 	{
 STARTA:;
@@ -103,9 +103,9 @@ STARTA:;
 		};
 	};
 };
-word Add3DBar( int X0, int Y0, int X1, int Y1, short H, int ID, word Owner )
+unsigned short Add3DBar( int X0, int Y0, int X1, int Y1, short H, int ID, unsigned short Owner )
 {
-	word BarID = 0xFFFF;
+	unsigned short BarID = 0xFFFF;
 	for (int i = 0; i < NBars&&BarID == 0xFFFF; i++)
 	{
 		if (!OBARS[i])BarID = i;
@@ -152,12 +152,12 @@ void CureBars3D()
 		for (int y = 0; y < B3SY; y++)
 		{
 			int Cell = x + ( y*B3SX );
-			word NBR = NObj3[Cell];
+			unsigned short NBR = NObj3[Cell];
 			if (NBR)
 			{
 				int xx = x - y;
 				int yy = y + x;
-				word* CMAP = Obj3Map[Cell];
+				unsigned short* CMAP = Obj3Map[Cell];
 				for (int i = 0; i < NBR; i++)
 				{
 					if (!OBARS[CMAP[i]])
@@ -168,7 +168,7 @@ void CureBars3D()
 			};
 		};
 };
-void Delete3DBar( word ID )
+void Delete3DBar( unsigned short ID )
 {
 	//CheckBars3D();
 	//assert(ID!=11);
@@ -189,7 +189,7 @@ void Delete3DBar( word ID )
 	CureBars3D();
 	CheckBars3D();
 };
-word OWNER;
+unsigned short OWNER;
 int GetBar3DHeight( int x, int y )
 {
 	int CX = x >> B3SHIFT;
@@ -199,12 +199,12 @@ int GetBar3DHeight( int x, int y )
 	if (CX >= 0 && CX < B3SX&&CY >= 0 && CY < B3SY)
 	{
 		int Cell = CX + ( CY*B3SX );
-		word NBR = NObj3[Cell];
+		unsigned short NBR = NObj3[Cell];
 		if (NBR)
 		{
 			int xx = x - y;
 			int yy = y + x;
-			word* CMAP = Obj3Map[Cell];
+			unsigned short* CMAP = Obj3Map[Cell];
 			for (int i = 0; i < NBR; i++)
 			{
 				OneBar* ONB = OBARS[CMAP[i]];
@@ -227,12 +227,12 @@ void CheckBars3D()
 		for (int y = 0; y < B3SY; y++)
 		{
 			int Cell = x + ( y*B3SX );
-			word NBR = NObj3[Cell];
+			unsigned short NBR = NObj3[Cell];
 			if (NBR)
 			{
 				int xx = x - y;
 				int yy = y + x;
-				word* CMAP = Obj3Map[Cell];
+				unsigned short* CMAP = Obj3Map[Cell];
 				for (int i = 0; i < NBR; i++)
 				{
 					//					assert(OBARS[CMAP[i]]);
@@ -244,17 +244,17 @@ int GetBar3DOwner( int x, int y )
 {
 	int CX = x >> B3SHIFT;
 	int CY = y >> B3SHIFT;
-	word Owner = 0xFFFF;
+	unsigned short Owner = 0xFFFF;
 	if (CX >= 0 && CX < B3SX&&CY >= 0 && CY < B3SY)
 	{
 		int Cell = CX + ( CY*B3SX );
-		word NBR = NObj3[Cell];
+		unsigned short NBR = NObj3[Cell];
 		int MaxH = 0;
 		if (NBR)
 		{
 			int xx = x - y;
 			int yy = y + x;
-			word* CMAP = Obj3Map[Cell];
+			unsigned short* CMAP = Obj3Map[Cell];
 			for (int i = 0; i < NBR; i++)
 			{
 				OneBar* ONB = OBARS[CMAP[i]];
@@ -272,9 +272,9 @@ int GetBar3DOwner( int x, int y )
 	return Owner;
 }
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
-__declspec( dllexport ) void xLine( int x, int y, int x1, int y1, byte c )
+__declspec( dllexport ) void xLine( int x, int y, int x1, int y1, unsigned char c )
 {
 	int DD = int( sqrt( ( x - x1 )*( x - x1 ) + ( y - y1 )*( y - y1 ) ) );
 	if (!DD)

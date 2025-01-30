@@ -16,21 +16,20 @@
 #include "GSound.h"
 #include "NewMon.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include "ConstStr.h"
 #include "GP_Draw.h"
 #include "DrawForm.h"
 #include "Fonts.h"
-//void FindEmptyPoint(byte* x,byte* y);
-byte rtmap[256][256];//resource type map
-byte ramap[256][256];//resource amount map
+//void FindEmptyPoint(unsigned char* x,unsigned char* y);
+unsigned char rtmap[256][256];//resource type map
+unsigned char ramap[256][256];//resource amount map
 int URESRC[8][8];
 int RESADD[8][8];
 char* ResNames[8];
 const int drrn[9] = { 7,6,5,0,0,4,1,2,3 };
 extern int  NWeaponIDS;
 extern char* WeaponIDS[32];
-byte   WeaponFlags[32];
+unsigned char   WeaponFlags[32];
 short WeaponIcn[32];
 short ProtectIcn[32];
 char* UnitKindID[64];
@@ -88,15 +87,15 @@ short AlarmSoundID = -1;
 
 short ForestFreq;
 short* ForestSounds;
-byte NForestSounds = 0;
+unsigned char NForestSounds = 0;
 
 short FieldFreq;
 short* FieldSounds;
-byte NFieldSounds = 0;
+unsigned char NFieldSounds = 0;
 
 short SeaFreq;
 short* SeaSounds;
-byte NSeaSounds = 0;
+unsigned char NSeaSounds = 0;
 //-------------------------------
 ResDiscr::ResDiscr()
 {
@@ -105,9 +104,10 @@ ResDiscr::ResDiscr()
 	ResIDS[0] = 0;
 };
 ResDiscr RDS[8];
-void Errr( LPCSTR s )
+void Errr( const char* s )
 {
-	MessageBox( hwnd, s, "Nature loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nature loading failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Nature loading failed...", MB_ICONWARNING | MB_OK );
 	assert( false );
 };
 int GetUnitKind( char* Name )
@@ -127,7 +127,7 @@ int GetResByName( char* gy );
 FormGroupDescription FormGrp;
 void ErrM( char* s );
 extern char* SoundID[MaxSnd];
-extern word NSounds;
+extern unsigned short NSounds;
 OrderClassDescription OrderDesc[16];
 int NOClasses = 0;
 OrderDescription ElementaryOrders[128];
@@ -557,10 +557,10 @@ int GetResID( char* Name )
 int xit[6] = { 126,531,382,257,663,793 };
 extern int RealLx;
 
-bool AddUnitsToCash( byte NI, word ID );
+bool AddUnitsToCash( unsigned char NI, unsigned short ID );
 void ClearUniCash();
-void GetCorrectMoney( byte NI, int* MONEY );
-extern byte PlayGameMode;
+void GetCorrectMoney( unsigned char NI, int* MONEY );
+extern unsigned char PlayGameMode;
 void ShowRMap()
 {
 	if (PlayGameMode == 1)return;
@@ -590,7 +590,7 @@ void ShowRMap()
 
 //------------------Nature----------------
 int srando();
-extern byte* WaterDeep;
+extern unsigned char* WaterDeep;
 extern int FieldDelay;
 void AddEffectV( int x, int y, int vx, int id );
 void ProcessNature()
@@ -714,7 +714,7 @@ void FormGroupDescription::Load( GFILE* f )
 		};
 		if (cidx == -1)FGError();
 		Grp[j].ClassIndex = cidx;
-		Grp[j].IDX = new byte[Grp[j].NCommon];
+		Grp[j].IDX = new unsigned char[Grp[j].NCommon];
 		for (int q = 0; q < Grp[j].NCommon; q++)
 		{
 			z = Gscanf( f, "%d", &x );
@@ -723,7 +723,7 @@ void FormGroupDescription::Load( GFILE* f )
 		};
 		z = Gscanf( f, "%d", &Grp[j].NForms );
 		if (z != 1)FGError();
-		Grp[j].Forms = new word[Grp[j].NForms];
+		Grp[j].Forms = new unsigned short[Grp[j].NForms];
 		for (int q = 0; q < Grp[j].NForms; q++)
 		{
 			z = Gscanf( f, "%s", cc );
@@ -843,7 +843,7 @@ void LoadOrders()
 									{
 										//symmetry checking
 										//1.Creating index collection
-										word* Idc[100];
+										unsigned short* Idc[100];
 										int MaxX = -1000;
 										int MinX = 1000;
 										int MinY = 1000;
@@ -881,7 +881,7 @@ void LoadOrders()
 										int id = 0;
 										for (int p = 0; p < MaxLy; p++)
 										{
-											Idc[p] = new word[MaxLx];
+											Idc[p] = new unsigned short[MaxLx];
 											memset( Idc[p], 0xFFFF, MaxLx * 2 );
 											int N1 = ODE->LineNU[p + MinY];
 											for (int q = 0; q < N1; q++)
@@ -892,7 +892,7 @@ void LoadOrders()
 										}
 										Good = true;
 										id = 0;
-										ODE->SymInv = new word[ODE->NUnits];
+										ODE->SymInv = new unsigned short[ODE->NUnits];
 										for (int p = 0; p < ODE->NLines; p++)
 										{
 											int N1 = ODE->LineNU[p];
@@ -958,13 +958,13 @@ void LoadOrders()
 										}else{
 											//accepting
 											//1.Creating index collection
-											word* Idc[200];
+											unsigned short* Idc[200];
 											memset(Idc,0,4*ODE->NLines);
 											int id=0;
 											for(int p=0;p<ODE->NLines;p++){
 												if(ODE->LineNU[p]){
 													int N1=ODE->LineNU[p];
-													Idc[p]=new word[N1];
+													Idc[p]=new unsigned short[N1];
 													for(int k=0;k<N1;k++){
 														Idc[p][k]=id;
 														id++;
@@ -972,7 +972,7 @@ void LoadOrders()
 												};
 											};
 											//2.Reordering
-											ODE->SymInv=new word[ODE->NUnits];
+											ODE->SymInv=new unsigned short[ODE->NUnits];
 											id=0;
 											for(p=ODE->NLines-1;p>=0;p--){
 												if(Idc[p]){
@@ -992,7 +992,7 @@ void LoadOrders()
 									{
 										//symmetry checking
 										//1.Creating index collection
-										word* Idc[100];
+										unsigned short* Idc[100];
 										int MaxX = -1000;
 										int MinX = 1000;
 										int MinY = 1000;
@@ -1020,7 +1020,7 @@ void LoadOrders()
 											int id = 0;
 											for (int p = 0; p < MaxLy; p++)
 											{
-												Idc[p] = new word[MaxLx];
+												Idc[p] = new unsigned short[MaxLx];
 												memset( Idc[p], 0xFFFF, MaxLx * 2 );
 												int N1 = ODE->LineNU[p + MinY];
 												for (int q = 0; q < N1; q++)
@@ -1043,8 +1043,8 @@ void LoadOrders()
 											if (Good)
 											{
 												id = 0;
-												ODE->Sym4f = new word[ODE->NUnits];
-												ODE->Sym4i = new word[ODE->NUnits];
+												ODE->Sym4f = new unsigned short[ODE->NUnits];
+												ODE->Sym4i = new unsigned short[ODE->NUnits];
 												for (int p = 0; p < ODE->NLines; p++)
 												{
 													int N1 = ODE->LineNU[p];
@@ -1110,15 +1110,15 @@ void LoadOrders()
 								{
 									if (!strcmp( SY, "SYM2" ))
 									{
-										ODE->SymInv = (word*) 0xFFFF;
+										ODE->SymInv = (unsigned short*) 0xFFFF;
 									}
 									else
 									{
 										if (!strcmp( SY, "SYM4" ))
 										{
-											ODE->SymInv = (word*) 0xFFFF;
-											ODE->Sym4i = (word*) 0xFFFF;
-											ODE->Sym4f = (word*) 0xFFFF;
+											ODE->SymInv = (unsigned short*) 0xFFFF;
+											ODE->Sym4i = (unsigned short*) 0xFFFF;
+											ODE->Sym4f = (unsigned short*) 0xFFFF;
 										}
 										else
 										{
@@ -1176,7 +1176,7 @@ void LoadOrders()
 							}
 							int nL = ODE->NLines;
 							ODE->NLines++;
-							ODE->LineNU = (word*) realloc( ODE->LineNU, ( nL + 1 ) << 2 );
+							ODE->LineNU = (unsigned short*) realloc( ODE->LineNU, ( nL + 1 ) << 2 );
 							ODE->Lines = (short**) realloc( ODE->Lines, ( nL + 1 ) << 2 );
 							ODE->LineNU[nL] = nz;
 							ODE->Lines[nL] = NULL;

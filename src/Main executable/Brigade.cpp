@@ -30,18 +30,18 @@
 
 extern int PeaceTimeLeft;
 void CheckArmies( City* CT );
-void CorrectBrigadesSelection( byte NT );
-void ImCorrectBrigadesSelection( byte NT );
+void CorrectBrigadesSelection( unsigned char NT );
+void ImCorrectBrigadesSelection( unsigned char NT );
 void NewMonsterSmartSendToLink( OneObject* OBJ );
 void NewMonsterSendToLink( OneObject* OBJ );
 void AI_AttackPointLink( OneObject* OBJ );
-extern word SelCenter[8];
-int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD, int NBLD );
-void BuildWithSelected( byte NI, word ObjID, byte OrdType );
-void GoToMineWithSelected( byte NI, word ID );
+extern unsigned short SelCenter[8];
+int CheckCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i, unsigned short* BLD, int NBLD );
+void BuildWithSelected( unsigned char NI, unsigned short ObjID, unsigned char OrdType );
+void GoToMineWithSelected( unsigned char NI, unsigned short ID );
 int GetBMIndex( OneObject* OB );
 
-void Brigade::Init( City* ct, word id )
+void Brigade::Init( City* ct, unsigned short id )
 {
 	memset( this, 0, sizeof Brigade );
 	CT = ct;
@@ -110,7 +110,7 @@ void Brigade::AddObject( OneObject* OB )
 {
 	//CheckBrIntegrity();
 	/*
-	byte CCC[100];
+	unsigned char CCC[100];
 	memset(CCC,0,100);
 	for(int k=0;k<NMemb;k++){
 		if(Memb[k]<100){
@@ -123,8 +123,8 @@ void Brigade::AddObject( OneObject* OB )
 	if ( NMemb >= MaxMemb )
 	{
 		MaxMemb += 128;
-		Memb = (word*) realloc( Memb, MaxMemb << 1 );
-		MembSN = (word*) realloc( MembSN, MaxMemb << 1 );
+		Memb = (unsigned short*) realloc( Memb, MaxMemb << 1 );
+		MembSN = (unsigned short*) realloc( MembSN, MaxMemb << 1 );
 	};
 	OB->DoNotCall = false;
 	PosCreated = false;
@@ -151,7 +151,7 @@ void Brigade::CheckMembers( City* pCT )
 {
 	if ( WarType )return;
 	/*
-	byte CCC[100];
+	unsigned char CCC[100];
 	memset(CCC,0,100);
 	for(int k=0;k<NMemb;k++){
 		if(Memb[k]<100){
@@ -236,7 +236,7 @@ void Brigade::RemoveObjects( int NObj, Brigade* Dest )
 	SetIndex();
 }
 
-void DeleteFromGroups( byte NI, word ID );
+void DeleteFromGroups( unsigned char NI, unsigned short ID );
 
 void Brigade::DeleteAll()
 {
@@ -251,7 +251,7 @@ void Brigade::SetIndex()
 {
 	for ( int i = 0; i < NMemb; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -304,7 +304,7 @@ Brigade* OneObject::GetBrigade()
 	};
 	return BRI;
 };
-BrigadeOrder* Brigade::CreateOrder( byte Type, int Size )
+BrigadeOrder* Brigade::CreateOrder( unsigned char Type, int Size )
 {
 	BrigadeOrder* OR1 = (BrigadeOrder*) malloc( Size );
 	BrigadeOrder* OR2;
@@ -345,7 +345,7 @@ void Brigade::ClearBOrders()
 {
 	while ( BOrder )DeleteBOrder();
 };
-void Brigade::CreateConvoy( byte Type )
+void Brigade::CreateConvoy( unsigned char Type )
 {
 	posX = (int*) realloc( posX, NMemb << 2 );
 	posY = (int*) realloc( posY, NMemb << 2 );
@@ -438,7 +438,7 @@ void CheckTopPointPos( int xc, int yc, int* xd, int* yd )
 		};
 	};
 };
-bool CorrectPositions( int* pos, word N )
+bool CorrectPositions( int* pos, unsigned short N )
 {
 	PosChanged = false;
 	for ( int i = 0; i < N; i++ )
@@ -458,7 +458,7 @@ bool CorrectPositions( int* pos, word N )
 	};
 	return true;
 };
-int Brigade::SelectPeasants( byte NI )
+int Brigade::SelectPeasants( unsigned char NI )
 {
 	SelCenter[NI] = 0;
 	int np = 0;
@@ -475,7 +475,7 @@ int Brigade::SelectPeasants( byte NI )
 		int N = NSL[NI];
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = Selm[NI][i];
+			unsigned short MID = Selm[NI][i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -488,8 +488,8 @@ int Brigade::SelectPeasants( byte NI )
 		SerN[NI] = NULL;
 	};
 	NSL[NI] = np;
-	Selm[NI] = new word[np];
-	SerN[NI] = new word[np];
+	Selm[NI] = new unsigned short[np];
+	SerN[NI] = new unsigned short[np];
 	np = 0;
 	for ( int i = 0; i < NMemb; i++ )
 	{
@@ -512,7 +512,7 @@ int GetTopology( int x, int y )
 {
 	int xc = x >> 6;
 	int yc = y >> 6;
-	word tr;
+	unsigned short tr;
 	if ( xc < 0 || yc < 0 || xc >= TopLx || yc >= TopLy )tr = 0xFFFF;
 	else tr = TopRef[xc + ( yc << TopSH )];
 	if ( tr < 0xFFFE )return tr;
@@ -538,7 +538,7 @@ int GetTopology( int* x, int* y )
 {
 	int xc = ( *x ) >> 6;
 	int yc = ( *y ) >> 6;
-	word tr;
+	unsigned short tr;
 	if ( xc < 0 || yc < 0 || xc >= TopLx || yc >= TopLy )tr = 0xFFFF;
 	else tr = TopRef[xc + ( yc << TopSH )];
 	if ( tr < 0xFFFE )return tr;
@@ -595,7 +595,7 @@ void B_LocalSendToLink( Brigade* BR )
 	{
 		int ti = i + i + i;
 		int ID = pos[ti + 2];
-		word SN = ID >> 13;
+		unsigned short SN = ID >> 13;
 		ID &= 8191;
 		OneObject* OB = Group[ID];
 		if ( OB&&OB->Serial == SN && !OB->Sdoxlo )
@@ -608,12 +608,12 @@ void B_LocalSendToLink( Brigade* BR )
 		BR->DeleteBOrder();
 		return;
 	};
-	byte prio = BLS->Prio;
+	unsigned char prio = BLS->Prio;
 	for ( int i = 0; i < N; i++ )
 	{
 		int ti = i + i + i;
 		int ID = pos[ti + 2];
-		word SN = ID >> 13;
+		unsigned short SN = ID >> 13;
 		ID &= 8191;
 		OneObject* OB = Group[ID];
 		if ( OB&&OB->Serial == SN && !OB->Sdoxlo )
@@ -643,7 +643,7 @@ void B_LocalSendToLink( Brigade* BR )
 	BLS->PrevSumm1 = S;
 }
 char* LS_Mess = "[Local sent to]";
-bool Brigade::LinearLocalSendTo( int x, int y, byte prio, byte OrdType )
+bool Brigade::LinearLocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType )
 {
 	Brigade_LST* OR1 = (Brigade_LST*) CreateOrder( OrdType, sizeof( Brigade_LST ) - 120 + ( NMemb * 12 ) );
 	OR1->Size = sizeof( Brigade_LST ) - 120 + ( NMemb * 12 );
@@ -713,8 +713,8 @@ bool Brigade::LinearLocalSendTo( int x, int y, byte prio, byte OrdType )
 	};
 	return true;
 };
-word GetDir( int, int );
-bool Brigade::LocalSendTo( int x, int y, byte prio, byte OrdType )
+unsigned short GetDir( int, int );
+bool Brigade::LocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType )
 {
 	if ( WarType )
 	{
@@ -809,12 +809,12 @@ void B_WideLocalSendToLink( Brigade* BR )
 		};
 	};
 	int NZast = 0;
-	byte prio = BLS->Prio;
+	unsigned char prio = BLS->Prio;
 	for ( int i = 0; i < N; i++ )
 	{
 		int ti = i + i + i;
 		int ID = pos[ti + 2];
-		word SN = ID >> 13;
+		unsigned short SN = ID >> 13;
 		ID &= 8191;
 		OneObject* OB = Group[ID];
 		if ( OB&&OB->Serial == SN && !OB->Sdoxlo )
@@ -892,7 +892,7 @@ void B_WideLocalSendToLink( Brigade* BR )
 	if ( moved )BR->DeleteBOrder();
 };
 char* WLS_Mess = "[Wide Local sent to]";
-bool Brigade::WideLocalSendTo( int x, int y, byte prio, byte OrdType )
+bool Brigade::WideLocalSendTo( int x, int y, unsigned char prio, unsigned char OrdType )
 {
 	//calculating center
 	/*
@@ -945,14 +945,14 @@ bool Brigade::WideLocalSendTo( int x, int y, byte prio, byte OrdType )
 };
 int Brigade::AddInRadius( int x, int y, int r, BrigMemb* BMem, Brigade* Dest )
 {
-	word* IDIS = new word[NMemb];
+	unsigned short* IDIS = new unsigned short[NMemb];
 	int NIDS = 0;
-	//word* NKINDS=&BMem->Peons;
-	word* NKI = &BMem->Peons;
+	//unsigned short* NKINDS=&BMem->Peons;
+	unsigned short* NKI = &BMem->Peons;
 	//SortClass SORT;
 	for ( int i = 0; i < 6; i++ )
 	{
-		word id1 = IDIS[i];
+		unsigned short id1 = IDIS[i];
 		int n = 0;
 		for ( int j = 0; j < NMemb; j++ )
 		{
@@ -991,10 +991,10 @@ int Brigade::AddInRadius( int x, int y, int r, BrigMemb* pBM )
 	if ( r >= RRad )r = RRad - 1;
 	int maxx = msx >> 2;
 	int maxy = msy >> 2;
-	byte NI = CT->NI;
-	word MyID = ID;
+	unsigned char NI = CT->NI;
+	unsigned short MyID = ID;
 	int M = pBM->Grenaderov + pBM->Infantry + pBM->Mortir + pBM->Peons + pBM->Pushek + pBM->Strelkov;
-	word* mem = (word*) pBM;
+	unsigned short* mem = (unsigned short*) pBM;
 	for ( int i = 0; i < r; i++ )
 	{
 		char* xi = Rarr[i].xi;
@@ -1013,13 +1013,13 @@ int Brigade::AddInRadius( int x, int y, int r, BrigMemb* pBM )
 					ofst <<= SHFCELL;
 					for ( int k = 0; k < N1; k++ )
 					{
-						word MID = GetNMSL( ofst + k );
+						unsigned short MID = GetNMSL( ofst + k );
 						if ( MID != 0xFFFF )
 						{
 							OneObject* OB = Group[MID];
 							if ( OB&&OB->NNUM == NI && !( OB->DoNotCall || OB->Sdoxlo || OB->InArmy ) )
 							{
-								byte nn = GetBMIndex( OB );
+								unsigned char nn = GetBMIndex( OB );
 								if ( mem[nn] )
 								{
 									bool Allow = true;
@@ -1090,7 +1090,7 @@ void B_GlobalSendToLink( Brigade* BR )
 	int NM = BR->NMemb;
 	int Dsx = OR1->DestX;
 	int Dsy = OR1->DestY;
-	word Top = GetTopology( Dsx, Dsy );
+	unsigned short Top = GetTopology( Dsx, Dsy );
 	if ( Top == 0xFFFF )
 	{
 		BR->DeleteBOrder();
@@ -1110,13 +1110,13 @@ void B_GlobalSendToLink( Brigade* BR )
 	{
 		xc = div( xc, N ).quot;
 		yc = div( yc, N ).quot;
-		word Top1 = GetTopology( xc, yc );
+		unsigned short Top1 = GetTopology( xc, yc );
 		if ( Top1 == 0xFFFF )
 		{
 			BR->DeleteBOrder();
 			return;
 		};
-		word NextTop = MotionLinks[Top*NAreas + Top1];
+		unsigned short NextTop = MotionLinks[Top*NAreas + Top1];
 		if ( NextTop == Top )
 		{
 			OR1->Final = true;
@@ -1134,7 +1134,7 @@ void B_GlobalSendToLink( Brigade* BR )
 	};
 };
 char* GS_Mess = "[Global send to]";
-bool Brigade::GlobalSendTo( int x, int y, byte prio, byte OrdType )
+bool Brigade::GlobalSendTo( int x, int y, unsigned char prio, unsigned char OrdType )
 {
 	Brigade_GST* OR1 = (Brigade_GST*) CreateOrder( OrdType, sizeof( Brigade_GST ) );
 	OR1->DestX = x;
@@ -1160,7 +1160,7 @@ void AllowBuilder( Brigade* BR )
 	int N = BR->NMemb;
 	for ( int i = 0; i < N; i++ )
 	{
-		word mid = BR->Memb[i];
+		unsigned short mid = BR->Memb[i];
 		if ( mid != 0xFFFF )
 		{
 			OneObject* OB = Group[mid];
@@ -1190,7 +1190,7 @@ void B_CaptureMineLink( Brigade* BR )
 	int NM = BR->NMemb;
 	int Dsx = OR1->DestX;
 	int Dsy = OR1->DestY;
-	word Top = GetTopology( Dsx, Dsy );
+	unsigned short Top = GetTopology( Dsx, Dsy );
 	if ( Top == 0xFFFF )
 	{
 		BR->DeleteBOrder();
@@ -1214,7 +1214,7 @@ void B_CaptureMineLink( Brigade* BR )
 	{
 		xc = div( xc, N ).quot;
 		yc = div( yc, N ).quot;
-		word Top1 = GetTopology( xc, yc );
+		unsigned short Top1 = GetTopology( xc, yc );
 		if ( Top1 == 0xFFFF )
 		{
 			AllowBuilder( BR );
@@ -1222,7 +1222,7 @@ void B_CaptureMineLink( Brigade* BR )
 			BR->Rospusk();
 			return;
 		};
-		word NextTop = MotionLinks[Top1*NAreas + Top];
+		unsigned short NextTop = MotionLinks[Top1*NAreas + Top];
 		if ( Top1 != Top&&NextTop >= 0xFFFE )
 		{
 			BR->DeleteBOrder();
@@ -1395,7 +1395,7 @@ void B_CaptureMineLink( Brigade* BR )
 	};
 };
 char* CM_Mess = "[Capture mine]";
-bool Brigade::CaptureMine( int SID, byte prio, byte OrdType )
+bool Brigade::CaptureMine( int SID, unsigned char prio, unsigned char OrdType )
 {
 	Brigade_CM* OR1 = (Brigade_CM*) CreateOrder( OrdType, sizeof( Brigade_CM ) );
 	OneSprite* OS = &Sprites[SID];
@@ -1415,7 +1415,7 @@ void Brigade::Rospusk()
 	int N = NMemb;
 	for ( int i = 0; i < N; i++ )
 	{
-		word mid = Memb[i];
+		unsigned short mid = Memb[i];
 		if ( mid != 0xFFFF )
 		{
 			OneObject* OB = Group[mid];
@@ -1444,9 +1444,9 @@ public:
 	int xdest;
 	int ydest;
 	int time;
-	word BestEnemy;
-	word EnemyList[64];
-	word NEnemy;
+	unsigned short BestEnemy;
+	unsigned short EnemyList[64];
+	unsigned short NEnemy;
 };
 void B_MakeBattleLink( Brigade* BR )
 {
@@ -1462,7 +1462,7 @@ void B_MakeBattleLink( Brigade* BR )
 	int NM = BR->NMemb;
 	for ( int i = 0; i < NM; i++ )
 	{
-		word mid = BR->Memb[i];
+		unsigned short mid = BR->Memb[i];
 		if ( mid != 0xFFFF )
 		{
 			OneObject* OB = Group[mid];
@@ -1496,19 +1496,19 @@ void B_MakeBattleLink( Brigade* BR )
 	{
 		return;
 	};
-	word Top = GetTopology( Dsx, Dsy );
+	unsigned short Top = GetTopology( Dsx, Dsy );
 	if ( Top == 0xFFFF )
 	{
 		//BR->DeleteBOrder();
 		return;
 	};
-	word Top1 = GetTopology( xc, yc );
+	unsigned short Top1 = GetTopology( xc, yc );
 	if ( Top1 == 0xFFFF )
 	{
 		BR->DeleteBOrder();
 		return;
 	};
-	word NextTop = MotionLinks[Top1*NAreas + Top];
+	unsigned short NextTop = MotionLinks[Top1*NAreas + Top];
 	if ( NextTop == 0xFFFF )return;
 	if ( NextTop == Top )
 	{
@@ -1521,7 +1521,7 @@ void B_MakeBattleLink( Brigade* BR )
 		BR->LocalSendTo( ( AR->x << 6 ) + 32, ( AR->y << 6 ) + 32, 128, 1 );
 	};
 };
-void SetStandState( Brigade* BR, byte State );
+void SetStandState( Brigade* BR, unsigned char State );
 char* BTL_Mess = "[Make Battle]";
 void Brigade::MakeBattle()
 {
@@ -1543,15 +1543,15 @@ public:
 class  Brigade_PFM :public BrigadeOrder
 {
 public:
-	word SID;
-	word M_ID;
-	word M_SN;
+	unsigned short SID;
+	unsigned short M_ID;
+	unsigned short M_SN;
 	int  xtop;
 	int  ytop;
-	word TowID;
-	word TowSN;
-	word Delay;
-	word Time;
+	unsigned short TowID;
+	unsigned short TowSN;
+	unsigned short Delay;
+	unsigned short Time;
 };
 MineBase* CorrectMB( MineBase* MB )
 {
@@ -1599,7 +1599,7 @@ bool Brigade::GetCenter( int* x, int* y )
 	int N = 0;
 	for ( int i = 0; i < NMemb; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1642,7 +1642,7 @@ bool GetBrCenter( Brigade* BR, int* x, int* y )
 };
 //------------------Human functions--------------
 
-int FindUnitsInCell( int cell, int x, int y, int r, int Type, byte Nation, int Need, word* Dest )
+int FindUnitsInCell( int cell, int x, int y, int r, int Type, unsigned char Nation, int Need, unsigned short* Dest )
 {
 	int N = 0;
 	if ( !Need )return 0;
@@ -1653,7 +1653,7 @@ int FindUnitsInCell( int cell, int x, int y, int r, int Type, byte Nation, int N
 		int NMon = MCount[cell];
 		if ( !NMon )return NULL;
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		for ( int i = 0; i < NMon; i++ )
 		{
 			MID = GetNMSL( ofs1 + i );
@@ -1671,7 +1671,7 @@ int FindUnitsInCell( int cell, int x, int y, int r, int Type, byte Nation, int N
 	};
 	return N;
 };
-int FindUnits( int x, int y, int r, int Type, byte Nation, int Need, word* Dest )
+int FindUnits( int x, int y, int r, int Type, unsigned char Nation, int Need, unsigned short* Dest )
 {
 	int rx1 = ( r >> 11 ) + 1;
 	int N = 0;
@@ -1697,10 +1697,10 @@ int FindUnits( int x, int y, int r, int Type, byte Nation, int Need, word* Dest 
 	};
 	return N;
 };
-void MakeReformation( byte NI, word BrigadeID, byte FormType );
+void MakeReformation( unsigned char NI, unsigned short BrigadeID, unsigned char FormType );
 void CancelStandGroundAnyway( Brigade* BR );
 /*
-word GetMyOfficerInf(byte NI,word UnitID,word WarType){
+unsigned short GetMyOfficerInf(unsigned char NI,unsigned short UnitID,unsigned short WarType){
 	Nation* NAT=NATIONS+NI;
 	int N=NAT->NMon;
 	for(int i=0;i<N;i++)if(NAT->Mon[i]->OFCR){
@@ -1713,11 +1713,11 @@ word GetMyOfficerInf(byte NI,word UnitID,word WarType){
 */
 void CheckBrigadeDUP( Brigade* BR )
 {
-	//byte PRES[8192];
+	//unsigned char PRES[8192];
 	//memset(PRES,0,8192);
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1730,14 +1730,14 @@ void CheckBrigadeDUP( Brigade* BR )
 };
 void FillFormation( Brigade* BR )
 {
-	word ULOCAL[512];
+	unsigned short ULOCAL[512];
 	int N1 = 0;
 	int N2 = 0;
 	int xx = 0;
 	int yy = 0;
 	bool SELECTED = 0;
 	bool ImSELECTED = 0;
-	byte NI = BR->CT->NI;
+	unsigned char NI = BR->CT->NI;
 	int NN = ElementaryOrders[BR->WarType - 1].NUnits + 2;
 	for ( int i = 2; i < NN; i++ )
 	{
@@ -1812,16 +1812,16 @@ void FillFormation( Brigade* BR )
 	//CorrectBrigadesSelection(BR->CT->NI);
 	//ImCorrectBrigadesSelection(BR->CT->NI);
 };
-bool Brigade::CreateNearOfficer( OneObject* OB, word Type, int ODIndex )
+bool Brigade::CreateNearOfficer( OneObject* OB, unsigned short Type, int ODIndex )
 {
 	if ( !OB->Ref.General->OFCR )return false;
 	bool Dem = false;
-	word BarbID = OB->Ref.General->OFCR->BarabanID;
+	unsigned short BarbID = OB->Ref.General->OFCR->BarabanID;
 	if ( BarbID == Type )Dem = true;
 	int RX = OB->RealX;
 	int RY = OB->RealY;
 	OrderDescription* ODS = ElementaryOrders + ODIndex;
-	word ULOCAL[512];
+	unsigned short ULOCAL[512];
 	int N = FindUnits( RX, RY, MobilR * 16, Type, OB->NNUM, ODS->NUnits, ULOCAL );
 	if ( N != ODS->NUnits )return false;
 	AddObject( OB );
@@ -1835,7 +1835,7 @@ bool Brigade::CreateNearOfficer( OneObject* OB, word Type, int ODIndex )
 	}
 	else OB->StandGround = true;
 	if ( !Dem )OB->InArmy = true;
-	word BMID;
+	unsigned short BMID;
 	N = FindUnits( RX, RY, MobilR * 16, OB->Ref.General->OFCR->BarabanID, OB->NNUM, 1, &BMID );
 	if ( N == 1 )
 	{
@@ -1872,7 +1872,7 @@ bool Brigade::CreateNearOfficer( OneObject* OB, word Type, int ODIndex )
 		CreateOrderedPositions( RX, RY, 0 );
 		KeepPositions( 0, 128 + 16 );
 		MembID = Type;
-		byte usag = NATIONS[OB->NNUM].Mon[Type]->newMons->Usage;
+		unsigned char usag = NATIONS[OB->NNUM].Mon[Type]->newMons->Usage;
 		if ( usag == StrelokID
 			|| usag == HorseStrelokID
 			|| usag == GrenaderID //BUGFIX: Non-shooting grenadiers in formations
@@ -1894,7 +1894,7 @@ bool Brigade::CreateNearOfficer( OneObject* OB, word Type, int ODIndex )
 	return 1;
 }
 
-int FindCommandPlace( int* x, int* y, byte dir, OneObject* OB, int Indx, OrderDescription* ODS )
+int FindCommandPlace( int* x, int* y, unsigned char dir, OneObject* OB, int Indx, OrderDescription* ODS )
 {
 	int xx = *x;
 	int yy = *y;
@@ -1954,7 +1954,7 @@ void Brigade::CreateOrderedPositions( int x, int y, char dir )
 		{
 			posX[i + 2] = PORD.px[i] >> 4;
 			posY[i + 2] = PORD.py[i] >> 4;
-			word MID = PORD.Ids[i];
+			unsigned short MID = PORD.Ids[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -1984,7 +1984,7 @@ void Brigade::CreateOrderedPositions( int x, int y, char dir )
 		NMemb = NM + 2;
 		int xx = x;
 		int yy = y;
-		word MID0 = Memb[0];
+		unsigned short MID0 = Memb[0];
 		int id1 = -1;
 		if ( MID0 != 0xFFFF )
 		{
@@ -2030,7 +2030,7 @@ void Brigade::CreateSimpleOrderedPositions( int x, int y, char dir )
 		{
 			posX[i + 2] = PORD.px[i] >> 4;
 			posY[i + 2] = PORD.py[i] >> 4;
-			word MID = PORD.Ids[i];
+			unsigned short MID = PORD.Ids[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2054,7 +2054,7 @@ void Brigade::CreateSimpleOrderedPositions( int x, int y, char dir )
 		};
 		int xx = x;
 		int yy = y;
-		word MID0 = Memb[0];
+		unsigned short MID0 = Memb[0];
 		int id1 = -1;
 		if ( MID0 != 0xFFFF )
 		{
@@ -2086,7 +2086,7 @@ void Brigade::HumanCheckUnits()
 {
 	for ( int i = 0; i < NMemb; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2098,24 +2098,24 @@ void Brigade::HumanCheckUnits()
 		};
 	};
 };
-word GetDir( int, int );
+unsigned short GetDir( int, int );
 class B_HSend :public BrigadeOrder
 {
 public:
 	int x, y;
 	short Dir;
-	byte Prio, OrdType;
+	unsigned char Prio, OrdType;
 };
 short FilterDir( short Dir )
 {
 	return ( ( ( Dir ) >> 3 ) << 3 );
 };
-void ApplySwap( Brigade* BR, word* swp )
+void ApplySwap( Brigade* BR, unsigned short* swp )
 {
-	word tm[512];
-	word tmsn[512];
-	word tm1[512];
-	word tmsn1[512];
+	unsigned short tm[512];
+	unsigned short tmsn[512];
+	unsigned short tm1[512];
+	unsigned short tmsn1[512];
 	if ( BR->WarType )
 	{
 		int N = BR->NMemb;
@@ -2131,7 +2131,7 @@ void ApplySwap( Brigade* BR, word* swp )
 		};
 		for ( int i = 2; i < N; i++ )
 		{
-			word id = swp[i - 2] + 2;
+			unsigned short id = swp[i - 2] + 2;
 			tm[i] = BR->Memb[id];
 			tmsn[i] = BR->MembSN[id];
 			tm1[i] = BR->Memb[i];
@@ -2140,7 +2140,7 @@ void ApplySwap( Brigade* BR, word* swp )
 		};
 		for ( int i = 2; i < N; i++ )
 		{
-			word MID = tm[i];
+			unsigned short MID = tm[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2179,7 +2179,7 @@ void HumanLocalSendToLink( Brigade* BR )
 	int N = 0;
 	for ( int i = 2; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2202,12 +2202,12 @@ void HumanLocalSendToLink( Brigade* BR )
 		BR->DeleteBOrder();
 		return;
 	};
-	byte Dir;
+	unsigned char Dir;
 	if ( BS->Dir > 256 )Dir = GetDir( ( x - xc ) >> 4, ( y - yc ) >> 4 );
 	else Dir = BS->Dir;
 	//Dir=FilterDir(Dir);
 	char dd = char( Dir ) - char( BR->Direction );
-	byte pri = BS->Prio;
+	unsigned char pri = BS->Prio;
 	if ( abs( dd ) < 4 )
 	{
 		BR->CreateSimpleOrderedPositions( x, y, Dir );
@@ -2257,7 +2257,7 @@ void HumanLocalSendToLink( Brigade* BR )
 	};
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2284,7 +2284,7 @@ void HumanEscapeLink( Brigade* BR )
 	int N = 0;
 	for ( int i = 2; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2307,12 +2307,12 @@ void HumanEscapeLink( Brigade* BR )
 		BR->DeleteBOrder();
 		return;
 	};
-	byte Dir;
+	unsigned char Dir;
 	if ( BS->Dir > 256 )Dir = GetDir( ( x - xc ) >> 4, ( y - yc ) >> 4 );
 	else Dir = BS->Dir;
 	//Dir=FilterDir(Dir);
 	char dd = char( Dir ) - char( BR->Direction );
-	byte pri = BS->Prio;
+	unsigned char pri = BS->Prio;
 	if ( abs( dd ) < 32 )
 	{
 		BR->CreateSimpleOrderedPositions( x, y, Dir );
@@ -2353,7 +2353,7 @@ void HumanEscapeLink( Brigade* BR )
 	};
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2367,7 +2367,7 @@ void HumanEscapeLink( Brigade* BR )
 	BR->KeepPositions( 1, pri );
 };
 char* HLST_Message = "[HumanLocalSendTo]";
-void Brigade::HumanLocalSendTo( int x, int y, short Dir, byte Prio, byte OrdType )
+void Brigade::HumanLocalSendTo( int x, int y, short Dir, unsigned char Prio, unsigned char OrdType )
 {
 	if ( NMemb < 4 )return;
 	B_HSend* BS = (B_HSend*) CreateOrder( OrdType, sizeof B_HSend );
@@ -2383,7 +2383,7 @@ void Brigade::HumanLocalSendTo( int x, int y, short Dir, byte Prio, byte OrdType
 	bool Attack = false;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2413,7 +2413,7 @@ void RotUnitLink( OneObject* OB )
 	else OB->RealDir += Mrot;
 	OB->GraphDir = OB->RealDir;
 };
-void RotUnit( OneObject* OB, char Dir, byte OrdType )
+void RotUnit( OneObject* OB, char Dir, unsigned char OrdType )
 {
 	if ( OB->Transport )return;
 	Order1* Or1 = OB->CreateOrder( OrdType );
@@ -2435,18 +2435,18 @@ bool RotateUnit( OneObject* OB, char Dir )
 void NewMonsterPreciseSendToLink( OneObject* OB );
 void B_KeepPositionsLink( Brigade* BR )
 {
-	byte pri = BR->BOrder->Prio;
+	unsigned char pri = BR->BOrder->Prio;
 	if ( BR->PosCreated )
 	{
 		if ( BR->Precise )
 		{
 			bool Done = true;
-			word* Memb = BR->Memb;
+			unsigned short* Memb = BR->Memb;
 			int N = BR->NMemb;
 			char DIRC = BR->Direction;
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Memb[i];
+				unsigned short MID = Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -2496,11 +2496,11 @@ void B_KeepPositionsLink( Brigade* BR )
 		else
 		{
 			bool Done = true;
-			word* Memb = BR->Memb;
+			unsigned short* Memb = BR->Memb;
 			int N = BR->NMemb;
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Memb[i];
+				unsigned short MID = Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -2522,11 +2522,11 @@ void B_LeaveAttackLink( Brigade* BR )
 	if ( BR->PosCreated )
 	{
 		bool Done = true;
-		word* Memb = BR->Memb;
+		unsigned short* Memb = BR->Memb;
 		int N = BR->NMemb;
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = Memb[i];
+			unsigned short MID = Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2544,7 +2544,7 @@ void B_LeaveAttackLink( Brigade* BR )
 		{
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Memb[i];
+				unsigned short MID = Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -2565,7 +2565,7 @@ void B_LeaveAttackLink( Brigade* BR )
 	};
 };
 char* KP_Message = "[KeepPosition]";
-void Brigade::KeepPositions( byte OrdType, byte Prio )
+void Brigade::KeepPositions( unsigned char OrdType, unsigned char Prio )
 {
 	BrigadeOrder* OR = CreateOrder( OrdType, sizeof BrigadeOrder );
 	OR->Message = KP_Message;
@@ -2577,7 +2577,7 @@ void Brigade::KeepPositions( byte OrdType, byte Prio )
 	bool Attack = false;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2593,7 +2593,7 @@ void Brigade::KeepPositions( byte OrdType, byte Prio )
 	//if(Attack)OR->BLink=&B_LeaveAttackLink;
 };
 
-void DrawPlaneLine( int x0, int y0, int x1, int y1, byte c )
+void DrawPlaneLine( int x0, int y0, int x1, int y1, unsigned char c )
 {
 	int dx = mapx << 5;
 	int dy = mapy << 4;
@@ -2605,7 +2605,7 @@ void DrawPlaneLine( int x0, int y0, int x1, int y1, byte c )
 	y1 = ( y1 >> 1 ) - h1 - dy;
 	DrawLine( x0, y0, x1, y1, c );
 };
-void DrawMultiLine( int x0, int y0, int x1, int y1, byte c )
+void DrawMultiLine( int x0, int y0, int x1, int y1, unsigned char c )
 {
 	int dx = ( x1 - x0 ) << 16;
 	int dy = ( y1 - y0 ) << 16;
@@ -2623,7 +2623,7 @@ void DrawMultiLine( int x0, int y0, int x1, int y1, byte c )
 		yy += dy;
 	};
 };
-void DrawRotLine( int x0, int y0, int dx0, int dy0, int dx1, int dy1, int SIN, int COS, byte c )
+void DrawRotLine( int x0, int y0, int dx0, int dy0, int dx1, int dy1, int SIN, int COS, unsigned char c )
 {
 	DrawMultiLine( x0 + ( ( dx0*COS - dy0*SIN ) >> 8 ), y0 + ( ( dy0*COS + dx0*SIN ) >> 8 ),
 		x0 + ( ( dx1*COS - dy1*SIN ) >> 8 ), y0 + ( ( dy1*COS + dx1*SIN ) >> 8 ), c );
@@ -2635,8 +2635,8 @@ void DrawBorder( Brigade* BR )
 	if ( BR->WarType&&BR->NMemb > 2 && BR->PosCreated )
 	{
 		OrderDescription* ODS = ElementaryOrders + BR->WarType - 1;
-		int SIN = -TSin[byte( BR->Direction )];
-		int COS = TCos[byte( BR->Direction )];
+		int SIN = -TSin[unsigned char( BR->Direction )];
+		int COS = TCos[unsigned char( BR->Direction )];
 		int xt = 0;
 		int yt = 0;
 		int Nt = 0;
@@ -2646,7 +2646,7 @@ void DrawBorder( Brigade* BR )
 		int MaxY = -10000000;
 		int N = BR->NMemb;
 		bool Cross = false;
-		byte cl = clrYello;
+		unsigned char cl = clrYello;
 		if ( BR->BOrder )
 		{
 			if ( BR->BOrder->BLink == &B_KeepPositionsLink )
@@ -2660,7 +2660,7 @@ void DrawBorder( Brigade* BR )
 		}
 		for ( int i = 2; i < N; i++ )
 		{
-			word MID = BR->Memb[i];
+			unsigned short MID = BR->Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -2751,7 +2751,7 @@ bool FindCorrectTopPos1( int x0, int y0, int* x, int* y )
 			{
 				if ( !CheckBar( x1 - 1, y1 - 1, 3, 3 ) )
 				{
-					word top = TopRef[tpx1 + ( tpy1 << TopSH )];
+					unsigned short top = TopRef[tpx1 + ( tpy1 << TopSH )];
 					if ( top == top0 )
 					{
 						*x = ( x1 << 4 );
@@ -2764,7 +2764,7 @@ bool FindCorrectTopPos1( int x0, int y0, int* x, int* y )
 	};
 	return false;
 };
-int FindSuperSmartBestPosition( OneObject* OB, int* cx, int* cy, int dx, int dy, word Top, byte LTP );
+int FindSuperSmartBestPosition( OneObject* OB, int* cx, int* cy, int dx, int dy, unsigned short Top, unsigned char LTP );
 void OptimiseBrigadePosition( Brigade* BR )
 {
 	int MinX = 10000000;
@@ -2772,7 +2772,7 @@ void OptimiseBrigadePosition( Brigade* BR )
 	int MaxX = -10000000;
 	int MaxY = -10000000;
 	int N = BR->NMemb;
-	word* Mem = BR->Memb;
+	unsigned short* Mem = BR->Memb;
 	int* px = BR->posX;
 	int* py = BR->posY;
 	for ( int i = 0; i < N; i++ )
@@ -2901,7 +2901,7 @@ class B_SmartSend :public BrigadeOrder
 public:
 	int x, y, NextX, NextY;
 	short Dir;
-	word NextTop;
+	unsigned short NextTop;
 };
 bool CheckBDirectWay( int x0, int y0, int x1, int y1 )
 {
@@ -2936,7 +2936,7 @@ bool CalcCenter( Brigade* BR, int* x, int* y )
 	int M = BR->NMemb;
 	for ( int i = 2; i < M; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -2964,7 +2964,7 @@ void B_HumanGlobalSendToLink( Brigade* BR )
 	int NextX = BS->NextX;
 	int NextY = BS->NextY;
 	int NextTop = BS->NextTop;
-	byte prior = BS->Prio;
+	unsigned char prior = BS->Prio;
 	short dir = BS->Dir;
 	int xc, yc;
 	if ( !CalcCenter( BR, &xc, &yc ) )
@@ -2995,7 +2995,7 @@ void B_HumanGlobalSendToLink( Brigade* BR )
 	};
 	BS->x = x;
 	BS->y = y;
-	word NextNextTop = MotionLinks[FinalTop + NAreas*NextTop];
+	unsigned short NextNextTop = MotionLinks[FinalTop + NAreas*NextTop];
 	if ( NextNextTop == FinalTop || FinalTop == NextTop )
 	{
 		BR->DeleteBOrder();
@@ -3044,12 +3044,12 @@ void B_HumanGlobalSendToLink( Brigade* BR )
 	};
 };
 char* HGST_Message = "[HumanGlobalSendTo]";
-void Brigade::HumanGlobalSendTo( int x, int y, short Dir, byte Prio, byte OrdType )
+void Brigade::HumanGlobalSendTo( int x, int y, short Dir, unsigned char Prio, unsigned char OrdType )
 {
 	if ( LastOrderTime == tmtmt )return;
 	AttEnm = false;
 	LastOrderTime = tmtmt;
-	word Top = GetTopology( &x, &y );
+	unsigned short Top = GetTopology( &x, &y );
 	if ( Top == 0xFFFF )return;
 	B_SmartSend* OR1 = (B_SmartSend*) CreateOrder( OrdType, sizeof B_SmartSend );
 	OR1->BLink = &B_HumanGlobalSendToLink;
@@ -3074,7 +3074,7 @@ void EraseBrigade( Brigade* BR )
 		{
 			if ( i < 2 )
 			{
-				word mid = BR->Memb[i];
+				unsigned short mid = BR->Memb[i];
 				if ( mid != 0xFFFF )
 				{
 					OneObject* OB = Group[mid];
@@ -3090,7 +3090,7 @@ void EraseBrigade( Brigade* BR )
 			}
 			else
 			{
-				word mid = BR->Memb[i];
+				unsigned short mid = BR->Memb[i];
 				if ( mid != 0xFFFF )
 				{
 					OneObject* OB = Group[mid];
@@ -3115,7 +3115,7 @@ void EraseBrigade( Brigade* BR )
 	};
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3145,12 +3145,12 @@ void EraseBrigade( Brigade* BR )
 	BR->ID = id;
 	BR->CT = CT;
 };
-word CheckMotionThroughEnemyAbility( OneObject* OB, int px, int py )
+unsigned short CheckMotionThroughEnemyAbility( OneObject* OB, int px, int py )
 {
 	px >>= 11;
 	py >>= 11;
-	byte mmask = OB->NMask;
-	byte mask = ~mmask;
+	unsigned char mmask = OB->NMask;
+	unsigned char mask = ~mmask;
 	if ( px >= 0 && py >= 0 && px < VAL_MAXCX&&py < VAL_MAXCX )
 	{
 		int cell = px + ( py << VAL_SHFCX );
@@ -3161,7 +3161,7 @@ word CheckMotionThroughEnemyAbility( OneObject* OB, int px, int py )
 			int NMon = MCount[cell];
 			if ( !NMon )return 0xFFFF;
 			int ofs1 = cell << SHFCELL;
-			word MID;
+			unsigned short MID;
 			for ( int i = 0; i < NMon; i++ )
 			{
 				MID = GetNMSL( ofs1 + i );
@@ -3187,20 +3187,20 @@ char* BBIT_Message = "[Brigade::Bitva]";
 class Brigade_Bitva :public BrigadeOrder
 {
 public:
-	word StartTop;
-	byte BitMask[1024];
-	word Enm[512];
-	word EnSN[512];
-	byte NDang[512];
+	unsigned short StartTop;
+	unsigned char BitMask[1024];
+	unsigned short Enm[512];
+	unsigned short EnSN[512];
+	unsigned char NDang[512];
 	int  NEn;
 	int MinX;
 	int MinY;
 	int MaxX;
 	int MaxY;
-	void AddEnemXY( int x, int y, int MyTop, byte mask );
+	void AddEnemXY( int x, int y, int MyTop, unsigned char mask );
 };
-word GetTopFast( int x, int y );
-void Brigade_Bitva::AddEnemXY( int x, int y, int MyTop, byte mask )
+unsigned short GetTopFast( int x, int y );
+void Brigade_Bitva::AddEnemXY( int x, int y, int MyTop, unsigned char mask )
 {
 	if ( NEn >= 512 )return;
 	int x0 = x << 1;
@@ -3234,7 +3234,7 @@ void Brigade_Bitva::AddEnemXY( int x, int y, int MyTop, byte mask )
 		int NMon = MCount[cell];
 		if ( !NMon )return;
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		for ( int i = 0; i < NMon; i++ )
 		{
 			MID = GetNMSL( ofs1 + i );
@@ -3267,26 +3267,26 @@ void Brigade_Bitva::AddEnemXY( int x, int y, int MyTop, byte mask )
 		};
 	};
 };
-word GetDir( int dx, int dy );
+unsigned short GetDir( int dx, int dy );
 void AttackObjLink( OneObject* OBJ );
 void B_BitvaLink( Brigade* BR )
 {
 	Brigade_Bitva* OR1 = (Brigade_Bitva*) BR->BOrder;
-	byte Mask = 1 << BR->CT->NI;
+	unsigned char Mask = 1 << BR->CT->NI;
 	//1.Check range of battle
 	if ( rando() < 1024 || OR1->StartTop == 0xFFFF )
 	{
-		word Top = 0xFFFF;
+		unsigned short Top = 0xFFFF;
 		int MinX = 10000000;
 		int MinY = 10000000;
 		int MaxX = 0;
 		int MaxY = 0;
 		int N = BR->NMemb;
-		word* Mem = BR->Memb;
-		word* MSN = BR->MembSN;
+		unsigned short* Mem = BR->Memb;
+		unsigned short* MSN = BR->MembSN;
 		for ( int j = 0; j < N; j++ )
 		{
-			word MID = Mem[j];
+			unsigned short MID = Mem[j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3329,9 +3329,9 @@ void B_BitvaLink( Brigade* BR )
 	if ( rando() < 1024 )
 	{
 		int N = OR1->NEn;
-		word* Mem = OR1->Enm;
-		word* MSN = OR1->EnSN;
-		byte* ATT = OR1->NDang;
+		unsigned short* Mem = OR1->Enm;
+		unsigned short* MSN = OR1->EnSN;
+		unsigned char* ATT = OR1->NDang;
 		for ( int i = 0; i < N; i++ )
 		{
 			OneObject* OB = Group[Mem[i]];
@@ -3366,11 +3366,11 @@ void B_BitvaLink( Brigade* BR )
 	//4.Attack service
 	bool MorPresent = false;
 	int N = BR->NMemb;
-	word* Mem = BR->Memb;
-	word* MSN = BR->MembSN;
+	unsigned short* Mem = BR->Memb;
+	unsigned short* MSN = BR->MembSN;
 	for ( int j = 0; j < N; j++ )
 	{
-		word MID = Mem[j];
+		unsigned short MID = Mem[j];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3381,7 +3381,7 @@ void B_BitvaLink( Brigade* BR )
 					//need to find enemy
 					NewMonster* NM = OB->newMons;
 					AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
-					byte mms = NM->KillMask;
+					unsigned char mms = NM->KillMask;
 					int MinR = ADC->MinR_Attack;
 					int MaxR = ADC->MaxR_Attack;
 					int myx = OB->RealX;
@@ -3391,16 +3391,16 @@ void B_BitvaLink( Brigade* BR )
 						//search best enemy
 						int NearDist = 1000000;
 						int ReadyDist = 1000000;
-						word NearMID = 0xFFFF;
-						word ReadyMID = 0xFFFF;
+						unsigned short NearMID = 0xFFFF;
+						unsigned short ReadyMID = 0xFFFF;
 						int NEn = OR1->NEn;
-						word* Mem = OR1->Enm;
-						word* MSN = OR1->EnSN;
-						byte* DANG = OR1->NDang;
+						unsigned short* Mem = OR1->Enm;
+						unsigned short* MSN = OR1->EnSN;
+						unsigned char* DANG = OR1->NDang;
 						char mdr = OB->RealDir;
 						for ( int t = 0; t < NEn; t++ )
 						{
-							word MID = Mem[t];
+							unsigned short MID = Mem[t];
 							OneObject* EOB = Group[MID];
 							int dan = DANG[t];
 							NewMonster* ENM = NULL;
@@ -3479,12 +3479,12 @@ void Brigade::Bitva()
 	int MaxY = 0;
 
 	int N = NMemb;
-	word* Mem = Memb;
-	word* MSN = MembSN;
-	word Top = 0xFFFF;
+	unsigned short* Mem = Memb;
+	unsigned short* MSN = MembSN;
+	unsigned short Top = 0xFFFF;
 	for ( int j = 0; j < N; j++ )
 	{
-		word MID = Mem[j];
+		unsigned short MID = Mem[j];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3503,7 +3503,7 @@ void Brigade::Bitva()
 			};
 		};
 	};
-	byte Mask = 1 << CT->NI;
+	unsigned char Mask = 1 << CT->NI;
 	if ( MaxX >= MinX )
 	{
 		MinX -= 4;
@@ -3531,10 +3531,10 @@ void Brigade::Bitva()
 	};
 };
 extern City CITY[8];
-void SelBrigade( byte NI, byte Type, int ID );
-void ImSelBrigade( byte NI, byte Type, int ID );
+void SelBrigade( unsigned char NI, unsigned char Type, int ID );
+void ImSelBrigade( unsigned char NI, unsigned char Type, int ID );
 
-void CorrectBrigadesSelection( byte NT )
+void CorrectBrigadesSelection( unsigned char NT )
 {
 	if ( sizeof( NSL ) <= NT )//BUGFIX: NT > 7 can cause access violation
 	{//Call stack: ExecuteBuffer() -> RememSelection()
@@ -3542,15 +3542,15 @@ void CorrectBrigadesSelection( byte NT )
 	}
 
 	int BrigsID[512];
-	byte BFlags[128];
+	unsigned char BFlags[128];
 	memset( BFlags, 0, sizeof BFlags );
 	int NBR = 0;
 	int N = NSL[NT];
-	word* mon = Selm[NT];
+	unsigned short* mon = Selm[NT];
 	City* CT = CITY + NatRefTBL[NT];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = mon[i];
+		unsigned short MID = mon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3582,19 +3582,19 @@ void CorrectBrigadesSelection( byte NT )
 	}
 }
 
-void CorrectImSelectionInGroups( byte NI );
-void ImCorrectBrigadesSelection( byte NT )
+void CorrectImSelectionInGroups( unsigned char NI );
+void ImCorrectBrigadesSelection( unsigned char NT )
 {
 	int BrigsID[512];
-	byte BFlags[128];
+	unsigned char BFlags[128];
 	memset( BFlags, 0, sizeof BFlags );
 	int NBR = 0;
 	int N = ImNSL[NT];
-	word* mon = ImSelm[NT];
+	unsigned short* mon = ImSelm[NT];
 	City* CT = CITY + NatRefTBL[NT];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = mon[i];
+		unsigned short MID = mon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3641,12 +3641,12 @@ int NIslands = 0;
 #define MaxIsl 64
 int IslandX[MaxIsl];
 int IslandY[MaxIsl];
-byte IslPrs[MaxIsl];
+unsigned char IslPrs[MaxIsl];
 
-word* TopIslands = NULL;
-word* NearWater = NULL;
+unsigned short* TopIslands = NULL;
+unsigned short* NearWater = NULL;
 void CheckGP();
-void ArrangeAreas( int ID, byte IsID, int Deep )
+void ArrangeAreas( int ID, unsigned char IsID, int Deep )
 {
 	TopIslands[ID] = IsID;
 	if ( Deep < 100 )
@@ -3664,13 +3664,13 @@ void ResearchIslands()
 	if ( !NAreas )return;
 	if ( TopIslands )
 	{
-		TopIslands = (word*) realloc( TopIslands, 2 * NAreas );
-		NearWater = (word*) realloc( NearWater, 2 * NAreas );
+		TopIslands = (unsigned short*) realloc( TopIslands, 2 * NAreas );
+		NearWater = (unsigned short*) realloc( NearWater, 2 * NAreas );
 	}
 	else
 	{
-		TopIslands = new word[NAreas];
-		NearWater = new word[NAreas];
+		TopIslands = new unsigned short[NAreas];
+		NearWater = new unsigned short[NAreas];
 	};
 	memset( TopIslands, 0xFF, 2 * NAreas );
 	NIslands = 0;
@@ -3680,7 +3680,7 @@ void ResearchIslands()
 		for ( int p = 0; p < NAreas; p++ )if ( TopIslands[p] == NIslands )ArrangeAreas( p, NIslands, 0 );
 		NIslands++;
 	}
-	word NTIsl[MaxIsl];
+	unsigned short NTIsl[MaxIsl];
 	assert( NIslands < MaxIsl );
 	//calculating center
 	for ( int i = 0; i < NIslands; i++ )
@@ -3739,7 +3739,7 @@ void ResearchIslands()
 };
 
 //Some island AI logic
-void ResearchCurrentIsland( byte Nat )
+void ResearchCurrentIsland( unsigned char Nat )
 {
 	if ( NATIONS[Nat].AI_Enabled && CITY[Nat].MyIsland != 0xFF )
 	{
@@ -3756,7 +3756,7 @@ void ResearchCurrentIsland( byte Nat )
 	memset( IslPrs, 0, sizeof IslPrs );
 
 	int N = NtNUnits[Nat];
-	word* Uni = NatList[Nat];
+	unsigned short* Uni = NatList[Nat];
 	if ( !N )
 	{
 		CITY[Nat].MyIsland = 0xFF;
@@ -3798,11 +3798,11 @@ void ResearchCurrentIsland( byte Nat )
 }
 
 //======================RESEARCH BEST PORT TO FISH=========================//
-void ResearchBestPortToFish( byte Nat )
+void ResearchBestPortToFish( unsigned char Nat )
 {
 
 	int N = NtNUnits[Nat];
-	word* Uni = NatList[Nat];
+	unsigned short* Uni = NatList[Nat];
 	if ( !N )return;
 
 
@@ -3879,10 +3879,10 @@ void ResearchBestPortToFish( byte Nat )
 		};
 	};
 };
-void ProduceBattleShip( byte nat, word ID )
+void ProduceBattleShip( unsigned char nat, unsigned short ID )
 {
 	int N = NtNUnits[nat];
-	word* Uni = NatList[nat];
+	unsigned short* Uni = NatList[nat];
 	for ( int i = 0; i < N; i++ )
 	{
 		OneObject* OB = Group[Uni[i]];
@@ -3892,10 +3892,10 @@ void ProduceBattleShip( byte nat, word ID )
 		};
 	};
 };
-void ProduceLodka( byte nat, word ID )
+void ProduceLodka( unsigned char nat, unsigned short ID )
 {
 	int N = NtNUnits[nat];
-	word* Uni = NatList[nat];
+	unsigned short* Uni = NatList[nat];
 	for ( int i = 0; i < N; i++ )
 	{
 		OneObject* OB = Group[Uni[i]];
@@ -3905,9 +3905,9 @@ void ProduceLodka( byte nat, word ID )
 		};
 	};
 };
-void ProduceByAI( byte nat, word Producer, word ID )
+void ProduceByAI( unsigned char nat, unsigned short Producer, unsigned short ID )
 {
-	byte Use = NATIONS[nat].Mon[ID]->newMons->Usage;
+	unsigned char Use = NATIONS[nat].Mon[ID]->newMons->Usage;
 	switch ( Use )
 	{
 	case FisherID:
@@ -3929,18 +3929,18 @@ void ProduceByAI( byte nat, word Producer, word ID )
 
 
 
-//extern word TowsID[24];
-//extern word TowsSN[24];
-word SearchMineToDestroy( Brigade* BR )
+//extern unsigned short TowsID[24];
+//extern unsigned short TowsSN[24];
+unsigned short SearchMineToDestroy( Brigade* BR )
 {
 	int NGalley = 0;
-	word GalleyID[32];
+	unsigned short GalleyID[32];
 	int GalleyX[32];
 	int GalleyY[32];
 	int GalleyR = 0;
 	for ( int i = 0; i < BR->NMemb&&NGalley < 32; i++ )
 	{
-		word mid = BR->Memb[i];
+		unsigned short mid = BR->Memb[i];
 		if ( mid != 0xFFFF )
 		{
 			OneObject* OB = Group[mid];
@@ -3960,7 +3960,7 @@ word SearchMineToDestroy( Brigade* BR )
 	if ( !NGalley )return 0xFFFF;
 
 	int MinD = 1000000;
-	word BestMINE = 0xFFFF;
+	unsigned short BestMINE = 0xFFFF;
 	GalleyR -= 64 * 16;
 	if ( BR->NMemb >= 4 )
 	{
@@ -3971,7 +3971,7 @@ word SearchMineToDestroy( Brigade* BR )
 			{
 				int mx = OB->RealX;
 				int my = OB->RealY;
-				byte Use = OB->newMons->Usage;
+				unsigned char Use = OB->newMons->Usage;
 				if ( Use == MineID || Use == TowerID )
 				{
 					for ( int j = 0; j < NGalley; j++ )
@@ -4020,8 +4020,8 @@ word SearchMineToDestroy( Brigade* BR )
 	};
 	return BestMINE;
 };
-int GetShipForce( byte Usage );
-word SearchEnemyToDestroy( Brigade* BR )
+int GetShipForce( unsigned char Usage );
+unsigned short SearchEnemyToDestroy( Brigade* BR )
 {
 	int RMIN[128];
 	int RMAX[128];
@@ -4039,13 +4039,13 @@ word SearchEnemyToDestroy( Brigade* BR )
 	}
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( NS < 128 && OB && ( !OB->Sdoxlo ) && OB->Serial == BR->MembSN[i] )
 			{
-				byte Usage = OB->newMons->Usage;
+				unsigned char Usage = OB->newMons->Usage;
 				AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
 				if ( Usage == GaleraID )
 				{
@@ -4076,7 +4076,7 @@ word SearchEnemyToDestroy( Brigade* BR )
 		XC /= NS;
 		YC /= NS;
 		int MAXF = 1000000;//-1;
-		word BestID = 0xFFFF;
+		unsigned short BestID = 0xFFFF;
 		for ( int j = 0; j < NS; j++ )
 		{
 			int R = Norma( XI[j] - XC, YI[j] - YC );
@@ -4148,7 +4148,7 @@ word SearchEnemyToDestroy( Brigade* BR )
 void WaterAttackLink( OneObject* OBJ );
 int TryToBeatByShips( Brigade* BR )
 {
-	word ENEMY = SearchEnemyToDestroy( BR );
+	unsigned short ENEMY = SearchEnemyToDestroy( BR );
 	if ( ENEMY != 0xFFFF )
 	{
 		OneObject* EOB = Group[ENEMY];
@@ -4158,7 +4158,7 @@ int TryToBeatByShips( Brigade* BR )
 			BR->LastEnemySN = EOB->Serial;
 			for ( int i = 0; i < BR->NMemb; i++ )
 			{
-				word MID = BR->Memb[i];
+				unsigned short MID = BR->Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4195,7 +4195,7 @@ int TryToBeatByShips( Brigade* BR )
 			int NA = 0;
 			for ( int i = 0; i < BR->NMemb; i++ )
 			{
-				word MID = BR->Memb[i];
+				unsigned short MID = BR->Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4204,7 +4204,7 @@ int TryToBeatByShips( Brigade* BR )
 						bool DoAttack = false;
 						int R = Norma( OB->RealX - X0, OB->RealY - Y0 ) >> 4;
 						AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
-						byte Usage = OB->newMons->Usage;
+						unsigned char Usage = OB->newMons->Usage;
 						if ( Usage == GaleraID )
 						{
 							if ( R > ADC->AttackRadius1[1] + 64 && R < ADC->AttackRadius2[1] - 64 )DoAttack = true;
@@ -4227,7 +4227,7 @@ int TryToBeatByShips( Brigade* BR )
 	{
 		for ( int i = 0; i < BR->NMemb; i++ )
 		{
-			word MID = BR->Memb[i];
+			unsigned short MID = BR->Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -4268,8 +4268,8 @@ void LocalSendShipsLink( Brigade* BR )
 	for ( int i = 0; i < OR->NPos; i++ )
 	{
 		int i3 = i + i + i;
-		word ID = OR->Position[i3 + 2] & 0xFFFF;
-		word SN = DWORD( OR->Position[i3 + 2] ) >> 16;
+		unsigned short ID = OR->Position[i3 + 2] & 0xFFFF;
+		unsigned short SN = unsigned long( OR->Position[i3 + 2] ) >> 16;
 		OneObject* OB = Group[ID];
 		if ( OB && !OB->Sdoxlo )
 		{
@@ -4299,7 +4299,7 @@ void LocalSendShipsLink( Brigade* BR )
 };
 extern int RealLx;
 extern int RealLy;
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void ShowShipsDest( Brigade* BR )
 {
 	if ( BR->BOrder&&BR->BOrder->BLink == LocalSendShipsLink )
@@ -4318,7 +4318,7 @@ void ShowShipsDest( Brigade* BR )
 		};
 	};
 };
-void LocalSendShipsOld( Brigade* BR, int x, int y, byte Type )
+void LocalSendShipsOld( Brigade* BR, int x, int y, unsigned char Type )
 {
 	LSS_Order* OR = (LSS_Order*) BR->CreateOrder( Type, sizeof( LSS_Order ) - 120 + BR->NMemb * 12 );
 	OR->Size = sizeof( LSS_Order ) - 120 + BR->NMemb * 12;
@@ -4364,10 +4364,10 @@ pos1:
 	UNISORT.CreateByY( BR->Memb, BR->NMemb, true );
 	UNISORT.Sort();
 	int NU = UNISORT.NUids;
-	word Ids[200];
-	word IdPos[200];
+	unsigned short Ids[200];
+	unsigned short IdPos[200];
 	UNISORT.Copy( Ids );
-	word pxi[200];
+	unsigned short pxi[200];
 	int pxx[200];
 	int pxpos = 0;
 	for ( int yp = MinY; yp <= MaxY; yp++ )
@@ -4402,14 +4402,14 @@ pos1:
 		int i3 = i + i + i;
 		OR->Position[i3] = xx;
 		OR->Position[i3 + 1] = yy;
-		DWORD PP = Ids[i] + ( DWORD( OB->Serial ) << 16 );
+		unsigned long PP = Ids[i] + ( unsigned long( OB->Serial ) << 16 );
 		OR->Position[i3 + 2] = PP;
 	};
 	OR->NPos = pxpos;
 	OR->FirstTime = -1;
 	OR->BLink = &LocalSendShipsLink;
 };
-byte FormSize[55 * 3] =
+unsigned char FormSize[55 * 3] =
 { 1,1,2,//1
  2,1,3,//2
  3,1,4,//3
@@ -4467,17 +4467,17 @@ byte FormSize[55 * 3] =
  11,5,56 };//55
 int MTRLX;
 int MTRLY;
-byte* MTRPTR;
-inline byte GetPX( int x, int y )
+unsigned char* MTRPTR;
+inline unsigned char GetPX( int x, int y )
 {
 	if ( x >= 0 && y >= 0 && x < MTRLX&&y < MTRLY )return MTRPTR[x + y*MTRLX];
 	else return 0;
 };
-inline void SetPX( int x, int y, byte Val )
+inline void SetPX( int x, int y, unsigned char Val )
 {
 	if ( x >= 0 && y >= 0 && x < MTRLX&&y < MTRLY )MTRPTR[x + y*MTRLX] = Val;
 };
-void LocalSendShips( Brigade* BR, int x, int y, byte Type )
+void LocalSendShips( Brigade* BR, int x, int y, unsigned char Type )
 {
 	//getting the direction
 	int xc = 0;
@@ -4486,7 +4486,7 @@ void LocalSendShips( Brigade* BR, int x, int y, byte Type )
 	int N = BR->NMemb;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		OneObject* OB = Group[MID];
 		if ( OB )
 		{
@@ -4509,9 +4509,9 @@ void LocalSendShips( Brigade* BR, int x, int y, byte Type )
 	dy = ( dy * 6 * 64 ) / Nr;
 	int fdx = -dy;
 	int fdy = dx;
-	byte Matrix[8 * 32];
+	unsigned char Matrix[8 * 32];
 	MTRPTR = Matrix;
-	//byte NInLine[16];
+	//unsigned char NInLine[16];
 	//int NSLines;
 	int NTot = Nc;
 	int NP, Nx, Ny;
@@ -4585,7 +4585,7 @@ void LocalSendShips( Brigade* BR, int x, int y, byte Type )
 
 	UNISORT.CreateByLine( BR->Memb, BR->NMemb, fdx, fdy );
 	UNISORT.Sort();
-	word Ids[100];
+	unsigned short Ids[100];
 	int upos = 0;
 	int x0 = x - ( ( fdx*Nx - dx*Ny ) >> 1 );
 	int y0 = y - ( ( fdy*Nx - dy*Ny ) >> 1 );
@@ -4615,7 +4615,7 @@ void LocalSendShips( Brigade* BR, int x, int y, byte Type )
 			for ( int j = 0; j < NN; j++ )
 			{
 				OR->Position[pos0 + j3 + 2] = Ids[upos + j];
-				word MID = Ids[upos + j];
+				unsigned short MID = Ids[upos + j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4633,11 +4633,11 @@ void LocalSendShips( Brigade* BR, int x, int y, byte Type )
 class Ship_Battle :public BrigadeOrder
 {
 public:
-	byte ComType;
-	word CurTop;
+	unsigned char ComType;
+	unsigned short CurTop;
 	int Params[4];
 };
-word GetNearestBrig( City* CT, word Top )
+unsigned short GetNearestBrig( City* CT, unsigned short Top )
 {
 	int D = 1000000;
 	int BRB = -1;
@@ -4672,7 +4672,7 @@ word GetNearestBrig( City* CT, word Top )
 	};
 	return BRB;
 };
-word GetNearestBrigToKillUnitsAndTowers( City* CT, word Top )
+unsigned short GetNearestBrigToKillUnitsAndTowers( City* CT, unsigned short Top )
 {
 	int D = 1000000;
 	int BRB = -1;
@@ -4707,7 +4707,7 @@ word GetNearestBrigToKillUnitsAndTowers( City* CT, word Top )
 	};
 	return BRB;
 };
-word GetNearestBrigToKillMines( City* CT, word Top )
+unsigned short GetNearestBrigToKillMines( City* CT, unsigned short Top )
 {
 	int D = 1000000;
 	int BRB = -1;
@@ -4742,7 +4742,7 @@ word GetNearestBrigToKillMines( City* CT, word Top )
 	};
 	return BRB;
 };
-word GetNearestBrigWithType( City* CT, word Top, byte Type )
+unsigned short GetNearestBrigWithType( City* CT, unsigned short Top, unsigned char Type )
 {
 	int D = 1000000;
 	int BRB = -1;
@@ -4798,7 +4798,7 @@ void MakeShipBattleLink( Brigade* BR )
 	int FinalTop = -1;
 	//test for connection
 	City* CT = BR->CT;
-	word* WDst = GTOP[1].LinksDist;
+	unsigned short* WDst = GTOP[1].LinksDist;
 	int NWA = GTOP[1].NAreas;
 	int XC = int( CT->CenterX ) << ( 7 + 4 );
 	int YC = int( CT->CenterY ) << ( 7 + 4 );
@@ -4867,10 +4867,10 @@ void MakeShipBattleLink( Brigade* BR )
 	int MyForce = 0;
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
-			word SN = BR->MembSN[i];
+			unsigned short SN = BR->MembSN[i];
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SN )MyForce += GetShipForce( OB->newMons->Usage );
 		};
@@ -4982,7 +4982,7 @@ void MakeShipBattleLink( Brigade* BR )
 		else OR->ComType = 0;
 	};
 	//attempt to erase human mines
-	word MIN = SearchMineToDestroy( BR );
+	unsigned short MIN = SearchMineToDestroy( BR );
 	if ( MIN == 0xFFFF && FinalTop == -1 && BR->Direction == 0 )
 	{
 		int BestTop = -1;
@@ -5060,7 +5060,7 @@ void MakeShipBattleLink( Brigade* BR )
 	}
 }
 
-word DetermineWaterTopology( Brigade* BR )
+unsigned short DetermineWaterTopology( Brigade* BR )
 {
 	int NTops = 0;
 	//int NInTop[64];
@@ -5070,7 +5070,7 @@ word DetermineWaterTopology( Brigade* BR )
 	int Nu = 0;
 	for ( int i = 0; i < BR->NMemb; i++ )
 	{
-		word MID = BR->Memb[i];
+		unsigned short MID = BR->Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5122,7 +5122,7 @@ word DetermineWaterTopology( Brigade* BR )
 };
 void MakeShipBattle( Brigade* BR )
 {
-	word Top = DetermineWaterTopology( BR );
+	unsigned short Top = DetermineWaterTopology( BR );
 	if ( Top == 0xFFFF )return;
 	Ship_Battle* OR = (Ship_Battle*) BR->CreateOrder( 0, sizeof Ship_Battle );
 	OR->BLink = &MakeShipBattleLink;
@@ -5161,7 +5161,7 @@ void City::UnRegisterWaterBrigade( int ID )
 CostPlace* COSTPL;
 int NCost;
 int MaxCost;
-extern byte* WaterDeep;
+extern unsigned char* WaterDeep;
 extern int WLX;
 
 void CreateCostPlaces()
@@ -5180,7 +5180,7 @@ void CreateCostPlaces()
 			int Z1 = WaterDeep[ofs + 1];
 			int Z2 = WaterDeep[ofs + WLX];
 			int Z3 = WaterDeep[ofs + WLX + 1];
-			byte x = 0;
+			unsigned char x = 0;
 			if ( Z0 > 128 )x |= 1; else x |= 2;
 			if ( Z1 > 128 )x |= 1; else x |= 2;
 			if ( Z2 > 128 )x |= 1; else x |= 2;
@@ -5235,7 +5235,7 @@ int GetWarInCell( int cell )
 	int NMon = MCount[cell];
 	if ( !NMon )return NULL;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	int NU = 0;
 	for ( int i = 0; i < NMon; i++ )
 	{
@@ -5259,7 +5259,7 @@ bool CheckUnitsNearPoint( int x, int y )
 	int NU = 0;
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-	byte* bpt = NPresence + stcell;
+	unsigned char* bpt = NPresence + stcell;
 	for ( int nx = 0; nx < rx2; nx++ )
 	{
 		for ( int ny = 0; ny < rx2; ny++ )
@@ -5290,7 +5290,7 @@ int GetTrInCell( int cell )
 	}
 
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -5306,14 +5306,14 @@ int GetTrInCell( int cell )
 	return 0xFFFF;
 }
 
-word CheckTransportNearPoint( int x, int y )
+unsigned short CheckTransportNearPoint( int x, int y )
 {
 	int cell = ( ( y >> 3 ) << VAL_SHFCX ) + ( x >> 3 );
 	int rx1 = 2;
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
 
-	byte* bpt = NPresence + stcell;
+	unsigned char* bpt = NPresence + stcell;
 
 	for ( int nx = 0; nx < rx2; nx++ )
 	{
@@ -5321,7 +5321,7 @@ word CheckTransportNearPoint( int x, int y )
 		{
 			if ( stcell >= 0 && stcell < VAL_MAXCIOFS )
 			{
-				word T = GetTrInCell( stcell );
+				unsigned short T = GetTrInCell( stcell );
 				if ( T )
 				{
 					return T;
@@ -5362,7 +5362,7 @@ void ClearCostPlaces()
 
 extern int RealLx;
 extern int RealLy;
-void DrawMetka( int x, int y, byte c )
+void DrawMetka( int x, int y, unsigned char c )
 {
 	x <<= 4;
 	y <<= 4;
@@ -5374,7 +5374,7 @@ void DrawMetka( int x, int y, byte c )
 		DrawLine( xx - 20, yy + 10, xx + 20, yy - 10, c );
 	};
 };
-void DrawNum( int x, int y, byte v )
+void DrawNum( int x, int y, unsigned char v )
 {
 	x <<= 4;
 	y <<= 4;
@@ -5395,8 +5395,8 @@ void ShowCostPlaces()
 class B_DiversionOrder :public BrigadeOrder
 {
 public:
-	word IDX[80];
-	word USN[80];
+	unsigned short IDX[80];
+	unsigned short USN[80];
 	int NU;
 	int MaxU;
 	int Phase;
@@ -5405,7 +5405,7 @@ public:
 	int CostPointIndex;
 	int StartTime;
 };
-int FindCostPoint( int x, int y, byte Isl )
+int FindCostPoint( int x, int y, unsigned char Isl )
 {
 	if ( !NCost )return -1;
 	int MinR = 100000;
@@ -5421,12 +5421,12 @@ int FindCostPoint( int x, int y, byte Isl )
 	};
 	return BestPL;
 };
-int FindCostPointEx( int x, int y, byte Mask )
+int FindCostPointEx( int x, int y, unsigned char Mask )
 {
 	if ( !NCost )return -1;
 	int MinR = 100000;
 	int BestPL = -1;
-	byte ISLSET[32];
+	unsigned char ISLSET[32];
 	memset( ISLSET, 0, 32 );
 	for ( int i = 0; i < 8; i++ )if ( !( NATIONS[i].NMask&Mask ) )
 	{
@@ -5507,7 +5507,7 @@ void MakeDiversionLink( Brigade* BR )
 							};
 						};
 						OneObject* UNI = NULL;
-						byte Unitype = 2;
+						unsigned char Unitype = 2;
 						if ( NAR > MaxInMy )
 						{
 							do
@@ -5812,7 +5812,7 @@ void CalculateFreeUnits( AI_Army* AIR );
 
 void SearchArmyLink( OneObject* OBJ )
 {
-	word ArmID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short ArmID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
 	bool OFC = OBJ->Ref.General->OFCR != NULL;
 	if ( ArmID == 0xFFFF )
 	{
@@ -5887,8 +5887,8 @@ void SearchArmyLink( OneObject* OBJ )
 		};
 		if ( ( OFC&&ARM->NFreeUnits / 36 > ARM->NCom ) || ( ( !OFC ) && ARM->NFreeUnits / 36 > ARM->NBar ) )
 		{
-			word* CID;
-			word* CSN;
+			unsigned short* CID;
+			unsigned short* CSN;
 			int CN;
 			if ( OFC )
 			{
@@ -5968,7 +5968,7 @@ void SearchArmyLink( OneObject* OBJ )
 			if ( OFC )
 			{
 				//need to check barabanschiks...
-				word Bar = 0xFFFF;
+				unsigned short Bar = 0xFFFF;
 				int bpos = -1;
 				for ( int i = 0; i < ARM->NBar; i++ )
 				{
@@ -5985,7 +5985,7 @@ void SearchArmyLink( OneObject* OBJ )
 				};
 				if ( Bar != 0xFFFF )
 				{
-					word FormUID = NATIONS[ARM->CT->NI].FormUnitID;
+					unsigned short FormUID = NATIONS[ARM->CT->NI].FormUnitID;
 					//now we are ready to create formation!
 					//1.Search the biggest brigade
 					int BID = -1;
@@ -5997,12 +5997,12 @@ void SearchArmyLink( OneObject* OBJ )
 						if ( !BR->WarType )
 						{
 							int Nu = BR->NMemb;
-							word* mem = BR->Memb;
-							word* msn = BR->MembSN;
+							unsigned short* mem = BR->Memb;
+							unsigned short* msn = BR->MembSN;
 							int NFU = 0;
 							for ( int j = 0; j < Nu; j++ )
 							{
-								word mid = mem[j];
+								unsigned short mid = mem[j];
 								if ( mid != 0xFFFF )
 								{
 									OneObject* OB = Group[mid];
@@ -6022,9 +6022,9 @@ void SearchArmyLink( OneObject* OBJ )
 						FBR->WarType = 0xFF;
 						//let us exclude other members
 						int N = FBR->NMemb;
-						word* mem = FBR->Memb;
-						word* msn = FBR->MembSN;
-						word TrueMem[38];
+						unsigned short* mem = FBR->Memb;
+						unsigned short* msn = FBR->MembSN;
+						unsigned short TrueMem[38];
 						int  NTrue = 0;
 						City* CT = ARM->CT;
 						int id = CT->GetFreeBrigade();
@@ -6037,7 +6037,7 @@ void SearchArmyLink( OneObject* OBJ )
 						OTB->Enabled = 1;
 						for ( int i = 0; i < N; i++ )
 						{
-							word mid = mem[i];
+							unsigned short mid = mem[i];
 							if ( mid != 0xFFFF )
 							{
 								OneObject* OB = Group[mid];
@@ -6071,12 +6071,12 @@ void SearchArmyLink( OneObject* OBJ )
 								Brigade* MBR = ARM->ExBrigs[i].Brig;
 								if ( !MBR->WarType )
 								{
-									word* mem = MBR->Memb;
-									word* msn = MBR->MembSN;
+									unsigned short* mem = MBR->Memb;
+									unsigned short* msn = MBR->MembSN;
 									int nm = MBR->NMemb;
 									for ( int j = 0; j < nm&&Need; j++ )
 									{
-										word mid = mem[j];
+										unsigned short mid = mem[j];
 										if ( mid != 0xFFFF )
 										{
 											OneObject* OB = Group[mid];
@@ -6095,7 +6095,7 @@ void SearchArmyLink( OneObject* OBJ )
 						NTrue = 0;
 						for ( int i = 0; i < FBR->NMemb; i++ )
 						{
-							word mid = FBR->Memb[i];
+							unsigned short mid = FBR->Memb[i];
 							if ( mid != 0xFFFF )
 							{
 								OneObject* OB = Group[mid];
@@ -6109,8 +6109,8 @@ void SearchArmyLink( OneObject* OBJ )
 						TrueMem[0] = OBJ->Index;
 						TrueMem[1] = Bar;
 						NTrue += 2;
-						FBR->Memb = (word*) realloc( FBR->Memb, 38 * 2 );
-						FBR->MembSN = (word*) realloc( FBR->MembSN, 38 * 2 );
+						FBR->Memb = (unsigned short*) realloc( FBR->Memb, 38 * 2 );
+						FBR->MembSN = (unsigned short*) realloc( FBR->MembSN, 38 * 2 );
 						memset( FBR->Memb, 0xFF, 38 * 2 );
 						memset( FBR->MembSN, 0xFF, 38 * 2 );
 						FBR->NMemb = 38;
@@ -6122,7 +6122,8 @@ void SearchArmyLink( OneObject* OBJ )
 						};
 						if ( cidx == -1 )
 						{
-							MessageBox( NULL, "Could not find fomation: #SQUARE36", "ERROR!", 0 );
+							SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "ERROR!", "Could not find fomation: #SQUARE36", nullptr);
+							//MessageBox( NULL, "Could not find fomation: #SQUARE36", "ERROR!", 0 );
 							//assert(cidx);
 						};
 						OrderDescription* ODS = ElementaryOrders + cidx;
@@ -6222,18 +6223,18 @@ void SearchArmy( OneObject* OB )
 void CalculateFreeUnits( AI_Army* AIR )
 {
 	AIR->NFreeUnits = 0;
-	word FormUID = NATIONS[AIR->CT->NI].FormUnitID;
+	unsigned short FormUID = NATIONS[AIR->CT->NI].FormUnitID;
 	for ( int i = 0; i < AIR->NExBrigs; i++ )
 	{
 		Brigade* BR = AIR->ExBrigs[i].Brig;
 		if ( ( !BR->WarType ) && BR->NMemb )
 		{
-			word* Mem = BR->Memb;
-			word* SN = BR->MembSN;
+			unsigned short* Mem = BR->Memb;
+			unsigned short* SN = BR->MembSN;
 			int N = BR->NMemb;
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = Mem[i];
+				unsigned short MID = Mem[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -6273,7 +6274,7 @@ void CalculateFreeUnits( AI_Army* AIR )
 		{
 			if ( i < AIR->NCom - 1 )
 			{
-				word NCp = ( AIR->NCom - i - 1 ) << 1;
+				unsigned short NCp = ( AIR->NCom - i - 1 ) << 1;
 				memcpy( AIR->ComID + i, AIR->ComID + i + 1, NCp );
 				memcpy( AIR->ComSN + i, AIR->ComSN + i + 1, NCp );
 			};
@@ -6307,7 +6308,7 @@ void CalculateFreeUnits( AI_Army* AIR )
 		{
 			if ( i < AIR->NBar - 1 )
 			{
-				word NCp = ( AIR->NBar - i - 1 ) << 1;
+				unsigned short NCp = ( AIR->NBar - i - 1 ) << 1;
 				memcpy( AIR->BarID + i, AIR->BarID + i + 1, NCp );
 				memcpy( AIR->BarSN + i, AIR->BarSN + i + 1, NCp );
 			};

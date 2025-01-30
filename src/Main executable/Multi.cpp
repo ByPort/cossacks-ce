@@ -1,4 +1,5 @@
 //MULTIPLAYER ORGANIZATION
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -23,6 +24,7 @@
 
 #include "Fonts.h"
 #include "DrawForm.h"
+#include "Multi.h"
 
 #pragma pack(1)
 #include "IR.h"
@@ -36,36 +38,35 @@ extern const int kSystemMessageDisplayTime;
 
 extern int exFMode;
 
-void Rept( LPSTR sz, ... );
-extern DWORD RealTime;
+extern unsigned long RealTime;
 
-bool AddUnitsToCash( byte NI, word ID );
+bool AddUnitsToCash( unsigned char NI, unsigned short ID );
 void ClearUniCash();
-void GetCorrectMoney( byte NI, int* MONEY );
+void GetCorrectMoney( unsigned char NI, int* MONEY );
 
 extern int tmtmt;
-extern word rpos;
+extern unsigned short rpos;
 void LoadSaveFile();
 bool CreateGates( OneObject* OB );
-void CorrectBrigadesSelection( byte NT );
-void ImCorrectBrigadesSelection( byte NT );
-byte* NPresence;
+void CorrectBrigadesSelection( unsigned char NT );
+void ImCorrectBrigadesSelection( unsigned char NT );
+unsigned char* NPresence;
 Nation NATIONS[8];
-byte MYNATION;
-word* Selm[8];
-word* SerN[8];
-word* ImSelm[8];
-word* ImSerN[8];
-word NSL[8];
-word ImNSL[8];
-word SelCenter[8];
+unsigned char MYNATION;
+unsigned short* Selm[8];
+unsigned short* SerN[8];
+unsigned short* ImSelm[8];
+unsigned short* ImSerN[8];
+unsigned short NSL[8];
+unsigned short ImNSL[8];
+unsigned short SelCenter[8];
 bool CmdDone[ULIMIT];
 typedef  bool CHOBJ( OneObject* OB, int N );
-void CreateUnit( Nation* NT, byte x, byte y, word ID );
+void CreateUnit( Nation* NT, unsigned char x, unsigned char y, unsigned short ID );
 
 //Execute buffer 
-DWORD Signatur[2049];
-byte ExBuf[8192];
+unsigned long Signatur[2049];
+unsigned char ExBuf[8192];
 int EBPos;
 void InitEBuf()
 {
@@ -74,7 +75,7 @@ void InitEBuf()
 
 extern bool NOPAUSE;
 //[1][ni][x][y][x1][y1]
-void CmdCreateSelection( byte NI, byte x, byte y, byte x1, byte y1 )
+void CmdCreateSelection( unsigned char NI, unsigned char x, unsigned char y, unsigned char x1, unsigned char y1 )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -91,11 +92,11 @@ extern bool GoAndAttackMode;
 void AddXYPulse( int x, int y );
 extern int curptr;
 //[2][ni][x][y]
-void CmdSendToXY( byte NI, int x, int y, short Dir )
+void CmdSendToXY( unsigned char NI, int x, int y, short Dir )
 {
 	//if(!NOPAUSE)return;//!!!
 
-	byte Type = 0;
+	unsigned char Type = 0;
 	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Type = 2;
 	if ( GoAndAttackMode )Type |= 8;
 	if ( GetKeyState( VK_CONTROL ) & 0x8000 )Type |= 16;
@@ -112,15 +113,15 @@ void CmdSendToXY( byte NI, int x, int y, short Dir )
 }
 
 //[3][ni][w:ObjID]
-void CmdAttackObj( byte NI, word ObjID, short DIR )
+void CmdAttackObj( unsigned char NI, unsigned short ObjID, short DIR )
 {
 	//if(!NOPAUSE)return;//!!!
 
-	byte Type = 0;
+	unsigned char Type = 0;
 	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Type = 2;
 	ExBuf[EBPos] = 3;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ObjID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ObjID;
 	ExBuf[EBPos + 4] = Type;
 	*(short*) ( &ExBuf[EBPos + 5] ) = DIR;
 	EBPos += 7;
@@ -128,19 +129,19 @@ void CmdAttackObj( byte NI, word ObjID, short DIR )
 }
 
 //[4][ni][x][y][w:Type]
-void CmdCreateTerrain( byte NI, byte x, byte y, word Type )
+void CmdCreateTerrain( unsigned char NI, unsigned char x, unsigned char y, unsigned short Type )
 {
 
 	ExBuf[EBPos] = 4;
 	ExBuf[EBPos + 1] = NatRefTBL[NI];
 	ExBuf[EBPos + 2] = x;
 	ExBuf[EBPos + 3] = y;
-	*(word*) ( &ExBuf[EBPos + 4] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 4] ) = Type;
 	EBPos += 6;
 
 };
 //[5][ni][x:32][y:32][Type:16][OrderType]
-void CmdCreateBuilding( byte NI, int x, int y, word Type )
+void CmdCreateBuilding( unsigned char NI, int x, int y, unsigned short Type )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -148,7 +149,7 @@ void CmdCreateBuilding( byte NI, int x, int y, word Type )
 	ExBuf[EBPos + 1] = NI;
 	*(int*) ( &ExBuf[EBPos + 2] ) = x;
 	*(int*) ( &ExBuf[EBPos + 6] ) = y;
-	*(word*) ( &ExBuf[EBPos + 10] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 10] ) = Type;
 	if ( GetKeyState( VK_SHIFT ) & 0x8000 )ExBuf[EBPos + 12] = 2;
 	else ExBuf[EBPos + 12] = 0;
 	EBPos += 13;
@@ -157,7 +158,7 @@ void CmdCreateBuilding( byte NI, int x, int y, word Type )
 //[6][ni][w:ObjID]
 int PrevProdPos = -1;
 int PrevProdUnit = 0;
-void CmdProduceObj( byte NI, word Type )
+void CmdProduceObj( unsigned char NI, unsigned short Type )
 {
 	//if(!NOPAUSE)return;//!!!
 	if ( GetKeyState( VK_CONTROL ) & 0x8000 )Type |= 8192;
@@ -175,12 +176,12 @@ void CmdProduceObj( byte NI, word Type )
 	ExBuf[EBPos + 2] = 1;
 	PrevProdPos = EBPos + 2;
 	PrevProdUnit = Type;
-	*(word*) ( &ExBuf[EBPos + 3] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 3] ) = Type;
 	EBPos += 5;
 
 };
 //[7][ni][index]
-void CmdMemSelection( byte NI, byte Index )
+void CmdMemSelection( unsigned char NI, unsigned char Index )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -191,11 +192,11 @@ void CmdMemSelection( byte NI, byte Index )
 
 };
 //[8][ni][Index]
-void CmdRememSelection( byte NI, byte Index )
+void CmdRememSelection( unsigned char NI, unsigned char Index )
 {
 	//if(!NOPAUSE)return;//!!!
 
-	byte SHIFT = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+	unsigned char SHIFT = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
 	bool shift = 0 != SHIFT;
 	SelSet[NI * 10 + ( Index & 127 )].ImSelectMembers( NI, shift );
 	ImCorrectBrigadesSelection( NI );
@@ -207,11 +208,11 @@ void CmdRememSelection( byte NI, byte Index )
 }
 
 //[9][ni][ObjID:16][OT]
-void CmdBuildObj( byte NI, word ObjID )
+void CmdBuildObj( unsigned char NI, unsigned short ObjID )
 {
 	ExBuf[EBPos] = 9;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ObjID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ObjID;
 	if ( GetKeyState( VK_SHIFT ) & 0x8000 )
 	{
 		ExBuf[EBPos + 4] = 2;
@@ -223,43 +224,43 @@ void CmdBuildObj( byte NI, word ObjID )
 	EBPos += 5;
 }
 
-void CmdAddBuildObj( byte NI, word ObjID )
+void CmdAddBuildObj( unsigned char NI, unsigned short ObjID )
 {
 	ExBuf[EBPos] = 9;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ObjID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ObjID;
 	ExBuf[EBPos + 4] = 1;
 	EBPos += 5;
 
 }
 
 //[0B][NI][xx:16][yy:16][OrdType]
-void CmdRepairWall( byte NI, short xx, short yy )
+void CmdRepairWall( unsigned char NI, short xx, short yy )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 0xB;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = xx;
-	*(word*) ( &ExBuf[EBPos + 4] ) = yy;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = xx;
+	*(unsigned short*) ( &ExBuf[EBPos + 4] ) = yy;
 	if ( GetKeyState( VK_SHIFT ) & 0x8000 )ExBuf[EBPos + 6] = 2;
 	else ExBuf[EBPos + 6] = 0;
 	EBPos += 7;
 
 };
 //[0C][NI][LINK INDEX:16]
-void CmdDamageWall( byte NI, word LIN )
+void CmdDamageWall( unsigned char NI, unsigned short LIN )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 0xC;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = LIN;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = LIN;
 	EBPos += 4;
 
 };
 //[0D][NI][x][y][ResID]
-void CmdTakeRes( byte NI, int x, int y, byte ResID )
+void CmdTakeRes( unsigned char NI, int x, int y, unsigned char ResID )
 {
 	ExBuf[EBPos] = 0xD;
 	ExBuf[EBPos + 1] = NI;
@@ -270,25 +271,25 @@ void CmdTakeRes( byte NI, int x, int y, byte ResID )
 }
 
 //[0E][NI][UpgradeIndex:16]
-void CmdPerformUpgrade( byte NI, word UI )
+void CmdPerformUpgrade( unsigned char NI, unsigned short UI )
 {
 	ExBuf[EBPos] = 0xE;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = UI;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = UI;
 	EBPos += 4;
 }
 
 //[0F][NI][OID:16]
-void CmdGetOil( byte NI, word UI )
+void CmdGetOil( unsigned char NI, unsigned short UI )
 {
 	ExBuf[EBPos] = 0xF;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = UI;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = UI;
 	EBPos += 4;
 }
 
 //[10][NI][x][y][x1][y1][Kind]
-void CmdCreateKindSelection( byte NI, byte x, byte y, byte x1, byte y1, byte Kind )
+void CmdCreateKindSelection( unsigned char NI, unsigned char x, unsigned char y, unsigned char x1, unsigned char y1, unsigned char Kind )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -303,7 +304,7 @@ void CmdCreateKindSelection( byte NI, byte x, byte y, byte x1, byte y1, byte Kin
 
 };
 //[11][NI][x][y][x1][y1][Type]
-void CmdCreateTypeSelection( byte NI, byte x, byte y, byte x1, byte y1, word Type )
+void CmdCreateTypeSelection( unsigned char NI, unsigned char x, unsigned char y, unsigned char x1, unsigned char y1, unsigned short Type )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -313,11 +314,11 @@ void CmdCreateTypeSelection( byte NI, byte x, byte y, byte x1, byte y1, word Typ
 	ExBuf[EBPos + 3] = y;
 	ExBuf[EBPos + 4] = x1;
 	ExBuf[EBPos + 5] = y1;
-	*(word*) ( &ExBuf[EBPos + 6] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 6] ) = Type;
 	EBPos += 8;
 
 };
-void CreateGoodSelection( byte NI, word xx, word yy, word xx1, word yy1, CHOBJ* FN, int NN, bool Addon );
+void CreateGoodSelection( unsigned char NI, unsigned short xx, unsigned short yy, unsigned short xx1, unsigned short yy1, CHOBJ* FN, int NN, bool Addon );
 bool FnKind( OneObject* OB, int N )
 {
 	return ( OB->Kind == N );
@@ -327,7 +328,7 @@ bool FnType( OneObject* OB, int N )
 	return ( OB->NIndex == N );
 };
 //[12][ni][x:16][y:16][x1:16][y1:16]
-void CmdCreateGoodSelection( byte NI, word x, word y, word x1, word y1 )
+void CmdCreateGoodSelection( unsigned char NI, unsigned short x, unsigned short y, unsigned short x1, unsigned short y1 )
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
@@ -335,7 +336,7 @@ void CmdCreateGoodSelection( byte NI, word x, word y, word x1, word y1 )
 	CreateGoodSelection( NI, x, y, x1, y1, nullptr, 0, Addon );
 };
 //[13][NI][x][y][x1][y1][Kind]
-void CmdCreateGoodKindSelection( byte NI, word x, word y, word x1, word y1, byte Kind )
+void CmdCreateGoodKindSelection( unsigned char NI, unsigned short x, unsigned short y, unsigned short x1, unsigned short y1, unsigned char Kind )
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
@@ -343,7 +344,7 @@ void CmdCreateGoodKindSelection( byte NI, word x, word y, word x1, word y1, byte
 	CreateGoodSelection( NI, x, y, x1, y1, &FnKind, Kind, Addon );
 };
 //[14][NI][x][y][x1][y1][Type]
-void CmdCreateGoodTypeSelection( byte NI, word x, word y, word x1, word y1, word Type )
+void CmdCreateGoodTypeSelection( unsigned char NI, unsigned short x, unsigned short y, unsigned short x1, unsigned short y1, unsigned short Type )
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
@@ -351,7 +352,7 @@ void CmdCreateGoodTypeSelection( byte NI, word x, word y, word x1, word y1, word
 	CreateGoodSelection( NI, x, y, x1, y1, &FnType, Type, Addon );
 };
 //[15][NI][x][y]
-void CmdSetDst( byte NI, int x, int y )
+void CmdSetDst( unsigned char NI, int x, int y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -363,7 +364,7 @@ void CmdSetDst( byte NI, int x, int y )
 
 };
 //[16][NI][x][y]
-void CmdSendToPoint( byte NI, byte x, byte y )
+void CmdSendToPoint( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -375,7 +376,7 @@ void CmdSendToPoint( byte NI, byte x, byte y )
 
 };
 //[17][ni][x][y]
-void CmdAttackToXY( byte NI, byte x, byte y )
+void CmdAttackToXY( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -387,7 +388,7 @@ void CmdAttackToXY( byte NI, byte x, byte y )
 
 };
 //[18][ni]
-void CmdStop( byte NI )
+void CmdStop( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -397,7 +398,7 @@ void CmdStop( byte NI )
 
 };
 //[19][ni]
-void CmdStandGround( byte NI )
+void CmdStandGround( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -407,7 +408,7 @@ void CmdStandGround( byte NI )
 
 };
 //[1A][ni][x][y]
-void CmdPatrol( byte NI, int x, int y )
+void CmdPatrol( unsigned char NI, int x, int y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -419,7 +420,7 @@ void CmdPatrol( byte NI, int x, int y )
 
 };
 //[1B][ni][x][y]
-void CmdRepair( byte NI, byte x, byte y )
+void CmdRepair( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -431,7 +432,7 @@ void CmdRepair( byte NI, byte x, byte y )
 
 };
 //[1C][ni][x][y]
-void CmdGetResource( byte NI, byte x, byte y )
+void CmdGetResource( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -446,18 +447,18 @@ void CmdGetResource( byte NI, byte x, byte y )
 //[1E][ni][ID:16][kind]
 
 //[1F][ni][ID:16]
-void CmdSendToTransport( byte NI, word ID )
+void CmdSendToTransport( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 31;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 };
 //[20)][ni][x][y]
-void CmdUnload( byte NI, byte x, byte y )
+void CmdUnload( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -469,7 +470,7 @@ void CmdUnload( byte NI, byte x, byte y )
 
 };
 //[21][ni]
-void CmdDie( byte NI )
+void CmdDie( unsigned char NI )
 {//Called each time 'Del' is pressed
 	//if(!NOPAUSE)return;//!!!
 
@@ -479,7 +480,7 @@ void CmdDie( byte NI )
 
 };
 //[22][ni][x][y]
-void CmdContinueAttackPoint( byte NI, byte x, byte y )
+void CmdContinueAttackPoint( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -491,7 +492,7 @@ void CmdContinueAttackPoint( byte NI, byte x, byte y )
 
 };
 //[23][ni][x][y]
-void CmdContinueAttackWall( byte NI, byte x, byte y )
+void CmdContinueAttackWall( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -503,7 +504,7 @@ void CmdContinueAttackWall( byte NI, byte x, byte y )
 
 };
 //[24][ni]
-void CmdSitDown( byte NI )
+void CmdSitDown( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -513,7 +514,7 @@ void CmdSitDown( byte NI )
 
 };
 //[25][ni][x][y]
-void CmdNucAtt( byte NI, byte x, byte y )
+void CmdNucAtt( unsigned char NI, unsigned char x, unsigned char y )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -526,16 +527,16 @@ void CmdNucAtt( byte NI, byte x, byte y )
 };
 
 //[26][ni][w:ObjID]
-void CmdUnProduceObj( byte NI, word Type )
+void CmdUnProduceObj( unsigned char NI, unsigned short Type )
 {
 	ExBuf[EBPos] = 38;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = Type;
 	EBPos += 4;
 }
 
 //[27][ni][w:ObjID]
-void CmdSetRprState( byte NI, byte State )
+void CmdSetRprState( unsigned char NI, unsigned char State )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -547,59 +548,59 @@ void CmdSetRprState( byte NI, byte State )
 };
 char LASTSAVEFILE[64] = "";
 //[28][ni][ID:32][Length:8][Name...]
-void CmdSaveNetworkGame( byte NI, int ID, char* Name )
+void CmdSaveNetworkGame( unsigned char NI, int ID, char* Name )
 {
 
 	ExBuf[EBPos] = 40;
 	ExBuf[EBPos + 1] = NI;
 	*(int*) ( &ExBuf[EBPos + 2] ) = ID;
-	byte Len = (byte) strlen( Name );
+	unsigned char Len = (unsigned char) strlen( Name );
 	ExBuf[EBPos + 6] = Len;
 	strcpy( (char*) ( &ExBuf[EBPos + 7] ), Name );
 	EBPos += 7 + Len;
 
 };
 //[29][ni][ID:32][Length:8][Name...]
-void CmdLoadNetworkGame( byte NI, int ID, char* Name )
+void CmdLoadNetworkGame( unsigned char NI, int ID, char* Name )
 {
 
 	ExBuf[EBPos] = 41;
 	ExBuf[EBPos + 1] = NI;
 	*(int*) ( &ExBuf[EBPos + 2] ) = ID;
-	byte Len = (byte) strlen( Name );
+	unsigned char Len = (unsigned char) strlen( Name );
 	ExBuf[EBPos + 6] = Len;
 	strcpy( (char*) ( &ExBuf[EBPos + 7] ), Name );
 	EBPos += 7 + Len;
 
 };
 //[2A][ni][ID]
-void ImChooseUnSelectType( byte NI, word ID );
-void ImChooseSelectType( byte NI, word ID );
-void CmdChooseSelType( byte NI, word ID )
+void ImChooseUnSelectType( unsigned char NI, unsigned short ID );
+void ImChooseSelectType( unsigned char NI, unsigned short ID );
+void CmdChooseSelType( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ImChooseSelectType( NI, ID );
 	ExBuf[EBPos] = 42;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 };
 //[2B][ni][ID]
-void CmdChooseUnSelType( byte NI, word ID )
+void CmdChooseUnSelType( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ImChooseUnSelectType( NI, ID );
 	ExBuf[EBPos] = 43;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 };
 //[2C][NI][x:16][y:16][ID:16]
-void CmdCreateNewTerr( byte NI, int x, int y, word ID )
+void CmdCreateNewTerr( unsigned char NI, int x, int y, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -607,43 +608,43 @@ void CmdCreateNewTerr( byte NI, int x, int y, word ID )
 	ExBuf[EBPos + 1] = NatRefTBL[NI];
 	*(int*) ( &ExBuf[EBPos + 2] ) = x;
 	*(int*) ( &ExBuf[EBPos + 6] ) = y;
-	*(word*) ( &ExBuf[EBPos + 10] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 10] ) = ID;
 	EBPos += 12;
 
 };
 //[2D][NI][ID:16]
-void CmdGoToMine( byte NI, word ID )
+void CmdGoToMine( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 45;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 };
 //[2E][NI][Type:16]
-void CmdLeaveMine( byte NI, word Type )
+void CmdLeaveMine( unsigned char NI, unsigned short Type )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 46;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = Type;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = Type;
 	EBPos += 4;
 
 };
-void CmdGoToTransport( byte NI, word ID )
+void CmdGoToTransport( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ExBuf[EBPos] = 48;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 };
-void CmdCreateGates( byte NI )
+void CmdCreateGates( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -652,7 +653,7 @@ void CmdCreateGates( byte NI )
 	EBPos += 2;
 
 };
-void CmdOpenGates( byte NI )
+void CmdOpenGates( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -662,7 +663,7 @@ void CmdOpenGates( byte NI )
 
 }
 
-void CmdCloseGates( byte NI )
+void CmdCloseGates( unsigned char NI )
 {
 	ExBuf[EBPos] = 51;
 	ExBuf[EBPos + 1] = NI;
@@ -672,16 +673,16 @@ void CmdCloseGates( byte NI )
 
 extern WallCluster TMPCluster;
 
-void CmdCreateWall( byte NI )
+void CmdCreateWall( unsigned char NI )
 {
 	ExBuf[EBPos] = 47;
 	TMPCluster.NI = NI;
-	EBPos += 1 + TMPCluster.CreateData( (word*) ( &ExBuf[EBPos + 1] ), 0 );
+	EBPos += 1 + TMPCluster.CreateData( (unsigned short*) ( &ExBuf[EBPos + 1] ), 0 );
 }
 
-void ImSelectAllBuildings( byte NI );
+void ImSelectAllBuildings( unsigned char NI );
 
-void CmdSelectBuildings( byte NI )
+void CmdSelectBuildings( unsigned char NI )
 {
 	ImSelectAllBuildings( NI );
 	ExBuf[EBPos] = 52;
@@ -690,35 +691,35 @@ void CmdSelectBuildings( byte NI )
 
 }
 
-void ImUnSelectBrig( byte NI, word ID );
+void ImUnSelectBrig( unsigned char NI, unsigned short ID );
 
-void ImSelectBrig( byte NI, word ID );
+void ImSelectBrig( unsigned char NI, unsigned short ID );
 
-void CmdChooseSelBrig( byte NI, word ID )
+void CmdChooseSelBrig( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ImSelectBrig( NI, ID );
 	ExBuf[EBPos] = 53;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 }
 
-void CmdChooseUnSelBrig( byte NI, word ID )
+void CmdChooseUnSelBrig( unsigned char NI, unsigned short ID )
 {
 	//if(!NOPAUSE)return;//!!!
 
 	ImUnSelectBrig( NI, ID );
 	ExBuf[EBPos] = 54;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = ID;
 	EBPos += 4;
 
 }
 
-void CmdErseBrigs( byte NI )
+void CmdErseBrigs( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -728,7 +729,7 @@ void CmdErseBrigs( byte NI )
 
 }
 
-void CmdMakeStandGround( byte NI )
+void CmdMakeStandGround( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -738,7 +739,7 @@ void CmdMakeStandGround( byte NI )
 
 }
 
-void CmdCancelStandGround( byte NI )
+void CmdCancelStandGround( unsigned char NI )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -748,7 +749,7 @@ void CmdCancelStandGround( byte NI )
 
 }
 
-void CmdCrBig( byte NI, int i )
+void CmdCrBig( unsigned char NI, int i )
 {
 	//if(!NOPAUSE)return;//!!!
 
@@ -761,7 +762,7 @@ void CmdCrBig( byte NI, int i )
 		int N = ImNSL[NI];
 		for ( int j = 1; j < N; j++ )
 		{
-			word MID = ImSelm[NI][j];
+			unsigned short MID = ImSelm[NI][j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -775,21 +776,21 @@ void CmdCrBig( byte NI, int i )
 	}
 }
 
-void ImSelBrigade( byte NI, byte Type, int ID );
+void ImSelBrigade( unsigned char NI, unsigned char Type, int ID );
 
 //Place unit selection order in ExBuf
-void CmdSelBrig( byte NI, byte Type, word ID )
+void CmdSelBrig( unsigned char NI, unsigned char Type, unsigned short ID )
 {
 	ImSelBrigade( NI, Type, ID );
 	ExBuf[EBPos] = 59;
 	ExBuf[EBPos + 1] = NI;
 	ExBuf[EBPos + 2] = Type;
-	*(word*) ( &ExBuf[EBPos + 3] ) = ID;
+	*(unsigned short*) ( &ExBuf[EBPos + 3] ) = ID;
 	EBPos += 5;
 }
 
 //Adds given market exchange order to execute buffer
-void CmdTorg( byte NI, byte SellRes, byte BuyRes, int SellAmount )
+void CmdTorg( unsigned char NI, unsigned char SellRes, unsigned char BuyRes, int SellAmount )
 {
 	ExBuf[EBPos] = 60;
 	ExBuf[EBPos + 1] = NI;
@@ -799,15 +800,15 @@ void CmdTorg( byte NI, byte SellRes, byte BuyRes, int SellAmount )
 	EBPos += 8;
 }
 
-void CmdFieldBar( byte NI, word n )
+void CmdFieldBar( unsigned char NI, unsigned short n )
 {
 	ExBuf[EBPos] = 61;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = n;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = n;
 	EBPos += 4;
 }
 
-void CmdSetSrVictim( byte NI, byte val )
+void CmdSetSrVictim( unsigned char NI, unsigned char val )
 {
 	ExBuf[EBPos] = 62;
 	ExBuf[EBPos + 1] = NI;
@@ -815,32 +816,32 @@ void CmdSetSrVictim( byte NI, byte val )
 	EBPos += 3;
 }
 
-void CmdStopUpgrade( byte NI )
+void CmdStopUpgrade( unsigned char NI )
 {
 	ExBuf[EBPos] = 63;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void CmdUnloadAll( byte NI )
+void CmdUnloadAll( unsigned char NI )
 {
 	ExBuf[EBPos] = 64;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void CmdMakeReformation( byte NI, word BrigadeID, byte FormType )
+void CmdMakeReformation( unsigned char NI, unsigned short BrigadeID, unsigned char FormType )
 {
 	ExBuf[EBPos] = 65;
 	ExBuf[EBPos + 1] = NI;
-	*(word*) ( &ExBuf[EBPos + 2] ) = BrigadeID;
+	*(unsigned short*) ( &ExBuf[EBPos + 2] ) = BrigadeID;
 	ExBuf[EBPos + 4] = FormType;
 	EBPos += 5;
 }
 
-void ImSelectIdlePeasants( byte NI );
+void ImSelectIdlePeasants( unsigned char NI );
 
-void CmdSelectIdlePeasants( byte NI )
+void CmdSelectIdlePeasants( unsigned char NI )
 {
 	ImSelectIdlePeasants( NI );
 	ExBuf[EBPos] = 66;
@@ -848,9 +849,9 @@ void CmdSelectIdlePeasants( byte NI )
 	EBPos += 2;
 }
 
-void ImSelectIdleMines( byte NI );
+void ImSelectIdleMines( unsigned char NI );
 
-void CmdSelectIdleMines( byte NI )
+void CmdSelectIdleMines( unsigned char NI )
 {
 	ImSelectIdleMines( NI );
 	ExBuf[EBPos] = 67;
@@ -865,31 +866,31 @@ void CmdChangeSpeed()
 	EBPos += 2;
 }
 
-void CmdSetSpeed( byte Speed )
+void CmdSetSpeed( unsigned char Speed )
 {
 	ExBuf[EBPos] = 69;
 	ExBuf[EBPos + 1] = Speed;
 	EBPos += 2;
 }
 
-void CmdPause( byte NI )
+void CmdPause( unsigned char NI )
 {
 	ExBuf[EBPos] = 70;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void CmdFreeSelected( byte NI )
+void CmdFreeSelected( unsigned char NI )
 {
 	ExBuf[EBPos] = 71;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void SelectAllUnits( byte NI, bool Re );
-void SelectAllShips( byte NI, bool Re );
+void SelectAllUnits( unsigned char NI, bool Re );
+void SelectAllShips( unsigned char NI, bool Re );
 
-void CmdSelAllUnits( byte NI )
+void CmdSelAllUnits( unsigned char NI )
 {
 	SelectAllUnits( NI, 0 );
 	ExBuf[EBPos] = 72;
@@ -897,7 +898,7 @@ void CmdSelAllUnits( byte NI )
 	EBPos += 2;
 }
 
-void CmdSelAllShips( byte NI )
+void CmdSelAllShips( unsigned char NI )
 {
 	SelectAllShips( NI, 0 );
 	ExBuf[EBPos] = 73;
@@ -905,16 +906,16 @@ void CmdSelAllShips( byte NI )
 	EBPos += 2;
 }
 
-extern word NPlayers;
+extern unsigned short NPlayers;
 
 // IChat library exports this
-__declspec( dllimport ) void SendVictoryState( int ID, byte State );
+__declspec( dllimport ) void SendVictoryState( int ID, unsigned char State );
 
 bool ProcessMessages();
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 
-void CmdEndGame( byte NI, byte state, byte cause )
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause )
 {
 	ExBuf[EBPos] = 92;
 	ExBuf[EBPos + 1] = NI;
@@ -936,14 +937,14 @@ void CmdEndGame( byte NI, byte state, byte cause )
 	}
 }
 
-void CmdMoney( byte NI )
+void CmdMoney( unsigned char NI )
 {
 	ExBuf[EBPos] = 75;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void DoCmdAddMoney( byte NI, int Value )
+void DoCmdAddMoney( unsigned char NI, int Value )
 {
 	int MAX = 0;
 	for ( int i = 0; i < 6; i++ )
@@ -962,7 +963,7 @@ void DoCmdAddMoney( byte NI, int Value )
 	}
 }
 
-void DoCmdMoney( byte NI )
+void DoCmdMoney( unsigned char NI )
 {
 	for ( int i = 0; i < 6; i++ )
 	{
@@ -970,7 +971,7 @@ void DoCmdMoney( byte NI )
 	}
 }
 
-void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount )
+void CmdGiveMoney( unsigned char SrcNI, unsigned char DstNI, unsigned char Res, int Amount )
 {
 	if ( Amount < 0 )
 	{
@@ -999,53 +1000,53 @@ void CmdSetMaxPingTime( int Time )
 {
 	ExBuf[EBPos] = 79;
 	ExBuf[EBPos + 1] = MyNation;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = Time;
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = Time;
 	EBPos += 4;
 }
 
-void CmdDoItSlow( word DT )
+void CmdDoItSlow( unsigned short DT )
 {
 	ExBuf[EBPos] = 80;
-	*( (word*) ( ExBuf + EBPos + 1 ) ) = DT;
+	*( (unsigned short*) ( ExBuf + EBPos + 1 ) ) = DT;
 	EBPos += 3;
 	ADDGR( 9, GetTickCount(), DT, 255 );
 	ADDGR( 9, GetTickCount(), 0, 254 );
 }
 
-void CmdDoItSlowEx( word DT, byte* Data, DWORD* sz )
+void CmdDoItSlowEx( unsigned short DT, unsigned char* Data, unsigned long* sz )
 {
 	Data[*sz] = 80;
-	*( (word*) ( Data + ( *sz ) + 1 ) ) = DT;
+	*( (unsigned short*) ( Data + ( *sz ) + 1 ) ) = DT;
 	( *sz ) += 3;
 	ADDGR( 9, GetTickCount(), DT, 255 );
 	ADDGR( 9, GetTickCount(), 0, 254 );
 }
 
-void CmdFillFormation( byte NI, word BrigadeID )
+void CmdFillFormation( unsigned char NI, unsigned short BrigadeID )
 {
 	ExBuf[EBPos] = 82;
 	ExBuf[EBPos + 1] = NI;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = BrigadeID;
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = BrigadeID;
 	EBPos += 4;
 }
 
-extern DWORD MyDPID;
+extern unsigned long MyDPID;
 void CmdOfferVoting()
 {
 
 	ExBuf[EBPos] = 83;
 	ExBuf[EBPos + 1] = 0;
-	*( (DWORD*) ( ExBuf + EBPos + 2 ) ) = MyDPID;
+	*( (unsigned long*) ( ExBuf + EBPos + 2 ) ) = MyDPID;
 	EBPos += 6;
 
 }
 
-void ComDoVote( DWORD DPID, byte result );
-void CmdVote( byte result )
+void ComDoVote( unsigned long DPID, unsigned char result );
+void CmdVote( unsigned char result )
 {
 	ExBuf[EBPos] = 84;
 	ExBuf[EBPos + 1] = 0;
-	*( (DWORD*) ( ExBuf + EBPos + 2 ) ) = MyDPID;
+	*( (unsigned long*) ( ExBuf + EBPos + 2 ) ) = MyDPID;
 	ExBuf[EBPos + 6] = result;
 	EBPos += 7;
 	ComDoVote( MyDPID, result );
@@ -1065,15 +1066,15 @@ void ComEndPT()
 	PeaceTimeLeft = 0;
 }
 
-void CmdSetGuardState( byte NI, word State )
+void CmdSetGuardState( unsigned char NI, unsigned short State )
 {
 	ExBuf[EBPos] = 86;
 	ExBuf[EBPos + 1] = NI;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = State;
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = State;
 	EBPos += 4;
 }
 
-void CmdAttackGround( byte NI, int x, int y )
+void CmdAttackGround( unsigned char NI, int x, int y )
 {
 	ExBuf[EBPos] = 87;
 	ExBuf[EBPos + 1] = NI;
@@ -1082,21 +1083,21 @@ void CmdAttackGround( byte NI, int x, int y )
 	EBPos += 10;
 }
 
-void CmdDoGroup( byte NI )
+void CmdDoGroup( unsigned char NI )
 {
 	ExBuf[EBPos] = 88;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void CmdUnGroup( byte NI )
+void CmdUnGroup( unsigned char NI )
 {
 	ExBuf[EBPos] = 89;
 	ExBuf[EBPos + 1] = NI;
 	EBPos += 2;
 }
 
-void CmdChangeNatRefTBL( byte* TBL )
+void CmdChangeNatRefTBL( unsigned char* TBL )
 {
 	ExBuf[EBPos] = 90;
 	ExBuf[EBPos + 1] = MyNation;
@@ -1111,11 +1112,11 @@ void CmdChangePeaceTimeStage( int Stage )
 	EBPos += 3;
 }
 
-void CmdAddMoney( byte NI, DWORD Value )
+void CmdAddMoney( unsigned char NI, unsigned long Value )
 {
 	ExBuf[EBPos] = 96;
 	ExBuf[EBPos + 1] = NI;
-	*( (DWORD*) ( ExBuf + EBPos + 2 ) ) = Value;
+	*( (unsigned long*) ( ExBuf + EBPos + 2 ) ) = Value;
 	EBPos += 6;
 }
 
@@ -1127,18 +1128,18 @@ void ComChangePeaceTimeStage( int Stage )
 	PeaceTimeStage = Stage;
 }
 
-void ChangeNatRefTBL( byte NI, byte* TBL )
+void ChangeNatRefTBL( unsigned char NI, unsigned char* TBL )
 {
 	int N = NSL[NI];
 	if ( N )
 	{
-		word* mon = Selm[NI];
-		word* msn = SerN[NI];
+		unsigned short* mon = Selm[NI];
+		unsigned short* msn = SerN[NI];
 		if ( mon )
 		{
 			for ( int i = 0; i < N; i++ )
 			{
-				word ID = mon[i];
+				unsigned short ID = mon[i];
 				if ( ID != 0xFFFF )
 				{
 					OneObject* OB = Group[ID];
@@ -1158,13 +1159,13 @@ void ChangeNatRefTBL( byte NI, byte* TBL )
 	N = ImNSL[NI];
 	if ( N )
 	{
-		word* mon = ImSelm[NI];
-		word* msn = ImSerN[NI];
+		unsigned short* mon = ImSelm[NI];
+		unsigned short* msn = ImSerN[NI];
 		if ( mon )
 		{
 			for ( int i = 0; i < N; i++ )
 			{
-				word ID = mon[i];
+				unsigned short ID = mon[i];
 				if ( ID != 0xFFFF )
 				{
 					OneObject* OB = Group[ID];
@@ -1184,16 +1185,16 @@ void ChangeNatRefTBL( byte NI, byte* TBL )
 	memcpy( NatRefTBL, TBL, 8 );
 }
 
-void ComAttackGround( byte NI, int x, int y )
+void ComAttackGround( unsigned char NI, int x, int y )
 {
 	x >>= 4;
 	y >>= 4;
 	int N = NSL[NI];
-	word* IDS = Selm[NI];
-	word* SNS = SerN[NI];
+	unsigned short* IDS = Selm[NI];
+	unsigned short* SNS = SerN[NI];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = IDS[i];
+		unsigned short MID = IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1205,11 +1206,11 @@ void ComAttackGround( byte NI, int x, int y )
 	}
 }
 
-void ComSetGuardState( byte NI, word State )
+void ComSetGuardState( unsigned char NI, unsigned short State )
 {
 	int N = NSL[NI];
-	word* IDS = Selm[NI];
-	word* SNS = SerN[NI];
+	unsigned short* IDS = Selm[NI];
+	unsigned short* SNS = SerN[NI];
 
 	if ( !( SNS && IDS ) )
 	{
@@ -1218,7 +1219,7 @@ void ComSetGuardState( byte NI, word State )
 
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = IDS[i];
+		unsigned short MID = IDS[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -1232,11 +1233,11 @@ void ComSetGuardState( byte NI, word State )
 
 bool VotingMode = 0;
 unsigned long LastVotingTime = 0;
-DWORD VotersList[8];
-DWORD VotingResult[8];
+unsigned long VotersList[8];
+unsigned long VotingResult[8];
 char VotingText[500];
 char* GetTextByID( char* ID );
-void ComOfferVoting( DWORD DPID )
+void ComOfferVoting( unsigned long DPID )
 {
 	LastVotingTime = GetTickCount();
 	VotingMode = 1;
@@ -1259,7 +1260,7 @@ void ComOfferVoting( DWORD DPID )
 		};
 	};
 };
-void ComDoVote( DWORD DPID, byte result )
+void ComDoVote( unsigned long DPID, unsigned char result )
 {
 	LastVotingTime = GetTickCount();
 	for ( int i = 0; i < NPlayers; i++ )if ( PINFO[i].PlayerID == DPID )
@@ -1272,7 +1273,7 @@ extern bool EnterChatMode;
 extern bool KeyPressed;
 extern int LastKey;
 void UnPress();
-extern byte SpecCmd;
+extern unsigned char SpecCmd;
 void ExplorerOpenRef( int Index, char* ref );
 void ProcessVotingKeys()
 {
@@ -1357,7 +1358,7 @@ void ProcessVotingView()
 				else
 				{
 					int DL;
-					LocL += GetRLCWidthUNICODE( FNT->RLC, (byte*) ( VotingText + i ), &DL );
+					LocL += GetRLCWidthUNICODE( FNT->RLC, (unsigned char*) ( VotingText + i ), &DL );
 					i += DL - 1;
 				};
 			};
@@ -1415,7 +1416,7 @@ void ProcessVotingView()
 };
 extern City CITY[8];
 void FillFormation( Brigade* BR );
-void DoFillFormation( byte NI, word BrigadeID )
+void DoFillFormation( unsigned char NI, unsigned short BrigadeID )
 {
 	Brigade* BR = CITY[NatRefTBL[NI]].Brigs + BrigadeID;
 	if ( BR->WarType )FillFormation( BR );
@@ -1423,7 +1424,7 @@ void DoFillFormation( byte NI, word BrigadeID )
 bool SlowMade = 0;
 extern int CurrentStepTime;
 extern int NeedCurrentTime;
-void DoItSlow( word DT )
+void DoItSlow( unsigned short DT )
 {
 	if ( !SlowMade )
 	{
@@ -1465,10 +1466,9 @@ void SETPING( int T )
 int TIMECHANGE[8] = { 0,0,0,0,0,0,0,0 };
 extern int AddTime;
 extern int NeedAddTime;
-extern word NPlayers;
-extern DWORD MyDPID;
+extern unsigned short NPlayers;
+extern unsigned long MyDPID;
 int NSTT = 0;
-void Rept( LPSTR sz, ... );
 
 void __DoStartTime( int* MASK )
 {
@@ -1483,7 +1483,7 @@ void __DoStartTime( int* MASK )
 
 char* GetTextByID( char* ID );
 
-void DoCmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount )
+void DoCmdGiveMoney( unsigned char SrcNI, unsigned char DstNI, unsigned char Res, int Amount )
 {
 	int r = XRESRC( SrcNI, Res );
 	if ( r < Amount )Amount = r;
@@ -1492,7 +1492,7 @@ void DoCmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount )
 	CreateTimedHintEx( GetTextByID( "MONTR" ), kSystemMessageDisplayTime, 32 );//Resources have been successfully transferred.
 }
 
-extern word NPlayers;
+extern unsigned short NPlayers;
 int WaitState = 0;
 extern int FogMode;
 bool PreNoPause = 0;
@@ -1501,14 +1501,14 @@ int ShowGameScreen = 0;
 
 struct OneCommandCenter
 {
-	byte Color;
-	byte REFTBL[8];
+	unsigned char Color;
+	unsigned char REFTBL[8];
 };
 
 int NCommCenters = 0;
-byte CommCenters[8][9];
+unsigned char CommCenters[8][9];
 void WinnerControl( bool Anyway );
-extern byte MI_Mode;
+extern unsigned char MI_Mode;
 extern int CUR_TOOL_MODE;
 extern bool TP_Made;
 extern bool LockPause;
@@ -1516,7 +1516,7 @@ extern bool ShowStat;
 
 void SetBrokenState();
 
-void __EndGame( byte NI, byte state )
+void __EndGame( unsigned char NI, unsigned char state )
 {
 	int state0 = state;
 	if ( state > 2 )
@@ -1527,7 +1527,7 @@ void __EndGame( byte NI, byte state )
 	if ( state == 3 || state == 4 )
 	{
 		//is there alive friends?
-		byte mask = NATIONS[NI].NMask;
+		unsigned char mask = NATIONS[NI].NMask;
 		int MaxSC = -1000;
 		int BestID = -1;
 		for ( int i = 0; i < 7; i++ )
@@ -1690,12 +1690,12 @@ bool ObjInside( OneObject* OB, int xx, int yy, int xx1, int yy1 )
 		return true;
 	else return false;
 };
-word GoodSelectNewMonsters( byte NI, int xr, int yr, int xr1, int yr1, word *Collect, word* Ser, bool WRITE, CHOBJ* FN, int NN, int MAX );
-void CorrectShipsSelection( byte NI )
+unsigned short GoodSelectNewMonsters( unsigned char NI, int xr, int yr, int xr1, int yr1, unsigned short *Collect, unsigned short* Ser, bool WRITE, CHOBJ* FN, int NN, int MAX );
+void CorrectShipsSelection( unsigned char NI )
 {
 	int N = NSL[NI];
-	word* SU = Selm[NI];
-	word* SN = SerN[NI];
+	unsigned short* SU = Selm[NI];
+	unsigned short* SN = SerN[NI];
 	int NB = 0;
 	int NU = 0;
 	int NS = 0;
@@ -1703,13 +1703,13 @@ void CorrectShipsSelection( byte NI )
 	bool Guards = 0;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SU[i];
+		unsigned short MID = SU[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 			{
-				byte Use = OB->newMons->Usage;
+				unsigned char Use = OB->newMons->Usage;
 				if ( OB->LockType )
 				{
 					if ( Use == FisherID )NU++;
@@ -1734,14 +1734,14 @@ void CorrectShipsSelection( byte NI )
 		//select only units
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SU[i];
+			unsigned short MID = SU[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
 				if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 				{
 					OB->Selected &= ~GM( NI );
-					byte Use = OB->newMons->Usage;
+					unsigned char Use = OB->newMons->Usage;
 					if ( OB->LockType )
 					{
 						if ( Use == FisherID )
@@ -1777,14 +1777,14 @@ void CorrectShipsSelection( byte NI )
 			//select ships only
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = SU[i];
+				unsigned short MID = SU[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
 					if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 					{
 						OB->Selected &= ~GM( NI );
-						byte Use = OB->newMons->Usage;
+						unsigned char Use = OB->newMons->Usage;
 						if ( OB->LockType&&Use != FisherID )
 						{
 							SU[RealN] = OB->Index;
@@ -1799,11 +1799,11 @@ void CorrectShipsSelection( byte NI )
 		};
 	};
 };
-void ImCorrectShipsSelection( byte NI )
+void ImCorrectShipsSelection( unsigned char NI )
 {
 	int N = ImNSL[NI];
-	word* SU = ImSelm[NI];
-	word* SN = ImSerN[NI];
+	unsigned short* SU = ImSelm[NI];
+	unsigned short* SN = ImSerN[NI];
 	int NB = 0;
 	int NU = 0;
 	int NS = 0;
@@ -1811,13 +1811,13 @@ void ImCorrectShipsSelection( byte NI )
 	bool Guards = 0;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SU[i];
+		unsigned short MID = SU[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
 			if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 			{
-				byte Use = OB->newMons->Usage;
+				unsigned char Use = OB->newMons->Usage;
 				if ( OB->LockType )
 				{
 					if ( Use == FisherID )NU++;
@@ -1843,14 +1843,14 @@ void ImCorrectShipsSelection( byte NI )
 		//select only units
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SU[i];
+			unsigned short MID = SU[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
 				if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 				{
 					OB->ImSelected &= ~GM( NI );
-					byte Use = OB->newMons->Usage;
+					unsigned char Use = OB->newMons->Usage;
 					if ( OB->LockType )
 					{
 						if ( Use == FisherID )
@@ -1886,14 +1886,14 @@ void ImCorrectShipsSelection( byte NI )
 			//select ships only
 			for ( int i = 0; i < N; i++ )
 			{
-				word MID = SU[i];
+				unsigned short MID = SU[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
 					if ( OB&&OB->Serial == SN[i] && !OB->Sdoxlo )
 					{
 						OB->ImSelected &= ~GM( NI );
-						byte Use = OB->newMons->Usage;
+						unsigned char Use = OB->newMons->Usage;
 						if ( OB->LockType&&Use != FisherID )
 						{
 							SU[RealN] = OB->Index;
@@ -1908,8 +1908,8 @@ void ImCorrectShipsSelection( byte NI )
 		};
 	};
 };
-void SmartSelectionCorrector( byte NI, word* Mon, int N );
-void CreateGoodSelection( byte NI, word xx, word yy, word xx1, word yy1, CHOBJ* FN, int NN, bool Addon )
+void SmartSelectionCorrector( unsigned char NI, unsigned short* Mon, int N );
+void CreateGoodSelection( unsigned char NI, unsigned short xx, unsigned short yy, unsigned short xx1, unsigned short yy1, CHOBJ* FN, int NN, bool Addon )
 {
 	SelCenter[NI] = 0;
 	int x = xx >> 5;
@@ -1922,19 +1922,19 @@ void CreateGoodSelection( byte NI, word xx, word yy, word xx1, word yy1, CHOBJ* 
 	if ( y1 < msy )y1++;
 	//if(xx1&31)x1++;
 	//if(yy1&31)y1++;
-	word MID;
+	unsigned short MID;
 	OneObject* OB;
-	word ns = 0;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* ser = ImSerN[NI];
-	word* tmpSelm = nullptr;
-	word* tmpSerN = nullptr;
+	unsigned short ns = 0;
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* ser = ImSerN[NI];
+	unsigned short* tmpSelm = nullptr;
+	unsigned short* tmpSerN = nullptr;
 	int tmpN = 0;
 	if ( Nsel )
 	{
-		tmpSelm = new word[Nsel];
-		tmpSerN = new word[Nsel];
+		tmpSelm = new unsigned short[Nsel];
+		tmpSerN = new unsigned short[Nsel];
 		memcpy( tmpSelm, SMon, Nsel << 1 );
 		memcpy( tmpSerN, ser, Nsel << 1 );
 		tmpN = Nsel;
@@ -1965,11 +1965,11 @@ void CreateGoodSelection( byte NI, word xx, word yy, word xx1, word yy1, CHOBJ* 
 
 	int Olds = 0;
 	if ( Addon )Olds = Nsel;
-	word nnm = GoodSelectNewMonsters( NI, xx, yy, xx1, yy1, nullptr, nullptr, false, FN, NN, ULIMIT );
+	unsigned short nnm = GoodSelectNewMonsters( NI, xx, yy, xx1, yy1, nullptr, nullptr, false, FN, NN, ULIMIT );
 	if ( Olds + ns + nnm )
 	{
-		ImSelm[NI] = new word[Olds + ns + nnm];
-		ImSerN[NI] = new word[Olds + ns + nnm];
+		ImSelm[NI] = new unsigned short[Olds + ns + nnm];
+		ImSerN[NI] = new unsigned short[Olds + ns + nnm];
 	}
 	else
 	{
@@ -1987,9 +1987,9 @@ void CreateGoodSelection( byte NI, word xx, word yy, word xx1, word yy1, CHOBJ* 
 		memcpy( ImSelm[NI], SMon, Olds << 1 );
 		memcpy( ImSerN[NI], ser, Olds << 1 );
 	};
-	word* SM = ImSelm[NI];
-	word* SR = ImSerN[NI];
-	word ns1 = ns;
+	unsigned short* SM = ImSelm[NI];
+	unsigned short* SR = ImSerN[NI];
+	unsigned short ns1 = ns;
 	ns = Olds;
 
 	GoodSelectNewMonsters( NI, xx, yy, xx1, yy1, &SM[ns], &SR[ns], true, FN, NN, nnm );
@@ -2025,14 +2025,14 @@ OneObject* SearchGate( int x, int y )
 		};
 	return nullptr;
 };
-void RefreshSelected( byte NI )
+void RefreshSelected( unsigned char NI )
 {
 	int RNSel = 0;
-	word* SMon = Selm[NI];
-	word* ser = SerN[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* ser = SerN[NI];
 	if ( !SMon )NSL[NI] = 0;
-	word Nsel = NSL[NI];
-	word MID;
+	unsigned short Nsel = NSL[NI];
+	unsigned short MID;
 	for ( int k = 0; k < Nsel; k++ )
 	{
 		MID = SMon[k];
@@ -2126,7 +2126,7 @@ void RefreshSelected( byte NI )
 	ImNSL[NI] = RNSel;
 };
 bool OneDirection = 0;
-void SendSelectedToXY( byte NI, int xx, int yy, short Dir, byte Prio, byte Type )
+void SendSelectedToXY( unsigned char NI, int xx, int yy, short Dir, unsigned char Prio, unsigned char Type )
 {
 	OneDirection = 0 != ( Type & 16 );
 	LastDirection = Dir;
@@ -2134,7 +2134,7 @@ void SendSelectedToXY( byte NI, int xx, int yy, short Dir, byte Prio, byte Type 
 	LastDirection = 512;
 	return;
 };
-void SendSelectedToXY( byte NI, int xx, int yy, short Dir, byte Type )
+void SendSelectedToXY( unsigned char NI, int xx, int yy, short Dir, unsigned char Type )
 {
 	SendSelectedToXY( NI, xx, yy, Dir, 16 + 128, Type );
 }
@@ -2163,7 +2163,7 @@ void SendSelectedToXY( byte NI, int xx, int yy, short Dir, byte Type )
 
 //Adjusts FrmDec, SpeedSh and exFMode
 //Called only from ExecuteBuffer()
-void SetGSpeed( byte speed )
+void SetGSpeed( unsigned char speed )
 {
 	if ( 1 == NPlayers )//BUGFIX: allow ingame speed changing in single player only
 	{
@@ -2173,12 +2173,12 @@ void SetGSpeed( byte speed )
 	}
 }
 
-void AttackToXY( byte NI, byte x, byte y )
+void AttackToXY( unsigned char NI, unsigned char x, unsigned char y )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	int Sqs = int( sqrt( Nsel ) );
 	int Glx = Sqs;
 	int Gly = Sqs;
@@ -2208,17 +2208,17 @@ void AttackToXY( byte NI, byte x, byte y )
 			zx++;
 	};
 };
-void GroupAttackSelectedBrigadesTo( byte NI, int x, int y, byte Prio, byte OrdType );
-void AttackSelected( byte NI, word ObjID, byte OrdType, short DIR )
+void GroupAttackSelectedBrigadesTo( unsigned char NI, int x, int y, unsigned char Prio, unsigned char OrdType );
+void AttackSelected( unsigned char NI, unsigned short ObjID, unsigned char OrdType, short DIR )
 {
 	LastDirection = DIR;
 	OneObject* OB = Group[ObjID];
 	if ( OB && !OB->Sdoxlo )GroupAttackSelectedBrigadesTo( NI, OB->RealX, OB->RealY, 128 + 16, 0 );
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2233,19 +2233,19 @@ void AttackSelected( byte NI, word ObjID, byte OrdType, short DIR )
 void BuildObjLink( OneObject* );
 void NewMonsterSendToLink( OneObject* OB );
 void NewMonsterSmartSendToLink( OneObject* OBJ );
-void BuildWithSelected( byte NI, word ObjID, byte OrdType )
+void BuildWithSelected( unsigned char NI, unsigned short ObjID, unsigned char OrdType )
 {
 	if ( ObjID == 0xFFFF )return;
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* Sm = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* Sm = SerN[NI];
 	if ( !Nsel )return;
 	OneObject* OBJ = Group[ObjID];
 	if ( !OBJ )return;
 	Nsel = SortUnitsByR( SMon, Sm, Nsel, OBJ->RealX, OBJ->RealY );
 	NSL[NI] = Nsel;
-	word MID;
+	unsigned short MID;
 	bool CanAct = false;
 	for ( int i = 0; i < Nsel; i++ )
 	{
@@ -2303,12 +2303,12 @@ void BuildWithSelected( byte NI, word ObjID, byte OrdType )
 	if ( OB )OB->ClearBuildPt();
 }
 
-void CreateTerrainMons( byte NI, byte x, byte y )
+void CreateTerrainMons( unsigned char NI, unsigned char x, unsigned char y )
 {
 	NATIONS[NI].CreateNewMonsterAt( int( x ) * 512, int( y ) * 512, 0, false );
 }
 
-void CreateNewTerrMons( byte NI, int x, int y, word Type )
+void CreateNewTerrMons( unsigned char NI, int x, int y, unsigned short Type )
 {
 	if ( Type & 32768 )
 	{
@@ -2334,7 +2334,7 @@ void CreateNewTerrMons( byte NI, int x, int y, word Type )
 	//CreateUnit(&NATIONS[NI],x,y,Type);
 	NATIONS[NI].CreateNewMonsterAt( int( x ) << 4, int( y ) << 4, Type, false );
 };
-int CreateNewTerrMons2( byte NI, int x, int y, word Type )
+int CreateNewTerrMons2( unsigned char NI, int x, int y, unsigned short Type )
 {
 	int ID = NATIONS[NI].CreateNewMonsterAt( x, y, Type & 8191, true );
 	if ( ID != -1 )
@@ -2356,7 +2356,7 @@ int CreateNewTerrMons2( byte NI, int x, int y, word Type )
 	return -1;
 }
 
-void CreateBuilding( byte NI, int x, int y, word Type, byte OrdType )
+void CreateBuilding( unsigned char NI, int x, int y, unsigned short Type, unsigned char OrdType )
 {
 	int j = NATIONS[NatRefTBL[NI]].CreateNewMonsterAt( x, y, Type, false );
 	if ( j != -1 )
@@ -2365,15 +2365,15 @@ void CreateBuilding( byte NI, int x, int y, word Type, byte OrdType )
 	}
 }
 
-void ProduceObject( byte NI, word Type )
+void ProduceObject( unsigned char NI, unsigned short Type )
 {
 	int maxp = 1000;
 	int kk = -1;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	for ( int k = 0; k < Nsel; k++ )
 	{
-		word MID = SMon[k];
+		unsigned short MID = SMon[k];
 		if ( !( MID == 0xFFFF/*||CmdDone[MID]*/ ) )
 		{
 			OneObject* OB = Group[SMon[k]];
@@ -2397,7 +2397,7 @@ void ProduceObject( byte NI, word Type )
 	};
 	if ( kk != -1 )
 	{
-		word MID = SMon[kk];
+		unsigned short MID = SMon[kk];
 		if ( !( MID == 0xFFFF/*||CmdDone[MID]*/ ) )
 		{
 			OneObject* OB = Group[MID];
@@ -2410,8 +2410,8 @@ void ProduceObject( byte NI, word Type )
 		};
 	};
 };
-void TakeUnitFromCash( byte NI, word ID );
-void ProduceObjects( byte NI, byte N, word Type )
+void TakeUnitFromCash( unsigned char NI, unsigned short ID );
+void ProduceObjects( unsigned char NI, unsigned char N, unsigned short Type )
 {
 	for ( int i = 0; i < N; i++ )
 	{
@@ -2420,15 +2420,15 @@ void ProduceObjects( byte NI, byte N, word Type )
 	}
 }
 
-void GetUnitCost( byte NI, word NIndex, int* Cost, word Power );
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost, unsigned short Power );
 
 //Cancels queued production of selected unit in selected building
 //OneObject *OB: Building with production order to be canceled
-//word Type: Object index of the unit type to be canceled
+//unsigned short Type: Object index of the unit type to be canceled
 //Iterates through all queued productions in the building
 //Unlinks the order with provided unit type from the chain
 //Refunds resources spent on unit construction
-void UnProduce( OneObject* OB, word Type )
+void UnProduce( OneObject* OB, unsigned short Type )
 {
 	if ( !( OB->NewBuilding && OB->LocalOrder ) )
 	{
@@ -2469,7 +2469,7 @@ StartUn:
 					OB->LocalOrder = order->NextOrder;
 				}
 
-				word Power = order->info.Produce.Power;
+				unsigned short Power = order->info.Produce.Power;
 
 				if ( OB->newMons->Port )
 				{
@@ -2518,18 +2518,18 @@ StartUn:
 }
 
 //Cancels production of units in selected buildings
-//byte NI: nation index of player
-//word Type: id of unit to be cancelled
+//unsigned char NI: nation index of player
+//unsigned short Type: id of unit to be cancelled
 //Iterates through player's selection and looks for
 //matching production queues, then calls UnProduce()
-void UnProduceObject( byte NI, word Type )
+void UnProduceObject( unsigned char NI, unsigned short Type )
 {
 	//Index of building in selection, whose queue will be canceled
 	int target_index = -1;
 
 	int max_queue_count = 0;
 
-	word* selection = Selm[NI];
+	unsigned short* selection = Selm[NI];
 
 	const int selection_size = NSL[NI];
 	for ( int i = 0; i < selection_size; i++ )
@@ -2553,7 +2553,7 @@ void UnProduceObject( byte NI, word Type )
 
 	if ( target_index != -1 )
 	{
-		word MID = selection[target_index];
+		unsigned short MID = selection[target_index];
 		if ( !( MID == 0xFFFF || CmdDone[MID] ) )
 		{
 			OneObject* OB = Group[MID];
@@ -2565,13 +2565,13 @@ void UnProduceObject( byte NI, word Type )
 	}
 }
 
-void MemSelection( byte NI, byte Index )
+void MemSelection( unsigned char NI, unsigned char Index )
 {
 	if ( NI > 7 )return;
 	SelSet[NI * 10 + Index].CreateFromSelection( NI );
 }
 
-void RememSelection( byte NI, byte Index )
+void RememSelection( unsigned char NI, unsigned char Index )
 {
 	if ( ( ( NI & 31 ) * 10 + Index ) >= 80 )
 	{
@@ -2582,28 +2582,28 @@ void RememSelection( byte NI, byte Index )
 	CorrectBrigadesSelection( NI );
 }
 
-int CreateWall( byte NI, byte* lp )
+int CreateWall( unsigned char NI, unsigned char* lp )
 {
 	WallCluster WCLT;
-	WCLT.CreateByData( (word*) lp );
+	WCLT.CreateByData( (unsigned short*) lp );
 	WCLT.CreateSprites();
 	WSys.AddCluster( &WCLT );
 	WCLT.SendSelectedToWork( NI, 0 );
 
-	return ( (word*) lp )[0];
+	return ( (unsigned short*) lp )[0];
 }
 
 void TempUnLock( OneObject* OBJ );
-void RepairWall( byte NI, short xx, short yy, byte OrdType )
+void RepairWall( unsigned char NI, short xx, short yy, unsigned char OrdType )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* Sm = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* Sm = SerN[NI];
 	if ( !Nsel )return;
 	Nsel = SortUnitsByR( SMon, Sm, Nsel, ( xx << 10 ) + 512, ( yy << 10 ) + 512 );
 	NSL[NI] = Nsel;
-	word MID;
+	unsigned short MID;
 	bool CanAct = false;
 	for ( int i = 0; i < Nsel; i++ )
 	{
@@ -2626,12 +2626,12 @@ void RepairWall( byte NI, short xx, short yy, byte OrdType )
 	};
 };
 
-void PerformUpgr( byte NI, word UI )
+void PerformUpgr( unsigned char NI, unsigned short UI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2640,13 +2640,13 @@ void PerformUpgr( byte NI, word UI )
 	};
 };
 
-void SetDestination( byte NI, int x, int y )
+void SetDestination( unsigned char NI, int x, int y )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2654,13 +2654,13 @@ void SetDestination( byte NI, int x, int y )
 			Group[MID]->SetDstPoint( x, y );
 	};
 };
-void Stopp( byte NI )
+void Stopp( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2674,13 +2674,13 @@ void Stopp( byte NI )
 		};
 	};
 };
-void StandGround( byte NI )
+void StandGround( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2691,20 +2691,20 @@ void StandGround( byte NI )
 		};
 	};
 };
-void GroupPatrolSelected( byte NI, int x, int y, byte Prio );
-void PatrolGroup( byte NI, int x1, int y1, byte Dir )
+void GroupPatrolSelected( unsigned char NI, int x, int y, unsigned char Prio );
+void PatrolGroup( unsigned char NI, int x1, int y1, unsigned char Dir )
 {
 	LastDirection = Dir;
 	GroupPatrolSelected( NI, x1, y1, 0 );
 	LastDirection = 512;
 };
-void GroupAttackPoint( byte NI, byte x, byte y, byte kind )
+void GroupAttackPoint( unsigned char NI, unsigned char x, unsigned char y, unsigned char kind )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2719,18 +2719,18 @@ void GroupAttackPoint( byte NI, byte x, byte y, byte kind )
 void DestructBuilding( OneObject* OB );
 
 //Kills units / buildings which are destroyed manually through DEL key
-void DieSelected( byte NI )
+void DieSelected( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 
 	if ( !Nsel )
 	{
 		return;
 	}
 
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2746,13 +2746,13 @@ void DieSelected( byte NI )
 }
 
 void EliminateBuilding( OneObject* OB );
-void EraseSelected( byte NI )
+void EraseSelected( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2778,13 +2778,13 @@ void EraseSelected( byte NI )
 		};
 	};
 };
-void ContinueAttPoint( byte NI, byte x, byte y )
+void ContinueAttPoint( unsigned char NI, unsigned char x, unsigned char y )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2792,13 +2792,13 @@ void ContinueAttPoint( byte NI, byte x, byte y )
 			Group[MID]->ContinueAttackPoint( x, y, 16 );
 	};
 };
-void ContinueAttWall( byte NI, byte x, byte y )
+void ContinueAttWall( unsigned char NI, unsigned char x, unsigned char y )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2806,13 +2806,13 @@ void ContinueAttWall( byte NI, byte x, byte y )
 			Group[MID]->ContinueAttackWall( x, y, 16 );
 	};
 };
-void SitDown( byte NI )
+void SitDown( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -2979,17 +2979,17 @@ int FindNetGame( int ID, char* name )
 void IAmLeft();
 extern bool NoWinner;
 extern char SaveFileName[128];
-extern word PrevRpos;
-extern DWORD RealTime;
+extern unsigned short PrevRpos;
+extern unsigned long RealTime;
 unsigned long GetRealTime();
 extern int PitchTicks;
 extern int PREVGLOBALTIME;
-extern DWORD EBPos1;
+extern unsigned long EBPos1;
 
 extern char PL_Names[8][32];
-extern byte PL_Colors[8];
+extern unsigned char PL_Colors[8];
 extern int PL_NPlayers;
-extern byte PL_NatRefTBL[8];
+extern unsigned char PL_NatRefTBL[8];
 
 void LoadNetworkGame( char* Name )
 {
@@ -3001,7 +3001,7 @@ void LoadNetworkGame( char* Name )
 	PlayerInfo LOC_PINFO[8];
 	memcpy( LOC_PINFO, PINFO, sizeof LOC_PINFO );
 
-	byte mm[8];
+	unsigned char mm[8];
 	memcpy( mm, NatRefTBL, 8 );
 
 	PBACK.Clear();
@@ -3045,7 +3045,7 @@ void LoadNetworkGame( char* Name )
 	if ( NPlayers > 1 )
 	{
 		memcpy( PINFO, LOC_PINFO, sizeof LOC_PINFO );
-		byte MyExNation = MyNation;
+		unsigned char MyExNation = MyNation;
 		for ( int i = 0; i < NPlayers; i++ )
 		{
 			char* loop_name = PINFO[i].name;
@@ -3078,14 +3078,14 @@ void LoadNetworkGame( char* Name )
 	}
 }
 
-void ChooseUnSelectType( byte NI, word ID )
+void ChooseUnSelectType( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3109,14 +3109,14 @@ void ChooseUnSelectType( byte NI, word ID )
 	};
 	NSL[NI] = RNSel;
 };
-void ImChooseUnSelectType( byte NI, word ID )
+void ImChooseUnSelectType( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* SNM = ImSerN[NI];
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* SNM = ImSerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3140,14 +3140,14 @@ void ImChooseUnSelectType( byte NI, word ID )
 	};
 	ImNSL[NI] = RNSel;
 };
-void UnSelectBrig( byte NI, word ID )
+void UnSelectBrig( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3171,14 +3171,14 @@ void UnSelectBrig( byte NI, word ID )
 	};
 	NSL[NI] = RNSel;
 };
-void ImUnSelectBrig( byte NI, word ID )
+void ImUnSelectBrig( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* SNM = ImSerN[NI];
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* SNM = ImSerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3202,14 +3202,14 @@ void ImUnSelectBrig( byte NI, word ID )
 	};
 	ImNSL[NI] = RNSel;
 };
-void ChooseSelectType( byte NI, word ID )
+void ChooseSelectType( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3234,14 +3234,14 @@ void ChooseSelectType( byte NI, word ID )
 	NSL[NI] = RNSel;
 	CorrectBrigadesSelection( NI );
 };
-void ImChooseSelectType( byte NI, word ID )
+void ImChooseSelectType( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* SNM = ImSerN[NI];
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* SNM = ImSerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3266,14 +3266,14 @@ void ImChooseSelectType( byte NI, word ID )
 	ImNSL[NI] = RNSel;
 	ImCorrectBrigadesSelection( NI );
 };
-void SelectBrig( byte NI, word ID )
+void SelectBrig( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3297,14 +3297,14 @@ void SelectBrig( byte NI, word ID )
 	};
 	NSL[NI] = RNSel;
 };
-void ImSelectBrig( byte NI, word ID )
+void ImSelectBrig( unsigned char NI, unsigned short ID )
 {
 	int RNSel = 0;
-	word Nsel = ImNSL[NI];
-	word* SMon = ImSelm[NI];
-	word* SNM = ImSerN[NI];
+	unsigned short Nsel = ImNSL[NI];
+	unsigned short* SMon = ImSelm[NI];
+	unsigned short* SNM = ImSerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3330,14 +3330,14 @@ void ImSelectBrig( byte NI, word ID )
 };
 void EraseBrigade( Brigade* BR );
 void SetAttState( Brigade* BR, bool Val );
-void EraseBrigs( byte NI )
+void EraseBrigs( unsigned char NI )
 {
 	int RNSel = 0;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	Brigade* BR0 = NATIONS[NI].CITY->Brigs;
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3367,20 +3367,20 @@ bool CheckWorker( OneObject* OB )
 	};
 	return true;
 };
-void GoToMineWithSelected( byte NI, word ID )
+void GoToMineWithSelected( unsigned char NI, unsigned short ID )
 {
 	OneObject* OB = Group[ID];
 	if ( !OB )return;
 	NewMonster* NM = OB->newMons;
 	AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
 	if ( !( NM->UnitAbsorber || NM->PeasantAbsorber ) )return;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
 	int Maxins = ADC->MaxInside + OB->AddInside - OB->NInside;
 	if ( !( NATIONS[NI].NMask&OB->NMask ) )Maxins += 1000;
-	word MID;
+	unsigned short MID;
 	if ( Maxins <= 0 )
 	{
 		if ( OB->NNUM == NatRefTBL[NI] )
@@ -3424,13 +3424,13 @@ void GoToMineWithSelected( byte NI, word ID )
 		};
 	};
 };
-void LeaveMineWithSelected( byte NI, word Type )
+void LeaveMineWithSelected( unsigned char NI, unsigned short Type )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3441,19 +3441,19 @@ void LeaveMineWithSelected( byte NI, word Type )
 		};
 	};
 };
-void GoToTransportWithSelected( byte NI, word ID )
+void GoToTransportWithSelected( unsigned char NI, unsigned short ID )
 {
 	OneObject* OB = Group[ID];
 	if ( !OB )return;
 	NewMonster* NM = OB->newMons;
 	AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
 	if ( !( NM->Transport ) )return;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* SNM = SerN[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* SNM = SerN[NI];
 	if ( !Nsel )return;
 	int Maxins = ADC->MaxInside + OB->AddInside - OB->NInside;
-	word MID;
+	unsigned short MID;
 	if ( Maxins <= 0 )
 	{
 		if ( OB->NNUM == NatRefTBL[NI] )
@@ -3496,14 +3496,14 @@ void GoToTransportWithSelected( byte NI, word ID )
 		};
 	};
 };
-void TakeRes( byte NI, int x, int y, byte ResID )
+void TakeRes( unsigned char NI, int x, int y, unsigned char ResID )
 {
 	int RNSel = 0;
 	int DObj = INITBEST;
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < Nsel; i++ )
 	{
 		MID = SMon[i];
@@ -3529,14 +3529,14 @@ void TakeRes( byte NI, int x, int y, byte ResID )
 		OS++;
 	};
 };
-void CreateGatesFromSelected( byte NI )
+void CreateGatesFromSelected( unsigned char NI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3547,16 +3547,16 @@ void CreateGatesFromSelected( byte NI )
 		};
 	};
 };
-void SelectAllBuildings( byte NI )
+void SelectAllBuildings( unsigned char NI )
 {
 	int N = NSL[NI];
 	if ( N )
 	{
-		word* SMN = Selm[NI];
-		word* SRN = SerN[NI];
+		unsigned short* SMN = Selm[NI];
+		unsigned short* SRN = SerN[NI];
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMN[i];
+			unsigned short MID = SMN[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3581,12 +3581,12 @@ void SelectAllBuildings( byte NI )
 		OneObject* OB = Group[i];
 		if ( OB&&OB->NNUM == NatRefTBL[NI] && OB->NewBuilding )N++;
 	};
-	Selm[NI] = new word[N];
-	SerN[NI] = new word[N];
+	Selm[NI] = new unsigned short[N];
+	SerN[NI] = new unsigned short[N];
 	NSL[NI] = N;
 	N = 0;
-	word* SMN = Selm[NI];
-	word* SRN = SerN[NI];
+	unsigned short* SMN = Selm[NI];
+	unsigned short* SRN = SerN[NI];
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		OneObject* OB = Group[i];
@@ -3599,16 +3599,16 @@ void SelectAllBuildings( byte NI )
 		};
 	};
 };
-void ImSelectAllBuildings( byte NI )
+void ImSelectAllBuildings( unsigned char NI )
 {
 	int N = ImNSL[NI];
 	if ( N )
 	{
-		word* SMN = ImSelm[NI];
-		word* SRN = ImSerN[NI];
+		unsigned short* SMN = ImSelm[NI];
+		unsigned short* SRN = ImSerN[NI];
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMN[i];
+			unsigned short MID = SMN[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3633,12 +3633,12 @@ void ImSelectAllBuildings( byte NI )
 		OneObject* OB = Group[i];
 		if ( OB&&OB->NNUM == NatRefTBL[NI] && OB->NewBuilding && !OB->Sdoxlo )N++;
 	};
-	ImSelm[NI] = new word[N];
-	ImSerN[NI] = new word[N];
+	ImSelm[NI] = new unsigned short[N];
+	ImSerN[NI] = new unsigned short[N];
 	ImNSL[NI] = N;
 	N = 0;
-	word* SMN = ImSelm[NI];
-	word* SRN = ImSerN[NI];
+	unsigned short* SMN = ImSelm[NI];
+	unsigned short* SRN = ImSerN[NI];
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		OneObject* OB = Group[i];
@@ -3651,11 +3651,11 @@ void ImSelectAllBuildings( byte NI )
 		};
 	};
 };
-void SelectAllUnits( byte NI, bool Re )
+void SelectAllUnits( unsigned char NI, bool Re )
 {
-	word* lpN;
-	word** UNI;
-	word** USN;
+	unsigned short* lpN;
+	unsigned short** UNI;
+	unsigned short** USN;
 	if ( Re )
 	{
 		lpN = NSL + NI;
@@ -3671,11 +3671,11 @@ void SelectAllUnits( byte NI, bool Re )
 	int N = *lpN;
 	if ( N )
 	{
-		word* SMN = *UNI;
-		word* SRN = *USN;
+		unsigned short* SMN = *UNI;
+		unsigned short* SRN = *USN;
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMN[i];
+			unsigned short MID = SMN[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3704,12 +3704,12 @@ void SelectAllUnits( byte NI, bool Re )
 		OneObject* OB = Group[i];
 		if ( OB&&OB->NNUM == NatRefTBL[NI] && !( OB->LockType || OB->NewBuilding || OB->Sdoxlo || OB->Wall || OB->UnlimitedMotion || OB->Guard != 0xFFFF || OB->UnlimitedMotion ) )N++;
 	};
-	UNI[0] = new word[N];
-	USN[0] = new word[N];
+	UNI[0] = new unsigned short[N];
+	USN[0] = new unsigned short[N];
 	lpN[0] = N;
 	N = 0;
-	word* SMN = UNI[0];
-	word* SRN = USN[0];
+	unsigned short* SMN = UNI[0];
+	unsigned short* SRN = USN[0];
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		OneObject* OB = Group[i];
@@ -3723,11 +3723,11 @@ void SelectAllUnits( byte NI, bool Re )
 		};
 	};
 };
-void SelectAllShips( byte NI, bool Re )
+void SelectAllShips( unsigned char NI, bool Re )
 {
-	word* lpN;
-	word** UNI;
-	word** USN;
+	unsigned short* lpN;
+	unsigned short** UNI;
+	unsigned short** USN;
 	if ( Re )
 	{
 		lpN = NSL + NI;
@@ -3743,11 +3743,11 @@ void SelectAllShips( byte NI, bool Re )
 	int N = *lpN;
 	if ( N )
 	{
-		word* SMN = *UNI;
-		word* SRN = *USN;
+		unsigned short* SMN = *UNI;
+		unsigned short* SRN = *USN;
 		for ( int i = 0; i < N; i++ )
 		{
-			word MID = SMN[i];
+			unsigned short MID = SMN[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -3776,22 +3776,22 @@ void SelectAllShips( byte NI, bool Re )
 		OneObject* OB = Group[i];
 		if ( OB&&OB->NNUM == NatRefTBL[NI] && OB->LockType && !OB->Sdoxlo )
 		{
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			if ( Usage != FisherID&&Usage != ParomID )N++;
 		};
 	};
-	UNI[0] = new word[N];
-	USN[0] = new word[N];
+	UNI[0] = new unsigned short[N];
+	USN[0] = new unsigned short[N];
 	lpN[0] = N;
 	N = 0;
-	word* SMN = UNI[0];
-	word* SRN = USN[0];
+	unsigned short* SMN = UNI[0];
+	unsigned short* SRN = USN[0];
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		OneObject* OB = Group[i];
 		if ( OB&&OB->NNUM == NatRefTBL[NI] && OB->LockType && !OB->Sdoxlo )
 		{
-			byte Usage = OB->newMons->Usage;
+			unsigned char Usage = OB->newMons->Usage;
 			if ( Usage != FisherID&&Usage != ParomID )
 			{
 				SMN[N] = OB->Index;
@@ -3805,14 +3805,14 @@ void SelectAllShips( byte NI, bool Re )
 };
 void CloseGates( OneObject* OB );
 void OpenGates( OneObject* OB );
-void ComOpenGates( byte NI )
+void ComOpenGates( unsigned char NI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3823,14 +3823,14 @@ void ComOpenGates( byte NI )
 		};
 	};
 };
-void ComCloseGates( byte NI )
+void ComCloseGates( unsigned char NI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3845,8 +3845,8 @@ void MakeStandGround( Brigade* BR )
 {
 	if ( BR->LastOrderTime == tmtmt )return;
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	int addD = 0;
 	int addS = 0;
 	if ( BR->WarType )
@@ -3859,7 +3859,7 @@ void MakeStandGround( Brigade* BR )
 	BR->AddShield = addS;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3881,8 +3881,8 @@ void MakeStandGroundTemp( Brigade* BR )
 	//	BR->ClearBOrders();
 	//};
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	int addD = 0;
 	int addS = 0;
 	if ( BR->WarType )
@@ -3895,7 +3895,7 @@ void MakeStandGroundTemp( Brigade* BR )
 	BR->AddShield = addS;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3915,11 +3915,11 @@ void SetAttState( Brigade* BR, bool Val )
 {
 	if ( BR->LastOrderTime == tmtmt )return;
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3938,15 +3938,15 @@ void SetAttState( Brigade* BR, bool Val )
 	BR->LastOrderTime = tmtmt;
 };
 void NewAttackPointLink( OneObject* OBJ );
-void SetSearchVictim( byte NI, byte Val )
+void SetSearchVictim( unsigned char NI, unsigned char Val )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	Brigade* BR0 = NATIONS[NI].CITY->Brigs;
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -3983,15 +3983,15 @@ void SetSearchVictim( byte NI, byte Val )
 		};
 	};
 };
-void MakeStandGround( byte NI )
+void MakeStandGround( unsigned char NI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	Brigade* BR0 = NATIONS[NatRefTBL[NI]].CITY->Brigs;
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4014,8 +4014,8 @@ void CancelStandGround( Brigade* BR )
 {
 	if ( BR->LastOrderTime == tmtmt )return;
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	int addD = 0;
 	int addS = 0;
 	if ( BR->WarType )
@@ -4028,7 +4028,7 @@ void CancelStandGround( Brigade* BR )
 	BR->AddShield = addS;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4046,8 +4046,8 @@ void CancelStandGround( Brigade* BR )
 void CancelStandGroundAnyway( Brigade* BR )
 {
 	int N = BR->NMemb;
-	word* Memb = BR->Memb;
-	word* MembSN = BR->MembSN;
+	unsigned short* Memb = BR->Memb;
+	unsigned short* MembSN = BR->MembSN;
 	int addD = 0;
 	int addS = 0;
 	if ( BR->WarType )
@@ -4061,7 +4061,7 @@ void CancelStandGroundAnyway( Brigade* BR )
 	BR->BrigDelay = 0;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Memb[i];
+		unsigned short MID = Memb[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4074,14 +4074,14 @@ void CancelStandGroundAnyway( Brigade* BR )
 		};
 	};
 };
-void CreateFields( byte NI, int x, int y, int n );
-void CreateFieldsBar( byte NI, word n )
+void CreateFields( unsigned char NI, int x, int y, int n );
+void CreateFieldsBar( unsigned char NI, unsigned short n )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4089,15 +4089,15 @@ void CreateFieldsBar( byte NI, word n )
 		};
 	};
 };
-void CancelStandGround( byte NI )
+void CancelStandGround( unsigned char NI )
 {
-	word Nsel = NSL[NI];
-	word* SMon = Selm[NI];
+	unsigned short Nsel = NSL[NI];
+	unsigned short* SMon = Selm[NI];
 	Brigade* BR0 = NATIONS[NI].CITY->Brigs;
 	if ( !Nsel )return;
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4116,18 +4116,18 @@ void CancelStandGround( byte NI )
 		};
 	};
 };
-void SelBrigade( byte NI, byte Type, int ID )
+void SelBrigade( unsigned char NI, unsigned char Type, int ID )
 {
 	if ( !Type )
 	{
 		if ( NSL[NI] )
 		{
 			int N = NSL[NI];
-			word* SEL = Selm[NI];
-			word* SSN = SerN[NI];
+			unsigned short* SEL = Selm[NI];
+			unsigned short* SSN = SerN[NI];
 			for ( int j = 0; j < N; j++ )
 			{
-				word MID = SEL[j];
+				unsigned short MID = SEL[j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4150,7 +4150,7 @@ void SelBrigade( byte NI, byte Type, int ID )
 		int NAdd = 0;
 		for ( int i = 2; i < BR->NMemb; i++ )
 		{
-			word MID = BR->Memb[i];
+			unsigned short MID = BR->Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -4163,11 +4163,11 @@ void SelBrigade( byte NI, byte Type, int ID )
 		if ( NAdd )
 		{
 			int N = NSL[NI];
-			Selm[NI] = (word*) realloc( Selm[NI], ( N + NAdd ) * 2 );
-			SerN[NI] = (word*) realloc( SerN[NI], ( N + NAdd ) * 2 );
+			Selm[NI] = (unsigned short*) realloc( Selm[NI], ( N + NAdd ) * 2 );
+			SerN[NI] = (unsigned short*) realloc( SerN[NI], ( N + NAdd ) * 2 );
 			for ( int i = 2; i < BR->NMemb; i++ )
 			{
-				word MID = BR->Memb[i];
+				unsigned short MID = BR->Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4184,18 +4184,18 @@ void SelBrigade( byte NI, byte Type, int ID )
 		};
 	};
 };
-void ImSelBrigade( byte NI, byte Type, int ID )
+void ImSelBrigade( unsigned char NI, unsigned char Type, int ID )
 {
 	if ( !Type )
 	{
 		if ( ImNSL[NI] )
 		{
 			int N = ImNSL[NI];
-			word* SEL = ImSelm[NI];
-			word* SSN = ImSerN[NI];
+			unsigned short* SEL = ImSelm[NI];
+			unsigned short* SSN = ImSerN[NI];
 			for ( int j = 0; j < N; j++ )
 			{
-				word MID = SEL[j];
+				unsigned short MID = SEL[j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4218,7 +4218,7 @@ void ImSelBrigade( byte NI, byte Type, int ID )
 		int NAdd = 0;
 		for ( int i = 2; i < BR->NMemb; i++ )
 		{
-			word MID = BR->Memb[i];
+			unsigned short MID = BR->Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -4231,11 +4231,11 @@ void ImSelBrigade( byte NI, byte Type, int ID )
 		if ( NAdd )
 		{
 			int N = ImNSL[NI];
-			ImSelm[NI] = (word*) realloc( ImSelm[NI], ( N + NAdd ) * 2 );
-			ImSerN[NI] = (word*) realloc( ImSerN[NI], ( N + NAdd ) * 2 );
+			ImSelm[NI] = (unsigned short*) realloc( ImSelm[NI], ( N + NAdd ) * 2 );
+			ImSerN[NI] = (unsigned short*) realloc( ImSerN[NI], ( N + NAdd ) * 2 );
 			for ( int i = 2; i < BR->NMemb; i++ )
 			{
-				word MID = BR->Memb[i];
+				unsigned short MID = BR->Memb[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4253,13 +4253,13 @@ void ImSelBrigade( byte NI, byte Type, int ID )
 	};
 };
 extern City CITY[8];
-void CreateBrOrder( byte NI, int i )
+void CreateBrOrder( unsigned char NI, int i )
 {
-	DWORD p = i;
+	unsigned long p = i;
 
-	word UID = word( p & 8191 );
-	word ort = word( ( p >> 13 ) & 255 );
-	word Type = word( p >> 21 );
+	unsigned short UID = unsigned short( p & 8191 );
+	unsigned short ort = unsigned short( ( p >> 13 ) & 255 );
+	unsigned short Type = unsigned short( p >> 21 );
 
 	//detecting officer
 	for ( int q = 0; q < 8; q++ )
@@ -4280,7 +4280,7 @@ void CreateBrOrder( byte NI, int i )
 		int N = NSL[NI];
 		for ( int j = 1; j < N; j++ )
 		{
-			word MID = Selm[NI][j];
+			unsigned short MID = Selm[NI][j];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -4314,7 +4314,7 @@ void PerformUpgradeLink( OneObject* OB );
 void StopUpgradeInBuilding( OneObject *OB )
 {
 	//Get player's nation from his building
-	byte NationID = OB->Nat->NNUM;
+	unsigned char NationID = OB->Nat->NNUM;
 
 	if ( OB //Instance exists
 		&& ( !OB->Ready ) //Upgrade still in progress
@@ -4346,26 +4346,26 @@ void StopUpgradeInBuilding( OneObject *OB )
 }
 
 //Stops running upgrade in the selected unit / building
-//byte Nat = Player who canceled his upgrade
-void StopUpg( byte Nat )
+//unsigned char Nat = Player who canceled his upgrade
+void StopUpg( unsigned char Nat )
 {
 	//Get national ID of the player
-	byte NAT1 = NatRefTBL[Nat];
+	unsigned char NAT1 = NatRefTBL[Nat];
 
 	//Get amount of selected units
 	int N = NSL[Nat];
 
 	//Get MosterIDs of selected units
-	word* Uni = Selm[Nat];
+	unsigned short* Uni = Selm[Nat];
 
 	//Get Serials (?) of selected units
-	word* USN = SerN[Nat];
+	unsigned short* USN = SerN[Nat];
 
 	//Iterate through selected units
 	for ( int i = 0; i < N; i++ )
 	{
 		//Get MonsterID
-		word MID = Uni[i];
+		unsigned short MID = Uni[i];
 
 		if ( MID != 0xFFFF )
 		{//Sanity check ok
@@ -4406,14 +4406,14 @@ void StopUpg( byte Nat )
 }
 
 void LeaveAll( OneObject* OB );
-void SelUnloadAll( byte Nat )
+void SelUnloadAll( unsigned char Nat )
 {
 	int N = NSL[Nat];
-	word* Uni = Selm[Nat];
-	word* USN = SerN[Nat];
+	unsigned short* Uni = Selm[Nat];
+	unsigned short* USN = SerN[Nat];
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Uni[i];
+		unsigned short MID = Uni[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4424,7 +4424,7 @@ void SelUnloadAll( byte Nat )
 		};
 	};
 };
-void MakeReformation( byte NI, word BrigadeID, byte FormType )
+void MakeReformation( unsigned char NI, unsigned short BrigadeID, unsigned char FormType )
 {
 	Brigade* BR = CITY[NatRefTBL[NI]].Brigs + BrigadeID;
 	if ( BR->Enabled&&BR->WarType )
@@ -4432,7 +4432,7 @@ void MakeReformation( byte NI, word BrigadeID, byte FormType )
 		int RealNM = 0;
 		for ( int i = 2; i < BR->NMemb; i++ )
 		{
-			word MID = BR->Memb[i];
+			unsigned short MID = BR->Memb[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -4450,14 +4450,14 @@ void MakeReformation( byte NI, word BrigadeID, byte FormType )
 		{
 			int WT = SG->Forms[j] + 1;
 			OrderDescription* ODE = ElementaryOrders + SG->Forms[j];
-			word* TMP = new word[ODE->NUnits];
+			unsigned short* TMP = new unsigned short[ODE->NUnits];
 			memset( TMP, 0xFF, ODE->NUnits * 2 );
 			RealNM = 0;
 			int xc = 0;
 			int yc = 0;
 			for ( int q = 2; q < BR->NMemb; q++ )
 			{
-				word MID = BR->Memb[q];
+				unsigned short MID = BR->Memb[q];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -4482,8 +4482,8 @@ void MakeReformation( byte NI, word BrigadeID, byte FormType )
 			if ( BR->MaxMemb < ODE->NUnits + 2 )
 			{
 				BR->MaxMemb = ODE->NUnits + 2;
-				BR->Memb = (word*) realloc( BR->Memb, BR->MaxMemb * 2 );
-				BR->MembSN = (word*) realloc( BR->MembSN, BR->MaxMemb * 2 );
+				BR->Memb = (unsigned short*) realloc( BR->Memb, BR->MaxMemb * 2 );
+				BR->MembSN = (unsigned short*) realloc( BR->MembSN, BR->MaxMemb * 2 );
 			};
 			memcpy( BR->Memb + 2, TMP, ODE->NUnits * 2 );
 			for ( int q = 2; q < RealNM; q++ )BR->MembSN[q] = Group[BR->Memb[q]]->Serial;
@@ -4493,13 +4493,13 @@ void MakeReformation( byte NI, word BrigadeID, byte FormType )
 		};
 	};
 };
-void ImClearSelection( byte Nat );
-void ReClearSelection( byte Nat );
-void SelectIdlePeasants( byte NI )
+void ImClearSelection( unsigned char Nat );
+void ReClearSelection( unsigned char Nat );
+void SelectIdlePeasants( unsigned char NI )
 {
 	ReClearSelection( NI );
 	int N = 0;
-	word* Units = NatList[NatRefTBL[NI]];
+	unsigned short* Units = NatList[NatRefTBL[NI]];
 	int Nu = NtNUnits[NatRefTBL[NI]];
 	for ( int i = 0; i < Nu; i++ )
 	{
@@ -4512,8 +4512,8 @@ void SelectIdlePeasants( byte NI )
 	};
 	if ( N )
 	{
-		Selm[NI] = new word[N];
-		SerN[NI] = new word[N];
+		Selm[NI] = new unsigned short[N];
+		SerN[NI] = new unsigned short[N];
 		NSL[NI] = N;
 		N = 0;
 		for ( int i = 0; i < Nu; i++ )
@@ -4533,11 +4533,11 @@ void SelectIdlePeasants( byte NI )
 		};
 	};
 };
-void ImSelectIdlePeasants( byte NI )
+void ImSelectIdlePeasants( unsigned char NI )
 {
 	ImClearSelection( NI );
 	int N = 0;
-	word* Units = NatList[NatRefTBL[NI]];
+	unsigned short* Units = NatList[NatRefTBL[NI]];
 	int Nu = NtNUnits[NatRefTBL[NI]];
 	for ( int i = 0; i < Nu; i++ )
 	{
@@ -4550,8 +4550,8 @@ void ImSelectIdlePeasants( byte NI )
 	};
 	if ( N )
 	{
-		ImSelm[NI] = new word[N];
-		ImSerN[NI] = new word[N];
+		ImSelm[NI] = new unsigned short[N];
+		ImSerN[NI] = new unsigned short[N];
 		ImNSL[NI] = N;
 		N = 0;
 		for ( int i = 0; i < Nu; i++ )
@@ -4571,11 +4571,11 @@ void ImSelectIdlePeasants( byte NI )
 		};
 	};
 };
-void SelectIdleMines( byte NI )
+void SelectIdleMines( unsigned char NI )
 {
 	ReClearSelection( NI );
 	int N = 0;
-	word* Units = NatList[NatRefTBL[NI]];
+	unsigned short* Units = NatList[NatRefTBL[NI]];
 	int Nu = NtNUnits[NatRefTBL[NI]];
 	for ( int i = 0; i < Nu; i++ )
 	{
@@ -4588,8 +4588,8 @@ void SelectIdleMines( byte NI )
 	};
 	if ( N )
 	{
-		Selm[NI] = new word[N];
-		SerN[NI] = new word[N];
+		Selm[NI] = new unsigned short[N];
+		SerN[NI] = new unsigned short[N];
 		NSL[NI] = N;
 		N = 0;
 		for ( int i = 0; i < Nu; i++ )
@@ -4611,11 +4611,11 @@ void SelectIdleMines( byte NI )
 };
 extern int NoMineSound;
 void PlayEffect( int n, int pan, int vol );
-void ImSelectIdleMines( byte NI )
+void ImSelectIdleMines( unsigned char NI )
 {
 	ImClearSelection( NI );
 	int N = 0;
-	word* Units = NatList[NatRefTBL[NI]];
+	unsigned short* Units = NatList[NatRefTBL[NI]];
 	int Nu = NtNUnits[NatRefTBL[NI]];
 	for ( int i = 0; i < Nu; i++ )
 	{
@@ -4628,8 +4628,8 @@ void ImSelectIdleMines( byte NI )
 	};
 	if ( N )
 	{
-		ImSelm[NI] = new word[N];
-		ImSerN[NI] = new word[N];
+		ImSelm[NI] = new unsigned short[N];
+		ImSerN[NI] = new unsigned short[N];
 		ImNSL[NI] = N;
 		N = 0;
 		for ( int i = 0; i < Nu; i++ )
@@ -4653,14 +4653,14 @@ void ImSelectIdleMines( byte NI )
 		PlayEffect( NoMineSound, 0, 0 );
 	};
 };
-void FreeSelected( byte NI )
+void FreeSelected( unsigned char NI )
 {
 	int Nsel = NSL[NI];
-	word* SMon = Selm[NI];
-	word* ser = SerN[NI];
+	unsigned short* SMon = Selm[NI];
+	unsigned short* ser = SerN[NI];
 	for ( int i = 0; i < Nsel; i++ )
 	{
-		word MID = SMon[i];
+		unsigned short MID = SMon[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -4679,20 +4679,20 @@ void FreeSelected( byte NI )
 	};
 	NSL[NI] = 0;
 };
-void PerformTorg( byte Nation, byte SellRes, byte BuyRes, int SellAmount );
+void PerformTorg( unsigned char Nation, unsigned char SellRes, unsigned char BuyRes, int SellAmount );
 
-int _implSelBrigade( byte* Ptr );
-int _implUnSelBrigade( byte* Ptr );
-int _implUnSelUnitsSet( byte* Ptr );
-int _implSelUnitsSet( byte* Ptr );
-int _implSelUnitsSet_OLD( byte* Ptr );
+int _implSelBrigade( unsigned char* Ptr );
+int _implUnSelBrigade( unsigned char* Ptr );
+int _implUnSelUnitsSet( unsigned char* Ptr );
+int _implSelUnitsSet( unsigned char* Ptr );
+int _implSelUnitsSet_OLD( unsigned char* Ptr );
 
 extern bool GameExit;
 extern int StartTmtmt;
 extern bool ShowStat;
 extern int PREVSEUSETPOS;
-void GroupSelectedFormations( byte NI );
-void UnGroupSelectedUnits( byte NI );
+void GroupSelectedFormations( unsigned char NI );
+void UnGroupSelectedUnits( unsigned char NI );
 extern int HISPEED;
 
 //Process orders from execution buffer
@@ -4729,14 +4729,14 @@ void ExecuteBuffer()
 
 	int pos = 0;
 	int len;
-	byte tp;
+	unsigned char tp;
 	CURMAXP = -1;
 	ADDGR( 5, GetTickCount(), EBPos, 0xD0 );
 
 	char sss[128];
 	while ( pos < EBPos )
 	{
-		byte cmd = ExBuf[pos];
+		unsigned char cmd = ExBuf[pos];
 		pos++;
 		switch ( cmd )
 		{
@@ -4752,7 +4752,7 @@ void ExecuteBuffer()
 			break;
 
 		case 3://Attack object with group
-			AttackSelected( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3], *(short*) ( &ExBuf[pos + 4] ) );
+			AttackSelected( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3], *(short*) ( &ExBuf[pos + 4] ) );
 			pos += 6;
 			break;
 
@@ -4763,12 +4763,12 @@ void ExecuteBuffer()
 
 		case 5://create building
 			CreateBuilding( ExBuf[pos], *(int*) ( &ExBuf[pos + 1] ), *(int*) ( &ExBuf[pos + 5] ),
-				*(word*) ( &ExBuf[pos + 9] ), ExBuf[pos + 11] );
+				*(unsigned short*) ( &ExBuf[pos + 9] ), ExBuf[pos + 11] );
 			pos += 12;
 			break;
 
 		case 6://produce object
-			ProduceObject( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			ProduceObject( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -4783,7 +4783,7 @@ void ExecuteBuffer()
 			break;
 
 		case 9://build or repair object
-			BuildWithSelected( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3] );
+			BuildWithSelected( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3] );
 			pos += 4;
 			break;
 
@@ -4802,7 +4802,7 @@ void ExecuteBuffer()
 			break;
 
 		case 14:
-			PerformUpgr( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			PerformUpgr( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -4867,7 +4867,7 @@ void ExecuteBuffer()
 			pos += 3;
 			break;
 
-		case 33://Kill selected units / buildings (DEL key), set through CmdDie( byte NI )
+		case 33://Kill selected units / buildings (DEL key), set through CmdDie( unsigned char NI )
 			DieSelected( ExBuf[pos] );
 			pos++;
 			break;
@@ -4892,7 +4892,7 @@ void ExecuteBuffer()
 			break;
 
 		case 38://produce object
-			UnProduceObject( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			UnProduceObject( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -4921,27 +4921,27 @@ void ExecuteBuffer()
 			break;
 
 		case 42://select type
-			ChooseSelectType( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			ChooseSelectType( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
 		case 43://select type
-			ChooseUnSelectType( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			ChooseUnSelectType( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
 		case 44:
-			CreateNewTerrMons( ExBuf[pos], *(int*) ( &ExBuf[pos + 1] ), *(int*) ( &ExBuf[pos + 5] ), *(word*) ( &ExBuf[pos + 9] ) );
+			CreateNewTerrMons( ExBuf[pos], *(int*) ( &ExBuf[pos + 1] ), *(int*) ( &ExBuf[pos + 5] ), *(unsigned short*) ( &ExBuf[pos + 9] ) );
 			pos += 11;
 			break;
 
 		case 45:
-			GoToMineWithSelected( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			GoToMineWithSelected( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
 		case 46:
-			LeaveMineWithSelected( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			LeaveMineWithSelected( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -4950,7 +4950,7 @@ void ExecuteBuffer()
 			break;
 
 		case 48:
-			GoToTransportWithSelected( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			GoToTransportWithSelected( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -4975,12 +4975,12 @@ void ExecuteBuffer()
 			break;
 
 		case 53:
-			SelectBrig( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			SelectBrig( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
 		case 54:
-			UnSelectBrig( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			UnSelectBrig( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -5005,7 +5005,7 @@ void ExecuteBuffer()
 			break;
 
 		case 59:
-			SelBrigade( ExBuf[pos], ExBuf[pos + 1], *(word*) ( &ExBuf[pos + 2] ) );
+			SelBrigade( ExBuf[pos], ExBuf[pos + 1], *(unsigned short*) ( &ExBuf[pos + 2] ) );
 			pos += 4;
 			break;
 
@@ -5015,7 +5015,7 @@ void ExecuteBuffer()
 			break;
 
 		case 61:
-			CreateFieldsBar( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ) );
+			CreateFieldsBar( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ) );
 			pos += 3;
 			break;
 
@@ -5035,7 +5035,7 @@ void ExecuteBuffer()
 			break;
 
 		case 65:
-			MakeReformation( ExBuf[pos], *(word*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3] );
+			MakeReformation( ExBuf[pos], *(unsigned short*) ( &ExBuf[pos + 1] ), ExBuf[pos + 3] );
 			pos += 4;
 			break;
 
@@ -5104,17 +5104,17 @@ void ExecuteBuffer()
 			break;
 
 		case 78:
-			ProduceObjects( ExBuf[pos], ExBuf[pos + 1], *(word*) ( &ExBuf[pos + 2] ) );
+			ProduceObjects( ExBuf[pos], ExBuf[pos + 1], *(unsigned short*) ( &ExBuf[pos + 2] ) );
 			pos += 4;
 			break;
 
 		case 79:
-			SETPING( *( (word*) ( ExBuf + pos + 1 ) ) );
+			SETPING( *( (unsigned short*) ( ExBuf + pos + 1 ) ) );
 			pos += 3;
 			break;
 
 		case 80:
-			DoItSlow( *( (word*) ( ExBuf + pos ) ) );
+			DoItSlow( *( (unsigned short*) ( ExBuf + pos ) ) );
 			pos += 2;
 			break;
 
@@ -5124,17 +5124,17 @@ void ExecuteBuffer()
 			break;
 
 		case 82:
-			DoFillFormation( ExBuf[pos], *( (word*) ( ExBuf + pos + 1 ) ) );
+			DoFillFormation( ExBuf[pos], *( (unsigned short*) ( ExBuf + pos + 1 ) ) );
 			pos += 3;
 			break;
 
 		case 83:
-			ComOfferVoting( *( (DWORD*) ( ExBuf + pos + 1 ) ) );
+			ComOfferVoting( *( (unsigned long*) ( ExBuf + pos + 1 ) ) );
 			pos += 5;
 			break;
 
 		case 84:
-			ComDoVote( *( (DWORD*) ( ExBuf + pos + 1 ) ), ExBuf[pos + 5] );
+			ComDoVote( *( (unsigned long*) ( ExBuf + pos + 1 ) ), ExBuf[pos + 5] );
 			pos += 6;
 			break;
 
@@ -5144,7 +5144,7 @@ void ExecuteBuffer()
 			break;
 
 		case 86:
-			ComSetGuardState( ExBuf[pos], *( (word*) ( ExBuf + pos + 1 ) ) );
+			ComSetGuardState( ExBuf[pos], *( (unsigned short*) ( ExBuf + pos + 1 ) ) );
 			pos += 3;
 			break;
 
@@ -5169,7 +5169,7 @@ void ExecuteBuffer()
 			break;
 
 		case 91:
-			ComChangePeaceTimeStage( *( (word*) ( ExBuf + pos ) ) );
+			ComChangePeaceTimeStage( *( (unsigned short*) ( ExBuf + pos ) ) );
 			pos += 2;
 			break;
 
@@ -5251,34 +5251,34 @@ void ExecuteBuffer()
 	}
 }
 
-void CmdSelBrigade( byte NI, word ID )
+void CmdSelBrigade( unsigned char NI, unsigned short ID )
 {
 
 	ExBuf[EBPos] = 200;
 	ExBuf[EBPos + 1] = NI;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = ID;
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = ID;
 	EBPos += 4;
 
 };
-int _implSelBrigade( byte* Ptr )
+int _implSelBrigade( unsigned char* Ptr )
 {
-	byte NI = Ptr[0];
-	word ID = *( (word*) ( Ptr + 1 ) );
+	unsigned char NI = Ptr[0];
+	unsigned short ID = *( (unsigned short*) ( Ptr + 1 ) );
 	Brigade* BR = CITY[NI].Brigs + ID;
-	word* MEM = BR->Memb;
+	unsigned short* MEM = BR->Memb;
 	int N = BR->NMemb;
 	int NAdd = 0;
 	for ( int i = 2; i < N; i++ )
 	{
-		word MID = MEM[i];
+		unsigned short MID = MEM[i];
 		if ( MID != 0xFFFF && Group[MID] )NAdd++;
 	};
-	Selm[NI] = (word*) realloc( Selm[NI], ( NAdd + NSL[NI] ) << 1 );
-	SerN[NI] = (word*) realloc( Selm[NI], ( NAdd + NSL[NI] ) << 1 );
+	Selm[NI] = (unsigned short*) realloc( Selm[NI], ( NAdd + NSL[NI] ) << 1 );
+	SerN[NI] = (unsigned short*) realloc( Selm[NI], ( NAdd + NSL[NI] ) << 1 );
 	int NS = NSL[NI];
 	for ( int i = 2; i < N; i++ )
 	{
-		word MID = MEM[i];
+		unsigned short MID = MEM[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5293,26 +5293,26 @@ int _implSelBrigade( byte* Ptr )
 	NSL[NI] = NS;
 	return 3;
 };
-void CmdUnSelBrigade( byte NI, word ID )
+void CmdUnSelBrigade( unsigned char NI, unsigned short ID )
 {
 
 	ExBuf[EBPos] = 201;
 	ExBuf[EBPos + 1] = NI;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = ID;
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = ID;
 	EBPos += 4;
 
 };
-int _implUnSelBrigade( byte* Ptr )
+int _implUnSelBrigade( unsigned char* Ptr )
 {
-	byte NI = Ptr[0];
-	word ID = *( (word*) ( Ptr + 1 ) );
-	word* SU = Selm[NI];
-	word* SN = SerN[NI];
+	unsigned char NI = Ptr[0];
+	unsigned short ID = *( (unsigned short*) ( Ptr + 1 ) );
+	unsigned short* SU = Selm[NI];
+	unsigned short* SN = SerN[NI];
 	int N = NSL[NI];
 	int N1 = 0;
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SU[i];
+		unsigned short MID = SU[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5339,7 +5339,7 @@ int _implUnSelBrigade( byte* Ptr )
 
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = SU[i];
+		unsigned short MID = SU[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5349,24 +5349,24 @@ int _implUnSelBrigade( byte* Ptr )
 	return 3;
 }
 
-void CmdUnSelUnitsSet( byte NI, word* BUF, int NU )
+void CmdUnSelUnitsSet( unsigned char NI, unsigned short* BUF, int NU )
 {
 	ExBuf[EBPos] = 202;
 	ExBuf[EBPos + 1] = NI;
-	*( (word*) ( ExBuf + EBPos + 2 ) ) = word( NU );
+	*( (unsigned short*) ( ExBuf + EBPos + 2 ) ) = unsigned short( NU );
 	memcpy( ExBuf + EBPos + 4, BUF, NU << 1 );
 	EBPos += 4 + NU * 2;
 
 }
 
-int _implUnSelUnitsSet( byte* Ptr )
+int _implUnSelUnitsSet( unsigned char* Ptr )
 {
-	byte NI = Ptr[0];
-	word N = *( (word*) ( Ptr + 1 ) );
-	word* Units = (word*) ( Ptr + 3 );
+	unsigned char NI = Ptr[0];
+	unsigned short N = *( (unsigned short*) ( Ptr + 1 ) );
+	unsigned short* Units = (unsigned short*) ( Ptr + 3 );
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Units[i];
+		unsigned short MID = Units[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5377,13 +5377,13 @@ int _implUnSelUnitsSet( byte* Ptr )
 			};
 		};
 	};
-	word* SU = Selm[NI];
-	word* SN = SerN[NI];
+	unsigned short* SU = Selm[NI];
+	unsigned short* SN = SerN[NI];
 	int N2 = NSL[NI];
 	int N1 = 0;
 	for ( int i = 0; i < N2; i++ )
 	{
-		word MID = SU[i];
+		unsigned short MID = SU[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5405,7 +5405,7 @@ int _implUnSelUnitsSet( byte* Ptr )
 	}
 	for ( int i = 0; i < N; i++ )
 	{
-		word MID = Units[i];
+		unsigned short MID = Units[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5419,16 +5419,16 @@ int _implUnSelUnitsSet( byte* Ptr )
 	return 3 + N * 2;
 }
 
-int PACKSET( word* Set, int N, byte* outbuf, bool Write )
+int PACKSET( unsigned short* Set, int N, unsigned char* outbuf, bool Write )
 {
-	byte BASESET[8192];
+	unsigned char BASESET[8192];
 	memset( BASESET, 0, 8192 );
 	for ( int i = 0; i < N; i++ )
 	{
 		int p = Set[i];
 		if ( p < ULIMIT )BASESET[p >> 3] |= 1 << ( p & 7 );
 	};
-	byte LEVEL2[128 * 8];
+	unsigned char LEVEL2[128 * 8];
 	memset( LEVEL2, 0, 128 * 8 );
 	int N2 = 0;
 	for ( int i = 0; i < 1024 * 8; i++ )
@@ -5439,7 +5439,7 @@ int PACKSET( word* Set, int N, byte* outbuf, bool Write )
 			N2++;
 		};
 	};
-	byte LEVEL1[16 * 8];
+	unsigned char LEVEL1[16 * 8];
 	memset( LEVEL1, 0, 16 * 8 );
 	int N1 = 0;
 	for ( int i = 0; i < 128 * 8; i++ )
@@ -5450,7 +5450,7 @@ int PACKSET( word* Set, int N, byte* outbuf, bool Write )
 			N1++;
 		};
 	};
-	byte LEVEL0[16];
+	unsigned char LEVEL0[16];
 	memset( LEVEL0, 0, 16 );
 	int N0 = 0;
 	for ( int i = 0; i < 16 * 8; i++ )
@@ -5461,7 +5461,7 @@ int PACKSET( word* Set, int N, byte* outbuf, bool Write )
 			N0++;
 		};
 	};
-	word LEVELX = 0;
+	unsigned short LEVELX = 0;
 	int NX = 0;
 	for ( int i = 0; i < 16; i++ )
 	{
@@ -5509,18 +5509,18 @@ int PACKSET( word* Set, int N, byte* outbuf, bool Write )
 	return pos;
 }
 
-int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
+int UNPACKSET( unsigned char* Data, int* L, unsigned short* Out, bool Write )
 {
-	byte BASESET[1024 * 8];
+	unsigned char BASESET[1024 * 8];
 	memset( BASESET, 0, 1024 * 8 );
-	byte LEVEL2[128 * 8];
+	unsigned char LEVEL2[128 * 8];
 	memset( LEVEL2, 0, 128 * 8 );
-	byte LEVEL1[16 * 8];
+	unsigned char LEVEL1[16 * 8];
 	memset( LEVEL1, 0, 16 * 8 );
-	byte LEVEL0[16];
+	unsigned char LEVEL0[16];
 	memset( LEVEL0, 0, 8 * 2 );
-	word LEVELX = ( (word*) Data )[0];
-	word msk = 1;
+	unsigned short LEVELX = ( (unsigned short*) Data )[0];
+	unsigned short msk = 1;
 	int L0pos = 0;
 	int L1pos = 0;
 	int L2pos = 0;
@@ -5529,7 +5529,7 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 	int N1 = 0;
 	int N2 = 0;
 	int N3 = 0;
-	byte* CBF = Data + 2;
+	unsigned char* CBF = Data + 2;
 	for ( int i = 0; i < 16; i++ )
 	{
 		if ( LEVELX&msk )N0++;
@@ -5537,8 +5537,8 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 	};
 	for ( int i = 0; i < N0; i++ )
 	{
-		byte ms = 1;
-		byte cb = CBF[i];
+		unsigned char ms = 1;
+		unsigned char cb = CBF[i];
 		for ( int j = 0; j < 8; j++ )
 		{
 			if ( cb&ms )N1++;
@@ -5548,8 +5548,8 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 	CBF += N0;
 	for ( int i = 0; i < N1; i++ )
 	{
-		byte ms = 1;
-		byte cb = CBF[i];
+		unsigned char ms = 1;
+		unsigned char cb = CBF[i];
 		for ( int j = 0; j < 8; j++ )
 		{
 			if ( cb&ms )N2++;
@@ -5559,40 +5559,40 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 	CBF += N1;
 	for ( int i = 0; i < N2; i++ )
 	{
-		byte ms = 1;
-		byte cb = CBF[i];
+		unsigned char ms = 1;
+		unsigned char cb = CBF[i];
 		for ( int j = 0; j < 8; j++ )
 		{
 			if ( cb&ms )N3++;
 			ms <<= 1;
 		};
 	};
-	byte* L0BUF = Data + 2;
-	byte* L1BUF = Data + 2 + N0;
-	byte* L2BUF = Data + 2 + N0 + N1;
-	byte* L3BUF = Data + 2 + N0 + N1 + N2;
+	unsigned char* L0BUF = Data + 2;
+	unsigned char* L1BUF = Data + 2 + N0;
+	unsigned char* L2BUF = Data + 2 + N0 + N1;
+	unsigned char* L3BUF = Data + 2 + N0 + N1 + N2;
 	msk = 1;
 	for ( int i = 0; i < 16; i++ )
 	{
 		if ( LEVELX&msk )
 		{
-			byte b0 = LEVEL0[i] = L0BUF[L0pos];
+			unsigned char b0 = LEVEL0[i] = L0BUF[L0pos];
 			L0pos++;
-			byte m0 = 1;
+			unsigned char m0 = 1;
 			for ( int h = 0; h < 8; h++ )
 			{
 				if ( b0&m0 )
 				{
-					byte b = LEVEL1[i] = L1BUF[L1pos];
+					unsigned char b = LEVEL1[i] = L1BUF[L1pos];
 					L1pos++;
-					byte m = 1;
+					unsigned char m = 1;
 					for ( int j = 0; j < 8; j++ )
 					{
 						if ( b&m )
 						{
-							byte b1 = LEVEL2[( i << 3 ) + j] = L2BUF[L2pos];
+							unsigned char b1 = LEVEL2[( i << 3 ) + j] = L2BUF[L2pos];
 							L2pos++;
-							byte m1 = 1;
+							unsigned char m1 = 1;
 							for ( int k = 0; k < 8; k++ )
 							{
 								if ( b1&m1 )
@@ -5617,7 +5617,7 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 		if ( BASESET[i] )
 		{
 			msk = 1;
-			byte b = BASESET[i];
+			unsigned char b = BASESET[i];
 			for ( int j = 0; j < 8; j++ )
 			{
 				if ( b&msk )
@@ -5639,10 +5639,10 @@ int UNPACKSET( byte* Data, int* L, word* Out, bool Write )
 int PREVSEUSETPOS = -1;
 int PREVSEUSETPOSTART = -1;
 int PREVNAT = -1;
-word PREVSTREAM[2048];
+unsigned short PREVSTREAM[2048];
 int SUSTREAMSZ = 0;
 
-void CmdSelUnitsSet( byte NI, word* BUF, int NU )
+void CmdSelUnitsSet( unsigned char NI, unsigned short* BUF, int NU )
 {
 	if ( EBPos == PREVSEUSETPOS&&SUSTREAMSZ + NU < 2048 && PREVNAT == NI )
 	{
@@ -5670,25 +5670,25 @@ void CmdSelUnitsSet( byte NI, word* BUF, int NU )
 	}
 }
 
-int _implSelUnitsSet( byte* Ptr )
+int _implSelUnitsSet( unsigned char* Ptr )
 {
-	byte NI = Ptr[0];
-	word N;
-	word* Units;
-	word* tempbuf = nullptr;
+	unsigned char NI = Ptr[0];
+	unsigned short N;
+	unsigned short* Units;
+	unsigned short* tempbuf = nullptr;
 	int sz = 0;
 	if ( NI >= 32 )
 	{
 		N = UNPACKSET( Ptr + 1, &sz, nullptr, 0 );
-		tempbuf = new word[N];
+		tempbuf = new unsigned short[N];
 		UNPACKSET( Ptr + 1, &sz, tempbuf, 1 );
 		Units = tempbuf;
 		NI &= 15;
 	}
 	else
 	{
-		N = *( (word*) ( Ptr + 1 ) );
-		Units = (word*) ( Ptr + 3 );
+		N = *( (unsigned short*) ( Ptr + 1 ) );
+		Units = (unsigned short*) ( Ptr + 3 );
 	};
 	int N1 = 0;
 	for ( int i = 0; i < N; i++ )
@@ -5698,8 +5698,8 @@ int _implSelUnitsSet( byte* Ptr )
 	}
 
 	int N0 = NSL[NI];
-	Selm[NI] = (word*) realloc( Selm[NI], ( N0 + N1 ) * 2 );
-	SerN[NI] = (word*) realloc( SerN[NI], ( N0 + N1 ) * 2 );
+	Selm[NI] = (unsigned short*) realloc( Selm[NI], ( N0 + N1 ) * 2 );
+	SerN[NI] = (unsigned short*) realloc( SerN[NI], ( N0 + N1 ) * 2 );
 	N1 = N0;
 
 	for ( int i = 0; i < N; i++ )
@@ -5725,19 +5725,19 @@ int _implSelUnitsSet( byte* Ptr )
 	return 3 + N * 2;
 }
 
-void SmartSelectionCorrector( byte NI, word* M0, int N0 )
+void SmartSelectionCorrector( unsigned char NI, unsigned short* M0, int N0 )
 {
-	word* M1 = ImSelm[NI];
-	word* SN1 = ImSerN[NI];
-	word NADD = 0;
-	word NSUB = 0;
-	word SUBM[2048];
-	word ADDM[2048];
+	unsigned short* M1 = ImSelm[NI];
+	unsigned short* SN1 = ImSerN[NI];
+	unsigned short NADD = 0;
+	unsigned short NSUB = 0;
+	unsigned short SUBM[2048];
+	unsigned short ADDM[2048];
 
 	int N1 = ImNSL[NI];
 	for ( int i = 0; i < N0; i++ )
 	{
-		word MID = M0[i];
+		unsigned short MID = M0[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5746,7 +5746,7 @@ void SmartSelectionCorrector( byte NI, word* M0, int N0 )
 	};
 	for ( int i = 0; i < N1; i++ )
 	{
-		word MID = M1[i];
+		unsigned short MID = M1[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5763,7 +5763,7 @@ void SmartSelectionCorrector( byte NI, word* M0, int N0 )
 	};
 	for ( int i = 0; i < N0; i++ )
 	{
-		word MID = M0[i];
+		unsigned short MID = M0[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5793,7 +5793,7 @@ void SmartSelectionCorrector( byte NI, word* M0, int N0 )
 
 	for ( int i = 0; i < N0; i++ )
 	{
-		word MID = M0[i];
+		unsigned short MID = M0[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5806,7 +5806,7 @@ void SmartSelectionCorrector( byte NI, word* M0, int N0 )
 
 	for ( int i = 0; i < N1; i++ )
 	{
-		word MID = M1[i];
+		unsigned short MID = M1[i];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -5816,23 +5816,23 @@ void SmartSelectionCorrector( byte NI, word* M0, int N0 )
 }
 
 //-----------------OLD UNITS COMPRESSION----------------
-int UNPACKSET_OLD( byte* Data, int* L, word* Out, bool Write )
+int UNPACKSET_OLD( unsigned char* Data, int* L, unsigned short* Out, bool Write )
 {
-	byte BASESET[1024];
+	unsigned char BASESET[1024];
 	memset( BASESET, 0, 1024 );
-	byte LEVEL2[128];
+	unsigned char LEVEL2[128];
 	memset( LEVEL2, 0, 128 );
-	byte LEVEL1[16];
+	unsigned char LEVEL1[16];
 	memset( LEVEL1, 0, 16 );
-	word LEVEL0 = *( (word*) ( Data ) );
-	word msk = 1;
+	unsigned short LEVEL0 = *( (unsigned short*) ( Data ) );
+	unsigned short msk = 1;
 	int L1pos = 0;
 	int L2pos = 0;
 	int L3pos = 0;
 	int N1 = 0;
 	int N2 = 0;
 	int N3 = 0;
-	byte* CBF = Data + 2;
+	unsigned char* CBF = Data + 2;
 	for ( int i = 0; i < 16; i++ )
 	{
 		if ( LEVEL0&msk )N1++;
@@ -5840,8 +5840,8 @@ int UNPACKSET_OLD( byte* Data, int* L, word* Out, bool Write )
 	};
 	for ( int i = 0; i < N1; i++ )
 	{
-		byte ms = 1;
-		byte cb = CBF[i];
+		unsigned char ms = 1;
+		unsigned char cb = CBF[i];
 		for ( int j = 0; j < 8; j++ )
 		{
 			if ( cb&ms )N2++;
@@ -5851,32 +5851,32 @@ int UNPACKSET_OLD( byte* Data, int* L, word* Out, bool Write )
 	CBF += N1;
 	for ( int i = 0; i < N2; i++ )
 	{
-		byte ms = 1;
-		byte cb = CBF[i];
+		unsigned char ms = 1;
+		unsigned char cb = CBF[i];
 		for ( int j = 0; j < 8; j++ )
 		{
 			if ( cb&ms )N3++;
 			ms <<= 1;
 		};
 	};
-	byte* L1BUF = Data + 2;
-	byte* L2BUF = Data + 2 + N1;
-	byte* L3BUF = Data + 2 + N1 + N2;
+	unsigned char* L1BUF = Data + 2;
+	unsigned char* L2BUF = Data + 2 + N1;
+	unsigned char* L3BUF = Data + 2 + N1 + N2;
 	msk = 1;
 	for ( int i = 0; i < 16; i++ )
 	{
 		if ( LEVEL0&msk )
 		{
-			byte b = LEVEL1[i] = L1BUF[L1pos];
+			unsigned char b = LEVEL1[i] = L1BUF[L1pos];
 			L1pos++;
-			byte m = 1;
+			unsigned char m = 1;
 			for ( int j = 0; j < 8; j++ )
 			{
 				if ( b&m )
 				{
-					byte b1 = LEVEL2[( i << 3 ) + j] = L2BUF[L2pos];
+					unsigned char b1 = LEVEL2[( i << 3 ) + j] = L2BUF[L2pos];
 					L2pos++;
-					byte m1 = 1;
+					unsigned char m1 = 1;
 					for ( int k = 0; k < 8; k++ )
 					{
 						if ( b1&m1 )
@@ -5898,7 +5898,7 @@ int UNPACKSET_OLD( byte* Data, int* L, word* Out, bool Write )
 		if ( BASESET[i] )
 		{
 			msk = 1;
-			byte b = BASESET[i];
+			unsigned char b = BASESET[i];
 			for ( int j = 0; j < 8; j++ )
 			{
 				if ( b&msk )
@@ -5916,25 +5916,25 @@ int UNPACKSET_OLD( byte* Data, int* L, word* Out, bool Write )
 	*L = 2 + N1 + N2 + L3pos;
 	return sz;
 };
-int _implSelUnitsSet_OLD( byte* Ptr )
+int _implSelUnitsSet_OLD( unsigned char* Ptr )
 {
-	byte NI = Ptr[0];
-	word N;
-	word* Units;
-	word* tempbuf = nullptr;
+	unsigned char NI = Ptr[0];
+	unsigned short N;
+	unsigned short* Units;
+	unsigned short* tempbuf = nullptr;
 	int sz = 0;
 	if ( NI >= 32 )
 	{
 		N = UNPACKSET_OLD( Ptr + 1, &sz, nullptr, 0 );
-		tempbuf = new word[N];
+		tempbuf = new unsigned short[N];
 		UNPACKSET_OLD( Ptr + 1, &sz, tempbuf, 1 );
 		Units = tempbuf;
 		NI &= 15;
 	}
 	else
 	{
-		N = *( (word*) ( Ptr + 1 ) );
-		Units = (word*) ( Ptr + 3 );
+		N = *( (unsigned short*) ( Ptr + 1 ) );
+		Units = (unsigned short*) ( Ptr + 3 );
 	};
 	int N1 = 0;
 	for ( int i = 0; i < N; i++ )
@@ -5943,8 +5943,8 @@ int _implSelUnitsSet_OLD( byte* Ptr )
 		if ( OB&&OB->NNUM == NatRefTBL[NI] )N1++;
 	};
 	int N0 = NSL[NI];
-	Selm[NI] = (word*) realloc( Selm[NI], ( N0 + N1 ) * 2 );
-	SerN[NI] = (word*) realloc( SerN[NI], ( N0 + N1 ) * 2 );
+	Selm[NI] = (unsigned short*) realloc( Selm[NI], ( N0 + N1 ) * 2 );
+	SerN[NI] = (unsigned short*) realloc( SerN[NI], ( N0 + N1 ) * 2 );
 	N1 = N0;
 	for ( int i = 0; i < N; i++ )
 	{

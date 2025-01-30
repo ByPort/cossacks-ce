@@ -32,7 +32,6 @@
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 #include "Conststr.h"
-#include <Process.h>
 #include "MPlayer.h"
 #include "Recorder.h"
 #include "GSINC.H"
@@ -55,7 +54,7 @@ extern const int kSystemMessageDisplayTime;
 extern bool RUNMAPEDITOR;
 extern bool RUNUSERMISSION;
 extern char USERMISSPATH[128];
-extern word dwVersion;
+extern unsigned short dwVersion;
 
 extern int exFMode;
 
@@ -70,7 +69,7 @@ int GetGSC_Profile()
 	return GlobalRIF.Profile;
 }
 
-byte RedColor2 = 0xBB;
+unsigned char RedColor2 = 0xBB;
 extern int CurrentAnswer;
 
 void UnPress();
@@ -78,10 +77,10 @@ void UnPress();
 int CurrentNation = -1;
 extern int PitchTicks;
 extern int MaxPingTime;
-void StartPing( DWORD DPID, int ID );
+void StartPing( unsigned long DPID, int ID );
 void EndPing( int ID );
 bool CheckLogin();
-char* GetLString( DWORD DPID );
+char* GetLString( unsigned long DPID );
 
 #define MinPing0 50
 
@@ -97,7 +96,7 @@ void ShowLoading();
 int selected_network_protocol = 0;
 
 extern char CHATSTRING[256];
-extern DWORD CHATDPID;
+extern unsigned long CHATDPID;
 void SendChat( char* str, bool );
 extern int ModeLX[32];
 extern int ModeLY[32];
@@ -117,15 +116,15 @@ void CreateRandomMap( char* Name );
 void RandomMapDialog( char* Result );
 void RandomMapDialog1( char* Result, int N, char* Nats );
 bool IgnoreSlow = false;
-void PrepareGameMedia( byte myid, bool );
+void PrepareGameMedia( unsigned char myid, bool );
 extern int exRealLx;
 extern int exRealLy;
 bool CHKV( char* Name );
 bool WaitingHostGame( int );
 void NewMap( int szX, int szY );
 bool WaitingJoinGame( int );
-void SlowLoadPalette( LPCSTR lpFileName );
-void SlowUnLoadPalette( LPCSTR lpFileName );
+void SlowLoadPalette( const char* lpFileName );
+void SlowUnLoadPalette( const char* lpFileName );
 void SetDarkPalette();
 void CopyToScreen( int x, int y, int Lx, int Ly );
 void ChooseInterior( int Type );
@@ -139,18 +138,18 @@ extern int time8;
 void processMLoadGame();
 extern char GameName[128];
 bool ContinueGame;
-extern word rpos;
+extern unsigned short rpos;
 
 int EncodeOptionsInNumber( int *selected_opt_values );
 int DecodeOptionsFromNumber( const int number, int *result );
 
 char CurrentMap[64];
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
-void PrepareEditMedia( byte myid );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
+void PrepareEditMedia( unsigned char myid );
 extern bool EditMapMode;
 extern int RES[8][8];
-extern byte mapPos[16];
+extern unsigned char mapPos[16];
 void PreLoadExtendedMap( char* s );
 void PostLoadExtendedMap( char* s );
 void InitGame();
@@ -180,11 +179,11 @@ int PanelLy;
 bool MultiplayerStart;
 bool GameNeedToDraw;
 extern bool ChoosePosition;
-extern word NPlayers;
+extern unsigned short NPlayers;
 void CloseMPL();
 void LBEnumerateSessions( ListBox* LB, int );
 void AnalyseMessages();
-bool CreateNamedSession( char* Name, DWORD User2, int Max );
+bool CreateNamedSession( char* Name, unsigned long User2, int Max );
 bool InGame;
 bool InEditor;
 #ifndef NODPLAY
@@ -193,13 +192,13 @@ bool JoinNameToSession( int ns, char* Name );
 void FreeDDObjects( void );
 bool StartIGame( bool );
 extern bool GameInProgress;
-byte MyRace;
+unsigned char MyRace;
 #ifndef NODPLAY
 // TODO: remove all refs to this from Interface
 extern LPDIRECTPLAY3A		lpDirectPlay3A;
 #endif
-extern word PlayerMenuMode;
-extern LPVOID lplpConnectionBuffer[16];
+extern unsigned short PlayerMenuMode;
+extern void* lplpConnectionBuffer[16];
 extern bool SHOWSLIDE;
 
 void ProcessNetCash();
@@ -214,7 +213,7 @@ extern int CurPalette;
 extern int RealLx;
 extern int RealLy;
 
-void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCFont lpr );
+void ShowCharUNICODE( int x, int y, unsigned char* strptr, lpRLCFont lpr );
 
 void ShowProgStr( char* ss, int prog )
 {
@@ -234,10 +233,10 @@ void ShowProgStr( char* ss, int prog )
 	int spos = 0;
 	do
 	{
-		if ( spos <= L )ShowCharUNICODE( x0, y0, (byte*) ( ss + spos ), &WhiteFont );
-		else ShowCharUNICODE( x0, y0, (byte*) ( ss + spos ), &YellowFont );
+		if ( spos <= L )ShowCharUNICODE( x0, y0, (unsigned char*) ( ss + spos ), &WhiteFont );
+		else ShowCharUNICODE( x0, y0, (unsigned char*) ( ss + spos ), &YellowFont );
 		int LL;
-		x0 += GetRLCWidthUNICODE( YellowFont.RLC, (byte*) ( ss + spos ), &LL );
+		x0 += GetRLCWidthUNICODE( YellowFont.RLC, (unsigned char*) ( ss + spos ), &LL );
 		spos += LL;
 	} while ( ss[spos] );
 	CopyToScreen( 0, 0, RealLx, RSCRSizeY );
@@ -247,7 +246,7 @@ void ProcessNewInternet();
 int PrevT = 0;
 int COUNTER1 = 0;
 void IAmLeft();
-extern byte SpecCmd;
+extern unsigned char SpecCmd;
 
 void ShowOptMessage( char* ID, int v )
 {
@@ -278,11 +277,11 @@ bool PDIF_Inside = 0;
 extern int TIME1;
 int PrevProcTime = 0;
 extern City CITY[8];
-extern DWORD MyDPID;
+extern unsigned long MyDPID;
 //--------------------inserted from DIPLOMACY.H---------------//
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
 typedef void tpProcessDownloadInternetFiles();
-typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
+typedef void tpSendRecBuffer( unsigned char* Data, int size, bool Final );
 
 extern tpStartDownloadInternetFile* StartDownloadInternetFile;
 extern tpProcessDownloadInternetFiles* ProcessDownloadInternetFiles;
@@ -503,7 +502,7 @@ __declspec( dllexport ) bool ProcessMessages()
 				char ccx[128];
 
 				char tmp[32];
-				DWORD CID = GPROG.StageID[GPROG.CurStage];
+				unsigned long CID = GPROG.StageID[GPROG.CurStage];
 
 				tmp[0] = CID >> 24;
 				tmp[1] = ( CID >> 16 ) & 255;
@@ -700,11 +699,11 @@ void ClearScreen()
 	}
 }
 
-extern byte fog[8192 + 1024];
+extern unsigned char fog[8192 + 1024];
 
 __declspec( dllexport ) void DarkScreen()
 {
-	byte* sptr = (byte*) ScreenPtr;
+	unsigned char* sptr = (unsigned char*) ScreenPtr;
 	int sz = ScrWidth * RealLy;
 	for ( int i = 0; i < sz; i++ )
 	{
@@ -802,7 +801,7 @@ extern int ScrollSpeed;
 
 //-----------------SINGLE PLAYER---------------//
 void UnLoading();
-static byte Ntn[8];
+static unsigned char Ntn[8];
 bool NatChoose( SimpleDialog* SD )
 {
 	BpxTextButton* TB = (BpxTextButton*) SD;
@@ -835,9 +834,9 @@ void setCoor()
 	}
 }
 
-void LoadAIFromDLL( byte Nat, char* Name );
+void LoadAIFromDLL( unsigned char Nat, char* Name );
 
-void LoadNation( char* fn, byte NIndex, byte );
+void LoadNation( char* fn, unsigned char NIndex, unsigned char );
 
 extern City CITY[8];
 
@@ -972,7 +971,7 @@ void NoWaitWithMessage( char* Message );
 
 int ProcessInternetConnection( bool Active );
 bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port );
-bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers );
+bool CreateSession( char* SessName, char* Name, unsigned long User2, int MaxPlayers );
 extern int GMTYPE;
 
 bool historical_battle_over_gsc_network = false;
@@ -991,7 +990,7 @@ extern char ACCESS[16];
 //Also handles lobbies for Historical Battles over GSC network
 bool processMultiplayer()
 {
-	byte AddrBuf[128];
+	unsigned char AddrBuf[128];
 	memset( AddrBuf, 0, 128 );
 
 	int connection_menu_result = 0;
@@ -1213,7 +1212,7 @@ void processBattleMultiplayer()
 
 TryConnection:
 
-	byte AddrBuf[128];
+	unsigned char AddrBuf[128];
 	memset( AddrBuf, 0, 128 );
 
 	int connection_menu_result = MPL_ChooseConnection();
@@ -1348,13 +1347,13 @@ void ProcessMapOptions()
 };
 char DEFPLNAMES[8][64];
 //--------------------RESOURCE EDITOR----------------------//
-void MemScreenPart( int x, int y, int lx, int ly, byte* Ptr );
+void MemScreenPart( int x, int y, int lx, int ly, unsigned char* Ptr );
 extern int CBB_GPFILE;
 int ProcessResEdit()
 {
 	LocalGP BTNS( "Interface\\AI_Res" );
 	DialogsSystem DSS( ( RealLx - 532 ) >> 1, ( RealLy - 540 ) >> 1 );
-	byte* Back = (byte*) malloc( 532 * 544 );
+	unsigned char* Back = (unsigned char*) malloc( 532 * 544 );
 	MemScreenPart( ( RealLx - 532 ) >> 1, ( RealLy - 540 ) >> 1, 532, 540, Back );
 	DSS.addBPXView( nullptr, 0, 0, 532, 540, 1, 1, 1, Back, nullptr );
 	DSS.addGPPicture( nullptr, 0, 0, BTNS.GPID, 0 );
@@ -1373,7 +1372,7 @@ int ProcessResEdit()
 	char PLNAMES[9][64];
 	for ( int i = 0; i < 8; i++ )strcpy( PLNAMES[i], DEFPLNAMES[i] );
 	PLNAMES[8][0] = 0;
-	byte RESRID[8];
+	unsigned char RESRID[8];
 	int RESLOC[8];
 	int NRes = 0;
 	for ( int i = 0; i < 8; i++ )
@@ -1983,13 +1982,13 @@ bool ChangeAlias( SimpleDialog* SD )
 	return true;
 };
 extern int tmtmt;
-bool GetPreview( char* Name, byte* Data );
-void Decode( byte* data, byte* xlt, int Size )
+bool GetPreview( char* Name, unsigned char* Data );
+void Decode( unsigned char* data, unsigned char* xlt, int Size )
 {
 	for ( int i = 0; i < Size; i++ )data[i] = xlt[data[i]];
 };
 char* UNKN = "?UNKNOWN?";
-char* GetPlNameByID( DWORD ID )
+char* GetPlNameByID( unsigned long ID )
 {
 	for ( int i = 0; i < NPlayers; i++ )
 	{
@@ -2047,9 +2046,9 @@ void ShowCentralMessage( char* Message, int GPIDX )
 	ShowString( ( RealLx - L ) / 2 - DX, ( RealLy - GetRLCHeight( YellowFont.RLC, 'W' ) ) / 2, Message, &YellowFont );
 }
 
-__declspec( dllexport ) void ShowClanString( int x, int y, char* s, byte State, RLCFont* Fn, RLCFont* Fn1, int DY );
+__declspec( dllexport ) void ShowClanString( int x, int y, char* s, unsigned char State, RLCFont* Fn, RLCFont* Fn1, int DY );
 
-void xLine( int x, int y, int x1, int y1, byte c );
+void xLine( int x, int y, int x1, int y1, unsigned char c );
 
 int SearchPlayer( char* Nick )
 {
@@ -2086,7 +2085,7 @@ int GMMOD = 0;
 int GMLEV = 0;
 int GMMAXPL = 7;
 
-void DRAWBOX( int x, int y, int Lx, int Ly, int Idx, byte Active, int param )
+void DRAWBOX( int x, int y, int Lx, int Ly, int Idx, unsigned char Active, int param )
 {
 	DrawStdBar2( x, y, x + Lx - 1, y + Ly - 1, param );
 }
@@ -2329,11 +2328,11 @@ extern char** NatNames;
 
 void GETCOUNTRY( char* code, char* res );
 
-typedef byte GR_ARR[8][32];
-int DrawGraph( Canvas* CAN, int y0, int Npt, GR_ARR Data, byte* Col, int N, word* Max, char* Text )
+typedef unsigned char GR_ARR[8][32];
+int DrawGraph( Canvas* CAN, int y0, int Npt, GR_ARR Data, unsigned char* Col, int N, unsigned short* Max, char* Text )
 {
-	byte COL = 0x7C;
-	byte COL1 = 0x88;
+	unsigned char COL = 0x7C;
+	unsigned char COL1 = 0x88;
 	int L1 = 16;
 	int L2 = 102;
 	int L3 = L2 - 2;
@@ -2349,8 +2348,8 @@ int DrawGraph( Canvas* CAN, int y0, int Npt, GR_ARR Data, byte* Col, int N, word
 	int divisor = 100 * MaxV;
 	for ( int i = 0; i < N; i++ )
 	{
-		byte C = 0xD0 + Col[i] * 4;
-		byte* data = &Data[i][0];
+		unsigned char C = 0xD0 + Col[i] * 4;
+		unsigned char* data = &Data[i][0];
 		int Maxi = Max[i];
 		for ( int j = 1; j < Npt; j++ )
 		{
@@ -2374,12 +2373,12 @@ int  RESPOND = 0;
 //4-room is full
 //5-not created
 //6-room is in the game
-DWORD  PASSHASH = 0;
-word JP_ver = 0;
-DWORD CalcPassHash( char* pass )
+unsigned long  PASSHASH = 0;
+unsigned short JP_ver = 0;
+unsigned long CalcPassHash( char* pass )
 {
 	int L = strlen( pass );
-	DWORD S = 0;
+	unsigned long S = 0;
 	for ( int i = 0; i < L; i++ )S += pass[i];
 	for ( int i = 0; i < L - 1; i++ )S += pass[i] * pass[i + 1];
 	for ( int i = 0; i < L - 2; i++ )S += pass[i] * pass[i + 1] * pass[i + 2];
@@ -2420,7 +2419,7 @@ bool TryToJoinToPlayer( char* name )
 	case 2:
 		if ( EnterPassword() )
 		{
-			DWORD V = CalcPassHash( SessPassword );
+			unsigned long V = CalcPassHash( SessPassword );
 			int T0 = GetTickCount();
 			do
 			{
@@ -2593,7 +2592,7 @@ int GetMaxRealPing();
 extern int CurrentMaxPing[8];
 int PPTIME = 0;
 
-bool SendToAllPlayers( DWORD Size, LPVOID lpData );
+bool SendToAllPlayers( unsigned long Size, void* lpData );
 int GetMapSUMM( char* Name );
 int GetReadyPercent();
 bool CheckExistConn();
@@ -2601,7 +2600,7 @@ void PrintBadConn( char* str );
 
 char* _engNOCONN = "No direct connection established with:";
 
-byte MPL_NatRefTBL[8] = { 0,1,2,3,4,5,6,7 };
+unsigned char MPL_NatRefTBL[8] = { 0,1,2,3,4,5,6,7 };
 void SetStdTBL()
 {
 	for ( int i = 0; i < 8; i++ )
@@ -2612,7 +2611,7 @@ void SetStdTBL()
 
 int GetLogRank();
 
-void SETPLAYERDATA( DWORD ID, void* Data, int size, bool );
+void SETPLAYERDATA( unsigned long ID, void* Data, int size, bool );
 
 extern CDPID ServerDPID;
 
@@ -2620,7 +2619,7 @@ void ClearLPACK();
 
 bool GetPreviewName( char* Name, char* ccc );
 
-void DeepDeletePeer( DWORD ID );
+void DeepDeletePeer( unsigned long ID );
 
 int GetMyProfile();
 
@@ -2659,13 +2658,13 @@ bool MPL_WaitingGame( bool Host, bool SINGLE )
 	PlayerInfo MYPINF;
 	memset( &MYPINF, 0, sizeof MYPINF );
 
-	byte* Preview = new byte[( 292 * 190 ) + 4];
+	unsigned char* Preview = new unsigned char[( 292 * 190 ) + 4];
 	char Currand[200];
-	( (word*) Preview )[0] = 292;
-	( (word*) Preview )[1] = 190;
+	( (unsigned short*) Preview )[0] = 292;
+	( (unsigned short*) Preview )[1] = 190;
 	bool PrPresent = false;
 	char LastPrName[200] = "";
-	byte XLAT[256];
+	unsigned char XLAT[256];
 
 	ResFile fx = RReset( "2\\0to1.xlt" );
 	RBlockRead( fx, XLAT, 256 );
@@ -2747,9 +2746,9 @@ bool MPL_WaitingGame( bool Host, bool SINGLE )
 	TextButton* VersText[8];
 	GPPicture*  MREADY[8];
 
-	byte COMCOLOR[8];
-	byte COMNATION[8];
-	byte COMALLY[8];
+	unsigned char COMCOLOR[8];
+	unsigned char COMNATION[8];
+	unsigned char COMALLY[8];
 	int NComp = 0;
 	memset( COMCOLOR, 0, sizeof COMCOLOR );
 	memset( COMNATION, 0, sizeof COMNATION );
@@ -2920,8 +2919,8 @@ bool MPL_WaitingGame( bool Host, bool SINGLE )
 	}
 
 	int cc1 = 0;
-	byte mss1 = 1;
-	byte MSS1 = 0;
+	unsigned char mss1 = 1;
+	unsigned char MSS1 = 0;
 	bool GMREADY = true;
 
 	//---------------Page 1 - designed map--------------
@@ -3172,7 +3171,7 @@ ffe2:
 		NPlayers = 7;
 	}
 
-	byte CUSED = 0;
+	unsigned char CUSED = 0;
 	for ( int i = 0; i < NPlayers; i++ )
 	{
 		if ( PINFO[i].PlayerID != MyDPID )
@@ -3281,7 +3280,7 @@ ffe2:
 
 	int PREVSD = GetTickCount() - 3000;
 
-	word MaxVers = 0;
+	unsigned short MaxVers = 0;
 	int CURSUMM = 0;
 	int NOMREADY = -1;
 	char* OLDV = GetTextByID( "OLDVER" );
@@ -3348,7 +3347,7 @@ ffe2:
 	QueryPerformanceCounter( &V1 );
 	LARGE_INTEGER V2;
 	QueryPerformanceFrequency( &V2 );
-	DWORD GMGUID = V1.LowPart + V2.LowPart;
+	unsigned long GMGUID = V1.LowPart + V2.LowPart;
 
 	if ( SINGLE )
 	{
@@ -3527,7 +3526,7 @@ ffe2:
 			{
 				if ( CHATSTRING[0] == '@'&&CHATSTRING[1] == '@'&&CHATSTRING[2] == '@'&&CHATSTRING[3] == 127 )
 				{
-					DWORD ID;
+					unsigned long ID;
 					char ccx[64];
 					int z = sscanf( CHATSTRING, "%s%d", ccx, &ID );
 					if ( z == 2 && ID == MyDPID )
@@ -3639,7 +3638,7 @@ ffe2:
 
 			if ( GetRealTime() - PPTIME > 1000 )
 			{
-				DWORD lpp[3];
+				unsigned long lpp[3];
 				lpp[0] = 'PNTF';
 				lpp[1] = png;
 				lpp[2] = lpp[0] + lpp[1];
@@ -3753,7 +3752,7 @@ ffe2:
 		if ( Host )
 		{
 			int HostID = -1;
-			byte CMask = 0;
+			unsigned char CMask = 0;
 			for ( int i = 0; i < NPlayers; i++ )
 			{
 				if ( PINFO[i].Host )
@@ -3773,7 +3772,7 @@ ffe2:
 			{
 				if ( PINFO[HostID].COMPINFO[q] )
 				{
-					word W = PINFO[HostID].COMPINFO[q];
+					unsigned short W = PINFO[HostID].COMPINFO[q];
 					int Color = W & 15;
 					CMask |= 1 << Color;
 				}
@@ -3858,7 +3857,7 @@ ffe2:
 						{
 							if ( PINFO[HostID].COMPINFO[q] )
 							{
-								word W = PINFO[HostID].COMPINFO[q];
+								unsigned short W = PINFO[HostID].COMPINFO[q];
 								int Nat = W >> 11;
 								int Color = W & 15;
 								int Diff = ( W >> 8 ) & 7;
@@ -3927,7 +3926,7 @@ ffe2:
 						{
 							if ( PINFO[HostID].COMPINFO[q] )
 							{
-								word W = PINFO[HostID].COMPINFO[q];
+								unsigned short W = PINFO[HostID].COMPINFO[q];
 								int Nat = W >> 11;
 								int Color = W & 15;
 								int Diff = ( W >> 8 ) & 7;
@@ -4054,7 +4053,7 @@ ffe2:
 				{
 					if ( PINFO[HostID].COMPINFO[q] )
 					{
-						word W = PINFO[HostID].COMPINFO[q];
+						unsigned short W = PINFO[HostID].COMPINFO[q];
 						int Nat = W >> 11;
 						int Color = W & 15;
 						int Diff = ( W >> 8 ) & 7;
@@ -4517,7 +4516,7 @@ ffe2:
 						}
 						for ( int i = 0; i < kNumberOfAdditionalOptions; i++ )
 						{
-							byte param = 0x00;
+							unsigned char param = 0x00;
 							if ( i < 7 )
 							{//Compatibility with old memory layout (see comment to PlayerInfo)
 								param = PINFO[HostID].UserParam[i];
@@ -4621,7 +4620,7 @@ ffe2:
 					{
 						if ( !COMPPREV[i] )
 						{
-							byte msk = 0;
+							unsigned char msk = 0;
 							for ( int j = 0; j < NPlayers; j++ )
 							{
 								msk |= 1 << ColorBack[j]->Nation;
@@ -4690,7 +4689,7 @@ ffe2:
 						}
 						Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
 						Flags[i]->Nation = ColorBack[i]->Nation;
-						word W = int( Flags[i]->Nation )
+						unsigned short W = int( Flags[i]->Nation )
 							+ ( int( AliasBack[i]->Nation ) << 4 )
 							+ ( int( COMPS[i]->CurLine ) << 8 )
 							+ ( int( MNATION[i]->CurLine ) << 11 );
@@ -4709,11 +4708,11 @@ ffe2:
 				{
 					if ( i >= NPlayers )
 					{
-						word W = PINFO[HostID].COMPINFO[i];
+						unsigned short W = PINFO[HostID].COMPINFO[i];
 						if ( W )
 						{
 							COMPS[i]->Visible = 1;
-							word comps_val = ( W >> 8 ) & 7;
+							unsigned short comps_val = ( W >> 8 ) & 7;
 							if ( COMPS[i]->CurLine != comps_val )
 							{//Changed bot difficulty
 								COMPS[i]->CurLine = comps_val;
@@ -4826,7 +4825,7 @@ ffe2:
 		{
 			if ( COMPS[i]->Visible && COMPS[i]->CurLine )
 			{
-				byte MSS2 = 1 << ColorBack[i]->Nation;
+				unsigned char MSS2 = 1 << ColorBack[i]->Nation;
 				if ( MSS1 & MSS2 && Host )
 				{
 					GMREADY = false;
@@ -4852,7 +4851,7 @@ ffe2:
 				}
 				*/
 
-				byte bs = 0;
+				unsigned char bs = 0;
 				for ( int i = 0; i < NPlayers; i++ )
 				{
 					bs |= 1 << AliasBack[i]->Nation;
@@ -4877,7 +4876,7 @@ ffe2:
 
 			//teams calculating
 			int ntm = 0;
-			byte ams = 0;
+			unsigned char ams = 0;
 			int cur_tm[8];
 			memset( cur_tm, 0xFF, sizeof cur_tm );
 			for ( int i = 0; i < 8; i++ )
@@ -5059,7 +5058,7 @@ ffe2:
 		{
 			if ( PINFO[HostID].COMPINFO[i] )
 			{
-				word W = PINFO[HostID].COMPINFO[i];
+				unsigned short W = PINFO[HostID].COMPINFO[i];
 				int Nat = W >> 11;
 				int Color = W & 15;
 				MPL_NatRefTBL[Color] = Color;
@@ -5199,7 +5198,7 @@ int SetCurrentBattle( int BattleID,
 			RBlockWrite( FF2, &c, 1 );
 			c = 0x0A;
 			RBlockWrite( FF2, &c, 1 );
-			byte* Data = new byte[RFileSize( FF1 )];
+			unsigned char* Data = new unsigned char[RFileSize( FF1 )];
 			RBlockRead( FF1, Data, RFileSize( FF1 ) );
 			RBlockWrite( FF2, Data, RFileSize( FF1 ) );
 			RClose( FF2 );
@@ -5308,7 +5307,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 			RBlockWrite( FF2, &cx, 1 );
 			cx = 0x0A;
 			RBlockWrite( FF2, &cx, 1 );
-			byte* Data = new byte[RFileSize( FF1 )];
+			unsigned char* Data = new unsigned char[RFileSize( FF1 )];
 			RBlockRead( FF1, Data, RFileSize( FF1 ) );
 			RBlockWrite( FF2, Data, RFileSize( FF1 ) );
 			RClose( FF2 );
@@ -5394,7 +5393,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 		NPlayers = 2;
 	}
 
-	byte CUSED = 0;
+	unsigned char CUSED = 0;
 	for ( int i = 0; i < NPlayers; i++ )
 	{
 		if ( PINFO[i].PlayerID != MyDPID )
@@ -5404,7 +5403,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 	}
 
 	int cc1 = 0;
-	byte mss1 = 1;
+	unsigned char mss1 = 1;
 
 	while ( CUSED & mss1 )
 	{
@@ -5449,7 +5448,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 	PBACK.Clear();
 	PSUMM.ClearPingInfo();
 	ReceiveAll();
-	byte MSS1 = 0;
+	unsigned char MSS1 = 0;
 	bool GMREADY = true;
 	int HostID = -1;
 	int NCLINES = 0;
@@ -5460,7 +5459,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 	bool PresOldVers = 0;
 	int PREVSD = GetTickCount();
 	int NOMREADY = -1;
-	word MaxVers = 0;
+	unsigned short MaxVers = 0;
 	char* OLDV = GetTextByID( "OLDVER" );
 	for ( int i = 0; i < 2; i++ )PINFO[i].MapStyle = BattleID;
 	if ( Host )strcpy( MENU.DefaultHint, GetTextByID( "DEVHISUS" ) );
@@ -5567,7 +5566,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 			//MaxPingTime=png;
 			if ( GetRealTime() - PPTIME > 1000 )
 			{
-				DWORD lpp[3];
+				unsigned long lpp[3];
 				lpp[0] = 'PNTF';
 				lpp[1] = png;
 				lpp[2] = lpp[0] + lpp[1];
@@ -5824,7 +5823,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 		MSS1 = 0;
 		for ( int i = 0; i < NPlayers; i++ )
 		{
-			byte MSS2 = 1 << PINFO[i].ColorID;
+			unsigned char MSS2 = 1 << PINFO[i].ColorID;
 			if ( MSS1 & MSS2 )
 			{
 				GMREADY = false;
@@ -5899,7 +5898,7 @@ void CreateNationalMaskForRandomMap( char* );
 void CreateMaskForSaveFile( char* );
 void CreateNationalMaskForMap( char* );
 
-int DetermineNationAI( byte Nat )
+int DetermineNationAI( unsigned char Nat )
 {
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
@@ -5919,7 +5918,7 @@ int DetermineNationAI( byte Nat )
 	return -1;
 }
 
-bool GetPreview( char* Name, byte* Data );
+bool GetPreview( char* Name, unsigned char* Data );
 
 extern int RunMethod;
 
@@ -6054,7 +6053,7 @@ void SetCDVolume( int );
 int PlayMode = 2;
 void StopPlayCD();
 void PlayRandomTrack();
-extern byte TracksMask[16];
+extern unsigned char TracksMask[16];
 char RECFILE[128] = "";
 
 extern int screen_width;
@@ -6434,7 +6433,7 @@ bool CreateMultiplaterInterface();
 extern char BuildVersion[32];
 void SlideShow();
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 extern bool RetryVideo;
 int GetRndVid( int N );
 void processMLoadGame();
@@ -6855,12 +6854,12 @@ void CreateRecList( ListBox* LB )
 	};
 }
 
-void CmdLoadNetworkGame( byte NI, int ID, char* Name );
+void CmdLoadNetworkGame( unsigned char NI, int ID, char* Name );
 
 void SFLB_LoadGame( char* fnm, bool LoadNation );
 
 extern EXBUFFER EBufs[MaxPL];
-DWORD MAPREPL[8];
+unsigned long MAPREPL[8];
 
 bool CheckFileIdentity( char* Name )
 {
@@ -6869,9 +6868,9 @@ bool CheckFileIdentity( char* Name )
 		return true;
 	}
 
-	DWORD FID[512];
+	unsigned long FID[512];
 	FID[0] = 'FIDN';
-	DWORD S = GetMapSUMM( Name );
+	unsigned long S = GetMapSUMM( Name );
 	FID[1] = S;
 
 	if ( FID[1] == 0xFFFFFFFF )
@@ -7155,7 +7154,7 @@ void processMLoadGame()
 }
 
 //----------------SAVE GAME--------------//
-void CmdSaveNetworkGame( byte NI, int ID, char* Name );
+void CmdSaveNetworkGame( unsigned char NI, int ID, char* Name );
 bool CheckName( char* str )
 {
 	for ( int i = 0; i < NNames; i++ )
@@ -7270,12 +7269,12 @@ bool EnterStr( char * str, char* Message )
 	}
 	else return false;
 };
-void MemScreenPart( int x, int y, int lx, int ly, byte* Ptr )
+void MemScreenPart( int x, int y, int lx, int ly, unsigned char* Ptr )
 {
 	for ( int yy = 0; yy < ly; yy++ )
 	{
 		int ofs = x + ( y + yy )*ScrWidth;
-		memcpy( Ptr, ( (byte*) ScreenPtr ) + ofs, lx );
+		memcpy( Ptr, ( (unsigned char*) ScreenPtr ) + ofs, lx );
 		Ptr += lx;
 	};
 };
@@ -7290,7 +7289,7 @@ int EnterHi( int * val, int Type )
 	sprintf( passw, "%d", *val );
 	int LX = 400;
 	int LY = 118;
-	byte* PTR = new byte[( LX + 64 )*( LY + 200 )];
+	unsigned char* PTR = new unsigned char[( LX + 64 )*( LY + 200 )];
 	MemScreenPart( ( ( RealLx - LX ) >> 1 ) - 32, ( ( RealLy - LY ) >> 1 ) - 16, LX + 64, LY + 200, PTR );
 	DialogsSystem DSY( ( RealLx - LX ) >> 1, ( RealLy - LY ) >> 1 );
 	DSY.addBPXView( nullptr, -32, -16, LX + 64, LY + 200, 1, 1, 1, PTR, nullptr );
@@ -7354,7 +7353,7 @@ int EnterHi( int * val, int Type )
 	else return false;
 };
 extern "C" __declspec( dllexport ) void ShowVictory();
-extern "C" __declspec( dllexport ) void SelChangeNation( byte SrcNat, byte DstNat );
+extern "C" __declspec( dllexport ) void SelChangeNation( unsigned char SrcNat, unsigned char DstNat );
 void EnterChat()
 {
 	if ( NPlayers > 1 )return;
@@ -7446,7 +7445,7 @@ void EnterChat()
 					z = sscanf( passw, "%s%s", cc1, cc2 );
 					if ( z == 2 && !strcmp( cc1, "changeunit" ) )
 					{
-						word Type = 0xFFFF;
+						unsigned short Type = 0xFFFF;
 						for ( int i = 0; i < NATIONS->NMon; i++ )
 						{
 							if ( !strcmp( cc2, NATIONS->Mon[i]->MonsterID ) )
@@ -7456,11 +7455,11 @@ void EnterChat()
 								{
 									//found!!!
 									int N = NSL[MyNation];
-									word* IDS = Selm[MyNation];
-									word* SMS = SerN[MyNation];
+									unsigned short* IDS = Selm[MyNation];
+									unsigned short* SMS = SerN[MyNation];
 									for ( int j = 0; j < N; j++ )
 									{
-										word MID = IDS[j];
+										unsigned short MID = IDS[j];
 										if ( MID != 0xFFFF )
 										{
 											OneObject* OB = Group[MID];
@@ -7578,12 +7577,12 @@ bool LBCLICK( SimpleDialog* SD )
 	return false;
 };
 void SaveExtendedMap( char* fnm );
-void PushScreen( byte** Ptr );
-void PopScreen( byte* Ptr );
+void PushScreen( unsigned char** Ptr );
+void PopScreen( unsigned char* Ptr );
 bool ProcessSavingFile( char* Mask, char* DestName, int Header, bool clear );
 void ProcessGSaveMap()
 {
-	byte* p;
+	unsigned char* p;
 	PushScreen( &p );
 	if ( strstr( GameName, ".sav" ) || strstr( GameName, ".SAV" ) )GameName[0] = 0;
 	if ( ProcessSavingFile( "*.m3d", GameName, 7, 0 ) )
@@ -7614,7 +7613,7 @@ bool ProcessLoadingFile( char* Mask, char* DestName, int Header );
 extern bool PeaceMode;
 void ProcessGLoadMap()
 {
-	byte* p;
+	unsigned char* p;
 	PushScreen( &p );
 	if ( ProcessLoadingFile( "*.m3d", GameName, 4 ) )
 	{
@@ -7673,7 +7672,7 @@ void ProcessGLoadMap()
 
 //---------------------------------------//
 void NewMap( int szX, int szY );
-extern byte mapPos[16];
+extern unsigned char mapPos[16];
 void ClearAllZones();
 
 void CreateNewMap( int SizeX, int SizeY )
@@ -7909,14 +7908,14 @@ int ProcessGMapEditMainMenu()
 }
 
 //------------------Selecting Texture dialog--------------
-extern byte *tex1;
-extern byte EditMedia;
+extern unsigned char *tex1;
+extern unsigned char EditMedia;
 extern bool MEditMode;
 extern bool EditMapMode;
 extern int HeightEditMode;
-word TexList[128];
-word NTextures;
-word GetTexture()
+unsigned short TexList[128];
+unsigned short NTextures;
+unsigned short GetTexture()
 {
 	if ( !NTextures )
 		return 0;
@@ -8194,7 +8193,7 @@ stg:
 //---------------------------------------//
 extern int HintX;
 extern int HintY;
-byte ZoneOpt[128];
+unsigned char ZoneOpt[128];
 //  /-------------------------------------------------------\
 //  | /--------\  2    3    4    5    6    7    8   /------\|       
 //  | | 1      |                                    |      ||
@@ -8281,7 +8280,7 @@ void DelUnusedZones()
 
 void EconomePostDraw();
 extern bool ECOSHOW;
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 
 void DrawZones()
 {
@@ -8610,7 +8609,7 @@ extern bool LockPause;
 bool ShowStatistics();
 extern bool ShowStat;
 extern int WaitState;
-void CmdEndGame( byte NI, byte state, byte cause );
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause );
 int StartAboutTime = 0;
 int NAboutLn = -1;
 
@@ -9263,7 +9262,7 @@ void AllGame()
 }
 
 extern int PLNAT[8];
-void PrepareGameMedia( byte myid, bool );
+void PrepareGameMedia( unsigned char myid, bool );
 
 void FreeArrays();
 void SetupArrays();
@@ -9271,7 +9270,7 @@ void CreateTotalLocking();
 
 void ResearchIslands();
 
-void PrepareEditMedia( byte myid )
+void PrepareEditMedia( unsigned char myid )
 {
 	FreeArrays();
 	ADDSH = 1;
@@ -9388,7 +9387,7 @@ void ProcessHelp()
 	UnPress();
 };
 extern bool ProtectionMode;
-int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp2, byte or2, char* Text2, char* Quest )
+int ProcessComplexQuestion( int Nx, char* Bmp1, unsigned char or1, char* Text1, char* Bmp2, unsigned char or2, char* Text2, char* Quest )
 {
 	int Lx = Nx << 6;
 	DialogsSystem GMM( ( RealLx - Lx ) >> 1, 80 );
@@ -9564,7 +9563,7 @@ int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp
 	UnPress();
 	return ItemChoose;
 };
-int ProcessMultilineQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Quest )
+int ProcessMultilineQuestion( int Nx, char* Bmp1, unsigned char or1, char* Text1, char* Quest )
 {
 	int Lx = Nx << 6;
 	DialogsSystem GMM( ( RealLx - Lx ) >> 1, 80 );
@@ -10063,14 +10062,14 @@ SQPicture btless0;
 SQPicture prepu;
 SQPicture prepp;
 
-byte* higrad;
+unsigned char* higrad;
 int grsize;
 //Load resource file higrad.set
 void SFLB_LoadMEDButtons()
 {
 	ResFile f1 = RReset( "higrad.set" );
 	grsize = RFileSize( f1 );
-	higrad = new byte[grsize];
+	higrad = new unsigned char[grsize];
 	RBlockRead( f1, higrad, grsize );
 	RClose( f1 );
 }
@@ -10084,8 +10083,8 @@ int winX;
 int winY;
 int winX1;
 int winY1;
-byte* HiMap;
-byte* HiMap1;
+unsigned char* HiMap;
+unsigned char* HiMap1;
 
 void SetupHiMap()
 {
@@ -10101,8 +10100,8 @@ void SetupHiMap()
 	}
 	HiStepX = div( msx << ( 8 + 5 ), HiLx ).quot;
 	HiStepY = div( msy << ( 8 + 5 ), HiLy ).quot;
-	HiMap = new byte[HiLx * HiLy];
-	HiMap1 = new byte[HiLx * HiLy];
+	HiMap = new unsigned char[HiLx * HiLy];
+	HiMap1 = new unsigned char[HiLx * HiLy];
 }
 
 void DeleteHiMap()
@@ -10325,7 +10324,7 @@ int getR( double a, int r )
 		+1 + ( tpr5 >> 6 ) ) / ( 2 + ( tpr5 >> 6 ) ) );
 };
 
-void Pix( int x, int y, byte c )
+void Pix( int x, int y, unsigned char c )
 {
 	if ( x >= winX&&y >= winY&&x < winX1&&y < winY1 )
 	{
@@ -10333,7 +10332,7 @@ void Pix( int x, int y, byte c )
 	}
 }
 
-void Circ( int x, int y, int r, int n, byte c )
+void Circ( int x, int y, int r, int n, unsigned char c )
 {
 	r = ( r*HiLx ) / 496;
 	if ( HiRound == 1 )
@@ -10500,10 +10499,10 @@ int Transf5( int x, int y, int Hi )
 //----------------------------------------------------------
 void CopyToOffScreen( int zx, int zy,
 	int srLx, int srLy,
-	byte* data );
+	unsigned char* data );
 void CopyToRealScreen( int zx, int zy,
 	int srLx, int srLy,
-	byte* data );
+	unsigned char* data );
 void CreateMiniMap();
 void ClearRender();
 int mul3( int );
@@ -10541,15 +10540,15 @@ bool RandomMap( SimpleDialog* SD )
 	return true;
 }
 
-bool LoadBitmapLikeGrayscale( char* Name, int* Lx, int* Ly, byte** res );
-int GetResVal( byte* res, int LX, int LY, int RLX, int RLY, int x, int y );
+bool LoadBitmapLikeGrayscale( char* Name, int* Lx, int* Ly, unsigned char** res );
+int GetResVal( unsigned char* res, int LX, int LY, int RLX, int RLY, int x, int y );
 
 bool LoadClick( SimpleDialog* SD )
 {
 	char BMPS[128];
 	if ( ProcessLoadingFile( "UserBitmaps\\*.bmp", BMPS, 3 ) )
 	{
-		byte* DATA;
+		unsigned char* DATA;
 		char NAME[128];
 		sprintf( NAME, "UserBitmaps\\%s", BMPS );
 		int LX, LY;
@@ -10768,8 +10767,8 @@ void EditMiniMap()
 //-------------\         trees,stones,....             /---------//
 //---------------------------------------------------------------//
 int InteriorType;
-word TreeItems[256];
-word NTreeItems;
+unsigned short TreeItems[256];
+unsigned short NTreeItems;
 extern int BlobMode;
 
 void ChooseTree()
@@ -11075,7 +11074,7 @@ bool WaitingGame( bool Host )
 	OkBtn->OnUserClick = &MMItemChoose;
 
 	PIEnumeratePlayers( PINFO, 0 );
-	byte CUSED = 0;
+	unsigned char CUSED = 0;
 	for ( int i = 0; i < NPlayers; i++ )
 	{
 		if ( PINFO[i].PlayerID != MyDPID )
@@ -11085,7 +11084,7 @@ bool WaitingGame( bool Host )
 	}
 
 	int cc1 = 0;
-	byte mss1 = 1;
+	unsigned char mss1 = 1;
 	while ( CUSED & mss1 )
 	{
 		cc1++;
@@ -11200,7 +11199,7 @@ bool WaitingGame( bool Host )
 		int MSS1 = 0;
 		for ( int i = 0; i < NPlayers; i++ )
 		{
-			byte MSS2 = 1 << PINFO[i].ColorID;
+			unsigned char MSS2 = 1 << PINFO[i].ColorID;
 			if ( MSS1&MSS2 )
 			{
 				GMREADY = false;
@@ -11286,36 +11285,36 @@ extern bool NotInGame;
 void CenterScreen();
 extern bool NoWinner;
 void CreateInfoMap();
-extern word COMPSTART[8];
+extern unsigned short COMPSTART[8];
 
-extern "C" __declspec( dllexport ) void StartAI( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
+extern "C" __declspec( dllexport ) void StartAI( unsigned char Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
 
 extern int RM_LandType;
 extern int RM_Resstart;
 extern int RM_Restot;
 void FreeArrays();
 void SetupArrays();
-extern byte* RivDir;
+extern unsigned char* RivDir;
 extern char** NatsIDS;
-extern byte XVIIIState;
+extern unsigned char XVIIIState;
 void PerformNewUpgrade( Nation* NT, int UIndex, OneObject* OB );
 
 extern int RunDataSize;
-extern byte RunData[2048];
+extern unsigned char RunData[2048];
 
-void StartAIEx( byte Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
+void StartAIEx( unsigned char Nat, char* Name, int Land, int Money, int ResOnMap, int Difficulty );
 
 void LoadMessagesFromFile( char* Name );
 
-extern byte BalloonState;
-extern byte CannonState;
-extern byte NoArtilleryState;
-extern byte XVIIIState;
-extern byte CaptState;
-extern byte SaveState;
-extern byte DipCentreState;
-extern byte ShipyardState;
-extern byte MarketState;
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char NoArtilleryState;
+extern unsigned char XVIIIState;
+extern unsigned char CaptState;
+extern unsigned char SaveState;
+extern unsigned char DipCentreState;
+extern unsigned char ShipyardState;
+extern unsigned char MarketState;
 
 void GetOptionsFromMap( char* Name )
 {
@@ -11354,7 +11353,7 @@ void GetOptionsFromMap( char* Name )
 	}
 }
 
-void PrepareGameMedia( byte myid, bool SaveNR )
+void PrepareGameMedia( unsigned char myid, bool SaveNR )
 {
 	RandomMapDesc RMP;
 	RMP.Load( "Terrain\\Res.dat" );
@@ -11381,7 +11380,7 @@ void PrepareGameMedia( byte myid, bool SaveNR )
 	SetupArrays();
 	NewMap( 240 << ADDSH, 240 << ADDSH );
 
-	byte NRTB[8];
+	unsigned char NRTB[8];
 
 	memcpy( NRTB, NatRefTBL, 8 );
 
@@ -11429,7 +11428,7 @@ void PrepareGameMedia( byte myid, bool SaveNR )
 	{
 		if ( COMPSTART[i] )
 		{
-			word W = COMPSTART[i];
+			unsigned short W = COMPSTART[i];
 			int Nat = W >> 11;
 			int Color = W & 15;
 			int Diff = ( W >> 8 ) & 7;
@@ -11471,7 +11470,7 @@ void PrepareGameMedia( byte myid, bool SaveNR )
 			else
 			{
 				int gid = PINFO[i].GroupID;
-				byte mas = 0;
+				unsigned char mas = 0;
 				for ( int j = 0; j < 7; j++ )
 				{
 					if ( PINFO[j].name[0] || j < NPlayers || PINFO[j].MapStyle )
@@ -11500,9 +11499,9 @@ void PrepareGameMedia( byte myid, bool SaveNR )
 	NotInGame = true;
 	if ( !( strstr( CurrentMap, ".SAV" ) || strstr( CurrentMap, ".sav" ) ) )
 	{
-		byte RRR[8];
+		unsigned char RRR[8];
 		memcpy( RRR, NatRefTBL, 8 );
-		byte NMASKS[8];
+		unsigned char NMASKS[8];
 		for ( int i = 0; i < 8; i++ )
 		{
 			NMASKS[i] = NATIONS[i].NMask;
@@ -11839,9 +11838,9 @@ bool ProcessSingleMission( int n, int Diff )
 		ResFile f = RReset( SMS->Intro[2] );
 		if ( f != INVALID_HANDLE_VALUE )
 		{
-			byte crlf[6] = { 0x20,0x0D,0x0A,0x0D,0x0A };
+			unsigned char crlf[6] = { 0x20,0x0D,0x0A,0x0D,0x0A };
 			int sz = RFileSize( f );
-			byte* buf = new byte[sz];
+			unsigned char* buf = new unsigned char[sz];
 			RBlockRead( f, buf, sz );
 			RClose( f );
 			f = RRewrite( "tmp.txt" );
@@ -12254,12 +12253,12 @@ bool SelectSingleMission()
 	KeyPressed = 0;
 	LastKey = 0;
 	/*
-	byte* Preview=new byte[(292*190)+4];
-	((word*)Preview)[0]=292;
-	((word*)Preview)[1]=190;
+	unsigned char* Preview=new unsigned char[(292*190)+4];
+	((unsigned short*)Preview)[0]=292;
+	((unsigned short*)Preview)[1]=190;
 	bool PrPresent=false;
 	char LastPrName[200]="";
-	byte XLAT[256];
+	unsigned char XLAT[256];
 	ResFile fx=RReset("2\\0to1.xlt");
 	RBlockRead(fx,XLAT,256);
 	RClose(fx);
@@ -12293,7 +12292,7 @@ bool SelectSingleMission()
 	MMenu.addPicture( nullptr, 0, 0, &Back, &Back, &Back );
 
 	SQPicture PRV( "Maps2\\Single1.bmp" );
-	BPXView* PREV = MMenu.addBPXView( nullptr, 495, 162, 292, 190, 1, 1, 1, (byte*) ( PRV.PicPtr + 2 )/*Preview+4*/, nullptr );
+	BPXView* PREV = MMenu.addBPXView( nullptr, 495, 162, 292, 190, 1, 1, 1, (unsigned char*) ( PRV.PicPtr + 2 )/*Preview+4*/, nullptr );
 	//PREV->Visible=false;
 	GPPicture* PMASK = MMenu.addGPPicture( nullptr, 495, 162, MASKA.GPID, 0 );
 	LocalGP HFONT( "rom10" );
@@ -12385,7 +12384,7 @@ HHH1:
 			if ( LB->CurItem >= N0 )
 			{
 				PRV.LoadPicture( AMSP.Pack[LB->CurItem - N0].Bitmap );
-				PREV->Ptr = (byte*) ( PRV.PicPtr + 2 );
+				PREV->Ptr = (unsigned char*) ( PRV.PicPtr + 2 );
 				prmiss = LB->CurItem;
 			}
 			else
@@ -12393,7 +12392,7 @@ HHH1:
 				char ccc[200];
 				sprintf( ccc, "Maps2\\single%d.bmp", LB->CurItem + 1 );
 				PRV.LoadPicture( ccc );
-				PREV->Ptr = (byte*) ( PRV.PicPtr + 2 );
+				PREV->Ptr = (unsigned char*) ( PRV.PicPtr + 2 );
 				prmiss = LB->CurItem;
 			};
 		};
@@ -12855,7 +12854,7 @@ void SlideShow()
 
 void ClearScreen();
 char* ROME[6] = { "II","III","IV","V","VI","VII" };
-int ShowStatScreen( bool Next, bool Prev, byte Kind );
+int ShowStatScreen( bool Next, bool Prev, unsigned char Kind );
 int ShowUserStat( bool Prev, bool Next );
 int LPAL = 1;
 void PrintNum( int N, char* res )
@@ -12914,7 +12913,7 @@ bool ShowStatistics()
 	return res == 3;
 }
 
-void CreateCommName( byte Nat, char* Res )
+void CreateCommName( unsigned char Nat, char* Res )
 {
 	Res[0] = 0;
 	for ( int i = 0; i < 7; i++ )
@@ -12946,7 +12945,7 @@ void CalculateStatsScreenOffsets( int stats_width )
 	}
 }
 
-int ShowStatScreen( bool Next, bool Prev, byte Kind )
+int ShowStatScreen( bool Next, bool Prev, unsigned char Kind )
 {
 	bool ExStyle = ( NPlayers < 2 && !PlayGameMode );
 
@@ -12974,7 +12973,7 @@ int ShowStatScreen( bool Next, bool Prev, byte Kind )
 
 	y += ODY;
 	Ly -= ODY;
-	word* Val[8];
+	unsigned short* Val[8];
 	int NVal[8];
 	char* Header;
 
@@ -13002,7 +13001,7 @@ int ShowStatScreen( bool Next, bool Prev, byte Kind )
 		int max = 0;
 		Nation* NT = NATIONS + i;
 		int N = NVal[i];
-		word* VAL = Val[i];
+		unsigned short* VAL = Val[i];
 		MaxGrTime = N << 8;
 
 		for ( int j = 0; j < N; j++ )
@@ -13201,7 +13200,7 @@ int ShowStatScreen( bool Next, bool Prev, byte Kind )
 		ItemChoose = -1;
 		KeyPressed = 0;
 		Lpressed = 0;
-		byte mm = 1;
+		unsigned char mm = 1;
 
 		do
 		{
@@ -13262,9 +13261,9 @@ int ShowStatScreen( bool Next, bool Prev, byte Kind )
 			for ( int i = 0; i < NNAT; i++ )
 			{
 				Nation* NT = NATIONS + NATS[i];
-				byte c = NATS[i] * 4 + 0xD0;
+				unsigned char c = NATS[i] * 4 + 0xD0;
 				int N = NVal[NATS[i]];
-				word* VAL = Val[NATS[i]];
+				unsigned short* VAL = Val[NATS[i]];
 
 				for ( int j = 0; j < N; j++ )
 				{
@@ -13315,7 +13314,7 @@ int ShowStatScreen( bool Next, bool Prev, byte Kind )
 	return ItemChoose;
 }
 
-int ShowUnitsList( int x, int y, int Lx, word* Value );
+int ShowUnitsList( int x, int y, int Lx, unsigned short* Value );
 
 //Draws page 3 of stats screen
 int ShowUserStat( bool Prev, bool Next )
@@ -13381,14 +13380,14 @@ int ShowUserStat( bool Prev, bool Next )
 	NEXT->Enabled = Next;
 	NEXT->Visible = Next;
 	ListBox* LB = STAT.addListBox( nullptr, x + 25, y + 35, 30, 180, 26, &WhiteFont, &YellowFont, nullptr );
-	byte NATS[8];
+	unsigned char NATS[8];
 	int NNAT = 0;
 	for ( int i = 0; i < 7; i++ )
 	{
 		int max = 0;
 		Nation* NT = NATIONS + i;
 		int N = NT->NPopul;
-		word* VAL = NT->Popul;
+		unsigned short* VAL = NT->Popul;
 		for ( int j = 0; j < N; j++ )
 		{
 			if ( VAL[j] > max )
@@ -13602,14 +13601,14 @@ extern char ChatString[128];
 extern wchar_t unicode_chat_string[128];
 bool Superuser = 0;
 void CreateTimedHint( char* s, int time );
-void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount );
-void CmdMoney( byte NI );
+void CmdGiveMoney( unsigned char SrcNI, unsigned char DstNI, unsigned char Res, int Amount );
+void CmdMoney( unsigned char NI );
 int ReadKey();
 extern int NKeys;
 extern char CHATSTRING[256];
 size_t ChatCursPos = 0;
 bool CheckFNSend( int idx );
-extern byte LastAscii;
+extern unsigned char LastAscii;
 extern wchar_t last_unicode;
 void HandleSMSChat( char* Mess );
 void HandlwSMSMouse();
@@ -13695,7 +13694,7 @@ KRT:
 				z = sscanf( ChatString, "%s%s", cc1, cc2 );
 				if ( z == 2 && !strcmp( cc1, "changeunit" ) )
 				{
-					word Type = 0xFFFF;
+					unsigned short Type = 0xFFFF;
 					for ( int i = 0; i < NATIONS->NMon; i++ )
 					{
 						if ( !strcmp( cc2, NATIONS->Mon[i]->MonsterID ) )
@@ -13705,11 +13704,11 @@ KRT:
 							{
 								//found!!!
 								int N = NSL[MyNation];
-								word* IDS = Selm[MyNation];
-								word* SMS = SerN[MyNation];
+								unsigned short* IDS = Selm[MyNation];
+								unsigned short* SMS = SerN[MyNation];
 								for ( int j = 0; j < N; j++ )
 								{
-									word MID = IDS[j];
+									unsigned short MID = IDS[j];
 									if ( MID != 0xFFFF )
 									{
 										OneObject* OB = Group[MID];
@@ -13947,7 +13946,7 @@ KRT:
 }
 
 extern char CHATSTRING[256];
-extern DWORD CHATDPID;
+extern unsigned long CHATDPID;
 
 void ShowMultiplayerChat();
 
@@ -14156,10 +14155,10 @@ void GetTimeString( int t, char* str )
 	int s = ( t % 60 );
 	sprintf( str, "%d:%d%d:%d%d", h, m / 10, m % 10, s / 10, s % 10 );
 };
-int SortPlayers( byte* Res, int* par );
-void ShowVictInFormat( char* Res, int idx, byte Type );
+int SortPlayers( unsigned char* Res, int* par );
+void ShowVictInFormat( char* Res, int idx, unsigned char Type );
 //---------------------MAP EDITOR INTERFACE--------------//
-byte MI_Mode = 1;
+unsigned char MI_Mode = 1;
 
 int CurrentEditMode;
 DialogsSystem MAPTOOLS( 2, 0 );
@@ -14170,16 +14169,16 @@ void LoadMapInterface()
 };
 void ClearModes();
 extern int WaterEditMode;
-extern byte LockMode;
+extern unsigned char LockMode;
 extern int ZoneCmd;
 void CreateTOOL_PARAM_UNIT();
-void CreateTOOL_PARAM_SPRITE( byte ID );
+void CreateTOOL_PARAM_SPRITE( unsigned char ID );
 void CreateTOOL_PARAM_DEFAULT();
 void CreateTOOL_PARAM_TEXTURE();
 void CreateTOOL_PARAM_PIECES();
 void CreateTOOL_PARAM_WATER();
-void CreateTOOL_PARAM_BRIGHTNESS( byte type );
-void CreateTOOL_PARAM_RELIEF( byte );
+void CreateTOOL_PARAM_BRIGHTNESS( unsigned char type );
+void CreateTOOL_PARAM_RELIEF( unsigned char );
 void PressCurrentEdModeButton( int cn )
 {
 	if ( !EditMapMode )return;
@@ -14423,7 +14422,7 @@ void ClearUnderDialog( DialogsSystem* DSS )
 };
 void ProcessTOOL_PARAM();
 extern int CUR_TOOL_MODE;
-extern byte NeedToPopUp;
+extern unsigned char NeedToPopUp;
 void ProcessMapInterface()
 {
 	DRAWLOCK = 0;
@@ -14465,7 +14464,7 @@ bool CH_NATION_CLICK( SimpleDialog* SD )
 	return true;
 }
 
-void CmdChangeNatRefTBL( byte* TBL );
+void CmdChangeNatRefTBL( unsigned char* TBL );
 
 extern bool BuildMode;
 
@@ -14476,7 +14475,7 @@ bool CH_NATION_CLICK_MP( SimpleDialog* SD )
 	NCLB->y = SD->y - 2;
 	NCLB->x1 = NCLB->x + 23 - 1;
 	NCLB->y1 = NCLB->y + 17 - 1;
-	byte RTB[8];
+	unsigned char RTB[8];
 	memcpy( RTB, NatRefTBL, 8 );
 	RTB[MyNation] = SD->UserParam;
 	CmdChangeNatRefTBL( RTB );
@@ -14499,7 +14498,7 @@ bool CheckFlagsNeed()
 	if ( SCENINF.hLib )
 		return false;
 
-	byte Mask = NATIONS[NatRefTBL[MyNation]].NMask;
+	unsigned char Mask = NATIONS[NatRefTBL[MyNation]].NMask;
 
 	int N = 0;
 	for ( int i = 0; i < 7; i++ )
@@ -14517,7 +14516,7 @@ void CreateFlags( int x0, int y0 )
 {
 	if ( NPlayers > 1 )
 	{
-		byte Mask = NATIONS[NatRefTBL[MyNation]].NMask;
+		unsigned char Mask = NATIONS[NatRefTBL[MyNation]].NMask;
 		for ( int i = 0; i < 8; i++ )
 		{
 			if ( NATIONS[i].NMask&Mask&&NATIONS[i].VictState != 1 && NATIONS[i].VictState != 2 )
@@ -14605,7 +14604,7 @@ int TP_YPREV = 0;
 bool TP_UNIT_CLICK( SimpleDialog* SD )
 {
 	ColoredBar* CB = (ColoredBar*) SD;
-	byte CC = 0x65;
+	unsigned char CC = 0x65;
 	for ( int i = 0; i < 512; i++ )
 	{
 		if ( TOOL_PARAM.DSS[i] && TOOL_PARAM.DSS[i]->UserParam >= 10000 )
@@ -14649,7 +14648,7 @@ void CreateTOOL_PARAM_UNIT()
 	int NUNITS = NATIONS->NUnits[TP_CurNation];
 	int xx = 0;
 	int yy = 48 + 26 + 6;
-	byte CC = 0x65;
+	unsigned char CC = 0x65;
 	for ( int j = 0; j < NUNITS; j++ )
 	{
 		int UIDS = NATIONS->UnitsIDS[TP_CurNation][j];
@@ -14770,7 +14769,7 @@ bool ON_SPRITE_CLICK( SimpleDialog* SD )
 };
 VScrollBar* TP_BRS;
 int PrevRelBr = 10;
-void CreateTOOL_PARAM_SPRITE( byte ID )
+void CreateTOOL_PARAM_SPRITE( unsigned char ID )
 {
 
 	CUR_TOOL_MODE = 2;
@@ -14904,7 +14903,7 @@ ComboBox* ED_CB2;
 ComboBox* ED_CB3;
 
 BPXView* ED_BV;
-byte BT_COLOR = 0x4E;
+unsigned char BT_COLOR = 0x4E;
 int CurrTexSet = 0;
 
 //Textures dialog
@@ -15165,7 +15164,7 @@ void ProcessTOOL_PARAM_TEXTURE()
 	};
 	StdWheel();
 };
-byte NeedToPopUp = 0;
+unsigned char NeedToPopUp = 0;
 //------------------COPY PIECES------------------//
 char** PIECES_NAMES = nullptr;
 int NPIECES = 0;
@@ -15341,7 +15340,7 @@ void ProcessTOOL_PARAM_WATER()
 	};
 	CostThickness = TP_BRS2->SPos;
 };
-void CreateTOOL_PARAM_BRIGHTNESS( byte type )
+void CreateTOOL_PARAM_BRIGHTNESS( unsigned char type )
 {
 
 	CUR_TOOL_MODE = 6;
@@ -15394,7 +15393,7 @@ void ProcessTOOL_PARAM_BRIGHTNESS()
 	};
 	ReliefBrush = TP_BRS->SPos;
 };
-void CreateTOOL_PARAM_RELIEF( byte type )
+void CreateTOOL_PARAM_RELIEF( unsigned char type )
 {
 
 	CUR_TOOL_MODE = 7;
@@ -15632,11 +15631,11 @@ void ProcessTOOL_PARAM()
 #define PenLX 60
 #define Pen2 30
 #define PenLY 60
-void ClearPen( byte* BUF )
+void ClearPen( unsigned char* BUF )
 {
 	memset( BUF, 0, PenLX*PenLY );
 };
-void DrawTreePen( byte* BUF, int v1, int v2 )
+void DrawTreePen( unsigned char* BUF, int v1, int v2 )
 {
 	ClearPen( BUF );
 	int r = ( Pen2*v1 ) >> 10;
@@ -15650,7 +15649,7 @@ void DrawTreePen( byte* BUF, int v1, int v2 )
 		if ( rr < r )BUF[x + 30 + ( y + 30 )*PenLX] = 0x9A;
 	};
 };
-void DrawPenCircle( byte* BUF, int r, byte c )
+void DrawPenCircle( unsigned char* BUF, int r, unsigned char c )
 {
 	ClearPen( BUF );
 	int r2 = r*r + r;
@@ -15661,17 +15660,17 @@ void DrawPenCircle( byte* BUF, int r, byte c )
 		memset( BUF + ( Pen2 + i )*PenLX + Pen2 - v, c, v + v );
 	};
 };
-void DrawWaterPen( byte* BUF, int v1 )
+void DrawWaterPen( unsigned char* BUF, int v1 )
 {
 	int r = ( Pen2*v1 ) >> 10;
 	DrawPenCircle( BUF, r, 0xB4 );
 };
-void DrawHillPen( byte* BUF, int v1 )
+void DrawHillPen( unsigned char* BUF, int v1 )
 {
 	int r = ( Pen2*v1 ) >> 10;
 	DrawPenCircle( BUF, r, 0x78 );
 };
-void DrawSoftPen( byte* BUF, int v1 )
+void DrawSoftPen( unsigned char* BUF, int v1 )
 {
 	int r = ( Pen2*v1 ) >> 10;
 	DrawPenCircle( BUF, r, 0xA7 );
@@ -15679,7 +15678,7 @@ void DrawSoftPen( byte* BUF, int v1 )
 
 double GetPenH( int x, int y, int r, int v );
 
-void DrawHeightPen( byte* BUF, int v1, int v2 )
+void DrawHeightPen( unsigned char* BUF, int v1, int v2 )
 {
 	ClearPen( BUF );
 	int r0 = ( Pen2*v1 ) >> 10;
@@ -15689,7 +15688,7 @@ void DrawHeightPen( byte* BUF, int v1, int v2 )
 	{
 		for ( int iy = 0; iy < PenLY; iy++ )
 		{
-			BUF[pos] = 0x60 + byte( GetPenH( ix - Pen2, iy - Pen2, r0, v2 ) * 15 );
+			BUF[pos] = 0x60 + unsigned char( GetPenH( ix - Pen2, iy - Pen2, r0, v2 ) * 15 );
 			pos++;
 		}
 	}
@@ -15697,12 +15696,12 @@ void DrawHeightPen( byte* BUF, int v1, int v2 )
 
 #define TERRSH 8
 
-byte* TerrHI;
-byte* SoftArea;
-byte* TerrMap;
-byte* ResultMap;
+unsigned char* TerrHI;
+unsigned char* SoftArea;
+unsigned char* TerrMap;
+unsigned char* ResultMap;
 
-extern byte trans8[65536];
+extern unsigned char trans8[65536];
 
 void RenderToResult( int x0, int y0, int x1, int y1 )
 {
@@ -15711,7 +15710,7 @@ void RenderToResult( int x0, int y0, int x1, int y1 )
 		int ofs = ( iy << TERRSH ) + x0;
 		for ( int ix = x0; ix <= x1; ix++ )
 		{
-			byte b = TerrMap[ofs];
+			unsigned char b = TerrMap[ofs];
 			if ( b == 255 )b = 0x60 + ( TerrHI[ofs] >> 4 );
 			if ( SoftArea[ofs] )b = trans8[b + 0xA700];
 			ResultMap[ofs] = b;
@@ -15722,7 +15721,7 @@ void RenderToResult( int x0, int y0, int x1, int y1 )
 
 struct UndoChunk
 {
-	byte* UndoData;
+	unsigned char* UndoData;
 	int Size;
 	int MaxSize;
 };
@@ -15734,7 +15733,7 @@ public:
 	int NChunks;
 	PixUndo();
 	~PixUndo();
-	void AddUndoData( byte Type, byte x, byte y, byte color );
+	void AddUndoData( unsigned char Type, unsigned char x, unsigned char y, unsigned char color );
 	void OpenNewChunk();
 	void PerformUndo();
 	void Clear();
@@ -15774,16 +15773,16 @@ void PixUndo::OpenNewChunk()
 	}
 }
 
-void PixUndo::AddUndoData( byte Type, byte x, byte y, byte color )
+void PixUndo::AddUndoData( unsigned char Type, unsigned char x, unsigned char y, unsigned char color )
 {
 	if ( NChunks )
 	{
 		if ( Chunks[NChunks - 1].Size + 5 > Chunks[NChunks - 1].MaxSize )
 		{
 			Chunks[NChunks - 1].MaxSize += 512;
-			Chunks[NChunks - 1].UndoData = (byte*) realloc( Chunks[NChunks - 1].UndoData, Chunks[NChunks - 1].MaxSize );
+			Chunks[NChunks - 1].UndoData = (unsigned char*) realloc( Chunks[NChunks - 1].UndoData, Chunks[NChunks - 1].MaxSize );
 		};
-		byte* data = Chunks[NChunks - 1].UndoData + Chunks[NChunks - 1].Size;
+		unsigned char* data = Chunks[NChunks - 1].UndoData + Chunks[NChunks - 1].Size;
 		Chunks[NChunks - 1].Size += 4;
 		data[3] = Type;
 		data[0] = x;
@@ -15796,7 +15795,7 @@ void PixUndo::PerformUndo()
 {
 	if ( NChunks )
 	{
-		byte* data = Chunks[NChunks - 1].UndoData;
+		unsigned char* data = Chunks[NChunks - 1].UndoData;
 		int sz = Chunks[NChunks - 1].Size;
 		int sz0 = sz;
 		while ( sz > 0 )
@@ -15828,7 +15827,7 @@ void PixUndo::PerformUndo()
 
 PixUndo* CURRUNDO;
 
-void PutTerrPixel( byte Map, int x, int y, byte c )
+void PutTerrPixel( unsigned char Map, int x, int y, unsigned char c )
 {
 	if ( x < 0 || x>255 || y < 0 || y>255 )return;
 	int ofs = x + ( y << TERRSH );
@@ -15860,7 +15859,7 @@ void PutTerrPixel( byte Map, int x, int y, byte c )
 
 extern bool realRpressed;
 
-void DrawTerrCircle( byte Type, int x, int y, int r, byte c );
+void DrawTerrCircle( unsigned char Type, int x, int y, int r, unsigned char c );
 
 void TerrDrawTrees( int x, int y, int v1, int v2 )
 {
@@ -15881,7 +15880,7 @@ void TerrDrawTrees( int x, int y, int v1, int v2 )
 	}
 }
 
-void DrawTerrCircle( byte Type, int x, int y, int r, byte c )
+void DrawTerrCircle( unsigned char Type, int x, int y, int r, unsigned char c )
 {
 	int r2 = r*r + r;
 	for ( int i = 0; i <= r; i++ )
@@ -15948,7 +15947,7 @@ void TerrDrawHi( int x, int y, int v1, int v2 )
 	};
 }
 
-void SaveHData( char* Name, byte* data )
+void SaveHData( char* Name, unsigned char* data )
 {
 	ResFile F = RRewrite( Name );
 	if ( F != INVALID_HANDLE_VALUE )
@@ -15958,7 +15957,7 @@ void SaveHData( char* Name, byte* data )
 	};
 }
 
-void LoadHData( char* Name, byte* data )
+void LoadHData( char* Name, unsigned char* data )
 {
 	ResFile F = RReset( Name );
 	if ( F != INVALID_HANDLE_VALUE )
@@ -15970,10 +15969,10 @@ void LoadHData( char* Name, byte* data )
 
 void SetupTerr()
 {
-	TerrHI = new byte[65536];
-	SoftArea = new byte[65536];
-	TerrMap = new byte[65536];
-	ResultMap = new byte[65536];
+	TerrHI = new unsigned char[65536];
+	SoftArea = new unsigned char[65536];
+	TerrMap = new unsigned char[65536];
+	ResultMap = new unsigned char[65536];
 	memset( TerrHI, 0xFF, 65536 );
 	memset( SoftArea, 0, 65536 );
 	memset( TerrMap, 0, 65536 );
@@ -15995,7 +15994,7 @@ void FreeTerr()
 	free( ResultMap );
 }
 
-void DrawCircle( int x, int y, int r, byte c )
+void DrawCircle( int x, int y, int r, unsigned char c )
 {
 	char* xi = Rarr[r].xi;
 	char* yi = Rarr[r].yi;
@@ -16004,28 +16003,28 @@ void DrawCircle( int x, int y, int r, byte c )
 }
 
 //-------------------TERRAIN EDITOR----------------//
-void PushScreen( byte** Ptr )
+void PushScreen( unsigned char** Ptr )
 {
-	*Ptr = new byte[ScrWidth*RealLy];
+	*Ptr = new unsigned char[ScrWidth*RealLy];
 	memcpy( *Ptr, ScreenPtr, ScrWidth*RealLy );
 }
 
-void PopScreen( byte* Ptr )
+void PopScreen( unsigned char* Ptr )
 {
 	memcpy( ScreenPtr, Ptr, ScrWidth*RealLy );
 	free( Ptr );
 }
 
-void SaveToBMP24( char* Name, int Lx, int Ly, byte* data );
+void SaveToBMP24( char* Name, int Lx, int Ly, unsigned char* data );
 
 void SaveTerrainBitmap( char* Name )
 {
-	byte* TMP24 = new byte[256 * ( 256 + 1 ) * 3 * 3];
-	byte* DATA24 = TMP24;
+	unsigned char* TMP24 = new unsigned char[256 * ( 256 + 1 ) * 3 * 3];
+	unsigned char* DATA24 = TMP24;
 	int ofs3 = 0;
 	for ( int i = 0; i < 65536; i++ )
 	{
-		byte v = TerrMap[i];
+		unsigned char v = TerrMap[i];
 		if ( v == 0x9A )
 		{//tree
 			DATA24[ofs3] = 0;
@@ -16062,7 +16061,7 @@ void SaveTerrainBitmap( char* Name )
 	ofs3 = 0;
 	for ( int i = 0; i < 65536; i++ )
 	{
-		byte v = TerrHI[i];
+		unsigned char v = TerrHI[i];
 		DATA24[ofs3] = v;
 		DATA24[ofs3 + 1] = v;
 		DATA24[ofs3 + 2] = v;
@@ -16078,7 +16077,7 @@ void SaveTerrainBitmap( char* Name )
 	ofs3 = 0;
 	for ( int i = 0; i < 65536; i++ )
 	{
-		byte v = SoftArea[i];
+		unsigned char v = SoftArea[i];
 		if ( v )
 		{
 			DATA24[ofs3] = 0;
@@ -16106,7 +16105,7 @@ void SaveTerrainBitmap( char* Name )
 
 bool LoadTerrainBitmap( char* Name )
 {
-	byte* TMP24;
+	unsigned char* TMP24;
 	BMPformat BM;
 	if ( ReadBMP24( Name, &BM, &TMP24 ) )
 	{
@@ -16115,14 +16114,14 @@ bool LoadTerrainBitmap( char* Name )
 			free( TMP24 );
 			return false;
 		};
-		byte* DATA24 = TMP24;
+		unsigned char* DATA24 = TMP24;
 		int ofs3 = 0;
 		for ( int i = 0; i < 65536; i++ )
 		{
 			int B = DATA24[ofs3];
 			int G = DATA24[ofs3 + 1];
 			int R = DATA24[ofs3 + 2];
-			byte v = 0;
+			unsigned char v = 0;
 			if ( G > ( B + R ) * 2 )v = 0x9A;
 			else if ( B > 200 && G > 200 && R > 200 )v = 0xFF;
 			else if ( B > ( G + R ) * 2 )v = 0xB4;
@@ -16154,7 +16153,7 @@ void WaitWithError( char* ID, int GPID );
 
 void ProcessLoadBitmap()
 {
-	byte* p;
+	unsigned char* p;
 	PushScreen( &p );
 	LocalGP BOR2( "Interface\\Bor2" );
 	char BMPS[128];
@@ -16175,7 +16174,7 @@ void ProcessLoadBitmap()
 
 void ProcessSaveBitmap()
 {
-	byte* p;
+	unsigned char* p;
 	PushScreen( &p );
 	char BMPS[128];
 	if ( ProcessSavingFile( "UserTerrain\\*.bmp", BMPS, 6, 1 ) )
@@ -16198,13 +16197,13 @@ void ProcessTerrainEditor()
 	PixUndo PUNDO;
 	CURRUNDO = &PUNDO;
 	SetupTerr();
-	byte PenBuf[PenLX*PenLY];
+	unsigned char PenBuf[PenLX*PenLY];
 	LocalGP BTNS( "Interface\\EditTerra" );
 	DialogsSystem DSS( ( RealLx - 524 ) >> 1, ( RealLy - 400 ) >> 1 );
 	DSS.HintX = -1;
 	DSS.HintY = 180;
 	DSS.HintFont = &SmallBlackFont;
-	byte* BACK = new byte[640 * 400];
+	unsigned char* BACK = new unsigned char[640 * 400];
 	MemScreenPart( DSS.BaseX, DSS.BaseY, 640, 400, BACK );
 	//GPS.ShowGP((RealLx-524)>>1,(RealLy-400)>>1,BTNS.GPID,1,0);
 	DSS.addBPXView( nullptr, 0, 0, 640, 400, 1, 1, 1, BACK, nullptr );
@@ -16350,11 +16349,11 @@ void ProcessTerrainEditor()
 	if ( ItemChoose == mcmOk )
 	{
 		//generating
-		byte* DATA24 = new byte[65536 * 3];
+		unsigned char* DATA24 = new unsigned char[65536 * 3];
 		int ofs3 = 0;
 		for ( int i = 0; i < 65536; i++ )
 		{
-			byte v = TerrMap[i];
+			unsigned char v = TerrMap[i];
 			if ( v == 0x9A )
 			{//tree
 				DATA24[ofs3] = 0;
@@ -16385,7 +16384,7 @@ void ProcessTerrainEditor()
 		ofs3 = 0;
 		for ( int i = 0; i < 65536; i++ )
 		{
-			byte v = TerrHI[i];
+			unsigned char v = TerrHI[i];
 			DATA24[ofs3] = v;
 			DATA24[ofs3 + 1] = v;
 			DATA24[ofs3 + 2] = v;
@@ -16395,7 +16394,7 @@ void ProcessTerrainEditor()
 		ofs3 = 0;
 		for ( int i = 0; i < 65536; i++ )
 		{
-			byte v = SoftArea[i];
+			unsigned char v = SoftArea[i];
 			if ( v )
 			{
 				DATA24[ofs3] = 0;
@@ -16434,7 +16433,7 @@ void CreateNEWMAP()
 	int X0 = ( RealLx - CM_WLx ) >> 1;
 	int Y0 = ( RealLy - CM_WLy ) >> 1;
 
-	byte* p = new byte[( CM_WLx + 64 )*( CM_WLy + 140 )];
+	unsigned char* p = new unsigned char[( CM_WLx + 64 )*( CM_WLy + 140 )];
 	MemScreenPart( X0 - 32, Y0 - 32, ( CM_WLx + 64 ), ( CM_WLy + 140 ), p );
 	DialogsSystem DSS( X0, Y0 );
 	DSS.addBPXView( nullptr, -32, -32, ( CM_WLx + 64 ), ( CM_WLy + 140 ), 1, 1, 1, p, nullptr );
@@ -16582,7 +16581,7 @@ void ReadClanData()
 	memset( &CIN, 0, sizeof CIN );
 }
 
-__declspec( dllexport ) void ShowClanString( int x, int y, char* s, byte State, RLCFont* Fn, RLCFont* Fn1, int DY )
+__declspec( dllexport ) void ShowClanString( int x, int y, char* s, unsigned char State, RLCFont* Fn, RLCFont* Fn1, int DY )
 {
 	char ccc[64];
 	char NICK[128];

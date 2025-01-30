@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -52,8 +53,7 @@ static bool LockMouse;
 int curdx;
 int curdy;
 bool MNotRemoved;
-typedef unsigned short word;
-int GetF( word k );
+int GetF( unsigned short k );
 
 extern int mapx;
 extern int mapy;

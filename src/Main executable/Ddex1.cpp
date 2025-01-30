@@ -9,13 +9,15 @@
 #define NAME "CEW_KERNEL"
 #define TITLE "Cossacks"
 
+#include <windows.h>
+
 #include "ddini.h"
 
 bool window_mode;
 int screen_width;
 int screen_height;
 double screen_ratio;
-DWORD window_style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+unsigned long window_style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -39,7 +41,6 @@ DWORD window_style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MI
 #include "GSound.h"
 #include "MapSprites.h"
 #include "VirtScreen.h"
-#include <crtdbg.h>
 #include "RealWater.h"
 #include "Transport.h"
 #include "AntiBug.h"
@@ -99,7 +100,7 @@ const unsigned int kPostDrawInterval = 16;//~60 Hz
 unsigned long prev_postdraw_time = 0;
 
 //Game version. Must match with other clients
-__declspec( dllexport ) word dwVersion = 100;
+__declspec( dllexport ) unsigned short dwVersion = 100;
 __declspec( dllexport ) char LobbyVersion[32] = "1.00";
 __declspec( dllexport ) char BuildVersion[32] = "V 1.00";
 
@@ -160,14 +161,14 @@ static int Light = 0;
 
 char* FormationStr = nullptr;
 
-byte EditMedia;
-byte LockGrid;
-byte LockMode;
-byte PauseMode = 0;
-byte PlayerMask;
-byte Quality;
-word Creator;
-static word MsPerFrame = 40;
+unsigned char EditMedia;
+unsigned char LockGrid;
+unsigned char LockMode;
+unsigned char PauseMode = 0;
+unsigned char PlayerMask;
+unsigned char Quality;
+unsigned short Creator;
+static unsigned short MsPerFrame = 40;
 CDirSound CDIRSND;
 City CITY[8];
 HugeExplosion HE;
@@ -228,10 +229,10 @@ extern int sfVersion;
 
 extern char SaveFileName[128];
 
-extern byte ScanPressed[256];
-extern byte SpecCmd;
-extern word PlayerMenuMode;
-extern word rpos;
+extern unsigned char ScanPressed[256];
+extern unsigned char SpecCmd;
+extern unsigned short PlayerMenuMode;
+extern unsigned short rpos;
 extern BlockBars LockBars;
 extern BlockBars UnLockBars;
 extern CDirSound* CDS;
@@ -266,7 +267,7 @@ void ProcessUFO();
 void RenderAllMap();
 void Reset3D();
 void SaveGame( char* fnm, char* gg, int ID );
-void SelectAllBuildings( byte NI );
+void SelectAllBuildings( unsigned char NI );
 
 void SetLight( int Ldx, int Ldy, int Ldz );
 void TestTriangle();
@@ -311,7 +312,7 @@ void CloseEventHandler( int i )
 	memset( &Events[i], 0, sizeof Events[i] );
 }
 
-HWND hwnd;
+void* hwnd;
 SDL_Window* sdlWindow;
 
 //fonts
@@ -369,7 +370,7 @@ void TimerProc( void )
 void LoadEconomy();
 void LoadNations();
 void LoadWeapon();
-void LoadNation( char* fn, byte msk, byte NIndex );
+void LoadNation( char* fn, unsigned char msk, unsigned char NIndex );
 void LoadAllNewMonsters();
 void InitNewMonstersSystem();
 void LoadWaveAnimations();
@@ -380,7 +381,7 @@ char* GetTextByID( char* ID );
 void LoadBorders();
 
 void SetupArrays();
-extern byte* RivDir;
+extern unsigned char* RivDir;
 void Init_GP_IMG();
 void ReadClanData();
 
@@ -406,8 +407,8 @@ void ClipCursorToWindowArea()
 
 	//Determine absolute coordinates of window client area
 	RECT client_coords;
-	GetClientRect( hwnd, &client_coords );
-	MapWindowPoints( hwnd, nullptr, (LPPOINT) &client_coords, 2 );
+	GetClientRect( (HWND)hwnd, &client_coords );
+	MapWindowPoints( (HWND)hwnd, nullptr, (LPPOINT) &client_coords, 2 );
 
 	//Necessary for correct cursor capture
 	//Using exact ClientRect causes cursor to freeze short of
@@ -447,7 +448,7 @@ void ResizeAndCenterWindow()
 		y = 0;
 	}
 
-	MoveWindow( hwnd, x, y, width, height, TRUE );
+	MoveWindow( (HWND)hwnd, x, y, width, height, TRUE );
 
 	ClipCursorToWindowArea();
 
@@ -522,7 +523,7 @@ bool Loading()
 extern int CurPalette;
 void SaveScreenShot( char* Name )
 {
-	byte PAL[1024];
+	unsigned char PAL[1024];
 	memset( PAL, 0, 1024 );
 	char ccx[120];
 	sprintf( ccx, "%d\\agew_1.pal", CurPalette );
@@ -566,9 +567,9 @@ void SaveScreenShot( char* Name )
 	};
 	RClose( f );
 };
-void SaveBMP8( char* Name, int lx, int ly, byte* Data )
+void SaveBMP8( char* Name, int lx, int ly, unsigned char* Data )
 {
-	byte PAL[1024];
+	unsigned char PAL[1024];
 	memset( PAL, 0, 1024 );
 	char ccc[128];
 	sprintf( ccc, "%d\\agew_1.pal", CurPalette );
@@ -616,7 +617,7 @@ void SaveBMP8( char* Name, int lx, int ly, byte* Data )
 };
 void SaveMiniScreenShot( char* Name )
 {
-	byte PAL[1024];
+	unsigned char PAL[1024];
 	memset( PAL, 0, 1024 );
 	ResFile f = RReset( "agew_1.pal" );
 	int i;
@@ -798,7 +799,7 @@ void ClearMStack()
 }
 
 extern bool unpress;
-extern byte ScanPressed[256];
+extern unsigned char ScanPressed[256];
 
 void UnPress()
 {
@@ -812,16 +813,16 @@ void UnPress()
 }
 
 extern int CurPalette;
-LRESULT CD_MCINotify( WPARAM wFlags, LONG lDevId );
+LRESULT CD_MCINotify( WPARAM wFlags, long lDevId );
 int SHIFT_VAL = 0;
 void HandleMouse( int x, int y );
 extern bool PalDone;
-byte KeyStack[32];
-byte AsciiStack[32];
+unsigned char KeyStack[32];
+unsigned char AsciiStack[32];
 int NKeys = 0;
-byte LastAsciiKey = 0;
+unsigned char LastAsciiKey = 0;
 
-void AddKey( byte Key, byte Ascii )
+void AddKey( unsigned char Key, unsigned char Ascii )
 {
 	if (32 <= NKeys)
 	{//Push the stack back by one element
@@ -834,13 +835,13 @@ void AddKey( byte Key, byte Ascii )
 	NKeys++;
 }
 
-byte LastAscii = 0;
+unsigned char LastAscii = 0;
 wchar_t last_unicode = 0;
 int ReadKey()
 {//Called only for chat input and resource transfer
 	if (NKeys)
 	{
-		byte c = KeyStack[0];
+		unsigned char c = KeyStack[0];
 		LastAscii = AsciiStack[0];
 		if (NKeys)
 		{
@@ -863,7 +864,7 @@ void ClearKeyStack()
 
 extern bool GUARDMODE;
 extern bool PATROLMODE;
-extern byte NeedToPopUp;
+extern unsigned char NeedToPopUp;
 short WheelDelta = 0;
 void IAmLeft();
 void LOOSEANDEXITFAST();
@@ -871,7 +872,7 @@ extern bool DoNewInet;
 bool ReadWinString( GFILE* F, char* STR, int Max );
 void OnWTPacket( WPARAM wSerial, LPARAM hCtx );
 
-void CmdEndGame( byte NI, byte state, byte cause );
+void CmdEndGame( unsigned char NI, unsigned char state, unsigned char cause );
 
 long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 	WPARAM wParam, LPARAM lParam )
@@ -1045,10 +1046,10 @@ long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 		{
 			int nVirtKey = (int) wParam;
 			int lKeyData = lParam;
-			byte PST[256];
+			unsigned char PST[256];
 			GetKeyboardState( PST );
 
-			word ascii_key;
+			unsigned short ascii_key;
 			int result = ToAscii( nVirtKey, lKeyData, PST, &ascii_key, 0 );
 
 			WCHAR u_buf[5] = {};
@@ -1112,14 +1113,14 @@ extern int WaitState;
 
 bool RetryVideo = 0;
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 extern bool GameExit;
 extern int LastCTRLPressTime;
 bool CheckFNSend( int idx );
 void ProcessVotingKeys();
 extern bool RESMODE;
 extern bool OptHidden;
-extern word NPlayers;
+extern unsigned short NPlayers;
 bool CheckFlagsNeed();
 void SetGameDisplayModeAnyway( int SizeX, int SizeY );
 
@@ -2151,7 +2152,8 @@ bool InitScreen()
 
 		if (!RealScreenPtr)
 		{
-			MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[1]", MB_ICONSTOP );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[1]", "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", nullptr);
+			//MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[1]", MB_ICONSTOP );
 			exit( 0 );
 		}
 
@@ -2268,9 +2270,9 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	
 	CreateSDLWindow();
 
-	ShowWindow( hwnd, SW_SHOWNORMAL );
+	ShowWindow( (HWND)hwnd, SW_SHOWNORMAL );
 
-	UpdateWindow( hwnd );
+	UpdateWindow( (HWND)hwnd );
 
 	CDIRSND.CreateDirSound();
 
@@ -2281,14 +2283,15 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	ResFile F = RReset( "version.dat" );
 	if (F != INVALID_HANDLE_VALUE)
 	{
-		word B = 0;
+		unsigned short B = 0;
 		RBlockRead( F, &B, 2 );
 		RClose( F );
 		if (B > 102)
 		{
-			MessageBox( hwnd, "Unable to use this testing version.", "WARNING!", 0 );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "WARNING!", "Unable to use this testing version.", nullptr);
+			//MessageBox( hwnd, "Unable to use this testing version.", "WARNING!", 0 );
 			FilesExit();
-			PostMessage( hwnd, WM_CLOSE, 0, 0 );
+			PostMessage( (HWND)hwnd, WM_CLOSE, 0, 0 );
 			return 0;
 		}
 	}
@@ -2296,11 +2299,9 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	if (!Loading())
 	{
 		FilesExit();
-		PostMessage( hwnd, WM_CLOSE, 0, 0 );
+		PostMessage( (HWND)hwnd, WM_CLOSE, 0, 0 );
 		return 0;
 	}
-
-	CurrentSurface = FALSE;
 
 	//create the main DirectDraw object
 	PalDone = false;
@@ -2340,7 +2341,8 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 			exit( 0 );
 		}
 
-		if (SetTimer( hwnd, TIMER_ID, 20, nullptr ))
+		//TODO: check if this always returns true and replace with return true
+		if (SetTimer( (HWND)hwnd, TIMER_ID, 20, nullptr ))
 		{
 			return TRUE;
 		}
@@ -2350,11 +2352,11 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 	//MessageBox( hwnd, buf, "ERROR", MB_OK );
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", buf, nullptr);
 	finiObjects();
-	DestroyWindow( hwnd );
+	DestroyWindow( (HWND)hwnd );
 	return FALSE;
 }
 
-void AddDestn( byte x, byte y );
+void AddDestn( unsigned char x, unsigned char y );
 void ProcessNewMonsters();
 void InitXShift();
 void HandleMines();
@@ -2368,8 +2370,8 @@ void CheckTops()
 	int NT = NAreas*NAreas;
 };
 
-void ResearchCurrentIsland( byte Nat );
-void ResearchBestPortToFish( byte Nat );
+void ResearchCurrentIsland( unsigned char Nat );
+void ResearchBestPortToFish( unsigned char Nat );
 extern int NInGold[8];
 extern int NInIron[8];
 extern int NInCoal[8];
@@ -2381,7 +2383,7 @@ void ProcessCostPoints();
 void CheckArmies( City* );
 void CheckGP();
 
-void CmdSetSpeed( byte );
+void CmdSetSpeed( unsigned char );
 bool NOPAUSE = 1;
 void EnumPopulation();
 extern bool TutOver;
@@ -2723,8 +2725,8 @@ void PreDrawGameProcess()
 }
 
 bool ProcessMessages();
-extern word NPlayers;
-void CmdSaveNetworkGame( byte NI, int ID, char* Name );
+extern unsigned short NPlayers;
+void CmdSaveNetworkGame( unsigned char NI, int ID, char* Name );
 int SaveTime;
 extern char SaveFileName[128];
 void ProcessNature();
@@ -2775,8 +2777,8 @@ int NeedCurrentTime = 0;
 extern bool PreNoPause;
 void StopPlayCD();
 void ProcessUpdate();
-extern byte CaptState;
-extern byte SaveState;
+extern unsigned char CaptState;
+extern unsigned char SaveState;
 void WritePitchTicks();
 void ReadPichTicks();
 void ShowCentralText0( char* sss );
@@ -3007,7 +3009,7 @@ void PostDrawGameProcess()
 void InitWaves();
 void AllGame();
 
-extern byte MI_Mode;
+extern unsigned char MI_Mode;
 extern int RES[8][8];
 void PrepareToEdit()
 {
@@ -3042,13 +3044,13 @@ void PrepareToEdit()
 	}
 }
 
-byte PlayGameMode = 0;
+unsigned char PlayGameMode = 0;
 
 extern char CurrentMap[64];
 extern int TIMECHANGE[8];
 extern int AddTime;
 extern int NeedAddTime;
-extern byte XVIIIState;
+extern unsigned char XVIIIState;
 extern char RECFILE[128];
 
 void PerformNewUpgrade( Nation* NT, int UIndex, OneObject* OB );
@@ -3125,8 +3127,8 @@ void EraseRND()
 	char** RNDF = nullptr;
 	int NRND = 0;
 	int MaxRND = 0;
-	DWORD* RndData = nullptr;
-	word* Ridx = nullptr;
+	unsigned long* RndData = nullptr;
+	unsigned short* Ridx = nullptr;
 
 	WIN32_FIND_DATA FD;
 	HANDLE HF = FindFirstFile( "RN? *.m3d", &FD );
@@ -3139,8 +3141,8 @@ void EraseRND()
 			{
 				MaxRND += 300;
 				RNDF = (char**) realloc( RNDF, 4 * MaxRND );
-				RndData = (DWORD*) realloc( RndData, 2 * MaxRND );
-				Ridx = (word*) realloc( Ridx, 2 * MaxRND );
+				RndData = (unsigned long*) realloc( RndData, 2 * MaxRND );
+				Ridx = (unsigned short*) realloc( Ridx, 2 * MaxRND );
 			}
 			Ridx[NRND] = NRND;
 			RNDF[NRND] = new char[strlen( FD.cFileName ) + 1];
@@ -3297,7 +3299,7 @@ int PASCAL WinMain(
 	if (!FilesInit())
 	{
 		FilesExit();
-		PostMessage( hwnd, WM_CLOSE, 0, 0 );
+		PostMessage( (HWND)hwnd, WM_CLOSE, 0, 0 );
 	}
 
 	//Delete random generated *.m3d map files
@@ -3576,7 +3578,7 @@ int PASCAL WinMain(
 
 			FilesExit();
 			StopPlayCD();
-			PostMessage( hwnd, WM_CLOSE, 0, 0 );
+			PostMessage( (HWND)hwnd, WM_CLOSE, 0, 0 );
 			FinExplorer();
 		}
 	}

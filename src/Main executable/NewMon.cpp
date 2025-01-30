@@ -8,6 +8,7 @@
 //         K  K   E      R    R N    N  E      L         //
 //         K   K  EEEEE  R    R N    N  EEEEE  LLLLL     //
 //*******************************************************//
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -51,20 +52,20 @@ extern const int kImportantMessageDisplayTime;
 extern const int kSystemMessageDisplayTime;
 extern const int kMinorMessageDisplayTime;
 
-extern byte CaptState;
+extern unsigned char CaptState;
 extern bool NOPAUSE;
 extern ReportFn* AttackLink;
 void CheckArmies( City* );
 void DestructBuilding( OneObject* OB );
 int GetTopology( int x, int y );
 int GetTopology( int* x, int* y );
-bool CheckTopDirectWay( int x0, int y0, int x1, int y1, byte Type );
-word CheckMotionThroughEnemyAbility( OneObject* OB, int px, int py );
-bool CheckBuildPossibility( byte NI, int x, int y );
+bool CheckTopDirectWay( int x0, int y0, int x1, int y1, unsigned char Type );
+unsigned short CheckMotionThroughEnemyAbility( OneObject* OB, int px, int py );
+bool CheckBuildPossibility( unsigned char NI, int x, int y );
 extern bool FastMode;
 void GotoFinePosition( OneObject* OB );
 extern bool AllowPathDelay;
-extern byte   WeaponFlags[32];
+extern unsigned char   WeaponFlags[32];
 NewAnimation* Shar;
 NewAnimation* SharBuild;
 
@@ -75,14 +76,14 @@ int GetResByName( char* gy );
 void PerformMotion2( OneObject* OB );
 int GetWeaponType( char* Name );
 extern bool PeaceMode;
-extern byte LockMode;
+extern unsigned char LockMode;
 extern bool TransMode;
 extern char* SoundID[MaxSnd];
-extern word NSounds;
+extern unsigned short NSounds;
 int CheckPt( int x, int y );
 void LoadIcons();
 int Prop43( int y );
-extern byte* NPresence;
+extern unsigned char* NPresence;
 extern bool Mode3D;
 extern short TSin[257];
 extern short TCos[257];
@@ -90,8 +91,8 @@ extern short TAtg[257];
 int PortBuiX, PortBuiY;
 void NLine( GFILE* f );
 int GetUnitKind( char* Name );
-void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, byte* Pal );
-void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, byte* Pal );
+void ShowRLCItemPal( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal );
+void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, unsigned char* Pal );
 void normstr( char* str );
 void InitFlags( GeneralObject* GO );
 int mul3( int );
@@ -107,7 +108,7 @@ void CheckCapture( OneObject* OBJ );
 //04-select
 void AddUnlimitedEffect( int x, int y, int id );
 
-void MakeOrderSound( OneObject* OB, byte SMask )
+void MakeOrderSound( OneObject* OB, unsigned char SMask )
 {
 	if ( SMask == 4 && OB->NNUM != MyNation )
 	{
@@ -277,7 +278,7 @@ void DosToWin( char* Str )
 	int len = strlen( Str );
 	for ( int i = 0; i < len; i++ )
 	{
-		byte c = Str[i];
+		unsigned char c = Str[i];
 		if ( c >= 0x80 && c < 0xB0 )
 		{
 			c += 0x40;
@@ -309,7 +310,8 @@ void ErrM( char* s )
 			LoadPalette( "0\\agew_1.pal" );
 		}
 	}
-	MessageBox( hwnd, s, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "LOADING FAILED...", s, nullptr);
+	//MessageBox( hwnd, s, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
 }
 
 void NEPar( char* name, int line, char* Sect, int Need )
@@ -352,14 +354,14 @@ void UpConv( char* str )
 }
 
 //------------------------------------------New RLC information
-word RLCNSpr[1024 + 512];
-word NNewMon;
+unsigned short RLCNSpr[1024 + 512];
+unsigned short NNewMon;
 NewMonster NewMon[512];
 char* MonNames[512];
 //-----------------New weapon animation discription------------
 NewAnimation WNewAnm[256];
 char* WAnmNames[256];
-word NNewAnm;
+unsigned short NNewAnm;
 //-------------------------------------------------------------
 int CurrentCursorGP = 0;
 int AnmCursorGP = 0;
@@ -402,8 +404,8 @@ NewMonster::NewMonster()
 //--------------------Icons------------------
 void ReadKeyCodes();
 char* IconNames[512];
-byte KeyCodes[512][2];
-word NIcons;
+unsigned char KeyCodes[512][2];
+unsigned short NIcons;
 void LoadMapInterface();
 void LoadIcons()
 {
@@ -461,7 +463,7 @@ char* KeyNames[NKEYS] = { "0","1","2","3","4","5","6","7","8","9",
 "NUM0","NUM1","NUM2","NUM3","NUM4","NUM5","NUM6","NUM7","NUM8","NUM9",
 "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","PGUP","PGDN","HOME","END","INS","NUM+","NUM-","NUM*","NUM/","<",">","?" };
 
-byte ScanKeys[NKEYS] = { '0','1','2','3','4','5','6','7','8','9',
+unsigned char ScanKeys[NKEYS] = { '0','1','2','3','4','5','6','7','8','9',
 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
 VK_NUMPAD0,VK_NUMPAD1,VK_NUMPAD2,VK_NUMPAD3,VK_NUMPAD4,VK_NUMPAD5,VK_NUMPAD6,VK_NUMPAD7,VK_NUMPAD8,VK_NUMPAD9,
 VK_F1,VK_F2,VK_F3,VK_F4,VK_F5,VK_F6,VK_F7,VK_F8,VK_F9,VK_F10,VK_NEXT,VK_PRIOR,VK_HOME,VK_END,VK_INSERT,107,109,106,111,188,190,191 };
@@ -483,8 +485,8 @@ void ReadKeyCodes()
 				_strupr( ccc );
 				char DST[256];
 				char* Next;
-				byte ScanCode = 0;
-				byte KeyState = 0;
+				unsigned char ScanCode = 0;
+				unsigned char KeyState = 0;
 				int NCODES = 0;
 				bool IconMode = 0;
 				Next = ccc;
@@ -552,7 +554,7 @@ void LoadNewAimations()
 	char gy[128];
 	char gz[128];
 	int MaxRLC = -1;
-	word RLCRef[128];
+	unsigned short RLCRef[128];
 	short RLCdx[128];
 	short RLCdy[128];
 	int z1, z2, z3, p1, p2, p3;
@@ -1021,11 +1023,11 @@ bool NewMonster::CreateFromFile( char* name )
 	char gy[128];
 	char gz[128];
 	int MaxRLC = -1;
-	word RLCRef[128];
+	unsigned short RLCRef[128];
 	short RLCdx[128];
 	short RLCdy[128];
-	byte  RLCParts[128];
-	byte  RLCPartSize[128];
+	unsigned char  RLCParts[128];
+	unsigned char  RLCPartSize[128];
 	int z1, z2, z3, z4, p1, p2, p3, p4, p5, p6, xx, yy;
 	sprintf( Fn, "%s.md", name );
 	ProtectionMode = 1;
@@ -1035,8 +1037,8 @@ bool NewMonster::CreateFromFile( char* name )
 	bool finish = false;
 	short NAStartDx = 0;
 	short NAStartDy = 0;
-	byte NAParts = 1;
-	byte NAPartSize = 96;
+	unsigned char NAParts = 1;
+	unsigned char NAPartSize = 96;
 	RectDx = 0;
 	RectDy = 3;
 	RectLx = 40;
@@ -1786,7 +1788,7 @@ bool NewMonster::CreateFromFile( char* name )
 																				{
 																					z = Gscanf( f1, "%d%d", &p4, &p1 );
 																					if ( z != 2 )IncPar( name, Line, gx );
-																					ShotRes = new word[p1 * 2];
+																					ShotRes = new unsigned short[p1 * 2];
 																					NShotRes = p1;
 																					for ( int i = 0; i < p1; i++ )
 																					{
@@ -1814,7 +1816,7 @@ bool NewMonster::CreateFromFile( char* name )
 																					{
 																						z = Gscanf( f1, "%d%d%d", &p4, &p5, &p1 );
 																						if ( z != 3 )IncPar( name, Line, gx );
-																						ShotRes = new word[p1 * 2];
+																						ShotRes = new unsigned short[p1 * 2];
 																						NShotRes = p1;
 																						for ( int i = 0; i < p1; i++ )
 																						{
@@ -2122,7 +2124,7 @@ bool NewMonster::CreateFromFile( char* name )
 																																		{
 																																			z = Gscanf( f1, "%d", &p1 );
 																																			if ( z != 1 )IncPar( name, Line, "RESOURCEBASE" );
-																																			byte ms = 0;
+																																			unsigned char ms = 0;
 																																			for ( int i = 0; i < p1; i++ )
 																																			{
 																																				z = Gscanf( f1, "%s", gy );
@@ -2164,7 +2166,7 @@ bool NewMonster::CreateFromFile( char* name )
 																																				{
 																																					z = Gscanf( f1, "%s%d", gy, &p2 );
 																																					if ( z != 2 )NEPar( name, Line, "PORTION", p1 );
-																																					byte ms = 0;
+																																					unsigned char ms = 0;
 																																					if ( !strcmp( gy, "WOOD" ) )
 																																					{
 																																						ms = 0;
@@ -2295,10 +2297,10 @@ bool NewMonster::CreateFromFile( char* name )
 																																											ShotPtX = new short[p1];
 																																											ShotPtY = new short[p1];
 																																											ShotPtZ = new short[p1];
-																																											ShotDir = new byte[p1];
-																																											ShotDiff = new byte[p1];
-																																											ShotMinR = new word[p1];
-																																											ShotMaxR = new word[p1];
+																																											ShotDir = new unsigned char[p1];
+																																											ShotDiff = new unsigned char[p1];
+																																											ShotMinR = new unsigned short[p1];
+																																											ShotMaxR = new unsigned short[p1];
 
 																																											for ( int i = 0; i < p1; i++ )
 																																											{
@@ -2324,7 +2326,7 @@ bool NewMonster::CreateFromFile( char* name )
 																																												if ( z != 2 )NEPar( name, Line, "FOGGING", 2 );
 																																												Fogging.WProb = div( p1 << 15, 101 ).quot;
 																																												Fogging.NWeap = p2;
-																																												Fogging.Weap = new word[p2];
+																																												Fogging.Weap = new unsigned short[p2];
 																																												for ( int i = 0; i < p2; i++ )
 																																												{
 																																													z = Gscanf( f1, "%s", gz );
@@ -2347,7 +2349,7 @@ bool NewMonster::CreateFromFile( char* name )
 																																													if ( z != 2 )NEPar( name, Line, "DESTRUCT", 2 );
 																																													Destruct.WProb = p1;
 																																													Destruct.NWeap = p2;
-																																													Destruct.Weap = new word[p2];
+																																													Destruct.Weap = new unsigned short[p2];
 																																													for ( int i = 0; i < p2; i++ )
 																																													{
 																																														z = Gscanf( f1, "%s", gz );
@@ -2370,7 +2372,7 @@ bool NewMonster::CreateFromFile( char* name )
 																																														if ( z != 2 )NEPar( name, Line, "FIRE", 2 );
 																																														Fire.WProb = div( p1 << 15, 101 ).quot;
 																																														Fire.NWeap = p2;
-																																														Fire.Weap = new word[p2];
+																																														Fire.Weap = new unsigned short[p2];
 																																														for ( int i = 0; i < p2; i++ )
 																																														{
 																																															z = Gscanf( f1, "%s", gz );
@@ -2392,8 +2394,8 @@ bool NewMonster::CreateFromFile( char* name )
 																																															z = Gscanf( f1, "%d", &p1 );
 																																															if ( z != 1 )IncPar( name, Line, "LOCKPOINTS" );
 																																															NLockPt = p1;
-																																															LockX = new byte[p1];
-																																															LockY = new byte[p1];
+																																															LockX = new unsigned char[p1];
+																																															LockY = new unsigned char[p1];
 																																															for ( int i = 0; i < p1; i++ )
 																																															{
 																																																z = Gscanf( f1, "%d%d", &p2, &p3 );
@@ -2411,8 +2413,8 @@ bool NewMonster::CreateFromFile( char* name )
 																																																if ( z != 2 )IncPar( name, Line, gx );
 
 																																																NSLockPt[p2] = p1;
-																																																SLockX[p2] = new byte[p1];
-																																																SLockY[p2] = new byte[p1];
+																																																SLockX[p2] = new unsigned char[p1];
+																																																SLockY[p2] = new unsigned char[p1];
 																																																for ( int i = 0; i < p1; i++ )
 																																																{
 																																																	z = Gscanf( f1, "%d%d", &p4, &p3 );
@@ -2429,8 +2431,8 @@ bool NewMonster::CreateFromFile( char* name )
 																																																	z = Gscanf( f1, "%d", &p1 );
 																																																	if ( z != 1 )IncPar( name, Line, gx );
 																																																	NBLockPt = p1;
-																																																	BLockX = new byte[p1];
-																																																	BLockY = new byte[p1];
+																																																	BLockX = new unsigned char[p1];
+																																																	BLockY = new unsigned char[p1];
 																																																	for ( int i = 0; i < p1; i++ )
 																																																	{
 																																																		z = Gscanf( f1, "%d%d", &p2, &p3 );
@@ -2468,8 +2470,8 @@ bool NewMonster::CreateFromFile( char* name )
 																																																			z = Gscanf( f1, "%d", &p1 );
 																																																			if ( z != 1 )IncPar( name, Line, "CHECKPOINTS" );
 																																																			NCheckPt = p1;
-																																																			CheckX = new byte[p1];
-																																																			CheckY = new byte[p1];
+																																																			CheckX = new unsigned char[p1];
+																																																			CheckY = new unsigned char[p1];
 																																																			for ( int i = 0; i < p1; i++ )
 																																																			{
 																																																				z = Gscanf( f1, "%d%d", &p2, &p3 );
@@ -3588,9 +3590,9 @@ bool CreateGOByName( GeneralObject* GO, char* name, char* newName )
 			GO->Message = NM->Message;
 			GO->MonsterID = new char[strlen( newName ) + 1];
 			strcpy( GO->MonsterID, newName );
-			GO->NStages = byte( NM->Time );
-			GO->cost = byte( NM->Res1cost );
-			GO->Kind = byte( NM->Kind );
+			GO->NStages = unsigned char( NM->Time );
+			GO->cost = unsigned char( NM->Res1cost );
+			GO->Kind = unsigned char( NM->Kind );
 			GO->ResourceID[0] = 1;
 			GO->ResAmount[0] = NM->Res1cost;;
 			GO->ManualDisable = 0;
@@ -3606,7 +3608,7 @@ bool CreateGOByName( GeneralObject* GO, char* name, char* newName )
 			};
 			//GO->SpotSize=NM->VisRange;
 			//GO->SpotType=2;
-			GO->NStages = byte( NM->ProduceStages );
+			GO->NStages = unsigned char( NM->ProduceStages );
 			GO->MoreCharacter = new AdvCharacter;
 			GO->CondEnabled = false;
 			GO->Enabled = false;
@@ -3659,7 +3661,7 @@ void SprGroup::LoadSprites( char* fname )
 		z = Gscanf( f1, "%s%d", gy, &nl );
 		if ( z != 2 )IncPar( fname, 0, "?" );
 		NSpr = nl;
-		Items = new word[nl];
+		Items = new unsigned short[nl];
 		for ( int i = 0; i < nl; i++ )Items[i] = i;
 		Dx = new short[nl];
 		Dy = new short[nl];
@@ -3951,12 +3953,12 @@ void SprGroup::LoadSprites( char* fname )
 //                       PHYSICS OF THE NEW MONSTER                      //
 //           New monsters choose freedom from cells through cells!       //
 //-----------------------------------------------------------------------//
-byte* MCount;//amount of monsters in 4x4 cell; 16384 elements
-byte* TmpMC; //amount of monsters in 4x4 cell,
+unsigned char* MCount;//amount of monsters in 4x4 cell; 16384 elements
+unsigned char* TmpMC; //amount of monsters in 4x4 cell,
 						  //this is used only for force calculating
-//word* NMsList;//array of ID of new monsters
-word* BLDList;
-void ZMem( byte* pntr, int siz )
+//unsigned short* NMsList;//array of ID of new monsters
+unsigned short* BLDList;
+void ZMem( unsigned char* pntr, int siz )
 {
 	__asm {
 		push	edi
@@ -3978,15 +3980,15 @@ void ZMem( byte* pntr, int siz )
 
 //Creating list of monsters according to cells
 
-word GetDir( int dx, int dy )
+unsigned short GetDir( int dx, int dy )
 {
 	int PhDir;
 	if ( dx != 0 || dy != 0 )
 	{
 		int adx = abs( dx );
 		int ady = abs( dy );
-		if ( adx > ady )PhDir = byte( TAtg[div( ady << 8, adx ).quot] ); else
-			PhDir = 64 - byte( TAtg[div( adx << 8, ady ).quot] );
+		if ( adx > ady )PhDir = unsigned char( TAtg[div( ady << 8, adx ).quot] ); else
+			PhDir = 64 - unsigned char( TAtg[div( adx << 8, ady ).quot] );
 		if ( dx < 0 )PhDir = 128 - PhDir;
 		if ( dy < 0 )PhDir = 256 - PhDir;
 	}
@@ -4094,13 +4096,13 @@ class ZBuffer{
 	short UnitLogY[512];
 	short UnitX[512];
 	short UnitY[512];
-	word  UFileID[512];
-	word  USpriteID[512];
-	word  NURef[512];
+	unsigned short  UFileID[512];
+	unsigned short  USpriteID[512];
+	unsigned short  NURef[512];
 	OneObject* OBJS[512];
-	word NVUnits;
-	word FirstUN;
-	void AddToZBuffer(short uy,short x,short y,OneObject* OB,word FileID,word Sprite);
+	unsigned short NVUnits;
+	unsigned short FirstUN;
+	void AddToZBuffer(short uy,short x,short y,OneObject* OB,unsigned short FileID,unsigned short Sprite);
 	void ShowZBuffer();
 	void InitZBuffer();
 };
@@ -4108,7 +4110,7 @@ void ZBuffer::InitZBuffer(){
 	NVUnits=0;
 	FirstUN=0;
 };
-void ZBuffer::AddToZBuffer(short uy,short x,short y,OneObject* OB,word FileID,word Sprite){
+void ZBuffer::AddToZBuffer(short uy,short x,short y,OneObject* OB,unsigned short FileID,unsigned short Sprite){
 	if(NVUnits>=512)return;
 	if(!NVUnits){
 		NURef[0]=0xFFFF;
@@ -4120,9 +4122,9 @@ void ZBuffer::AddToZBuffer(short uy,short x,short y,OneObject* OB,word FileID,wo
 		OBJS[0]=OB;
 		NVUnits=1;
 	}else{
-		word un=FirstUN;
-		word un0=0xFFFF;
-		word un1;
+		unsigned short un=FirstUN;
+		unsigned short un0=0xFFFF;
+		unsigned short un1;
 		do{
 			un1=NURef[un];
 			if(uy<UnitLogY[un]){
@@ -4161,8 +4163,8 @@ void ZBuffer::ShowZBuffer(){
 	int Lx1=smaplx<<Shifter;
 	int Ly1=mul3(smaply)<<(Shifter-2);
 	SetRLCWindow(smapx,smapy,Lx1,Ly1,SCRSizeX);
-	word fu=FirstUN;
-	word spr,FID;
+	unsigned short fu=FirstUN;
+	unsigned short spr,FID;
 	do{
 		spr=USpriteID[fu];
 		FID=UFileID[fu];
@@ -4184,19 +4186,19 @@ short UnitLogY[4096];
 short UnitLogX[4096];
 short UnitX[4096];
 short UnitY[4096];
-word  UFileID[4096];
-word  USpriteID[4096];
-word  NURef[4096];
+unsigned short  UFileID[4096];
+unsigned short  USpriteID[4096];
+unsigned short  NURef[4096];
 int   UParam1[4096];
 int   UParam2[4096];
 OneObject* OBJS[4096];
-word NVUnits;
-word FirstUN;
+unsigned short NVUnits;
+unsigned short FirstUN;
 // - - - - -//-------\\- - - - - 
 //----------\\Hashing//----------
-word Hash16[4096];
-word Hash64[1024];
-word Hash256[256];
+unsigned short Hash16[4096];
+unsigned short Hash64[1024];
+unsigned short Hash256[256];
 void InitHash()
 {
 	memset( Hash16, 0, sizeof Hash16 );
@@ -4212,7 +4214,7 @@ void InitVisual()
 	InitHash();
 };
 /*
-void AddToVisual(short uy,short x,short y,OneObject* OB,word FileID,word Sprite,int Param1,int Param2){
+void AddToVisual(short uy,short x,short y,OneObject* OB,unsigned short FileID,unsigned short Sprite,int Param1,int Param2){
 	int ux=x;
 	if(!NVUnits){
 		NURef[0]=0xFFFF;
@@ -4230,7 +4232,7 @@ void AddToVisual(short uy,short x,short y,OneObject* OB,word FileID,word Sprite,
 		Hash64[uuy>>2]=0;
 		Hash256[uuy]>>4=0;
 	}else{
-		word un;
+		unsigned short un;
 		int uuy=(int(uy)+32768)>>4;
 		un=Hash16[uuy];
 		if(un==0xFFFF){
@@ -4240,8 +4242,8 @@ void AddToVisual(short uy,short x,short y,OneObject* OB,word FileID,word Sprite,
 			};
 		};
 		if(un==0xFFFF)un=FirstUN;
-		word un0=0xFFFF;
-		word un1;
+		unsigned short un0=0xFFFF;
+		unsigned short un1;
 		do{
 			un1=NURef[un];
 			if(uy<UnitLogY[un]){
@@ -4292,7 +4294,7 @@ void AddToVisual(short uy,short x,short y,OneObject* OB,word FileID,word Sprite,
 	};
 };
 */
-void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word Sprite )
+void AddToVisual( short uy, short x, short y, OneObject* OB, unsigned short FileID, unsigned short Sprite )
 {
 	//assert(RLCNSpr[FileID]>(Sprite&4095));
 	if ( RLCNSpr[FileID] <= ( Sprite & 4095 ) )return;
@@ -4311,9 +4313,9 @@ void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word S
 	}
 	else
 	{
-		word un = FirstUN;
-		word un0 = 0xFFFF;
-		word un1;
+		unsigned short un = FirstUN;
+		unsigned short un0 = 0xFFFF;
+		unsigned short un1;
 		do
 		{
 			un1 = NURef[un];
@@ -4354,7 +4356,7 @@ void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word S
 		} while ( true );
 	};
 };
-void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word Sprite, int Param1, int Param2 )
+void AddToVisual( short uy, short x, short y, OneObject* OB, unsigned short FileID, unsigned short Sprite, int Param1, int Param2 )
 {
 	if ( !NVUnits )
 	{
@@ -4371,9 +4373,9 @@ void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word S
 	}
 	else
 	{
-		word un = FirstUN;
-		word un0 = 0xFFFF;
-		word un1;
+		unsigned short un = FirstUN;
+		unsigned short un0 = 0xFFFF;
+		unsigned short un1;
 		do
 		{
 			un1 = NURef[un];
@@ -4421,8 +4423,8 @@ void ShowVisual()
 	int Lx1 = smaplx << Shifter;
 	int Ly1 = mul3( smaply ) << ( Shifter - 2 );
 	SetRLCWindow( smapx, smapy, Lx1, Ly1, SCRSizeX );
-	word fu = FirstUN;
-	word spr, FID;
+	unsigned short fu = FirstUN;
+	unsigned short spr, FID;
 	do
 	{
 		spr = USpriteID[fu];
@@ -4445,13 +4447,13 @@ void ShowVisual()
 //2-transparent(Param2-pointer to transparency data)
 //3-encoded with palette(Param2-pointer to palette)
 //4-shading with mask(Param2-pointer to gradient data)
-extern byte fog[8192 + 1024];
-extern byte wfog[8192];
-extern byte rfog[8192];
-extern byte darkfog[40960];
-extern byte yfog[8192];
-extern byte trans8[65536];
-void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word Sprite, int Options )
+extern unsigned char fog[8192 + 1024];
+extern unsigned char wfog[8192];
+extern unsigned char rfog[8192];
+extern unsigned char darkfog[40960];
+extern unsigned char yfog[8192];
+extern unsigned char trans8[65536];
+void AddToVisual( short uy, short x, short y, OneObject* OB, unsigned short FileID, unsigned short Sprite, int Options )
 {
 	int CType = Options & 0x0F;
 	int CProp = Options & 0xF0;
@@ -4525,9 +4527,9 @@ void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word S
 	}
 	else
 	{
-		word un = FirstUN;
-		word un0 = 0xFFFF;
-		word un1;
+		unsigned short un = FirstUN;
+		unsigned short un0 = 0xFFFF;
+		unsigned short un1;
 		do
 		{
 			un1 = NURef[un];
@@ -4574,8 +4576,8 @@ void ShowVisualLess( int yend )
 	int Lx1 = smaplx << Shifter;
 	int Ly1 = mul3( smaply ) << ( Shifter - 2 );
 	SetRLCWindow( smapx, smapy, Lx1, Ly1, SCRSizeX );
-	word fu = FirstUN;
-	word spr, FID;
+	unsigned short fu = FirstUN;
+	unsigned short spr, FID;
 	bool LocTrans;
 	int ylog;
 	do
@@ -4589,7 +4591,7 @@ void ShowVisualLess( int yend )
 			//if(spr>=RLCNSpr[FID])spr=RLCNSpr[FID]-1;
 			int par1 = UParam1[fu];
 			int par2 = UParam2[fu];
-			byte nat = 0;
+			unsigned char nat = 0;
 			//Shadows
 			LocTrans = false;
 			OneObject* OB = OBJS[fu];
@@ -4612,17 +4614,17 @@ void ShowVisualLess( int yend )
 			case AV_PULSING:
 			{
 				int NNN = 5 + int( 8 * ( sin( double( GetTickCount() ) / 100 ) + 2 ) );
-				GPS.ShowGPPal( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (byte*) par2 + ( NNN << 8 ) );
+				GPS.ShowGPPal( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (unsigned char*) par2 + ( NNN << 8 ) );
 			};
 			break;
 			case AV_TRANSPARENT:
 				GPS.ShowGPTransparent( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat );
 				break;
 			case AV_PALETTE:
-				GPS.ShowGPPal( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (byte*) par2 );
+				GPS.ShowGPPal( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (unsigned char*) par2 );
 				break;
 			case AV_GRADIENT:
-				GPS.ShowGPGrad( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (byte*) par2 );
+				GPS.ShowGPGrad( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (unsigned char*) par2 );
 				break;
 			};
 			fu = NURef[fu];
@@ -4639,7 +4641,7 @@ void QShowFiresEx( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** Pre
 {
 	if ( !NFiresAnm )return;
 	//determining the current stage
-	word ms = OB->StageState;
+	unsigned short ms = OB->StageState;
 	int curst = 0;
 	NewMonster* NM = OB->newMons;
 	int LF0 = 0;
@@ -4649,7 +4651,7 @@ void QShowFiresEx( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** Pre
 	for ( int i = 0; i < MaxAStages; i++ )
 	{
 		LF0 = LF1;
-		word ms1 = ( ms >> ( i * 3 ) ) & 7;
+		unsigned short ms1 = ( ms >> ( i * 3 ) ) & 7;
 		if ( ms1 == 2 )
 		{
 			LF1 += NM->CompxCraft->Stages[i].AddPoints;
@@ -4694,8 +4696,8 @@ void QShowFiresEx( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** Pre
 		{
 			FIN = new FireObjectInfo;
 			GFIN->Objs[FIndex] = FIN;
-			FIN->FireSprite = new byte[NFir];
-			FIN->FireStage = new byte[NFir];
+			FIN->FireSprite = new unsigned char[NFir];
+			FIN->FireStage = new unsigned char[NFir];
 			FIN->NeedFires = NOG;
 			FIN->RealFires = 0;
 			FIN->delay = 8 + ( rand() & 7 );
@@ -4750,7 +4752,7 @@ void QShowFiresEx( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** Pre
 		for ( int i = 0; i < FIN->RealFires; i++ )
 		{
 			int ANI = div( i, NFiresAnm ).rem;
-			byte sta = FIN->FireStage[i];
+			unsigned char sta = FIN->FireStage[i];
 			NewAnimation* NANM = nullptr;
 			FIN->FireSprite[i]++;
 			switch ( sta )
@@ -4838,8 +4840,8 @@ void QShowFires( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** PreFi
 		{
 			FIN = new FireObjectInfo;
 			GFIN->Objs[FIndex] = FIN;
-			FIN->FireSprite = new byte[NFir];
-			FIN->FireStage = new byte[NFir];
+			FIN->FireSprite = new unsigned char[NFir];
+			FIN->FireStage = new unsigned char[NFir];
 			FIN->NeedFires = NOG;
 			FIN->RealFires = 0;
 			FIN->delay = 8 + ( rand() & 7 );
@@ -4894,7 +4896,7 @@ void QShowFires( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** PreFi
 		for ( int i = 0; i < FIN->RealFires; i++ )
 		{
 			int ANI = div( i, NFiresAnm ).rem;
-			byte sta = FIN->FireStage[i];
+			unsigned char sta = FIN->FireStage[i];
 			NewAnimation* NANM = nullptr;
 			FIN->FireSprite[i]++;
 			switch ( sta )
@@ -5043,8 +5045,8 @@ void ShowNewMonsters()
 								oc1 = octs - 1;
 							}
 
-							byte dir = ( ( ( OB->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
-							byte dir2 = dir;
+							unsigned char dir = ( ( ( OB->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
+							unsigned char dir2 = dir;
 
 							NewFrame* NF = &NAM->Frames[csp];
 							NewMonster* NM = OB->newMons;
@@ -5219,7 +5221,7 @@ void ShowNewMonsters()
 											Roc1 = Rocts - 1;
 										}
 
-										byte Rdir = ( ( ( OB->RealDir + 64 + Rsesize ) & 255 )*Rocts ) >> 8;
+										unsigned char Rdir = ( ( ( OB->RealDir + 64 + Rsesize ) & 255 )*Rocts ) >> 8;
 										NewFrame* NF = &NAM->Frames[csp];
 
 										if ( Rdir < RocM )
@@ -5529,7 +5531,7 @@ void OneObject::ProcessNewMotion()
 		int FdestX = 0;
 		int FdestY = 0;
 		bool Fdest = false;
-		byte StepDir = 1;//0-back,1-stay,2-forward
+		unsigned char StepDir = 1;//0-back,1-stay,2-forward
 		if ( DestX > 0 )
 		{
 			dst = Norma( RealX - DestX, RealY - DestY );
@@ -5630,7 +5632,7 @@ void OneObject::ProcessNewMotion()
 //   bool CanMove:1
 //   bool ImpMotion:1;
 //   bool NeedForceCalc:1;
-//   byte RotCntr;
+//   unsigned char RotCntr;
 //   int BestNX;
 //	 int BestNY;
 //   int ForceX;
@@ -5684,7 +5686,7 @@ void SetMonstersInCells()
 	};
 };
 //checking position for monster MID in  (x,y)
-bool CheckPosition( int x, int y, int R, word MID )
+bool CheckPosition( int x, int y, int R, unsigned short MID )
 {
 	int cx = ( x >> 11 );
 	int cy = ( y >> 11 );
@@ -5699,7 +5701,7 @@ bool CheckPosition( int x, int y, int R, word MID )
 			{
 				for ( int z = 0; z < NMon; z++ )
 				{
-					word MD = GetNMSL( z + ofs1 );
+					unsigned short MD = GetNMSL( z + ofs1 );
 					if ( MD != MID )
 					{
 						OneObject* OB = Group[MD];
@@ -5949,7 +5951,7 @@ int GetPrecHeight( int x, int y );
 //1  : motion succesfull
 //0  : imposible to move because of other monsters
 
-int TryToMove( OneObject* OB, byte NewDir, bool Dirc )
+int TryToMove( OneObject* OB, unsigned char NewDir, bool Dirc )
 {
 	rando();
 	if ( OB->LocalNewState != OB->NewState )
@@ -5966,7 +5968,7 @@ int TryToMove( OneObject* OB, byte NewDir, bool Dirc )
 
 	NewMonster* NMN = OB->newMons;
 	AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
-	byte RDIR = NewDir;
+	unsigned char RDIR = NewDir;
 	int retval = 0;
 	if ( Dirc )
 	{
@@ -5974,7 +5976,7 @@ int TryToMove( OneObject* OB, byte NewDir, bool Dirc )
 		OB->BackDelay = 20;
 	}
 
-	byte Media = OB->LockType;
+	unsigned char Media = OB->LockType;
 
 	OB->CheckState();
 
@@ -6140,7 +6142,7 @@ int TryToMove( OneObject* OB, byte NewDir, bool Dirc )
 	return retval;
 	//}else return 0;
 };
-int NewTryToMove( OneObject* OB, byte NewDir, bool Dirc, int dx, int dy )
+int NewTryToMove( OneObject* OB, unsigned char NewDir, bool Dirc, int dx, int dy )
 {
 	rando();
 	if ( Dirc&&OB->BackDelay )
@@ -6150,14 +6152,14 @@ int NewTryToMove( OneObject* OB, byte NewDir, bool Dirc, int dx, int dy )
 	};
 	NewMonster* NMN = OB->newMons;
 	AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
-	byte RDIR = NewDir;
+	unsigned char RDIR = NewDir;
 	int retval = 0;
 	if ( Dirc )
 	{
 		RDIR += 128;
 		OB->BackDelay = 20;
 	};
-	byte Media = OB->LockType;
+	unsigned char Media = OB->LockType;
 	OB->CheckState();
 	int nf = NMN->MotionL.NFrames >> SpeedSh;
 	int bdx = nf*dx;
@@ -6479,8 +6481,8 @@ void CalculateMotionX0()
 				if ( FX || FY )
 				{
 					char BestDir = char( GetDir( FX, FY ) );
-					int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[byte( BestDir )];
-					int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[byte( BestDir )];
+					int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[unsigned char( BestDir )];
+					int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[unsigned char( BestDir )];
 					if ( !CheckTerra( OB->RealX + bdx, OB->RealY + bdy, OB->Lx, 0 ) )
 					{
 						if ( ( !Try1 ) && ( OB->PathX || OB->DestX < 0 ) )
@@ -6637,7 +6639,7 @@ void CalculateMotionX0()
 					FX += OB->ForceX;
 					FY += OB->ForceY;
 					char Bdir = char( GetDir( FX, FY ) );
-					if ( OB->BackMotion )Bdir += (byte) 128;
+					if ( OB->BackMotion )Bdir += (unsigned char) 128;
 					char ddir = OB->RealDir - Bdir;
 					if ( abs( ddir ) < 8 )OB->RealDir = Bdir;
 					else
@@ -6727,8 +6729,8 @@ void MotionHandler0( OneObject* OB )
 		if ( FX || FY )
 		{
 			char BestDir = char( GetDir( FX, FY ) );
-			int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[byte( BestDir )];
-			int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[byte( BestDir )];
+			int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[unsigned char( BestDir )];
+			int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[unsigned char( BestDir )];
 			if ( !OB->UnlimitedMotion )
 			{
 				if ( !CheckTerra( OB->RealX + bdx, OB->RealY + bdy, OB->Lx, OB->LockType ) )
@@ -6826,13 +6828,13 @@ void MotionHandler0( OneObject* OB )
 						{
 							if ( OB->PathDelay )
 							{
-								byte CDir = OB->RealDir;
-								byte ddr = 16;
+								unsigned char CDir = OB->RealDir;
+								unsigned char ddr = 16;
 								int NN = NMN->MotionL.NFrames;
-								byte olddir = OB->RealDir;
+								unsigned char olddir = OB->RealDir;
 								for ( int i = 0; i < 8; i++ )
 								{
-									byte CDR1 = CDir - ddr;
+									unsigned char CDR1 = CDir - ddr;
 									OB->RealDir = CDR1;
 									OB->GraphDir = CDR1;
 									int tmtrv = TryToMove( OB, OB->RealDir, false );
@@ -6954,9 +6956,9 @@ void SWAP( short* x, short* y )
 	( *x ) = ( *y );
 	*y = t;
 };
-void SWAP( word* x, word* y )
+void SWAP( unsigned short* x, unsigned short* y )
 {
-	word t = *x;
+	unsigned short t = *x;
 	( *x ) = ( *y );
 	*y = t;
 };
@@ -6966,9 +6968,9 @@ void SWAP( int* x, int* y )
 	( *x ) = ( *y );
 	*y = t;
 };
-void SWAP( byte*x, byte* y )
+void SWAP( unsigned char*x, unsigned char* y )
 {
-	byte t = *x;
+	unsigned char t = *x;
 	( *x ) = ( *y );
 	*y = t;
 };
@@ -6989,13 +6991,13 @@ void AttackObjLink( OneObject* OBJ );
 bool RemoveFoolsInCell( int cell, int x, int y, int Lx, OneObject* MyObj )
 {
 	cell += VAL_MAXCX + 1;
-	word MyMid = MyObj->Index;
+	unsigned short MyMid = MyObj->Index;
 	int mx1 = x + Lx - 1;
 	int my1 = y + Lx - 1;
 	int NMon = MCount[cell];
 	if ( !NMon )return false;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	int cx = ( x << 1 ) + Lx;
 	int cy = ( y << 1 ) + Lx;
 	for ( int i = 0; i < NMon; i++ )
@@ -7035,7 +7037,7 @@ bool RemoveFoolsInCell( int cell, int x, int y, int Lx, OneObject* MyObj )
 								Order1* OR2=MyObj->LocalOrder;
 								Group[OB->Index]=MyObj;
 								Group[MyObj->Index]=OB;
-								word id=OB->Index;
+								unsigned short id=OB->Index;
 								OB->Index=MyObj->Index;
 								MyObj->Index=id;
 								OB->LocalOrder=OR2;
@@ -7117,12 +7119,12 @@ void RemoveFools( int x, int y, int Lx, OneObject* MyMid )
 	if ( RemoveFoolsInCell( cell - VAL_MAXCX - 1, x, y, Lx, MyMid ) )return;
 	if ( RemoveFoolsInCell( cell + VAL_MAXCX - 1, x, y, Lx, MyMid ) )return;
 };
-void SmartTryToMove( OneObject* OB, byte NewDir, bool Dirc )
+void SmartTryToMove( OneObject* OB, unsigned char NewDir, bool Dirc )
 {
 	if ( !OB->LockType )
 	{
 		char BestDir = NewDir;
-		if ( Dirc )BestDir += (byte) 128;
+		if ( Dirc )BestDir += (unsigned char) 128;
 		NewMonster* NMN = OB->newMons;
 		int mrot = NMN->MinRotator;
 		bool NeedToPush = false;
@@ -7163,8 +7165,8 @@ void SmartTryToMove( OneObject* OB, byte NewDir, bool Dirc )
 			break;
 		};
 		int nst = NMN->MotionL.NFrames >> SpeedSh;
-		int dx0 = ( NMN->OneStepDX[byte( dirr )] * nst ) << SpeedSh;
-		int dy0 = ( NMN->OneStepDY[byte( dirr )] * nst ) << SpeedSh;
+		int dx0 = ( NMN->OneStepDX[unsigned char( dirr )] * nst ) << SpeedSh;
+		int dy0 = ( NMN->OneStepDY[unsigned char( dirr )] * nst ) << SpeedSh;
 		int LX = OB->Lx;
 		UnitsField.BClrBar( OB->x, OB->y, LX );
 		int xfin = ( OB->RealX + dx0 - ( LX << 7 ) ) >> 8;
@@ -7180,12 +7182,12 @@ void SmartTryToMove( OneObject* OB, byte NewDir, bool Dirc )
 		}
 		else
 		{
-			if ( Dirc )dirr += (byte) 128;
+			if ( Dirc )dirr += (unsigned char) 128;
 			OB->RealDir = dirr;
 			OB->GraphDir = dirr;
 			NewMonster* NM = OB->newMons;
-			int dx = NM->OneStepDX[byte( dirr )];
-			int dy = NM->OneStepDY[byte( dirr )];
+			int dx = NM->OneStepDX[unsigned char( dirr )];
+			int dy = NM->OneStepDY[unsigned char( dirr )];
 			NewTryToMove( OB, dirr, Dirc, dx, dy );
 			UnitsField.BSetBar( xfin, yfin, LX );
 			OB->x = xfin;
@@ -7256,8 +7258,8 @@ void MotionHandler1( OneObject* OB )
 					break;
 				};
 				int nst = NMN->MotionL.NFrames;
-				int dxx = NMN->OneStepDX[byte( dirr )];
-				int dyy = NMN->OneStepDY[byte( dirr )];
+				int dxx = NMN->OneStepDX[unsigned char( dirr )];
+				int dyy = NMN->OneStepDY[unsigned char( dirr )];
 				int dx0 = dxx*nst;
 				int dy0 = dyy*nst;
 				int LX = OB->Lx;
@@ -7297,7 +7299,7 @@ void MotionHandler1( OneObject* OB )
 				{
 					if ( unlim )
 					{
-						word MID = CheckMotionThroughEnemyAbility( OB, xrfin, yrfin );
+						unsigned short MID = CheckMotionThroughEnemyAbility( OB, xrfin, yrfin );
 						if ( MID != 0xFFFF )
 						{
 
@@ -7359,8 +7361,8 @@ int CheckMotionAbility( OneObject* OB, char dirr, bool Remove )
 	}
 	NewMonster* NMN = OB->newMons;
 	int nst = NMN->MotionL.NFrames;
-	int dxx = NMN->OneStepDX[byte( dirr )];
-	int dyy = NMN->OneStepDY[byte( dirr )];
+	int dxx = NMN->OneStepDX[unsigned char( dirr )];
+	int dyy = NMN->OneStepDY[unsigned char( dirr )];
 	int dx0 = dxx*nst;
 	int dy0 = dyy*nst;
 	int LX = OB->Lx;
@@ -7502,8 +7504,8 @@ void MotionHandler3( OneObject* OB )
 					if ( CanMove )
 					{
 						int nst = NMN->MotionL.NFrames >> SpeedSh;
-						int dxx = NMN->OneStepDX[byte( NewBestDir )] << SpeedSh;
-						int dyy = NMN->OneStepDY[byte( NewBestDir )] << SpeedSh;
+						int dxx = NMN->OneStepDX[unsigned char( NewBestDir )] << SpeedSh;
+						int dyy = NMN->OneStepDY[unsigned char( NewBestDir )] << SpeedSh;
 						int dx0 = dxx*nst;
 						int dy0 = dyy*nst;
 						int xfin = ( OB->RealX + dx0 - ( LX << 7 ) ) >> 8;
@@ -7600,8 +7602,8 @@ void MotionHandler2( OneObject* OB )
 		if ( FX || FY )
 		{
 			char BestDir = char( GetDir( FX, FY ) );
-			int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[byte( BestDir )];
-			int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[byte( BestDir )];
+			int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[unsigned char( BestDir )];
+			int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[unsigned char( BestDir )];
 			if ( !OB->UnlimitedMotion )
 			{
 				if ( !CheckTerra( OB->RealX + bdx, OB->RealY + bdy, OB->Lx, OB->LockType ) )
@@ -7821,7 +7823,7 @@ char* its1( int i )
 void CreateTimedHint( char* s, int time );
 int DoLink_Time, SearchVictim_Time, CheckCapture_Time;
 
-extern HGLOBAL PTR_MISS;
+extern void* PTR_MISS;
 int rppx = 0;
 
 void LongProcesses()
@@ -7951,11 +7953,11 @@ void EliminateBuilding( OneObject* OB );
 
 void CalculateMotion()
 {
-	byte MyNT = NatRefTBL[MyNation];
+	unsigned char MyNT = NatRefTBL[MyNation];
 
 	LongProcesses();
 
-	byte Mask = NATIONS[NatRefTBL[MyNation]].NMask;
+	unsigned char Mask = NATIONS[NatRefTBL[MyNation]].NMask;
 	bool sce = !( ( SCENINF.hLib == nullptr )/*||SCENINF.StandartVictory*/ );
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
@@ -8012,7 +8014,7 @@ void CalculateMotion()
 					}
 				}
 
-				word HARCH = OB->Nat->Harch;
+				unsigned short HARCH = OB->Nat->Harch;
 				if ( !( HARCH || OB->NewBuilding || rando() > 50 ) )
 				{
 					if ( !OB->newMons->NotHungry )
@@ -8260,8 +8262,8 @@ void CalculateMotionV2()
 				{
 					char BestDir = char( GetDir( FX, FY ) );
 					//need optimisation for* !:
-					int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[byte( BestDir )];
-					int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[byte( BestDir )];
+					int bdx = NMN->MotionL.NFrames*NMN->OneStepDX[unsigned char( BestDir )];
+					int bdy = NMN->MotionL.NFrames*NMN->OneStepDY[unsigned char( BestDir )];
 					if ( !CheckTerra( OB->RealX + bdx, OB->RealY + bdy, OB->Lx, OB->LockType ) )
 					{
 						if ( ( !Try1 ) && ( OB->PathX || OB->DestX < 0 ) )
@@ -8420,9 +8422,9 @@ int RoundY( int y )
 };
 void BSetPt( int x, int y );
 void CreateAveragePlane( int x, int y, int r );
-extern word LastObject;
+extern unsigned short LastObject;
 bool CheckSpritesInArea( int x, int y, int r );
-bool CheckBuildingsInArea( int x0, int y0, int x1, int y1, word* BLD, int Nb )
+bool CheckBuildingsInArea( int x0, int y0, int x1, int y1, unsigned short* BLD, int Nb )
 {
 	if ( x0 == x1&&y0 == y1 )return true;
 	int nx0 = x0 + y0;
@@ -8480,7 +8482,7 @@ bool CheckBuildingsForWalls( int x, int y )
 		{
 			if ( ofs0 >= 0 && ofs0 < MAXCIOFS )
 			{
-				word Mon1 = BLDList[ofs0];
+				unsigned short Mon1 = BLDList[ofs0];
 				if ( Mon1 != 0xFFFF )
 				{
 					OneObject* OB = Group[Mon1];
@@ -8535,7 +8537,7 @@ bool CheckMonstersInArea( int x, int y, int r )
 				int NMon = MCount[ofs0];
 				for ( int z = 0; z < NMon; z++ )
 				{
-					word MD = GetNMSL( z + ofs1 );
+					unsigned short MD = GetNMSL( z + ofs1 );
 					OneObject* OB = Group[MD];
 					if ( OB&&OB->NewMonst&&Norma( OB->RealX - x, OB->RealY - y ) < r )return false;
 				};
@@ -8554,10 +8556,10 @@ int CheckVLine( int x, int y, int Lx );
 int CheckHLine( int x, int y, int Lx );
 bool CheckSpritesInAreaNew( int x, int y, int r, bool Erase );
 void EraseTreesInPoint( int x, int y );
-int CreateBLDList( byte NI, word* BLD, int MaxBLD, int x0, int y0 )
+int CreateBLDList( unsigned char NI, unsigned short* BLD, int MaxBLD, int x0, int y0 )
 {
 	int N = 0;
-	word* Units = NatList[NI];
+	unsigned short* Units = NatList[NI];
 	int Nu = NtNUnits[NI];
 	for ( int i = 0; i < Nu; i++ )
 	{
@@ -8573,16 +8575,16 @@ int CreateBLDList( byte NI, word* BLD, int MaxBLD, int x0, int y0 )
 	};
 	return N;
 };
-int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD, int NBLD )
+int CheckCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i, unsigned short* BLD, int NBLD )
 {
-	word TotBLD[256];
+	unsigned short TotBLD[256];
 	if ( NM->Building&&NI != 0xFF && !BLD )
 	{
 		NBLD = CreateBLDList( NI, TotBLD, 256, *x2i, *y2i );
 		BLD = TotBLD;
 	};
 	int NBLD1 = NBLD;
-	byte Use = NM->Usage;
+	unsigned char Use = NM->Usage;
 	if ( NI != 0xFF && NATIONS[NI].AI_Enabled&&Use != SkladID )NBLD1 = 0;
 	int x2 = *x2i;
 	int y2 = *y2i;
@@ -8631,8 +8633,8 @@ int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD
 
 		//checking locking information
 		int np = NM->NCheckPt;
-		byte* Cpx = NM->CheckX;
-		byte* Cpy = NM->CheckY;
+		unsigned char* Cpx = NM->CheckX;
+		unsigned char* Cpy = NM->CheckY;
 		int maxZ = -100000;
 		int minZ = 100000;
 		if ( NM->ProdType )
@@ -8679,9 +8681,9 @@ int CheckCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i, word* BLD
 		else return -1;
 	};
 };
-int CheckSmartCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i )
+int CheckSmartCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i )
 {
-	word TotBLD[256];
+	unsigned short TotBLD[256];
 	int Nb = 0;
 	if ( NM->Building )Nb = CreateBLDList( NI, TotBLD, 256, *x2i, *y2i );
 	int v = CheckCreationAbility( NI, NM, x2i, y2i, TotBLD, Nb );
@@ -8714,9 +8716,9 @@ int CheckSmartCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i )
 	}
 	else return v;
 };
-int CheckAISmartCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i )
+int CheckAISmartCreationAbility( unsigned char NI, NewMonster* NM, int* x2i, int* y2i )
 {
-	word TotBLD[256];
+	unsigned short TotBLD[256];
 	int Nb = 0;
 	if ( NM->Building )Nb = CreateBLDList( NI, TotBLD, 256, *x2i, *y2i );
 	int v = CheckCreationAbility( NI, NM, x2i, y2i, TotBLD, Nb );
@@ -8747,7 +8749,7 @@ int CheckAISmartCreationAbility( byte NI, NewMonster* NM, int* x2i, int* y2i )
 	}
 	else return v;
 };
-int SmartCreationUnit( byte NI, int NIndex, int x, int y )
+int SmartCreationUnit( unsigned char NI, int NIndex, int x, int y )
 {
 	int v = CheckAISmartCreationAbility( NI, NATIONS[NI].Mon[NIndex]->newMons, &x, &y );
 	if ( v != -1 )
@@ -8758,10 +8760,10 @@ int SmartCreationUnit( byte NI, int NIndex, int x, int y )
 };
 
 extern City CITY[8];
-extern byte BalloonState;
-extern byte CannonState;
-extern byte XVIIIState;
-void GetUnitCost( byte NI, word NIndex, int* Cost )
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char XVIIIState;
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8788,7 +8790,7 @@ void GetUnitCost( byte NI, word NIndex, int* Cost )
 		};
 	};
 };
-void GetUnitCost( byte NI, word NIndex, int* Cost, word Power )
+void GetUnitCost( unsigned char NI, unsigned short NIndex, int* Cost, unsigned short Power )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8815,7 +8817,7 @@ void GetUnitCost( byte NI, word NIndex, int* Cost, word Power )
 		};
 	};
 };
-bool CheckCostHint( byte NI, word NIndex )
+bool CheckCostHint( unsigned char NI, unsigned short NIndex )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8850,7 +8852,7 @@ bool CheckCostHint( byte NI, word NIndex )
 	};
 	return true;
 };
-bool CheckCost( byte NI, word NIndex )
+bool CheckCost( unsigned char NI, unsigned short NIndex )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8861,7 +8863,7 @@ bool CheckCost( byte NI, word NIndex )
 		if ( XRESRC( NI, i ) < Cost[i] )return false;
 	return true;
 };
-bool ApplyCost( byte NI, word NIndex )
+bool ApplyCost( unsigned char NI, unsigned short NIndex )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8878,7 +8880,7 @@ bool ApplyCost( byte NI, word NIndex )
 	};
 	return true;
 };
-bool ApplyCostUpgrade( byte NI, word NIndex )
+bool ApplyCostUpgrade( unsigned char NI, unsigned short NIndex )
 {
 	Nation* NT = &NATIONS[NI];
 	GeneralObject* GO = NT->Mon[NIndex];
@@ -8950,7 +8952,7 @@ void FindUnitPosition( int* x, int *y, NewMonster* NM )
 	};
 };
 void CHKS();
-void CreateFields( byte NI, int x, int y, int n )
+void CreateFields( unsigned char NI, int x, int y, int n )
 {
 	Nation* NT = NATIONS + NI;
 	for ( int ix = -3; ix <= 3; ix++ )
@@ -8962,8 +8964,8 @@ void CreateFields( byte NI, int x, int y, int n )
 		};
 };
 bool GroundBox = 1;
-extern byte NTex1[32];
-extern byte NTex2[32];
+extern unsigned char NTex1[32];
+extern unsigned char NTex2[32];
 void CreateGround( OneObject* G );
 int GetTotalUnits()
 {
@@ -9056,7 +9058,7 @@ int Nation::CreateNewMonsterAt( int rx, int ry, int n, bool Anyway )
 			if ( OS->OC->IntResType < 8 && Norma( OS->x - xxx, OS->y - yyy ) < 64 )
 			{
 				i = MaxSprt;
-				byte rt = OS->OC->IntResType;
+				unsigned char rt = OS->OC->IntResType;
 				if ( rt == IronID )
 				{
 					n++;
@@ -9360,7 +9362,7 @@ void CreateGround( OneObject* G )
 	NewMonster* NM = G->newMons;
 	if ( NM->Building )
 	{
-		byte Use = NM->Usage;
+		unsigned char Use = NM->Usage;
 		if ( Use == MelnicaID || Use == SkladID || Use == MineID )
 		{
 			return;
@@ -9368,8 +9370,8 @@ void CreateGround( OneObject* G )
 
 		G->InFire = 1;
 		GeneralObject* GO = G->Ref.General;
-		byte tex1 = NTex1[GO->NatID];
-		byte tex2 = NTex2[GO->NatID];
+		unsigned char tex1 = NTex1[GO->NatID];
+		unsigned char tex2 = NTex2[GO->NatID];
 		int CX = G->RealX >> 4;
 		int CY = G->RealY >> 4;
 		int X0 = CX + NM->BuildX0;
@@ -9434,11 +9436,11 @@ void OneObject::GetCornerXY( int* px, int* py )
 
 void NewMonsterSendToLink( OneObject* OB );
 
-bool ParkWaterNewMonster( OneObject* OB, int x, int y, byte Prio, byte OrdType );
+bool ParkWaterNewMonster( OneObject* OB, int x, int y, unsigned char Prio, unsigned char OrdType );
 
 #undef NewMonsterSendTo
 
-void OneObject::NewMonsterSendTo( int px, int py, byte Prio, byte OrdType )
+void OneObject::NewMonsterSendTo( int px, int py, unsigned char Prio, unsigned char OrdType )
 {
 	NewMonster* NM = newMons;
 	if ( Ref.General->OFCR && InArmy )
@@ -9546,7 +9548,7 @@ void NewMonsterPreciseSendToLink( OneObject* OB );
 
 #undef NewMonsterPreciseSendTo
 
-void OneObject::NewMonsterPreciseSendTo( int px, int py, byte Prio, byte OrdType )
+void OneObject::NewMonsterPreciseSendTo( int px, int py, unsigned char Prio, unsigned char OrdType )
 {
 	NewMonster* NM = newMons;
 	if ( NM->Transport )
@@ -9662,16 +9664,16 @@ void ProcessNewMonsters()
 typedef  bool CHOBJ( OneObject* OB, int N );
 void GetRect( OneObject* ZZ, int* x, int* y, int* Lx, int* Ly );
 bool PInside( int x, int y, int x1, int y1, int xp, int yp );
-word CheckCoorInGP( int x, int y );
-word GoodSelectNewMonsters( byte NI, int xr, int yr, int xr1, int yr1, word *Collect, word* Ser, bool WRITE, CHOBJ* FN, int NN, int MAX )
+unsigned short CheckCoorInGP( int x, int y );
+unsigned short GoodSelectNewMonsters( unsigned char NI, int xr, int yr, int xr1, int yr1, unsigned short *Collect, unsigned short* Ser, bool WRITE, CHOBJ* FN, int NN, int MAX )
 {
-	byte NIX = NatRefTBL[NI];
+	unsigned char NIX = NatRefTBL[NI];
 	int NSLC = 0;
 	if ( abs( xr - xr1 ) < 5 && abs( yr - yr1 ) < 5 )
 	{
 		int xx = xr - ( mapx << 5 );
 		int yy = yr - ( mapy << 4 );
-		word IDX = CheckCoorInGP( xx, yy );
+		unsigned short IDX = CheckCoorInGP( xx, yy );
 		if ( IDX != 0xFFFF )
 		{
 			OneObject* OB = Group[IDX];
@@ -9847,7 +9849,7 @@ bool CheckBar( int x, int y, int Lx, int Ly )
 	return MFIELDS->CheckBar( x, y, Lx, Ly );
 }
 
-byte NewCirc[16];
+unsigned char NewCirc[16];
 
 void SetLock( int x, int y, char val )
 {
@@ -9867,10 +9869,10 @@ void SetLock( int x, int y, char val )
 //------------------------------------------------//
 #define MaxP (4096)
 
-word pxx[MaxP + 160];
-word pyy[MaxP + 160];
-word RVIS[MaxP + 160];
-word LVIS[MaxP + 160];
+unsigned short pxx[MaxP + 160];
+unsigned short pyy[MaxP + 160];
+unsigned short RVIS[MaxP + 160];
+unsigned short LVIS[MaxP + 160];
 
 int GetLAngle( int dx, int dy, int Angle );
 int GetRAngle( int dx, int dy, int Angle );
@@ -9887,8 +9889,8 @@ int Prop43( int y )
 	return y * 2;
 }
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
-extern byte LockGrid;
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
+extern unsigned char LockGrid;
 extern bool VHMode;
 void TopShow();
 
@@ -10068,8 +10070,8 @@ void TopShow()
 //>0-ready
 //-1-Too far or too near
 //-2-prepiatsvia
-int PredictShot( Weapon* Weap, int xs, int ys, int zs, int xd, int yd, int zd, word Index );
-int CheckDamageAbility( OneObject* OB, int x, int y, int z, byte Nation, int Soft )
+int PredictShot( Weapon* Weap, int xs, int ys, int zs, int xd, int yd, int zd, unsigned short Index );
+int CheckDamageAbility( OneObject* OB, int x, int y, int z, unsigned char Nation, int Soft )
 {
 	//1.Let us determine weapon
 	int ox = OB->RealX >> 4;
@@ -10116,7 +10118,7 @@ int CheckDamageAbility( OneObject* OB, int x, int y, int z, byte Nation, int Sof
 	return -2;
 
 };
-int FastCheckDamageAbility( OneObject* OB, int x, int y, int z, byte Nation, int Soft )
+int FastCheckDamageAbility( OneObject* OB, int x, int y, int z, unsigned char Nation, int Soft )
 {
 	//1.Let us determine weapon
 	int ox = OB->RealX >> 4;
@@ -10163,7 +10165,7 @@ int FastCheckDamageAbility( OneObject* OB, int x, int y, int z, byte Nation, int
 	return -2;
 
 };
-int FindPlaceForAttack( OneObject* OB, int x, int y, int z, byte Nation,
+int FindPlaceForAttack( OneObject* OB, int x, int y, int z, unsigned char Nation,
 	int MaxSteps, int SearchMethod, int* Newx, int* Newy )
 {
 	int OldRX = OB->RealX;
@@ -10327,7 +10329,7 @@ void AI_AttackPointLink( OneObject* OBJ )
 					for ( int k = 0; k < NMN->NShotRes; k++ )
 					{
 						AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-						OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+						OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 						OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 					}
 				}
@@ -10347,7 +10349,7 @@ void AI_AttackPointLink( OneObject* OBJ )
 				int uoc2 = UNAM->Rotations - 1;
 				if ( !uocts )uocts = 1;
 				int usesize = div( 255, uocts << 1 ).quot;
-				byte udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
+				unsigned char udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
 				NewFrame* NF = &UNAM->Frames[0];
 				//----------
 				NewAnimation* NAM = WP->NewAnm;
@@ -10355,7 +10357,7 @@ void AI_AttackPointLink( OneObject* OBJ )
 				int oc2 = NAM->Rotations - 1;
 				if ( !octs )octs = 1;
 				int sesize = div( 255, octs << 1 ).quot;
-				byte dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
+				unsigned char dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
 				int x0, y0, z0, x1, y1, z1;
 				if ( udir < uoc2 )
 				{
@@ -10415,7 +10417,7 @@ void AI_AttackPointLink( OneObject* OBJ )
 	}
 }
 
-bool OneObject::AttackPoint( int px, int py, int z, byte Times, byte Flags, byte OrdType )
+bool OneObject::AttackPoint( int px, int py, int z, unsigned char Times, unsigned char Flags, unsigned char OrdType )
 {
 	int ImmCanDam = CheckDamageAbility( this, px, py, z, NNUM, false );
 	if ( ( delay&&Times != 255 ) || LocalOrder&&LocalOrder->DoLink == &AI_AttackPointLink )
@@ -10460,7 +10462,7 @@ bool OneObject::AttackPoint( int px, int py, int z, byte Times, byte Flags, byte
 }
 
 //Special for pushek
-int GetEnemyDifference( int cell, byte Mask )
+int GetEnemyDifference( int cell, unsigned char Mask )
 {
 	int NHim = 0;
 	int NMy = 0;
@@ -10471,7 +10473,7 @@ int GetEnemyDifference( int cell, byte Mask )
 		return 0;
 	}
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -10697,11 +10699,11 @@ void AttackObjLink( OneObject* OBJ );
 void BuildObjLink( OneObject* OBJ );
 void ProduceObjLink( OneObject* OBJ );
 void WaterAttackLink( OneObject* OBJ );
-bool OneObject::AttackObj( word OID, int Prio )
+bool OneObject::AttackObj( unsigned short OID, int Prio )
 {
 	return AttackObj( OID, Prio, 0 );
 }
-bool OneObject::AttackObj( word OID, int Prio, byte OrdType )
+bool OneObject::AttackObj( unsigned short OID, int Prio, unsigned char OrdType )
 {
 	return AttackObj( OID, Prio, OrdType, 0 );
 }
@@ -10709,7 +10711,7 @@ void B_BitvaLink( Brigade* BR );
 void GrenaderSupermanLink( OneObject* OBJ );
 void EraseBrigade( Brigade* BR );
 void SetAttState( Brigade* BR, bool Val );
-bool OneObject::AttackObj( word OID, int Prio1, byte OrdType, word NTimes )
+bool OneObject::AttackObj( unsigned short OID, int Prio1, unsigned char OrdType, unsigned short NTimes )
 {
 	if ( Sdoxlo || Hidden || UnlimitedMotion || !Ready )
 	{
@@ -10724,7 +10726,7 @@ bool OneObject::AttackObj( word OID, int Prio1, byte OrdType, word NTimes )
 		return false;
 	}
 	//assert(OID!=0xFFFF);
-	byte Prio;
+	unsigned char Prio;
 	if ( Prio1 == 254 )
 	{
 		Prio = 16 + 128;
@@ -10760,7 +10762,7 @@ bool OneObject::AttackObj( word OID, int Prio1, byte OrdType, word NTimes )
 	}
 	bool STRELOK = false;
 	Brigade* BR = nullptr;
-	byte Use = newMons->Usage;// == GrenaderID;//BUGFIX: Typo / error. See if statement below
+	unsigned char Use = newMons->Usage;// == GrenaderID;//BUGFIX: Typo / error. See if statement below
 	if ( InArmy && ( Use == GrenaderID || Use == ArcherID ) && ( EOB->NewBuilding || EOB->Wall ) )
 	{
 		BR = CITY[NNUM].Brigs + BrigadeID;
@@ -10956,8 +10958,8 @@ bool OneObject::AttackObj( word OID, int Prio1, byte OrdType, word NTimes )
 				BR->ClearBOrders();
 			}
 			int N = BR->NMemb;
-			word* mem = BR->Memb;
-			word* sns = BR->MembSN;
+			unsigned short* mem = BR->Memb;
+			unsigned short* sns = BR->MembSN;
 			for ( int i = 2; i < N; i++ )
 			{
 				if ( mem[i] != 0xFFFF )
@@ -10976,7 +10978,7 @@ bool OneObject::AttackObj( word OID, int Prio1, byte OrdType, word NTimes )
 
 void NewAttackPointLink( OneObject* OBJ );
 
-bool OneObject::NewAttackPoint( int px, int py, int Prio1, byte OrdType, word NTimes )
+bool OneObject::NewAttackPoint( int px, int py, int Prio1, unsigned char OrdType, unsigned short NTimes )
 {
 	if ( Sdoxlo || Hidden || UnlimitedMotion )
 	{
@@ -10991,7 +10993,7 @@ bool OneObject::NewAttackPoint( int px, int py, int Prio1, byte OrdType, word NT
 		return false;
 	}
 	//assert(OID!=0xFFFF);
-	byte Prio;
+	unsigned char Prio;
 	if ( Prio1 == 254 )
 	{
 		Prio = 16 + 128;
@@ -11195,13 +11197,13 @@ void AttackObjLink( OneObject* OBJ )
 	//	return;
 	//};
 	OBJ->PrioryLevel = OBJ->LocalOrder->PrioryLevel;
-	byte prl = OBJ->PrioryLevel;
+	unsigned char prl = OBJ->PrioryLevel;
 	NewMonster* NMN = OBJ->newMons;
 	AdvCharacter* ADC = OBJ->Ref.General->MoreCharacter;
 	OBJ->DestX = -1;
 	//OBJ->UnBlockUnit();
-	word OID = OBJ->EnemyID;
-	word OSN = OBJ->EnemySN;
+	unsigned short OID = OBJ->EnemyID;
+	unsigned short OSN = OBJ->EnemySN;
 	if ( OID >= ULIMIT && !AttGroundMod )
 	{
 		OBJ->DeleteLastOrder();
@@ -11256,14 +11258,14 @@ void AttackObjLink( OneObject* OBJ )
 	};
 
 
-	byte maska = OB->newMons->MathMask;
+	unsigned char maska = OB->newMons->MathMask;
 	if ( OB->newMons->CanBeKilledInside )
 	{
 		if ( OB->NInside )maska = 0xFF;
 	};
 	short OLDX = OBJ->LocalOrder->info.BuildObj.ObjX;
 	short OLDY = OBJ->LocalOrder->info.BuildObj.ObjY;
-	word NTIMES = OBJ->LocalOrder->info.BuildObj.SN;
+	unsigned short NTIMES = OBJ->LocalOrder->info.BuildObj.SN;
 	short NEWX = OB->RealX >> 8;
 	short NEWY = OB->RealY >> 8;
 	if ( OBJ->NewBuilding )
@@ -11293,7 +11295,7 @@ void AttackObjLink( OneObject* OBJ )
 				y = yy + ( ( y + z ) << 1 );
 				z += OBJ->RZ;
 				char dir = NMN->ShotDir[i];
-				byte diff = NMN->ShotDiff[i];
+				unsigned char diff = NMN->ShotDiff[i];
 				int minr = NMN->ShotMinR[i];
 				int maxr = NMN->ShotMaxR[i];
 
@@ -11310,7 +11312,7 @@ void AttackObjLink( OneObject* OBJ )
 					if ( Weap )
 					{
 						Coor3D C3D;
-						word DestObj = 0xFFFF;
+						unsigned short DestObj = 0xFFFF;
 						if ( OB->GetDamagePoint( &C3D, 0 ) )DestObj = OID;
 						int wx0 = x;
 						int wy0 = y;
@@ -11382,7 +11384,7 @@ void AttackObjLink( OneObject* OBJ )
 								for ( int k = 0; k < NMN->NShotRes; k++ )
 								{
 									AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-									OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+									OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 									OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 								}
 							}
@@ -11478,7 +11480,7 @@ void AttackObjLink( OneObject* OBJ )
 		if ( Weap )
 		{
 			Coor3D C3D;
-			word DestObj = 0xFFFF;
+			unsigned short DestObj = 0xFFFF;
 			if ( OB->GetDamagePoint( &C3D, 0 ) )DestObj = OID;
 			int wx0 = x0 >> 4;
 			int wy0 = ( y0 >> 4 ) + 6;
@@ -11534,7 +11536,7 @@ void AttackObjLink( OneObject* OBJ )
 					for ( int k = 0; k < NMN->NShotRes; k++ )
 					{
 						AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-						OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+						OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 						OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 					};
 				}
@@ -11636,7 +11638,7 @@ void AttackObjLink( OneObject* OBJ )
 				int EnZ = OB->RZ + OB->newMons->DstZPoint;
 				int dst = ( Norma( x0 - OBJ->RealX, y0 - OBJ->RealY ) >> 4 );
 				int dst1 = dst + OB->newMons->AddShotRadius;
-				byte Wpk = NMN->WeaponKind[OBJ->NewState - 1];
+				unsigned char Wpk = NMN->WeaponKind[OBJ->NewState - 1];
 				if ( WeaponFlags[Wpk] & 1 )dst1 -= ( ( MyZ - EnZ ) << 1 );
 				//int angl=0;
 				//if(dst>0)angl=div((EnZ-MyZ)<<6,dst).quot;
@@ -11667,7 +11669,7 @@ void AttackObjLink( OneObject* OBJ )
 						int uoc2 = UNAM->Rotations - 1;
 						if ( !uocts )uocts = 1;
 						int usesize = div( 255, uocts << 1 ).quot;
-						byte udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
+						unsigned char udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
 						NewFrame* NF = &UNAM->Frames[csp];
 						//----------
 						NewAnimation* NAM = WP->NewAnm;
@@ -11675,9 +11677,9 @@ void AttackObjLink( OneObject* OBJ )
 						int oc2 = NAM->Rotations - 1;
 						if ( !octs )octs = 1;
 						int sesize = div( 255, octs << 1 ).quot;
-						byte dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
+						unsigned char dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
 						Coor3D C3D;
-						word DestObj = 0xFFFF;
+						unsigned short DestObj = 0xFFFF;
 						if ( OB->GetDamagePoint( &C3D, 0 ) )DestObj = OID;
 						if ( OB->Wall )DestObj = OID;
 						//OBJ->BlockUnit();
@@ -12034,7 +12036,7 @@ void AttackObjLink( OneObject* OBJ )
 						if ( WP )
 						{
 							Coor3D C3D;
-							word DestObj = 0xFFFF;
+							unsigned short DestObj = 0xFFFF;
 							if ( OB->GetDamagePoint( &C3D, 0 ) )DestObj = OID;
 							if ( OB->Wall )DestObj = OID;
 							//OBJ->BlockUnit();
@@ -12146,7 +12148,7 @@ void AttackObjLink( OneObject* OBJ )
 									for ( int k = 0; k < NMN->NShotRes; k++ )
 									{
 										AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-										OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+										OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 										OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 									};
 								}
@@ -12399,7 +12401,7 @@ void MakeOneShotLink( OneObject* OBJ )
 			int uoc2 = UNAM->Rotations - 1;
 			if ( !uocts )uocts = 1;
 			int usesize = div( 255, uocts << 1 ).quot;
-			byte udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
+			unsigned char udir = ( ( ( OBJ->RealDir + 64 + usesize ) & 255 )*uocts ) >> 8;
 			NewFrame* NF = &UNAM->Frames[csp];
 			//----------
 			NewAnimation* NAM = WP->NewAnm;
@@ -12407,7 +12409,7 @@ void MakeOneShotLink( OneObject* OBJ )
 			int oc2 = NAM->Rotations - 1;
 			if ( !octs )octs = 1;
 			int sesize = div( 255, octs << 1 ).quot;
-			byte dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
+			unsigned char dir = ( ( ( OBJ->RealDir + 64 + sesize ) & 255 )*octs ) >> 8;
 			int x0, y0, z0, x1, y1, z1;
 			if ( udir < uoc2 )
 			{
@@ -12478,8 +12480,8 @@ void WaterAttackLink( OneObject* OBJ )
 	AdvCharacter* ADC = OBJ->Ref.General->MoreCharacter;
 	OBJ->DestX = -1;
 	//OBJ->UnBlockUnit();
-	word OID = OBJ->EnemyID;
-	word OSN = OBJ->EnemySN;
+	unsigned short OID = OBJ->EnemyID;
+	unsigned short OSN = OBJ->EnemySN;
 	OneObject* OB = Group[OID];
 	if ( !OB || OB->Sdoxlo || OBJ->TurnOff || OSN != OB->Serial )
 	{
@@ -12501,7 +12503,7 @@ void WaterAttackLink( OneObject* OBJ )
 	};
 	if ( AttMethod != -1 )
 	{
-		byte ATM = OBJ->LocalOrder->info.BuildObj.AttMethod;
+		unsigned char ATM = OBJ->LocalOrder->info.BuildObj.AttMethod;
 		if ( ATM != 0xFF )
 		{
 			if ( !OB->NewBuilding )AttMethod = ATM;
@@ -12561,7 +12563,7 @@ void WaterAttackLink( OneObject* OBJ )
 									for ( int k = 0; k < NMN->NShotRes; k++ )
 									{
 										AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-										OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+										OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 										OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 									};
 								}
@@ -12656,7 +12658,7 @@ void WaterAttackLink( OneObject* OBJ )
 								for ( int k = 0; k < NMN->NShotRes; k++ )
 								{
 									AddXRESRC( OBJ->NNUM, NMN->ShotRes[k + k], -NMN->ShotRes[k + k + 1] );
-									OBJ->Nat->AddResource( byte( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
+									OBJ->Nat->AddResource( unsigned char( NMN->ShotRes[k + k] ), -NMN->ShotRes[k + k + 1] );
 									OBJ->Nat->ResOnLife[NMN->ShotRes[k + k]] += NMN->ShotRes[k + k + 1];
 								};
 								int pus = ( int( NMN->NMultiWp )*int( rando() ) ) >> 15;
@@ -12707,7 +12709,7 @@ void WaterAttackLink( OneObject* OBJ )
 					if ( WP )
 					{
 						Coor3D C3D;
-						word DestObj = 0xFFFF;
+						unsigned short DestObj = 0xFFFF;
 						if ( OB->GetDamagePoint( &C3D, 0 ) )DestObj = OID;
 						if ( OB->Wall )DestObj = OID;
 						CreateRazbros( OBJ, &C3D );
@@ -12751,10 +12753,10 @@ void WaterAttackLink( OneObject* OBJ )
 	else OBJ->DeleteLastOrder();
 };
 //-----------------------Search for the enemy------------------------
-word GetNewEnemy( int xr, int yr, byte NI )
+unsigned short GetNewEnemy( int xr, int yr, unsigned char NI )
 {
 	NI = NatRefTBL[NI];
-	byte nms = 1 << NI;
+	unsigned char nms = 1 << NI;
 	OneObject* OBX = nullptr;
 	for ( int ii = 0; ii < MAXOBJECT; ii++ )
 	{
@@ -12777,14 +12779,14 @@ word GetNewEnemy( int xr, int yr, byte NI )
 	if ( OBX )return OBX->Index;
 	else return 0xFFFF;
 };
-word AdvancedGetNewEnemyInCell( int cx, int cy, int xr, int yr, byte EMask )
+unsigned short AdvancedGetNewEnemyInCell( int cx, int cy, int xr, int yr, unsigned char EMask )
 {
 	if ( cx < 0 || cy < 0 || cx >= VAL_MAXCX || cy >= VAL_MAXCX )return 0xfFFF;
 	int cell = VAL_MAXCX + 1 + cx + ( cy << VAL_SHFCX );
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -12799,8 +12801,8 @@ word AdvancedGetNewEnemyInCell( int cx, int cy, int xr, int yr, byte EMask )
 				xs1 += xs - 1;
 				if ( OB->InMotion && ( !OB->LockType ) )
 				{
-					int dx = OB->newMons->OneStepDX[byte( OB->RealDir )] >> 2;
-					int dy = OB->newMons->OneStepDY[byte( OB->RealDir )] >> 2;
+					int dx = OB->newMons->OneStepDX[unsigned char( OB->RealDir )] >> 2;
+					int dy = OB->newMons->OneStepDY[unsigned char( OB->RealDir )] >> 2;
 					for ( int j = 0; j < 3; j++ )
 					{
 						if ( PInside( xs, ys, xs1, ys1, xr, yr ) )return MID;
@@ -12836,7 +12838,7 @@ word AdvancedGetNewEnemyInCell( int cx, int cy, int xr, int yr, byte EMask )
 		WallCell* WCL = WRefs[LI];
 		if ( WCL )
 		{
-			word MID = WCL->OIndex;
+			unsigned short MID = WCL->OIndex;
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -12853,24 +12855,24 @@ word AdvancedGetNewEnemyInCell( int cx, int cy, int xr, int yr, byte EMask )
 	};
 	return 0xFFFF;
 };
-word AdvancedGetNewEnemy( int rex, int rey, int xr, int yr, byte NI )
+unsigned short AdvancedGetNewEnemy( int rex, int rey, int xr, int yr, unsigned char NI )
 {
-	byte nms = NATIONS[NI].NMask;
+	unsigned char nms = NATIONS[NI].NMask;
 	int x0 = rex >> 7;
 	int y0 = rey >> 7;
 	for ( int ix = -2; ix < 3; ix++ )
 	{
 		for ( int iy = -2; iy < 3; iy++ )
 		{
-			word MID = AdvancedGetNewEnemyInCell( x0 + ix, y0 + iy, xr, yr, nms );
+			unsigned short MID = AdvancedGetNewEnemyInCell( x0 + ix, y0 + iy, xr, yr, nms );
 			if ( MID != 0xFFFF )return MID;
 		};
 	};
 	return 0xFFFF;
 };
-word GetNewFriend( int xr, int yr, byte NI )
+unsigned short GetNewFriend( int xr, int yr, unsigned char NI )
 {
-	byte nms = 1 << NI;
+	unsigned char nms = 1 << NI;
 	for ( int ii = 0; ii < MAXOBJECT; ii++ )
 	{
 		OneObject* OB = Group[ii];
@@ -12885,14 +12887,14 @@ word GetNewFriend( int xr, int yr, byte NI )
 	};
 	return 0xFFFF;
 };
-word AdvancedGetNewFriendInCell( int cx, int cy, int xr, int yr, byte NI )
+unsigned short AdvancedGetNewFriendInCell( int cx, int cy, int xr, int yr, unsigned char NI )
 {
 	if ( cx < 0 || cy < 0 || cx >= VAL_MAXCX || cy >= VAL_MAXCX )return 0xfFFF;
 	int cell = VAL_MAXCX + 1 + cx + ( cy << VAL_SHFCX );
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -12930,7 +12932,7 @@ word AdvancedGetNewFriendInCell( int cx, int cy, int xr, int yr, byte NI )
 		WallCell* WCL = WRefs[LI];
 		if ( WCL )
 		{
-			word MID = WCL->OIndex;
+			unsigned short MID = WCL->OIndex;
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -12947,7 +12949,7 @@ word AdvancedGetNewFriendInCell( int cx, int cy, int xr, int yr, byte NI )
 	};
 	return 0xFFFF;
 };
-word AdvancedGetNewFriend( int rex, int rey, int xr, int yr, byte NI )
+unsigned short AdvancedGetNewFriend( int rex, int rey, int xr, int yr, unsigned char NI )
 {
 	NI = NatRefTBL[NI];
 	int x0 = rex >> 7;
@@ -12956,7 +12958,7 @@ word AdvancedGetNewFriend( int rex, int rey, int xr, int yr, byte NI )
 	{
 		for ( int iy = -2; iy < 3; iy++ )
 		{
-			word MID = AdvancedGetNewFriendInCell( x0 + ix, y0 + iy, xr, yr, NI );
+			unsigned short MID = AdvancedGetNewFriendInCell( x0 + ix, y0 + iy, xr, yr, NI );
 			if ( MID != 0xFFFF )return MID;
 		};
 	};
@@ -13130,14 +13132,14 @@ void OneObject::DeletePath()
 		free( PathY );
 		PathX = nullptr;
 		PathY = nullptr;
-		CPdestX = (byte) -1;
+		CPdestX = (unsigned char) -1;
 		NIPoints = 0;
 		CurIPoint = 0;
 
 	};
 };
 //Creation the building
-bool OneObject::FindPoint( int* x1, int* y1, byte Flags )
+bool OneObject::FindPoint( int* x1, int* y1, unsigned char Flags )
 {
 	NewMonster* NM = newMons;
 	char* px = nullptr;
@@ -13214,8 +13216,8 @@ bool OneObject::FindPoint( int* x1, int* y1, byte Flags )
 	};
 	return false;
 };
-void CmdFieldBar( byte NI, word n );
-void CreateFields( byte NI, int x, int y, int n );
+void CmdFieldBar( unsigned char NI, unsigned short n );
+void CreateFields( unsigned char NI, int x, int y, int n );
 void InvitePeasant( OneObject* Mine );
 extern bool EditMapMode;
 void OneObject::NextStage()
@@ -13251,7 +13253,7 @@ void OneObject::NextStage()
 			HiLayer = &NM->StandHi;
 			NewAnm = &NM->Work;
 			NewCurSprite = 0;
-			byte lUsage = newMons->Usage;
+			unsigned char lUsage = newMons->Usage;
 			if ( lUsage == TowerID )GNFO.AddTow( this );
 			if ( lUsage == MelnicaID && ( !Nat->AI_Enabled ) && Nat->CITY->ReadyAmount[NIndex] == 0 )
 			{
@@ -13300,7 +13302,7 @@ void OneObject::ClearBuildPt()
 };
 void BuildObjLink( OneObject* OBJ );
 void TakeResLink( OneObject* OB );
-bool OneObject::BuildObj( word OID, int Prio, bool LockPoint, byte OrdType )
+bool OneObject::BuildObj( unsigned short OID, int Prio, bool LockPoint, unsigned char OrdType )
 {
 
 	if ( CheckOrderAbility() )return false;
@@ -13351,11 +13353,11 @@ void InvitePeasant( OneObject* Mine )
 	{
 		if ( Mine->Nat->AI_Enabled )return;
 	};
-	word PLIST[64];
+	unsigned short PLIST[64];
 	int Ri[64];
 	int NP = Mine->Ref.General->newMons->MaxInside;
 	if ( NP > 64 )NP = 64;
-	byte NI = Mine->NNUM;
+	unsigned char NI = Mine->NNUM;
 	int NN = 0;
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
@@ -13397,12 +13399,12 @@ void TakeResLink( OneObject* OBJ );
 void InviteAI_Peasants( OneObject* Mine )
 {
 	if ( Mine->Nat->CITY->FreePS > Mine->Nat->CITY->Nat->MIN_PBRIG )return;
-	word PLIST[512];
+	unsigned short PLIST[512];
 	int Ri[512];
 	int NP = Mine->Ref.General->newMons->MaxInside + Mine->AddInside - Mine->NInside;
 	if ( NP < 0 )NP = 0;
 	if ( NP > 64 )NP = 64;
-	byte NI = Mine->NNUM;
+	unsigned char NI = Mine->NNUM;
 	int NN = 0;
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
@@ -13467,10 +13469,10 @@ void BuildObjLink( OneObject* OBJ )
 	OBJ->PrioryLevel = OBJ->LocalOrder->PrioryLevel;
 	if ( OBJ->NewCurSprite < OBJ->NewAnm->NFrames - FrmDec )return;
 	NewMonster* NM = OBJ->newMons;
-	word OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
 	int ObjX = OBJ->LocalOrder->info.BuildObj.ObjX;
 	int ObjY = OBJ->LocalOrder->info.BuildObj.ObjY;
-	word OSN = OBJ->LocalOrder->info.BuildObj.SN;
+	unsigned short OSN = OBJ->LocalOrder->info.BuildObj.SN;
 	OBJ->UnBlockUnit();
 	OneObject* OB = Group[OID];
 	//OBJ->Important=true;
@@ -13570,7 +13572,7 @@ void BuildObjLink( OneObject* OBJ )
 };
 //x,y-coordinates of point on the 2D plane (unit:pix)
 //returnfs index of building,otherwise 0xFFFF
-word DetermineBuilding( int x, int y, byte NMask )
+unsigned short DetermineBuilding( int x, int y, unsigned char NMask )
 {
 	int xx = x >> 4;
 	int yy = y >> 4;
@@ -13590,8 +13592,8 @@ word DetermineBuilding( int x, int y, byte NMask )
 				int PicSY = Prop43( NM->PicDy ) << 4;
 				int x0 = ( OB->RealX + PicSX ) >> 8;
 				int y0 = ( OB->RealY + PicSY ) >> 8;
-				byte* px = NM->CheckX;
-				byte* py = NM->CheckY;
+				unsigned char* px = NM->CheckX;
+				unsigned char* py = NM->CheckY;
 				int Npt = NM->NCheckPt;
 				for ( int j = 0; j < Npt; j++ )
 					if ( x0 + px[j] == xx&&y0 + py[j] == yy ) return i;
@@ -13703,9 +13705,9 @@ void DeleteBlockLink( OneObject* OBJ )
 	};
 };
 //-----------Inverse references from (x,y)->Index----------//
-/*word MonInd[MAPSX*MAPSX];//512k
+/*unsigned short MonInd[MAPSX*MAPSX];//512k
 #define MAXMI (MAPSX*MAPSY)
-inline word GetMI(int x,int y){
+inline unsigned short GetMI(int x,int y){
 	__asm{
 		mov		ebx,y
 		shl		ebx,9
@@ -13722,7 +13724,7 @@ done:
 	};
 	return;
 };
-inline void SetMI(int x,int y,word MI){
+inline void SetMI(int x,int y,unsigned short MI){
 	__asm{
 		mov		eax,y
 		shl		eax,9
@@ -13739,13 +13741,13 @@ nona:
 	return;
 };*/
 int ExplMedia;
-void DamageInCell( int cell, int x, int y, int r, word Damage, OneObject* Sender, word Attr )
+void DamageInCell( int cell, int x, int y, int r, unsigned short Damage, OneObject* Sender, unsigned short Attr )
 {
 	if ( cell < 0 || cell >= VAL_MAXCX*VAL_MAXCX )return;
 	int NMon = MCount[cell];
 	if ( !NMon )return;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -13761,13 +13763,13 @@ void DamageInCell( int cell, int x, int y, int r, word Damage, OneObject* Sender
 				{
 					//Unit is in danger !
 					if ( dr < rr )ExplMedia = NM->ExplosionMedia;
-					OB->MakeDamage( 0, Damage, Sender, byte( Attr ) );
+					OB->MakeDamage( 0, Damage, Sender, unsigned char( Attr ) );
 				};
 			};
 		};
 	};
 };
-void MakeRoundDamage( int x, int y, int r, word Damage, OneObject* Sender, word Attr )
+void MakeRoundDamage( int x, int y, int r, unsigned short Damage, OneObject* Sender, unsigned short Attr )
 {
 	int cx = ( x >> 11 );
 	int cy = ( y >> 11 );
@@ -13815,7 +13817,7 @@ bool OneObject::GetDamagePoint( Coor3D* dp, int Precise )
 //0 - single order (previous orders will be erased)
 //1 - add order to the head of link
 //2 - add order to the tile of link
-Order1* OneObject::CreateOrder( byte Type )
+Order1* OneObject::CreateOrder( unsigned char Type )
 {
 	if ( UnlimitedMotion )return nullptr;
 	Order1* OR1 = GetOrdBlock();
@@ -13929,7 +13931,7 @@ void OneObject::DeleteLastOrder()
 
 int TestCapture( OneObject* OBJ );
 
-OneObject* SearchEnemyInCell( int cell, byte nmask, byte mmask, byte Priest )
+OneObject* SearchEnemyInCell( int cell, unsigned char nmask, unsigned char mmask, unsigned char Priest )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
@@ -13940,7 +13942,7 @@ OneObject* SearchEnemyInCell( int cell, byte nmask, byte mmask, byte Priest )
 	}
 
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 
 	for ( int i = 0; i < NMon; i++ )
 	{
@@ -13987,7 +13989,7 @@ OneObject* SearchEnemyInCell( int cell, byte nmask, byte mmask, byte Priest )
 	return nullptr;
 }
 
-OneObject* SearchEnemyGroupInCell( int cell, byte nmask, byte mmask )
+OneObject* SearchEnemyGroupInCell( int cell, unsigned char nmask, unsigned char mmask )
 {
 	cell += VAL_MAXCX + 1;// += 129
 
@@ -13998,7 +14000,7 @@ OneObject* SearchEnemyGroupInCell( int cell, byte nmask, byte mmask )
 		return nullptr;
 	}
 	int ofs1 = cell << SHFCELL;//* 64
-	word MID;
+	unsigned short MID;
 
 	for ( int i = 0; i < NMon; i++ )//NMon can be 0 to 255
 	{
@@ -14015,7 +14017,7 @@ OneObject* SearchEnemyGroupInCell( int cell, byte nmask, byte mmask )
 	return nullptr;
 }
 
-bool CheckVisibility( int x1, int y1, int x2, int y2, word MyID );
+bool CheckVisibility( int x1, int y1, int x2, int y2, unsigned short MyID );
 void SearchEnemyForAIArtillery( OneObject* OB );
 void AIArtilleryAgainstTowers( OneObject* OB );
 void SearchEnemyForMortira( OneObject* OB );
@@ -14029,7 +14031,7 @@ void SearchVictimForAI_Archer( OneObject* OB )
 	int rr = NM->VisRange;
 	int rx1 = ( rr >> 11 ) + 1;
 	int rx2 = rx1 + rx1 + 1;
-	byte nmask = ~OB->NMask;
+	unsigned char nmask = ~OB->NMask;
 	OneObject* DestObj = nullptr;
 	int stcell;
 	int NSR = 6;
@@ -14041,7 +14043,7 @@ void SearchVictimForAI_Archer( OneObject* OB )
 		if ( dx >= 0 && dy > 0 && dx < VAL_MAXCX - 2 && dy < VAL_MAXCX - 2 )
 		{
 			stcell = dx + ( dy << VAL_SHFCX );
-			word BMID = BLDList[stcell + VAL_MAXCX + 1];
+			unsigned short BMID = BLDList[stcell + VAL_MAXCX + 1];
 			if ( BMID != 0xFFFF )
 			{
 				OneObject* BOB = Group[BMID];
@@ -14138,9 +14140,9 @@ void OneObject::SearchVictim()
 
 		int rx1 = ( rr >> 11 ) + 1;
 
-		byte MMASK = NMask;
-		byte nmask = ~NMask;
-		byte mmask = NM->KillMask;
+		unsigned char MMASK = NMask;
+		unsigned char nmask = ~NMask;
+		unsigned char mmask = NM->KillMask;
 		OneObject* DestObj = nullptr;
 
 		int mindist = 10000000;
@@ -14156,7 +14158,7 @@ void OneObject::SearchVictim()
 			if ( x0 > 0 && x0 < maxx && y0 >= 0 && y0 < maxx )
 			{
 				stcell = dx + ( dy << VAL_SHFCX );//dx + (dy * 128)
-				byte BPT = NPresence[stcell];
+				unsigned char BPT = NPresence[stcell];
 				if ( ( BPT & nmask ) && !( ( BPT & MMASK ) ||
 					( NPresence[stcell - 1] & MMASK ) || ( NPresence[stcell + 1] & MMASK ) ||
 					( NPresence[stcell - DY] & MMASK ) || ( NPresence[stcell + DY] & MMASK ) ) )
@@ -14203,7 +14205,7 @@ void OneObject::SearchVictim()
 		if ( newMons->Usage == SupMortID && GNFO.EINF[NNUM] && !delay )
 		{
 			int BX, BY;
-			word MID = GNFO.EINF[NNUM]->SearchBestEnemyAndPlaceForSupermortira( this, &BX, &BY );
+			unsigned short MID = GNFO.EINF[NNUM]->SearchBestEnemyAndPlaceForSupermortira( this, &BX, &BY );
 			if ( MID != 0xFFFF )
 			{
 				if ( BrigadeID != 0xFFFF )
@@ -14304,8 +14306,8 @@ void OneObject::SearchVictim()
 		NewMonster* NM = newMons;
 		int rr = NM->VisRange;
 		int rx1 = 6;
-		byte nmask = ~NMask;
-		byte mmask = NM->KillMask;
+		unsigned char nmask = ~NMask;
+		unsigned char mmask = NM->KillMask;
 		OneObject* DestObj = nullptr;
 		int mindist = 10000000;
 		int dist;
@@ -14361,8 +14363,8 @@ void OneObject::SearchVictim()
 	int cell = ( ( RealY >> 11 ) << VAL_SHFCX ) + ( RealX >> 11 );
 	int rr = NM->VisRange;
 	int rx1 = ( rr >> 11 ) + 1;
-	byte nmask = ~NMask;
-	byte Priest = NM->Priest;
+	unsigned char nmask = ~NMask;
+	unsigned char Priest = NM->Priest;
 
 	if ( Priest )
 	{
@@ -14377,7 +14379,7 @@ void OneObject::SearchVictim()
 		}
 	}
 
-	byte mmask = NM->KillMask;
+	unsigned char mmask = NM->KillMask;
 	OneObject* DestObj = nullptr;
 	int mindist = 10000000;
 	int dist;
@@ -14387,7 +14389,7 @@ void OneObject::SearchVictim()
 		//short range search
 		int rx2 = rx1 + rx1 + 1;
 		int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-		byte* bpt = NPresence + stcell;
+		unsigned char* bpt = NPresence + stcell;
 		for ( int nx = 0; nx < rx2; nx++ )
 		{
 			for ( int ny = 0; ny < rx2; ny++ )
@@ -14423,7 +14425,7 @@ void OneObject::SearchVictim()
 			int rxx = 1;
 			int rx2 = rxx + rxx + 1;
 			int stcell = cell - rxx - ( rxx << VAL_SHFCX );
-			byte* bpt = NPresence + stcell;
+			unsigned char* bpt = NPresence + stcell;
 			for ( int nx = 0; nx < rx2; nx++ )
 			{
 				for ( int ny = 0; ny < rx2; ny++ )
@@ -14509,22 +14511,22 @@ void OneObject::SearchVictim()
 }
 
 int GetTopDistance( int xa, int ya, int xb, int yb );
-word SearchVictim( OneObject* OBJ, int R0, int R1 )
+unsigned short SearchVictim( OneObject* OBJ, int R0, int R1 )
 {
 	int cell = ( ( OBJ->RealY >> 11 ) << VAL_SHFCX ) + ( OBJ->RealX >> 11 );
 	NewMonster* NM = OBJ->newMons;
 	int rr = R1 << 4;
 	int rmin = R0 << 4;
 	int rx1 = ( R1 >> 7 ) + 1;
-	byte nmask = ~OBJ->NMask;
-	byte mmask = NM->KillMask;
+	unsigned char nmask = ~OBJ->NMask;
+	unsigned char mmask = NM->KillMask;
 	OneObject* DestObj = nullptr;
 	int mindist = 10000000;
 	int dist;
 	//short range search
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-	byte* bpt = NPresence + stcell;
+	unsigned char* bpt = NPresence + stcell;
 	int RealX = OBJ->RealX;
 	int RealY = OBJ->RealY;
 	for ( int nx = 0; nx < rx2; nx++ )
@@ -14565,7 +14567,7 @@ void SetUnlimitedLink( OneObject* OB )
 	OB->UnlimitedMotion = true;
 	OB->DeleteLastOrder();
 };
-void OneObject::SetOrderedUnlimitedMotion( byte OrdType )
+void OneObject::SetOrderedUnlimitedMotion( unsigned char OrdType )
 {
 	if ( CheckOrderAbility() )return;
 	Order1* Or1 = CreateOrder( OrdType );
@@ -14615,7 +14617,7 @@ void ClearUnlimitedLink( OneObject* OB )
 		}
 	}
 	OB->UnlimitedMotion = false;
-	word GID = OB->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short GID = OB->LocalOrder->info.BuildObj.ObjIndex;
 	OB->DeleteLastOrder();
 	OB->PrioryLevel = 0;
 	OB->NextForceX = OB->newMons->OneStepDX[OB->RealDir];
@@ -14623,15 +14625,15 @@ void ClearUnlimitedLink( OneObject* OB )
 	if ( GID != 0xFFFF && GID < SCENINF.NUGRP )
 	{
 		UnitsGroup* UG = SCENINF.UGRP + GID;
-		UG->IDS = (word*) realloc( UG->IDS, UG->N * 2 + 2 );
-		UG->SNS = (word*) realloc( UG->SNS, UG->N * 2 + 2 );
+		UG->IDS = (unsigned short*) realloc( UG->IDS, UG->N * 2 + 2 );
+		UG->SNS = (unsigned short*) realloc( UG->SNS, UG->N * 2 + 2 );
 		UG->IDS[UG->N] = OB->Index;
 		UG->SNS[UG->N] = OB->Serial;
 		UG->N++;
 	}
 }
 
-void OneObject::ClearOrderedUnlimitedMotion( byte OrdType, word GroupID )
+void OneObject::ClearOrderedUnlimitedMotion( unsigned char OrdType, unsigned short GroupID )
 {
 	if ( CheckOrderAbility() )
 		return;
@@ -14648,12 +14650,12 @@ void OneObject::ClearOrderedUnlimitedMotion( byte OrdType, word GroupID )
 	Or1->DoLink = &ClearUnlimitedLink;
 }
 
-void OneObject::ClearOrderedUnlimitedMotion( byte OrdType )
+void OneObject::ClearOrderedUnlimitedMotion( unsigned char OrdType )
 {
 	ClearOrderedUnlimitedMotion( OrdType, 0xFFFF );
 }
 
-OneObject* SearchCapturers( int cell, byte mmask )
+OneObject* SearchCapturers( int cell, unsigned char mmask )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
@@ -14662,7 +14664,7 @@ OneObject* SearchCapturers( int cell, byte mmask )
 		return nullptr;
 	}
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -14678,7 +14680,7 @@ OneObject* SearchCapturers( int cell, byte mmask )
 	return nullptr;
 }
 
-OneObject* SearchProtectors( int cell, byte mmask )
+OneObject* SearchProtectors( int cell, unsigned char mmask )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
@@ -14687,7 +14689,7 @@ OneObject* SearchProtectors( int cell, byte mmask )
 		return nullptr;
 	}
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -14704,7 +14706,7 @@ OneObject* SearchProtectors( int cell, byte mmask )
 	return nullptr;
 }
 
-bool CheckProtectors_Walls( int x, int y, byte mask )
+bool CheckProtectors_Walls( int x, int y, unsigned char mask )
 {
 	int LI = GetLI( x << 1, y << 1 );
 	for ( int iy = 0; iy < 2; iy++ )
@@ -14723,7 +14725,7 @@ bool CheckProtectors_Walls( int x, int y, byte mask )
 	return false;
 }
 
-int GetProtectors( int cell, byte mmask )
+int GetProtectors( int cell, unsigned char mmask )
 {
 	cell += VAL_MAXCX + 1;
 	int NMon = MCount[cell];
@@ -14732,7 +14734,7 @@ int GetProtectors( int cell, byte mmask )
 		return 0;
 	}
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	int N = 0;
 	for ( int i = 0; i < NMon; i++ )
 	{
@@ -14750,15 +14752,15 @@ int GetProtectors( int cell, byte mmask )
 	return N;
 }
 
-word GetNearestDefender( OneObject* OBJ )
+unsigned short GetNearestDefender( OneObject* OBJ )
 {
 	int cell = ( ( OBJ->RealY >> 11 ) << VAL_SHFCX ) + ( OBJ->RealX >> 11 );
 	int CELL0 = cell;
 	int rx1 = 3;
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-	byte NMASK = OBJ->NMask;
-	byte* bpt = NPresence + stcell;
+	unsigned char NMASK = OBJ->NMask;
+	unsigned char* bpt = NPresence + stcell;
 	for ( int nx = 0; nx < rx2; nx++ )
 	{
 		for ( int ny = 0; ny < rx2; ny++ )
@@ -14801,8 +14803,8 @@ int TestCapture( OneObject* OBJ )
 
 	int CELL0 = cell;
 	NewMonster* NM = OBJ->newMons;
-	byte nmask = ~OBJ->NMask;
-	byte NMASK = OBJ->NMask;
+	unsigned char nmask = ~OBJ->NMask;
+	unsigned char NMASK = OBJ->NMask;
 	OneObject* DestObj = nullptr;
 	int mindist = 10000000;
 	int rx1 = 2;
@@ -14811,8 +14813,8 @@ int TestCapture( OneObject* OBJ )
 	bool Capture = true;
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-	byte* bpt = NPresence + stcell;
-	//byte MyMask=OBJ->NMask;
+	unsigned char* bpt = NPresence + stcell;
+	//unsigned char MyMask=OBJ->NMask;
 	if ( !( OBJ->Wall&&OBJ->Life < OBJ->MaxLife / 3 ) )
 	{
 		rx1 = 3;
@@ -14881,8 +14883,8 @@ void CheckCapture( OneObject* OBJ )
 
 	int CELL0 = cell;
 	NewMonster* NM = OBJ->newMons;
-	byte nmask = ~OBJ->NMask;
-	byte NMASK = OBJ->NMask;
+	unsigned char nmask = ~OBJ->NMask;
+	unsigned char NMASK = OBJ->NMask;
 	OneObject* DestObj = nullptr;
 	int mindist = 10000000;
 	int dist;
@@ -14891,8 +14893,8 @@ void CheckCapture( OneObject* OBJ )
 	bool Capture = false;
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
-	byte CapNation = 0;
-	byte* bpt = NPresence + stcell;
+	unsigned char CapNation = 0;
+	unsigned char* bpt = NPresence + stcell;
 	int NCapt = 0;
 	OneObject* CAPUNIT = nullptr;
 
@@ -14999,7 +15001,7 @@ void CheckCapture( OneObject* OBJ )
 
 	if ( Capture )
 	{//Someone is capturing something
-		byte OldNat = OBJ->NNUM;
+		unsigned char OldNat = OBJ->NNUM;
 		bool Easy = CITY[OldNat].Difficulty < 3;
 
 		if ( OBJ->UnlimitedMotion && !OBJ->Hidden )
@@ -15024,7 +15026,7 @@ void CheckCapture( OneObject* OBJ )
 				}
 				else
 				{
-					byte use = OBJ->newMons->Usage;
+					unsigned char use = OBJ->newMons->Usage;
 					if ( use == PeasantID && !Easy )
 					{
 						DestructBuilding( OBJ );
@@ -15126,10 +15128,10 @@ void CheckCapture( OneObject* OBJ )
 		{
 			if ( !CaptState )
 			{
-				word* Uni = OBJ->Inside;
+				unsigned short* Uni = OBJ->Inside;
 				for ( int j = 0; j < OBJ->NInside; j++ )
 				{
-					word MID = Uni[j];
+					unsigned short MID = Uni[j];
 					if ( MID != 0xFFFF )
 					{
 						OneObject* OB = Group[MID];
@@ -15150,7 +15152,7 @@ void CheckCapture( OneObject* OBJ )
 							OB->Selected = false;
 							OB->ImSelected = false;
 							OB->Zombi = false;
-							byte OldNat = OB->NNUM;
+							unsigned char OldNat = OB->NNUM;
 							OB->NNUM = CapNation;
 							OB->Nat->CITY->RegisterNewUnit( OB );
 							AddObject( OB );
@@ -15174,8 +15176,8 @@ int GetAmountOfProtectors( OneObject* OBJ )
 	int rx2 = rx1 + rx1 + 1;
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
 	int N = 0;
-	byte NMASK = OBJ->NMask;
-	byte* bpt = NPresence + stcell;
+	unsigned char NMASK = OBJ->NMask;
+	unsigned char* bpt = NPresence + stcell;
 	for ( int nx = 0; nx < rx2; nx++ )
 	{
 		for ( int ny = 0; ny < rx2; ny++ )
@@ -15429,12 +15431,12 @@ BlockBars::~BlockBars()
 {
 	Clear();
 };
-bool BlockBars::Add( word x, word y )
+bool BlockBars::Add( unsigned short x, unsigned short y )
 {
 	if ( NBars )
 	{
-		DWORD DT = x + ( y << 16 );
-		DWORD* SDAT = (DWORD*) BC;
+		unsigned long DT = x + ( y << 16 );
+		unsigned long* SDAT = (unsigned long*) BC;
 		for ( int i = 0; i < NBars; i++ )if ( SDAT[i] == DT )return false;
 	};
 	if ( NBars >= MaxBars )
@@ -15447,7 +15449,7 @@ bool BlockBars::Add( word x, word y )
 	NBars++;
 	return true;
 };
-bool BlockBars::FastAdd( word x, word y )
+bool BlockBars::FastAdd( unsigned short x, unsigned short y )
 {
 	if ( NBars >= MaxBars )
 	{
@@ -15459,12 +15461,12 @@ bool BlockBars::FastAdd( word x, word y )
 	NBars++;
 	return true;
 };
-bool BlockBars::Delete( word x, word y )
+bool BlockBars::Delete( unsigned short x, unsigned short y )
 {
 	if ( NBars )
 	{
-		DWORD DT = x + ( y << 16 );
-		DWORD* SDAT = (DWORD*) BC;
+		unsigned long DT = x + ( y << 16 );
+		unsigned long* SDAT = (unsigned long*) BC;
 		int i;
 		for ( i = 0; i < NBars&&SDAT[i] != DT; i++ );
 		if ( i >= NBars )return false;
@@ -15483,7 +15485,7 @@ void MoveAwayInCell( int cell, int x, int y )
 	int NMon = MCount[cell];
 	if ( !NMon )return;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -15538,7 +15540,7 @@ bool MoveAwaySectorInCell( int cell, int x, int y, int r0, int r1, char Dir, int
 	int NMon = MCount[cell];
 	if ( !NMon )return false;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	bool Pushed = false;
 	for ( int i = 0; i < NMon; i++ )
 	{
@@ -15608,7 +15610,7 @@ bool MoveAwayInSector( int x, int y, int r0, int r1, char Dir, int ddir )
 };
 #define SectRAD (450*16)
 #define SectMIN (32*16)
-void GetUnitsInSector( int cell, int x, int y, char IniDir, int* My, int* Enemy, byte Mask )
+void GetUnitsInSector( int cell, int x, int y, char IniDir, int* My, int* Enemy, unsigned char Mask )
 {
 	cell += VAL_MAXCX + 1;
 	if ( cell >= 0 && cell < VAL_MAXCX*VAL_MAXCX )
@@ -15616,7 +15618,7 @@ void GetUnitsInSector( int cell, int x, int y, char IniDir, int* My, int* Enemy,
 		int NMon = MCount[cell];
 		if ( !NMon )return;
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		bool Pushed = false;
 		for ( int i = 0; i < NMon; i++ )
 		{
@@ -15677,20 +15679,20 @@ int GetTopology1( int x, int y )
 {
 	int xc = x >> 2;
 	int yc = y >> 2;
-	word tr = SafeTopRef( xc, yc );
+	unsigned short tr = SafeTopRef( xc, yc );
 	if ( tr < 0xFFFE )return tr;
 	else return 0xFFFF;
 };
-int GetWTopology1( int x, int y, byte LTP )
+int GetWTopology1( int x, int y, unsigned char LTP )
 {
 	int xc = x >> 2;
 	int yc = y >> 2;
 	if ( xc < 0 || yc < 0 || xc >= TopLx || yc >= TopLy )return 0xFFFF;
-	word tr = GTOP[LTP].TopRef[xc + ( yc << TopSH )];
+	unsigned short tr = GTOP[LTP].TopRef[xc + ( yc << TopSH )];
 	if ( tr < 0xFFFE )return tr;
 	else return 0xFFFF;
 };
-bool TopFindBestPosition( OneObject* OB, int* xd, int* yd, int R0, int Top, byte LTP )
+bool TopFindBestPosition( OneObject* OB, int* xd, int* yd, int R0, int Top, unsigned char LTP )
 {
 	MotionField* MFI = MFIELDS + OB->LockType;
 	if ( !OB )return false;
@@ -15787,16 +15789,16 @@ bool CheckDirectWay( int x0, int y0, int x1, int y1 )
 	};
 	return true;
 };
-int FindSuperSmartBestPosition( OneObject* OB, int* cx, int* cy, int dx, int dy, word Top, byte LTP )
+int FindSuperSmartBestPosition( OneObject* OB, int* cx, int* cy, int dx, int dy, unsigned short Top, unsigned char LTP )
 {
 	MotionField* MF = MFIELDS;;
 	if ( OB )MF = MFIELDS + OB->LockType;
 
-	word* MotionLinks = GTOP[LTP].MotionLinks;
-	word* LinksDist = GTOP[LTP].LinksDist;
+	unsigned short* MotionLinks = GTOP[LTP].MotionLinks;
+	unsigned short* LinksDist = GTOP[LTP].LinksDist;
 	int NAreas = GTOP[LTP].NAreas;
 	Area* TopMap = GTOP[LTP].TopMap;
-	word* TopRef = GTOP[LTP].TopRef;
+	unsigned short* TopRef = GTOP[LTP].TopRef;
 
 	int LDX = -2;
 	int LLX = 4;
@@ -15890,14 +15892,14 @@ NextSm2:;
 	};
 	return false;
 };
-int GetWTopology( int x, int y, byte LTP )
+int GetWTopology( int x, int y, unsigned char LTP )
 {
 	if ( !GTOP[LTP].NAreas )return 0xFFFF;
 	int xc = x >> 6;
 	int yc = y >> 6;
 	if ( xc < 0 || yc < 0 || xc >= TopLx || yc >= TopLy )return 0xFFFF;
-	word* TopRef = GTOP[LTP].TopRef;
-	word tr = TopRef[xc + ( yc << TopSH )];
+	unsigned short* TopRef = GTOP[LTP].TopRef;
+	unsigned short tr = TopRef[xc + ( yc << TopSH )];
 	if ( tr < 0xFFFE )return tr;
 	for ( int i = 0; i < 10; i++ )
 	{
@@ -15915,13 +15917,13 @@ int GetWTopology( int x, int y, byte LTP )
 	};
 	return 0xFFFF;
 };
-int GetWTopology( int* x, int* y, byte LTP )
+int GetWTopology( int* x, int* y, unsigned char LTP )
 {
 	int xc = ( *x ) >> 6;
 	int yc = ( *y ) >> 6;
 	if ( xc < 0 || yc < 0 || xc >= TopLx || yc >= TopLy )return 0xFFFF;
-	word* TopRef = GTOP[LTP].TopRef;
-	word tr = TopRef[xc + ( yc << TopSH )];
+	unsigned short* TopRef = GTOP[LTP].TopRef;
+	unsigned short tr = TopRef[xc + ( yc << TopSH )];
 	if ( tr < 0xFFFE )return tr;
 	for ( int i = 0; i < 10; i++ )
 	{
@@ -15955,10 +15957,10 @@ void NewMonsterSmartSendToLink( OneObject* OBJ )
 	int NextX = OR1->info.SmartSend.NextX;
 	int NextY = OR1->info.SmartSend.NextY;
 	int NextTop = OR1->info.SmartSend.NextTop;
-	byte LTP = OBJ->LockType;
+	unsigned char LTP = OBJ->LockType;
 
-	word* MotionLinks = GTOP[LTP].MotionLinks;
-	word* LinksDist = GTOP[LTP].LinksDist;
+	unsigned short* MotionLinks = GTOP[LTP].MotionLinks;
+	unsigned short* LinksDist = GTOP[LTP].LinksDist;
 	int NAreas = GTOP[LTP].NAreas;
 	Area* TopMap = GTOP[LTP].TopMap;
 
@@ -15993,7 +15995,7 @@ void NewMonsterSmartSendToLink( OneObject* OBJ )
 	};
 	OR1->info.SmartSend.x = x;
 	OR1->info.SmartSend.y = y;
-	word NextNextTop = MotionLinks[FinalTop + NAreas*NextTop];
+	unsigned short NextNextTop = MotionLinks[FinalTop + NAreas*NextTop];
 	if ( NextNextTop == FinalTop || FinalTop == NextTop )
 	{
 		int prio = OR1->PrioryLevel;
@@ -16063,7 +16065,7 @@ void NewMonsterSmartSendToLink( OneObject* OBJ )
 }
 
 #undef NewMonsterSmartSendTo
-void OneObject::NewMonsterSmartSendTo( int px, int py, int dx, int dy, byte Prio, byte OrdType )
+void OneObject::NewMonsterSmartSendTo( int px, int py, int dx, int dy, unsigned char Prio, unsigned char OrdType )
 {
 	if ( !NAreas )
 	{
@@ -16107,7 +16109,7 @@ void OneObject::NewMonsterSmartSendTo( int px, int py, int dx, int dy, byte Prio
 	{
 		return;
 	}
-	word Top = GetWTopology( &px, &py, LockType );
+	unsigned short Top = GetWTopology( &px, &py, LockType );
 	if ( Top == 0xFFFF )
 	{
 		return;
@@ -16157,7 +16159,7 @@ void ProcessSelectedTower()
 {
 	if ( NSL[MyNation] == 1 )
 	{
-		word MID = Selm[MyNation][0];
+		unsigned short MID = Selm[MyNation][0];
 		if ( MID != 0xFFFF )
 		{
 			OneObject* OB = Group[MID];
@@ -16281,9 +16283,9 @@ void CorrectBlocking( int* cx, int* cy )
 	}
 }
 
-bool CheckTopDirectWay( int x0, int y0, int x1, int y1, byte TopType )
+bool CheckTopDirectWay( int x0, int y0, int x1, int y1, unsigned char TopType )
 {
-	word* TopRef = GTOP[TopType].TopRef;
+	unsigned short* TopRef = GTOP[TopType].TopRef;
 	x0 <<= 8;
 	y0 <<= 8;
 	x1 <<= 8;
@@ -16418,7 +16420,7 @@ void OneObject::CreateSmartPath( int px, int py, int dx, int dy )
 	}
 }
 
-int EnumUnitsInCell( int cell, int x, int y, int r, word Type, byte Nation )
+int EnumUnitsInCell( int cell, int x, int y, int r, unsigned short Type, unsigned char Nation )
 {
 	int N = 0;
 	if ( cell > 0 )
@@ -16434,7 +16436,7 @@ int EnumUnitsInCell( int cell, int x, int y, int r, word Type, byte Nation )
 			return 0;
 		}
 		int ofs1 = cell << SHFCELL;
-		word MID;
+		unsigned short MID;
 		for ( int i = 0; i < NMon; i++ )
 		{
 			MID = GetNMSL( ofs1 + i );
@@ -16455,7 +16457,7 @@ int EnumUnitsInCell( int cell, int x, int y, int r, word Type, byte Nation )
 	return N;
 }
 
-int EnumUnitsInRound( int x, int y, int r, word Type, byte Nation )
+int EnumUnitsInRound( int x, int y, int r, unsigned short Type, unsigned char Nation )
 {
 	int rx1 = ( r >> 11 ) + 1;
 	int N = 0;
@@ -16483,7 +16485,7 @@ int EnumUnitsInRound( int x, int y, int r, word Type, byte Nation )
 
 int CheckShipDirection( char Dir )
 {
-	word MinD = 127;
+	unsigned short MinD = 127;
 	char BestD = 0;
 	if ( abs( Dir - 32 ) < MinD )
 	{
@@ -16564,7 +16566,7 @@ void RotateShipAndDie( OneObject* OBJ )
 ///DEBUG
 char LASTFILE[128];
 int LastLine;
-byte NatRefTBL[8] = { 0,1,2,3,4,5,6,7 };
+unsigned char NatRefTBL[8] = { 0,1,2,3,4,5,6,7 };
 
 void DoNormalTBL()
 {
@@ -16583,7 +16585,7 @@ void ProcessGuard()
 			OneObject* OB = Group[i];
 			if ( OB && ( !OB->Sdoxlo ) )
 			{
-				word GUID = OB->Guard;
+				unsigned short GUID = OB->Guard;
 				if ( GUID != 0xFFFF )
 				{
 					OneObject* GUOB = Group[GUID];

@@ -28,7 +28,7 @@ int SIGN(int x) {
 	if (x > 0)return 1;
 	return 0;
 };
-word GetDir(int, int);
+unsigned short GetDir(int, int);
 char GetBestDirection(MotionField* MFI, int xd, int yd, int LX, char CurDir) {
 	int resdir = 0;
 	int NDir = 0;
@@ -145,7 +145,7 @@ bool SearchTransportPlace(int* x, int* y, int Lx) {
 	};
 	return false;
 };
-bool ParkWaterNewMonster(OneObject* OB, int x, int y, byte Prio, byte OrdType)
+bool ParkWaterNewMonster(OneObject* OB, int x, int y, unsigned char Prio, unsigned char OrdType)
 {
 	//if(OB->CheckOrderAbility(0x1234,0))return true;
 	OB->DstX = -1;
@@ -322,14 +322,14 @@ void WaterNewMonsterSendToLink(OneObject* OB) {
 char* TransHint = "Прервать перевозку.";
 class TransProcess {
 public:
-	word* Units;
-	word* Serials;
-	byte* OnTheWay;
+	unsigned short* Units;
+	unsigned short* Serials;
+	unsigned char* OnTheWay;
 	int   Reserv;
 	int   NUnits;
-	word  TransportID;
-	word  TransportSN;
-	byte  Nation;
+	unsigned short  TransportID;
+	unsigned short  TransportSN;
+	unsigned char  Nation;
 	int   FinX;
 	int   FinY;
 	int   StartX;
@@ -359,10 +359,10 @@ public:
 	GOrder* GLOB;
 	//---------------------------methods------------------//
 	TransProcess();
-	void Init(word TransportID);
-	void AddUnit(word UnitID);
-	bool ExcludeUnit(word UnitID);
-	bool CheckUnit(word UnitID);
+	void Init(unsigned short TransportID);
+	void AddUnit(unsigned short UnitID);
+	bool ExcludeUnit(unsigned short UnitID);
+	bool CheckUnit(unsigned short UnitID);
 	void RefreshUnits();
 	void Process();
 	void Demobilisation();
@@ -384,16 +384,16 @@ bool TransProcess::CheckDisconnectionAbility(OneObject* OB, int LParam, int RPar
 		if (OB->delay)return false;
 		int OnWay = 0;
 		for (int i = 0; i < NUnits; i++) {
-			word MID = Units[i];
+			unsigned short MID = Units[i];
 			if (MID&&OnTheWay[i])OnWay++;
 		};
 		if (OnWay || ExtractUnits)return false;
 		else return true;
 	}
 	else {
-		word uind = 0xFFFF;
+		unsigned short uind = 0xFFFF;
 		for (int i = 0; i < NUnits; i++) {
-			word MID = Units[i];
+			unsigned short MID = Units[i];
 			if (MID == OB->Index)uind = i;
 		};
 		if (uind != 0xFFFF) {
@@ -408,9 +408,9 @@ bool TransProcess::Disconnect(OneObject* OB, int LParam, int RParam) {
 		KillAnyway();
 	}
 	else {
-		word uind = 0xFFFF;
+		unsigned short uind = 0xFFFF;
 		for (int i = 0; i < NUnits; i++) {
-			word MID = Units[i];
+			unsigned short MID = Units[i];
 			if (MID == OB->Index)uind = i;
 		};
 		if (uind != 0xFFFF) {
@@ -426,7 +426,7 @@ void TransProcess::KillAnyway() {
 	int CX = ConcX << 8;
 	int CY = ConcY << 8;
 	for (int i = 0; i < NUnits; i++) {
-		word MID = Units[i];
+		unsigned short MID = Units[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			OB->GlobalOrder = NULL;
@@ -482,15 +482,15 @@ int TRP_IconInfo(GOrder* GOR, int IcoIndex, OneObject* OB, GlobalIconInfo* GIN) 
 	}
 	else return 0;
 };
-void TransProcess::Init(word TransID) {
+void TransProcess::Init(unsigned short TransID) {
 	TransportID = TransID;
 	OneObject* OB = Group[TransportID];
 	if (OB) {
 		TransportSN = OB->Serial;
 		Nation = OB->NNUM;
-		Units = new word[8];
-		Serials = new word[8];
-		OnTheWay = new byte[8];
+		Units = new unsigned short[8];
+		Serials = new unsigned short[8];
+		OnTheWay = new unsigned char[8];
 		Reserv = 8;
 		NUnits = 0;
 		FinalPointPresent = false;
@@ -515,7 +515,7 @@ void TransProcess::Init(word TransID) {
 		OB->GlobalOrder = GLOB;
 	};
 };
-void TransProcess::AddUnit(word UnitID) {
+void TransProcess::AddUnit(unsigned short UnitID) {
 	OneObject* OB = Group[UnitID];
 	if ((!OB) || OB->NNUM != Nation)return;
 	NewMonster* NM = OB->newMons;
@@ -532,9 +532,9 @@ void TransProcess::AddUnit(word UnitID) {
 	};
 	if (NUnits >= Reserv) {
 		Reserv += 8;
-		Units = (word*)realloc(Units, Reserv << 1);
-		Serials = (word*)realloc(Serials, Reserv << 1);
-		OnTheWay = (byte*)realloc(OnTheWay, Reserv);
+		Units = (unsigned short*)realloc(Units, Reserv << 1);
+		Serials = (unsigned short*)realloc(Serials, Reserv << 1);
+		OnTheWay = (unsigned char*)realloc(OnTheWay, Reserv);
 		OB->GlobalOrder = GLOB;
 	};
 	Units[NUnits] = UnitID;
@@ -542,7 +542,7 @@ void TransProcess::AddUnit(word UnitID) {
 	OnTheWay[NUnits] = 0;
 	NUnits++;
 };
-bool TransProcess::ExcludeUnit(word UnitID) {
+bool TransProcess::ExcludeUnit(unsigned short UnitID) {
 	bool exc = false;
 	for (int i = 0; i < NUnits; i++) {
 		if (Units[i] == UnitID) {
@@ -553,7 +553,7 @@ bool TransProcess::ExcludeUnit(word UnitID) {
 	if (NUnits&&Units[NUnits - 1])NUnits--;
 	return exc;
 };
-bool TransProcess::CheckUnit(word UnitID) {
+bool TransProcess::CheckUnit(unsigned short UnitID) {
 	for (int i = 0; i < NUnits; i++) {
 		if (Units[i] == UnitID)return true;
 	};
@@ -563,7 +563,7 @@ int TransProcess::FindNearestUnitIndex(int x, int y) {
 	int mindis = 10000000;
 	int IDI = -1;
 	for (int i = 0; i < NUnits; i++) {
-		word ID = Units[i];
+		unsigned short ID = Units[i];
 		if (ID != 0xFFFF) {
 			OneObject* OB = Group[ID];
 			if (OB) {
@@ -581,8 +581,8 @@ void TransportLink(OneObject* OB);
 void TransProcess::RefreshUnits() {
 	int poss = 0;
 	for (int i = 0; i < NUnits; i++) {
-		word ID = Units[i];
-		word SN = Serials[i];
+		unsigned short ID = Units[i];
+		unsigned short SN = Serials[i];
 		Units[poss] = ID;
 		Serials[poss] = SN;
 		OnTheWay[poss] = OnTheWay[i];
@@ -603,7 +603,7 @@ void TransProcess::RefreshUnits() {
 };
 void TransProcess::Demobilisation() {
 	for (int i = 0; i < NUnits; i++) {
-		word MID = Units[i];
+		unsigned short MID = Units[i];
 		if (MID != 0xFFFF) {
 			OneObject* OB = Group[MID];
 			if (OB) {
@@ -625,7 +625,7 @@ bool TransProcess::FindStartPoint() {
 	if (NUnits&&OBTR) {
 		int neu = FindNearestUnitIndex(OBTR->RealX, OBTR->RealY);
 		if (neu != -1) {
-			word MID = Units[neu];
+			unsigned short MID = Units[neu];
 			OneObject* OB = Group[MID];
 			int xx = OB->x;
 			int yy = OB->y;
@@ -760,7 +760,7 @@ bool TransProcess::SetFinalPoint(int xx, int yy) {
 	return false;
 };
 void AbsorbObjectLink(OneObject* OB);
-void AbsorbObject(OneObject* OB, OneObject* Absorber, byte OrdType) {
+void AbsorbObject(OneObject* OB, OneObject* Absorber, unsigned char OrdType) {
 	if (OB->CheckOrderAbility())return;
 	NewMonster* NM = Absorber->newMons;
 	if (Absorber->NInside >= NM->MaxInside)return;
@@ -772,13 +772,13 @@ void AbsorbObject(OneObject* OB, OneObject* Absorber, byte OrdType) {
 	OB->PrioryLevel = 0;
 };
 void AbsorbObjectLink(OneObject* OB) {
-	word AbIndex = OB->LocalOrder->info.MoveToObj.ObjIndex;
-	word SN = OB->LocalOrder->info.MoveToObj.SN;
+	unsigned short AbIndex = OB->LocalOrder->info.MoveToObj.ObjIndex;
+	unsigned short SN = OB->LocalOrder->info.MoveToObj.SN;
 	OneObject* Absorber = Group[AbIndex];
 	if (Absorber) {
 		NewMonster* ANM = Absorber->newMons;
 		if (Absorber->NInside < ANM->MaxInside) {
-			Absorber->Inside = (word*)realloc(Absorber->Inside, (Absorber->NInside + 1) << 1);
+			Absorber->Inside = (unsigned short*)realloc(Absorber->Inside, (Absorber->NInside + 1) << 1);
 			Absorber->Inside[Absorber->NInside] = OB->Index;
 			Absorber->NInside++;
 			OB->GlobUnlock();
@@ -790,7 +790,7 @@ void AbsorbObjectLink(OneObject* OB) {
 	else OB->DeleteLastOrder();
 };
 void LeaveShipLink(OneObject* OB);
-void LeaveShip(OneObject* OB, byte OrdType) {
+void LeaveShip(OneObject* OB, unsigned char OrdType) {
 	if (OB->CheckOrderAbility())return;
 	if (!OB->NInside)return;
 	NewMonster* NM = OB->newMons;
@@ -809,7 +809,7 @@ void LeaveShipLink(OneObject* OB) {
 		int CX = OB->RealX >> 8;
 		int CY = OB->RealY >> 8;
 		if (!CheckBar(CX + DX - 1, CY + DY - 1, 3, 3)) {
-			word ID = OB->Inside[OB->NInside - 1];
+			unsigned short ID = OB->Inside[OB->NInside - 1];
 			OB->NInside--;
 			if (!OB->NInside) {
 				free(OB->Inside);
@@ -876,7 +876,7 @@ void TransProcess::Process()
 					int OnWay = 0;
 					for (int i = 0; i < NUnits; i++) 
 					{
-						word MID = Units[i];
+						unsigned short MID = Units[i];
 						if (MID != 0xFFFF) 
 						{
 							OneObject* OB = Group[MID];
@@ -901,7 +901,7 @@ void TransProcess::Process()
 
 						for (int i = 0; i < NUnits; i++) 
 						{
-							word ID = Units[i];
+							unsigned short ID = Units[i];
 							if (ID != 0xFFFF && !OnTheWay[i]) 
 							{
 								OneObject* OB = Group[ID];
@@ -956,7 +956,7 @@ void TransProcess::Process()
 				int CY = ConcY << 8;
 				for (int i = 0; i < NUnits; i++) 
 				{
-					word ID = Units[i];
+					unsigned short ID = Units[i];
 					if (ID != 0xFFFF && !OnTheWay[i]) 
 					{
 						OneObject* OB = Group[ID];
@@ -1127,15 +1127,15 @@ bool CheckTransportEntering(OneObject* OB) {
 	AdvCharacter* ADC = OB->Ref.General->MoreCharacter;
 	return OB->newMons->Transport&&OB->DstX&&OB->Ready&&OB->NInside < ADC->MaxInside + OB->AddInside;
 };
-bool OneObject::GoToTransport(word ID, byte Prio) {
+bool OneObject::GoToTransport(unsigned short ID, unsigned char Prio) {
 	if (InArmy&&BrigadeID != 0xFFFF) {
 		Brigade* BR = Nat->CITY->Brigs + BrigadeID;
 		if (BR->Enabled) {
 			OneObject* OB1 = NULL;
 			OneObject* OB2 = NULL;
 			if (BR->WarType) {
-				word M1 = BR->Memb[0];
-				word M2 = BR->Memb[1];
+				unsigned short M1 = BR->Memb[0];
+				unsigned short M2 = BR->Memb[1];
 				if (M1 != 0xFFFF) {
 					OB1 = Group[M1];
 					if (OB1&&OB1->Serial == BR->MembSN[0]) {
@@ -1189,8 +1189,8 @@ void GoToTransportLink(OneObject* OBJ) {
 	//int xx=OBJ->LocalOrder->info.BuildObj.ObjX;
 	//int yy=OBJ->LocalOrder->info.BuildObj.ObjY;
 	OBJ->PrioryLevel = OBJ->LocalOrder->PrioryLevel;
-	word OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
-	word OSN = OBJ->LocalOrder->info.BuildObj.SN;
+	unsigned short OID = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short OSN = OBJ->LocalOrder->info.BuildObj.SN;
 	OBJ->NewState = OBJ->GroundState;
 	OneObject* OB = Group[OID];
 
@@ -1215,7 +1215,7 @@ void GoToTransportLink(OneObject* OBJ) {
 		int dst = Norma(OBJ->RealX - xx, OBJ->RealY - yy);
 		if (Norma(OBJ->RealX - OB->RealX, OBJ->RealY - OB->RealY) < 768) {
 			//hiding;
-			word* Ins = new word[OB->NInside + 1];
+			unsigned short* Ins = new unsigned short[OB->NInside + 1];
 			if (OB->NInside) {
 				memcpy(Ins, OB->Inside, OB->NInside << 1);
 				free(OB->Inside);
@@ -1267,7 +1267,7 @@ void LeaveAll(OneObject* OB) {
 		OB->LeaveMine(INS->NIndex);
 	};
 };
-void OneObject::LeaveTransport(word Type) {
+void OneObject::LeaveTransport(unsigned short Type) {
 	if (!(NInside&&DstX))return;
 	int xx1 = RealX + int(TCos[RealDir]) * 16;
 	int yy1 = RealY + int(TSin[RealDir]) * 16;
@@ -1303,8 +1303,8 @@ void LeaveTransportLink(OneObject* OBJ) {
 		return;
 	};
 	OneObject* OB = NULL;
-	word p;
-	word Type = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short p;
+	unsigned short Type = OBJ->LocalOrder->info.BuildObj.ObjIndex;
 	for (int i = 0; i < OBJ->NInside && !OB; i++) {
 		p = OBJ->Inside[i];
 		OB = Group[p];
@@ -1340,7 +1340,7 @@ void LeaveTransportLink(OneObject* OBJ) {
 //------------------Fishing----------------
 
 #define FishSX 3
-byte* FishMap;
+unsigned char* FishMap;
 int FishLx;
 
 //Make *FishMap a null pointer
@@ -1351,14 +1351,14 @@ void InitFishMap()
 
 void CreateFishMap() {
 	FishLx = msx >> FishSX;
-	FishMap = new byte[FishLx*FishLx];
+	FishMap = new unsigned char[FishLx*FishLx];
 	memset(FishMap, 0, FishLx*FishLx);
 	for (int x = 0; x < FishLx; x++)
 		for (int y = 0; y < FishLx; y++) {
 			if (MFIELDS[1].CheckBar(x << (FishSX + 1), y << (FishSX + 1), 2 << FishSX, 2 << FishSX))FishMap[x + y*FishLx] = 2;
 		};
 };
-byte TestFishMap(int x, int y) {
+unsigned char TestFishMap(int x, int y) {
 	if (x >= 0 && y >= 0 && x < FishLx&&y < FishLx) {
 		//if(FishMap[x+y*FishLx])return 2;
 		if (UnitsField.CheckBar(x << (FishSX + 1), y << (FishSX + 1), 2 << FishSX, 2 << FishSX) ||
@@ -1470,7 +1470,7 @@ void FishingLink(OneObject* OBJ) {
 		return;
 	};
 	AdvCharacter* ADC = OBJ->Ref.General->MoreCharacter;
-	word ObjIndex = OBJ->LocalOrder->info.BuildObj.ObjIndex;
+	unsigned short ObjIndex = OBJ->LocalOrder->info.BuildObj.ObjIndex;
 	int MinDis = OBJ->LocalOrder->info.BuildObj.SN;
 	int ObjX = OBJ->LocalOrder->info.BuildObj.ObjX;
 	int ObjY = OBJ->LocalOrder->info.BuildObj.ObjY;
@@ -1482,11 +1482,11 @@ void FishingLink(OneObject* OBJ) {
 		//go to home
 		if (ObjIndex == 0xFFFF) {
 			//search for the base
-			byte NN = OBJ->NNUM;
+			unsigned char NN = OBJ->NNUM;
 			int LoX = OBJ->RealX;
 			int LoY = OBJ->RealY;
 			int Mindis = 3000000;
-			word OBJID = 0xFFFF;
+			unsigned short OBJID = 0xFFFF;
 			for (int j = 0; j < MAXOBJECT; j++) {
 				OneObject* OB = Group[j];
 				if (OB&&OB->NNUM == NN) {

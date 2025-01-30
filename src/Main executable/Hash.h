@@ -1,7 +1,7 @@
 struct LocalHashItem{
 	char* ID;
 	char* Message;
-	DWORD Value;
+	unsigned long Value;
 };
 class LocalHash{
 public:
@@ -20,7 +20,7 @@ class GlobalHash{
 public:
 	LocalHash Hash[256];
 	LocalHash GlobalList;
-	void AddToHash(char* ID,char* Message,DWORD Value);
+	void AddToHash(char* ID,char* Message,unsigned long Value);
 	bool GetHashItem(char* ID,LocalHashItem** Item);
 	int FindItem(char* ID_Start,int StartSearchPos,LocalHashItem** Item);//returns next search index
 	void Clear();

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include <stdlib.h>
 #include "ResFile.h"
@@ -8,7 +9,6 @@
 #include "fog.h"
 #include "walls.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include <math.h>
 
 #include "Megapolis.h"
@@ -47,14 +47,14 @@ extern const int kChatMessageDisplayTime;
 //--------------------inserted from DIPLOMACY.H---------------//
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
 typedef void tpProcessDownloadInternetFiles();
-typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
+typedef void tpSendRecBuffer( unsigned char* Data, int size, bool Final );
 
 extern tpStartDownloadInternetFile* StartDownloadInternetFile;
 extern tpProcessDownloadInternetFiles* ProcessDownloadInternetFiles;
 extern tpSendRecBuffer* SendRecBuffer;
 //-----------------------------------------------------------//
 //#include "diplomacy.h"
-byte RecFormatID = 0;
+unsigned char RecFormatID = 0;
 
 RecordGame RGAME;
 //db command
@@ -63,7 +63,7 @@ RecordGame RGAME;
 //dw size
 //db execute data...
 
-extern byte ExBuf[8192];
+extern unsigned char ExBuf[8192];
 extern int EBPos;
 
 RecordGame::RecordGame()
@@ -84,12 +84,12 @@ RecordGame::~RecordGame()
 	}
 }
 
-void RecordGame::AddByte( byte v )
+void RecordGame::AddByte( unsigned char v )
 {
 	if ( Size >= MaxSize )
 	{
 		MaxSize += 65536;
-		Stream = (byte*) realloc( Stream, MaxSize );
+		Stream = (unsigned char*) realloc( Stream, MaxSize );
 	}
 	Stream[Size] = v;
 	Size++;
@@ -100,25 +100,25 @@ void RecordGame::AddShort( short v )
 	if ( Size >= MaxSize - 1 )
 	{
 		MaxSize += 65536;
-		Stream = (byte*) realloc( Stream, MaxSize );
+		Stream = (unsigned char*) realloc( Stream, MaxSize );
 	}
 	*( (short*) ( Stream + Size ) ) = v;
 	Size += 2;
 }
 
-void RecordGame::AddBuf( byte* Buf, int sz )
+void RecordGame::AddBuf( unsigned char* Buf, int sz )
 {
 	if ( Size >= MaxSize - sz )
 	{
 		MaxSize += 65536;
-		Stream = (byte*) realloc( Stream, MaxSize );
+		Stream = (unsigned char*) realloc( Stream, MaxSize );
 	}
 	memcpy( Stream + Size, Buf, sz );
 	Size += sz;
 }
 
 char LASTCHATSTR[512];
-byte CHOPT = 0;
+unsigned char CHOPT = 0;
 void RecordGame::AddRecord()
 {
 	/*
@@ -145,9 +145,9 @@ void RecordGame::AddRecord()
 	if ( LASTCHATSTR[0] )
 	{
 		AddByte( 5 );
-		AddByte( (byte) strlen( LASTCHATSTR ) );
+		AddByte( (unsigned char) strlen( LASTCHATSTR ) );
 		AddByte( CHOPT );
-		AddBuf( (byte*) LASTCHATSTR, strlen( LASTCHATSTR ) + 1 );
+		AddBuf( (unsigned char*) LASTCHATSTR, strlen( LASTCHATSTR ) + 1 );
 		LASTCHATSTR[0] = 0;
 	}
 }
@@ -160,7 +160,7 @@ void RecordGame::AddEmptyRecord()
 	AddShort( 0 );
 }
 
-extern byte PlayGameMode;
+extern unsigned char PlayGameMode;
 int LastScrollTime = 0;
 int CurrentAnswer = 0;
 bool AUTOSCROLL = 1;
@@ -186,7 +186,7 @@ bool RecordGame::Extract()
 				int N = ImNSL[i];
 				for ( int j = 0; j < N; j++ )
 				{
-					word MID = ImSelm[i][j];
+					unsigned short MID = ImSelm[i][j];
 					if ( MID != 0xFFFF )
 					{
 						OneObject* OB = Group[MID];
@@ -201,8 +201,8 @@ bool RecordGame::Extract()
 			if ( NSL[i] )
 			{
 				ImNSL[i] = NSL[i];
-				ImSelm[i] = (word*) realloc( ImSelm[i], NSL[i] * 2 );
-				ImSerN[i] = (word*) realloc( ImSerN[i], NSL[i] * 2 );
+				ImSelm[i] = (unsigned short*) realloc( ImSelm[i], NSL[i] * 2 );
+				ImSerN[i] = (unsigned short*) realloc( ImSerN[i], NSL[i] * 2 );
 				memcpy( ImSelm[i], Selm[i], NSL[i] * 2 );
 				memcpy( ImSerN[i], SerN[i], NSL[i] * 2 );
 			}
@@ -223,7 +223,7 @@ bool RecordGame::Extract()
 			int N = ImNSL[i];
 			for ( int j = 0; j < N; j++ )
 			{
-				word MID = ImSelm[i][j];
+				unsigned short MID = ImSelm[i][j];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -236,7 +236,7 @@ bool RecordGame::Extract()
 		}
 	}
 
-	byte RBUF[16384];
+	unsigned char RBUF[16384];
 	int sz = 0;
 	int szz = -1;
 	if ( Pos >= Size - 2048 )
@@ -251,7 +251,7 @@ bool RecordGame::Extract()
 			//if(szz==-1)return false;
 		} while ( szz != -1 && sz < 4096 && !STREAM.Error() );
 
-		Stream = (byte*) realloc( Stream, Size + sz );
+		Stream = (unsigned char*) realloc( Stream, Size + sz );
 		memcpy( Stream + Size, RBUF, sz );
 		Size += sz;
 	}
@@ -379,7 +379,7 @@ bool RecordGame::Extract()
 				if ( CHAT )
 				{
 					int L = Stream[Pos + 1];
-					byte c = Stream[Pos + 2];
+					unsigned char c = Stream[Pos + 2];
 					Pos += 3;
 					CreateTimedHintEx( (char*) ( Stream + Pos ), kChatMessageDisplayTime, c );//Chat message
 					Pos += L + 1;
@@ -430,7 +430,7 @@ void ReadPichTicks()
 	{
 		if ( RGAME.Pos >= RGAME.Size )
 		{
-			byte RBUF[4096];
+			unsigned char RBUF[4096];
 			int sz = 0;
 			int szz = -1;
 			do
@@ -442,7 +442,7 @@ void ReadPichTicks()
 				}
 			} while ( szz != -1 && sz < 4096 && !RGAME.STREAM.Error() );
 
-			RGAME.Stream = (byte*) realloc( RGAME.Stream, RGAME.Size + sz );
+			RGAME.Stream = (unsigned char*) realloc( RGAME.Stream, RGAME.Size + sz );
 			memcpy( RGAME.Stream + RGAME.Size, RBUF, sz );
 			RGAME.Size += sz;
 		}
@@ -488,22 +488,22 @@ bool RecordMode = 0;
 extern char CurrentMap[64];
 void CreateNationalMaskForMap( char* Name );
 void ShowLoading();
-void PrepareGameMedia( byte myid, bool );
+void PrepareGameMedia( unsigned char myid, bool );
 void InitGame();
 extern City CITY[8];
 void UnPress();
 void CreateNationalMaskForRandomMap( char* );
 extern char MapScenaryDLL[200];
-int DetermineNationAI( byte Nat );
+int DetermineNationAI( unsigned char Nat );
 char* GetTextByID( char* ID );
-void LoadAIFromDLL( byte Nat, char* Name );
-extern byte PlayGameMode;
+void LoadAIFromDLL( unsigned char Nat, char* Name );
+extern unsigned char PlayGameMode;
 extern int tmtmt;
 extern int REALTIME;
 extern int Inform;
 extern int RunDataSize;
-extern byte RunData[2048];
-extern word COMPSTART[8];
+extern unsigned char RunData[2048];
+extern unsigned short COMPSTART[8];
 extern int RM_LandType;
 extern int RM_Resstart;
 extern int RM_Restot;
@@ -527,7 +527,7 @@ void RecordGame::ReadStream( char* Name )
 	if ( STREAM.Open( Name ) )
 	{
 		//int sz=RFileSize(F);
-		byte BUFF[16384];
+		unsigned char BUFF[16384];
 		int BFSZ = 0;
 		int BFPOS = 0;
 
@@ -636,11 +636,11 @@ void RecordGame::ReadStream( char* Name )
 		//sz-=73;
 		//if(sz>MaxSize){
 		//	MaxSize=sz;
-		//	Stream=(byte*)realloc(Stream,MaxSize);
+		//	Stream=(unsigned char*)realloc(Stream,MaxSize);
 		//};
 		//BFSZ-=73;
 		//RBlockRead(F,Stream,sz);
-		Stream = (byte*) realloc( Stream, BFSZ - BFPOS );
+		Stream = (unsigned char*) realloc( Stream, BFSZ - BFPOS );
 		memcpy( Stream, BUFF + BFPOS, BFSZ - BFPOS );
 		Size = BFSZ - BFPOS;//sz;
 		Pos = 0;
@@ -692,7 +692,7 @@ void RecordGame::ReadStream( char* Name )
 				memcpy( NatRefTBL, RunData + RunDataSize, 8 );
 				RunDataSize += 8;
 				CreateNationalMaskForMap( CurrentMap );
-				byte MNAT = MyNation;
+				unsigned char MNAT = MyNation;
 				PrepareGameMedia( 0, 1 );
 				InitGame();
 				SetMyNation( MNAT );
@@ -818,7 +818,7 @@ void RecordGame::ReadStream( char* Name )
 
 int RunSize0 = 0;
 int RunDataSize = 0;
-byte RunData[2048];
+unsigned char RunData[2048];
 void RecordGame::Save()
 {
 	if ( RecName[0] )
@@ -878,7 +878,7 @@ void RecordGame::TryToFlushNetworkStream( bool Final )
 			if ( !LastSentPos )
 			{
 				const int buf_size = 16384;// 4096; //BUGFIX: increase buffer size to prevent overflows
-				byte TMPB[buf_size];
+				unsigned char TMPB[buf_size];
 				int SIGN = ']CER';
 				memcpy( TMPB, &SIGN, 4 );
 				memcpy( TMPB + 4, MapName, 64 );
@@ -915,7 +915,7 @@ void RecordGame::RunRecordedGame( char* Name )
 void GetFHashName( char* pass, char* Dst )
 {
 	int L = strlen( pass );
-	DWORD S = 0;
+	unsigned long S = 0;
 	for ( int i = 0; i < L; i++ )S += pass[i];
 	for ( int i = 0; i < L - 1; i++ )S += pass[i] * pass[i + 1];
 	for ( int i = 0; i < L - 2; i++ )S += pass[i] * pass[i + 1] * pass[i + 2];
@@ -961,7 +961,7 @@ extern int LastKey;
 extern int CurPalette;
 extern int HISPEED;
 extern bool SHOWSLIDE;
-int InternetStream::ReadSomething( byte* Buf, int MaxLen, bool Scroll, bool Blocking )
+int InternetStream::ReadSomething( unsigned char* Buf, int MaxLen, bool Scroll, bool Blocking )
 {
 	if ( LocalFile )
 	{
@@ -1085,7 +1085,7 @@ int InternetStream::Error()
 }
 
 void UnLoading();
-extern word PlayerMenuMode;
+extern unsigned short PlayerMenuMode;
 extern int ItemChoose;
 extern bool use_gsc_network_protocol;
 

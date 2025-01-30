@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -15,7 +16,6 @@
 #include <assert.h>
 
 #include "3DSurf.h"
-#include "crtdbg.h"
 #include "3DBars.h"
 #include "Path.h"
 #include "MapSprites.h"
@@ -36,26 +36,26 @@ extern PlayerInfo PINFO[8];
 
 extern const int kMinorMessageDisplayTime;
 
-extern word SelCenter[8];
+extern unsigned short SelCenter[8];
 void CreateFishMap();
 extern int LightDX;
 extern int LightDY;
 extern int LightDZ;
-extern word NNewMon;
+extern unsigned short NNewMon;
 extern NewMonster NewMon[512];
-extern word NucList[128];
-extern word NucSN[128];
+extern unsigned short NucList[128];
+extern unsigned short NucSN[128];
 extern bool NDone[128];
-extern word NNuc;
+extern unsigned short NNuc;
 char GameName[128];
 extern City CITY[8];
 extern bool EUsage[8192];
 extern AnmObject* GAnm[8192];
 
-void LoadNation( char* fn, byte NIndex, byte );
+void LoadNation( char* fn, unsigned char NIndex, unsigned char );
 
-extern word FlyMops[256][256];
-extern byte Locking[1024];//Инф. о блокировании поверхности
+extern unsigned short FlyMops[256][256];
+extern unsigned char Locking[1024];//Инф. о блокировании поверхности
 
 extern int RealLx;
 extern int RealLy;
@@ -68,7 +68,7 @@ void ClearUniCash();
 class SaveBuf
 {
 public:
-	byte* Buf;
+	unsigned char* Buf;
 	int Pos;
 	int Size;
 	int RealSize;
@@ -116,7 +116,7 @@ void SaveBuf::LoadFromFile( ResFile f1 )
 	Clear();
 	Size = RFileSize( f1 );
 	RealSize = Size;
-	Buf = new byte[Size];
+	Buf = new unsigned char[Size];
 	RBlockRead( f1, Buf, Size );
 };
 void xBlockWrite( SaveBuf* SB, void* Data, int Size )
@@ -124,7 +124,7 @@ void xBlockWrite( SaveBuf* SB, void* Data, int Size )
 	while (SB->Size + Size > SB->RealSize)
 	{
 		SB->RealSize += 65536;
-		SB->Buf = (byte*) realloc( SB->Buf, SB->RealSize );
+		SB->Buf = (unsigned char*) realloc( SB->Buf, SB->RealSize );
 	};
 	memcpy( SB->Buf + SB->Size, Data, Size );
 	SB->Size += Size;
@@ -161,17 +161,19 @@ void LOADMES( SaveBuf* ff1 )
 	xBlockRead( ff1, zzz, 16 );
 };
 extern int CurPalette;
-void LOutErr( LPCSTR s )
+void LOutErr( const char* s )
 {
 	if (CurPalette == 2)LoadPalette( "2\\agew_1.pal" );
 	else LoadPalette( "0\\agew_1.pal" );
-	MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
 };
-void SOutErr( LPCSTR s )
+void SOutErr( const char* s )
 {
-	MessageBox( hwnd, s, "Saving failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Saving failed...", s, nullptr);
+	//MessageBox( hwnd, s, "Saving failed...", MB_ICONWARNING | MB_OK );
 };
-void SavePackArray( SaveBuf* ff1, word defval, word* dest, int size )
+void SavePackArray( SaveBuf* ff1, unsigned short defval, unsigned short* dest, int size )
 {
 	int szs = 0;
 	for (int i = 0; i < size; i++)if (dest[i] != defval)szs++;
@@ -183,15 +185,15 @@ void SavePackArray( SaveBuf* ff1, word defval, word* dest, int size )
 		xBlockWrite( ff1, &dest[i], 2 );
 	};
 };
-void LoadPackArray( SaveBuf* ff1, word* dest, int size )
+void LoadPackArray( SaveBuf* ff1, unsigned short* dest, int size )
 {
 	int szs;
-	word defv;
+	unsigned short defv;
 	xBlockRead( ff1, &szs, 2 );
 	xBlockRead( ff1, &defv, 2 );
 	for (int i = 0; i < size; i++)dest[i] = defv;
 	int ofst = 0;
-	word vall;
+	unsigned short vall;
 	for (int i = 0; i < szs; i++)
 	{
 		ofst = 0;
@@ -205,7 +207,7 @@ void Nation::CloseNation()
 {
 	if (hLibAI)
 	{
-		FreeLibrary( hLibAI );
+		FreeLibrary( (HMODULE)hLibAI );
 		DLLName = NULL;
 		ProcessAIinDLL = NULL;
 	};
@@ -362,23 +364,23 @@ extern int AlarmDelay;
 extern int tmtmt;
 extern char MapScenaryDLL[200];
 void ReloadECO();
-int GetEconomyData( byte** EC );
+int GetEconomyData( unsigned char** EC );
 int LastTimeStage = -1;
 extern bool NoWinner;
 extern bool NOPAUSE;
-extern DWORD RealTime;
+extern unsigned long RealTime;
 void ClearUINF();
 extern int FirstMissTime;
 extern bool Tutorial;
-extern word FIELDID;
+extern unsigned short FIELDID;
 void ClearFog();
 extern int PrevMissTime;
 extern int GLOBALTIME;
 extern int PGLOBALTIME;
 extern int PREVGLOBALTIME;
-bool AddUnitsToCash( byte NI, word ID );
+bool AddUnitsToCash( unsigned char NI, unsigned short ID );
 void ClearUniCash();
-void GetCorrectMoney( byte NI, int* MONEY );
+void GetCorrectMoney( unsigned char NI, int* MONEY );
 extern int RealPause;
 extern int RealStTime;
 extern int RealGameLength;
@@ -396,7 +398,7 @@ extern int NThemUnits;
 extern int NMyUnits;
 extern char LASTSAVEFILE[64];
 extern int LastAddSpr;
-extern byte* RivDir;
+extern unsigned char* RivDir;
 void ClearSMS();
 extern int NeedITR;
 void DoNormalTBL();
@@ -404,29 +406,29 @@ extern int GameTime;
 extern int PeaceTimeLeft;
 int CURTMTMT = 0;
 
-extern byte BalloonState;
-extern byte CannonState;
-extern byte NoArtilleryState;
-extern byte XVIIIState;
-extern byte CaptState;
-extern byte SaveState;
-extern byte DipCentreState;
-extern byte ShipyardState;
-extern byte MarketState;
+extern unsigned char BalloonState;
+extern unsigned char CannonState;
+extern unsigned char NoArtilleryState;
+extern unsigned char XVIIIState;
+extern unsigned char CaptState;
+extern unsigned char SaveState;
+extern unsigned char DipCentreState;
+extern unsigned char ShipyardState;
+extern unsigned char MarketState;
 
 extern bool BreefUInfo;
 extern bool RESMODE;
-extern word COMPSTART[8];
+extern unsigned short COMPSTART[8];
 extern char DEFPLNAMES[8][64];
 extern bool AttGrMode;
-extern word* TopIslands;
+extern unsigned short* TopIslands;
 extern int HISPEED;
 extern int HISPEED;
 extern bool ChangeNation;
 extern bool MultiTvar;
 extern int FogMode;
 void UnPress();
-extern byte MI_Mode;
+extern unsigned char MI_Mode;
 extern int DefaultResTBL[12];
 extern int  NInResTBL;
 extern int* ResTBL;
@@ -645,16 +647,16 @@ void UnLoading()
 //SAVING...
 void SaveRLE1( SaveBuf* SB, void* data, int Size )
 {
-	byte* Data = (byte*) data;
-	byte bff[256];
+	unsigned char* Data = (unsigned char*) data;
+	unsigned char bff[256];
 	int dpos = 0;
 	int bfpos = 0;
 	bool ctype = false;
-	byte pre = 0;
+	unsigned char pre = 0;
 	xBlockWrite( SB, &Size, 4 );
 	while (dpos < Size)
 	{
-		byte cur = Data[dpos];
+		unsigned char cur = Data[dpos];
 		dpos++;
 		if (bfpos > 125)
 		{
@@ -729,17 +731,17 @@ void SaveRLE1( SaveBuf* SB, void* data, int Size )
 };
 void LoadRLE1( SaveBuf* SB, void* data )
 {
-	byte* Data = (byte*) data;
+	unsigned char* Data = (unsigned char*) data;
 	int Size;
 	xBlockRead( SB, &Size, 4 );
 	int dpos = 0;
 	while (dpos < Size)
 	{
-		byte x;
+		unsigned char x;
 		xBlockRead( SB, &x, 1 );
 		if (x & 128)
 		{
-			byte y;
+			unsigned char y;
 			xBlockRead( SB, &y, 1 );
 			memset( Data + dpos, y, x - 128 );
 			dpos += x - 128;
@@ -755,7 +757,7 @@ static int sfHeader = 'FSAK';
 int sfVersion;
 extern char CurrentMap[64];
 extern MotionField UnitsField;
-extern byte* FishMap;
+extern unsigned char* FishMap;
 extern int FishLx;
 void SaveMap( SaveBuf* SB )
 {
@@ -805,7 +807,7 @@ void LoadMap( SaveBuf* SB )
 	xBlockRead( SB, &FishLx, 4 );
 	if (FishLx)
 	{
-		FishMap = new byte[FishLx*FishLx];
+		FishMap = new unsigned char[FishLx*FishLx];
 		LoadRLE1( SB, FishMap );
 	};
 };
@@ -815,14 +817,14 @@ void SaveNations( SaveBuf* SB )
 	int tt = 0x4954414E;//'NATI'
 	xBlockWrite( SB, &tt, 4 );
 	SAVMES( SB, " NATSAVE" );
-	byte nn = 8;
+	unsigned char nn = 8;
 	xBlockWrite( SB, &nn, 1 );
 	for (tt = 0; tt < 8; tt++)
 	{
 		SAVMES1( SB, " NATION: ", tt );
 		Nation* NT = &NATIONS[tt];
 		//RBlockWrite(ff1,NT->SCRIPT,16);
-		byte mm = NT->NNUM | ( NT->VictState << 4 );
+		unsigned char mm = NT->NNUM | ( NT->VictState << 4 );
 		xBlockWrite( SB, &NT->NMask, 1 );
 		xBlockWrite( SB, &mm, 1 );
 		SAVMES1( SB, " MONSAMOUNT :", NT->NMon );
@@ -830,7 +832,7 @@ void SaveNations( SaveBuf* SB )
 		xBlockWrite( SB, &NT->Harch, 2 );
 		xBlockWrite( SB, &NT->SharStage, int( &NT->UID_PEASANT ) - int( &NT->SharStage ) );
 		//Informtion about monsters(GeneralObject)
-		word NMON = 0;
+		unsigned short NMON = 0;
 		for (int i = 0; i < NT->NMon; i++)
 		{
 			GeneralObject* GO = NT->Mon[i];
@@ -844,7 +846,7 @@ void SaveNations( SaveBuf* SB )
 			{
 				SAVMES1( SB, " NMONSTER:", i );
 				xBlockWrite( SB, &i, 2 );
-				byte nn = 0;
+				unsigned char nn = 0;
 				if (GO->Enabled)nn = nn | 1;
 				if (GO->CondEnabled)nn = nn | 2;
 				if (GO->ManualDisable)nn |= 4;
@@ -878,7 +880,7 @@ void SaveNations( SaveBuf* SB )
 		for (int i = 0; i < NT->NUpgrades; i++)
 		{
 			NewUpgrade* NU = NT->UPGRADE[i];
-			byte x = 0;
+			unsigned char x = 0;
 			if (NU->Done)x |= 1;
 			if (NU->Enabled)x |= 2;
 			if (NU->PermanentEnabled)x |= 4;
@@ -948,14 +950,14 @@ bool LoadNations( SaveBuf* SB )
 	}
 
 	LOADMES( SB );
-	byte nn;
+	unsigned char nn;
 	xBlockRead( SB, &nn, 1 );
 	for (int tt = 0; tt < 8; tt++)
 	{
 		LOADMES( SB );
 		Nation* NT = &NATIONS[tt];
 		xBlockRead( SB, &NT->NMask, 1 );
-		byte mm;
+		unsigned char mm;
 		xBlockRead( SB, &mm, 1 );
 		NT->NNUM = mm & 7;
 		NT->VictState = 0;//mm>>4;
@@ -969,11 +971,11 @@ bool LoadNations( SaveBuf* SB )
 		for (int i = 0; i < NMON; i++)
 		{
 			LOADMES( SB );
-			word ID;
+			unsigned short ID;
 			xBlockRead( SB, &ID, 2 );
 			GeneralObject* GO = NT->Mon[ID];
 			//LOADMES(SB);
-			byte nn;
+			unsigned char nn;
 			xBlockRead( SB, &nn, 1 );
 			GO->Enabled = ( nn & 1 ) != 0;
 			GO->CondEnabled = ( nn & 2 ) != 0;
@@ -989,12 +991,12 @@ bool LoadNations( SaveBuf* SB )
 		xBlockRead( SB, &CT->NGroups, 4 );
 		if (CT->NGroups)
 		{
-			CT->NGroupsInSet = new word[CT->NGroups];
-			CT->GroupsSet = (word**) malloc( CT->NGroups * 4 );
+			CT->NGroupsInSet = new unsigned short[CT->NGroups];
+			CT->GroupsSet = (unsigned short**) malloc( CT->NGroups * 4 );
 			xBlockRead( SB, CT->NGroupsInSet, CT->NGroups * 2 );
 			for (int i = 0; i < CT->NGroups; i++)
 			{
-				CT->GroupsSet[i] = new word[CT->NGroupsInSet[i] * 2];
+				CT->GroupsSet[i] = new unsigned short[CT->NGroupsInSet[i] * 2];
 				xBlockRead( SB, CT->GroupsSet[i], CT->NGroupsInSet[i] * 2 );
 			};
 		};
@@ -1011,7 +1013,7 @@ bool LoadNations( SaveBuf* SB )
 		for (int i = 0; i < NT->NUpgrades; i++)
 		{
 			NewUpgrade* NU = NT->UPGRADE[i];
-			byte x;
+			unsigned char x;
 			xBlockRead( SB, &x, 1 );
 			NU->Done = ( x & 1 ) != 0;
 			NU->Enabled = ( x & 2 ) != 0;
@@ -1024,7 +1026,7 @@ bool LoadNations( SaveBuf* SB )
 		free( NatList[tt] );
 		xBlockRead( SB, &NtNUnits[tt], 4 );
 		xBlockRead( SB, &NtMaxUnits[tt], 4 );
-		NatList[tt] = new word[NtMaxUnits[tt]];
+		NatList[tt] = new unsigned short[NtMaxUnits[tt]];
 		xBlockRead( SB, NatList[tt], 2 * NtNUnits[tt] );
 		xBlockRead( SB, NT->NKilled, NT->NMon * 2 );
 		xBlockRead( SB, NT->ResTotal, 32 );
@@ -1045,14 +1047,14 @@ bool LoadNations( SaveBuf* SB )
 		xBlockRead( SB, &NT->NPopul, 4 );
 		if (NT->NPopul)
 		{
-			NT->Popul = new word[NT->NPopul];
+			NT->Popul = new unsigned short[NT->NPopul];
 			xBlockRead( SB, NT->Popul, 2 * NT->NPopul );
 			NT->MaxPopul = NT->NPopul;
 		};
 		xBlockRead( SB, &NT->NUpgMade, 4 );
 		if (NT->NUpgMade)
 		{
-			NT->UpgIDS = new word[NT->NUpgMade];
+			NT->UpgIDS = new unsigned short[NT->NUpgMade];
 			NT->UpgTime = new int[NT->NUpgMade];
 			xBlockRead( SB, NT->UpgIDS, 2 * NT->NUpgMade );
 			xBlockRead( SB, NT->UpgTime, 4 * NT->NUpgMade );
@@ -1066,7 +1068,7 @@ bool LoadNations( SaveBuf* SB )
 			xBlockRead( SB, &NT->NAccount, 4 );
 			if (NT->NAccount)
 			{
-				NT->Account = new word[NT->NAccount];
+				NT->Account = new unsigned short[NT->NAccount];
 				xBlockRead( SB, NT->Account, 2 * NT->NAccount );
 			};
 			NT->MaxAccount = NT->NAccount;
@@ -1252,7 +1254,7 @@ void LoadObjects( SaveBuf* SB )
 	for (tt = 0; tt < NObjects; tt++)
 	{
 		LOADMES( SB );
-		word IND;
+		unsigned short IND;
 		xBlockRead( SB, &IND, 2 );
 		OneObject* OB = OBJECTS + IND;
 		Group[IND] = OB;
@@ -1266,7 +1268,7 @@ void LoadObjects( SaveBuf* SB )
 
 		if (OB->NInside)
 		{
-			OB->Inside = new word[OB->NInside];
+			OB->Inside = new unsigned short[OB->NInside];
 			xBlockRead( SB, OB->Inside, OB->NInside << 1 );
 		};
 		//index of selection group
@@ -1338,8 +1340,8 @@ void LoadSelection( SaveBuf* SB )
 		xBlockRead( SB, &SG->NMemb, ( sizeof SelGroup ) - 8 );
 		if (SG->NMemb)
 		{
-			SG->Member = new word[SG->NMemb];
-			SG->SerialN = new word[SG->NMemb];
+			SG->Member = new unsigned short[SG->NMemb];
+			SG->SerialN = new unsigned short[SG->NMemb];
 			xBlockRead( SB, SG->Member, SG->NMemb << 1 );
 			xBlockRead( SB, SG->SerialN, SG->NMemb << 1 );
 		}
@@ -1354,12 +1356,12 @@ void LoadSelection( SaveBuf* SB )
 		xBlockRead(SB,&NSL[i],2);
 		SelCenter[i]=0;
 		if(NSL[i]){
-			Selm[i]=new word[NSL[i]];
-			SerN[i]=new word[NSL[i]];
+			Selm[i]=new unsigned short[NSL[i]];
+			SerN[i]=new unsigned short[NSL[i]];
 			xBlockRead(SB,Selm[i],NSL[i]<<1);
 			xBlockRead(SB,SerN[i],NSL[i]<<1);
-			ImSelm[i]=new word[NSL[i]];
-			ImSerN[i]=new word[NSL[i]];
+			ImSelm[i]=new unsigned short[NSL[i]];
+			ImSerN[i]=new unsigned short[NSL[i]];
 			memcpy(ImSelm[i],Selm[i],NSL[i]*2);
 			memcpy(ImSerN[i],SerN[i],NSL[i]*2);
 		}else{
@@ -1415,9 +1417,9 @@ void SaveWalls( SaveBuf* SB )
 	xBlockWrite( SB, &RRR[0][0], sizeof RRR );
 	xBlockWrite( SB, &RESADD[0][0], sizeof RESADD );
 };
-void SetTexturedRound( int x, int y, int rx, byte Tex );
-extern word TexList[128];
-extern word NTextures;
+void SetTexturedRound( int x, int y, int rx, unsigned char Tex );
+extern unsigned short TexList[128];
+extern unsigned short NTextures;
 void LoadWalls( SaveBuf* SB )
 {
 	int i;
@@ -1433,7 +1435,7 @@ void LoadWalls( SaveBuf* SB )
 		xBlockRead( SB, &WCL->Type, 1 );
 		xBlockRead( SB, &WCL->NIndex, 2 );
 		xBlockRead( SB, &WCL->NI, 1 );
-		word MIND;
+		unsigned short MIND;
 		xBlockRead( SB, &MIND, 2 );
 		WCL->NM = &NewMon[MIND];
 		xBlockRead( SB, &WCL->NCells, 4 );
@@ -1526,7 +1528,7 @@ void LoadAnmObj( SaveBuf* SB )
 	memset( EUsage, 0, sizeof EUsage );
 	for (int i = 0; i < NExplosions; i++)
 	{
-		word ai;
+		unsigned short ai;
 		xBlockRead( SB, &ai, 2 );
 		EUsage[ai] = 1;
 		AnmObject* NAN_ = GAnm[ai];
@@ -1553,7 +1555,7 @@ void SaveSprites( SaveBuf* SB )
 			xBlockWrite( SB, &i, 4 );
 			OneSprite OS = Sprites[i];
 			xBlockWrite( SB, &OS, int( &OS.SG ) - int( &OS ) );
-			byte typ = 0;
+			unsigned char typ = 0;
 			if (OS.SG == &STONES)typ = 1;
 			if (OS.SG == &HOLES)typ = 2;
 			if (OS.SG == &COMPLEX)typ = 3;
@@ -1596,7 +1598,7 @@ void LoadSprites( SaveBuf* SB )
 		xBlockRead( SB, &spid, 4 );
 		OneSprite* OS = &Sprites[spid];
 		xBlockRead( SB, OS, int( &OS->SG ) - int( OS ) );
-		byte typ;
+		unsigned char typ;
 		xBlockRead( SB, &typ, 1 );
 		switch (typ)
 		{
@@ -1621,7 +1623,7 @@ void LoadSprites( SaveBuf* SB )
 	if (ObjTimer.MaxMembers)
 	{
 		ObjTimer.IDS = new int[ObjTimer.MaxMembers << 1];
-		ObjTimer.Kinds = new byte[ObjTimer.MaxMembers];
+		ObjTimer.Kinds = new unsigned char[ObjTimer.MaxMembers];
 	};
 	if (ObjTimer.NMembers)
 	{
@@ -1683,7 +1685,7 @@ void Load3DBars( SaveBuf* SB )
 	xBlockRead( SB, &NB, 2 );
 	for (int i = 0; i < NB; i++)
 	{
-		word id;
+		unsigned short id;
 		xBlockRead( SB, &id, 2 );
 		OneBar* ONB = new OneBar;
 		OBARS[id] = ONB;
@@ -1695,20 +1697,20 @@ void Load3DBars( SaveBuf* SB )
 		int zz;
 		xBlockRead( SB, &zz, 4 );
 		xBlockRead( SB, &NObj3[zz], 2 );
-		Obj3Map[zz] = new word[NObj3[zz]];
+		Obj3Map[zz] = new unsigned short[NObj3[zz]];
 		xBlockRead( SB, Obj3Map[zz], NObj3[zz] << 1 );
 	};
 };
 extern bool NeedProcessTop;
 extern bool WasOnlyOpen;
-extern word NChAreas;
-extern word MaxChAreas;
-extern word* ChAreas;
+extern unsigned short NChAreas;
+extern unsigned short MaxChAreas;
+extern unsigned short* ChAreas;
 //procesing variables
 extern int CurIStart;
 extern int TmpChanges;
-extern word* TmpMLinks;
-extern word* TmpMDist;
+extern unsigned short* TmpMLinks;
+extern unsigned short* TmpMDist;
 extern int MinChX;
 extern int MaxChX;
 extern int MinChY;
@@ -1739,7 +1741,7 @@ void LS_SaveTopology( SaveBuf* SB )
 	xBlockWrite( SB, &MaxChX, 4 );
 	xBlockWrite( SB, &MinChY, 4 );
 	xBlockWrite( SB, &MaxChY, 4 );
-	byte t = 0;
+	unsigned char t = 0;
 	if (TmpMLinks)
 	{
 		t = 1;
@@ -1758,15 +1760,15 @@ void LS_LoadTopology( SaveBuf* SB )
 	xBlockRead( SB, &NAreas, 4 );
 	MaxArea = NAreas;
 	TopMap = new Area[NAreas];
-	MotionLinks = new word[NAreas*NAreas];
-	LinksDist = new word[NAreas*NAreas];
+	MotionLinks = new unsigned short[NAreas*NAreas];
+	LinksDist = new unsigned short[NAreas*NAreas];
 	for (int j = 0; j < NAreas; j++)
 	{
 		Area* Ar1 = TopMap + j;
 		xBlockRead( SB, Ar1, sizeof Area );
-		if (Ar1->NMines)Ar1->MinesIdx = new word[Ar1->NMines];
+		if (Ar1->NMines)Ar1->MinesIdx = new unsigned short[Ar1->NMines];
 		else Ar1->MinesIdx = NULL;
-		if (Ar1->MaxLink)Ar1->Link = new word[Ar1->MaxLink << 1];
+		if (Ar1->MaxLink)Ar1->Link = new unsigned short[Ar1->MaxLink << 1];
 		else Ar1->Link = NULL;
 		if (Ar1->NMines)xBlockRead( SB, Ar1->MinesIdx, Ar1->NMines << 1 );
 		if (Ar1->NLinks)xBlockRead( SB, Ar1->Link, Ar1->NLinks << 2 );
@@ -1779,7 +1781,7 @@ void LS_LoadTopology( SaveBuf* SB )
 	xBlockRead( SB, &WasOnlyOpen, 1 );
 	xBlockRead( SB, &NChAreas, 2 );
 	xBlockRead( SB, &MaxChAreas, 2 );
-	if (MaxChAreas)ChAreas = new word[MaxChAreas];
+	if (MaxChAreas)ChAreas = new unsigned short[MaxChAreas];
 	if (NChAreas)xBlockRead( SB, ChAreas, NChAreas << 1 );
 	xBlockRead( SB, &CurIStart, 4 );
 	xBlockRead( SB, &TmpChanges, 4 );
@@ -1787,12 +1789,12 @@ void LS_LoadTopology( SaveBuf* SB )
 	xBlockRead( SB, &MaxChX, 4 );
 	xBlockRead( SB, &MinChY, 4 );
 	xBlockRead( SB, &MaxChY, 4 );
-	byte t;
+	unsigned char t;
 	xBlockRead( SB, &t, 1 );
 	if (t)
 	{
-		TmpMLinks = new word[NAreas* NAreas];
-		TmpMDist = new word[NAreas* NAreas];
+		TmpMLinks = new unsigned short[NAreas* NAreas];
+		TmpMDist = new unsigned short[NAreas* NAreas];
 		xBlockRead( SB, TmpMLinks, NAreas*NAreas * 2 );
 		xBlockRead( SB, TmpMDist, NAreas*NAreas * 2 );
 	};
@@ -1886,7 +1888,7 @@ void SaveAI( SaveBuf* SB )
 	};
 	for (int ni = 0; ni < 8; ni++)
 	{
-		byte pr = NATIONS[ni].AI_Enabled;
+		unsigned char pr = NATIONS[ni].AI_Enabled;
 		xBlockWrite( SB, &pr, 1 );
 		xBlockWrite( SB, &ni, 2 );
 		//char* PN=GetPName(ni);
@@ -1910,7 +1912,7 @@ void SaveAI( SaveBuf* SB )
 		if (pr)xBlockWrite( SB, CT, sizeof City );
 		//details:
 		//1.Brigades
-		word N = 0;
+		unsigned short N = 0;
 		for (int k = 0; k < MaxBrig; k++)
 		{
 			if (CT->Brigs[k].Enabled)N++;
@@ -1935,7 +1937,7 @@ void SaveAI( SaveBuf* SB )
 				}
 				else
 				{
-					word r = 0;
+					unsigned short r = 0;
 					xBlockWrite( SB, &r, 2 );
 				};
 				chk = 1234500;
@@ -1949,7 +1951,7 @@ void SaveAI( SaveBuf* SB )
 				}
 				else
 				{
-					byte c = 0xFF;
+					unsigned char c = 0xFF;
 					xBlockWrite( SB, &c, 1 );
 				};
 				chk = 1234501;
@@ -2214,9 +2216,9 @@ void SaveAI( SaveBuf* SB )
 }
 
 char* std_mess = "[?]";
-void LoadAIFromDLL( byte Nat, char* Name );
+void LoadAIFromDLL( unsigned char Nat, char* Name );
 char* GetTextByID( char* ID );
-extern word NPlayers;
+extern unsigned short NPlayers;
 
 void LoadAI( SaveBuf* SB )
 {
@@ -2240,12 +2242,12 @@ void LoadAI( SaveBuf* SB )
 
 	for (int ni = 0; ni < 8; ni++)
 	{
-		word cnt;
-		byte pr;
+		unsigned short cnt;
+		unsigned char pr;
 		xBlockRead( SB, &pr, 1 );
 		xBlockRead( SB, &cnt, 2 );
-		byte CID, VictCond, NatID;
-		word GT;
+		unsigned char CID, VictCond, NatID;
+		unsigned short GT;
 		char PName[32];
 		xBlockRead( SB, &CID, 1 );
 		xBlockRead( SB, &GT, 2 );
@@ -2288,8 +2290,8 @@ void LoadAI( SaveBuf* SB )
 
 		//details:
 		//1.Brigades
-		word N;
-		word NBRIGA;
+		unsigned short N;
+		unsigned short NBRIGA;
 		for (int g = 0; g < MaxBrig; g++)
 		{
 			CT->Brigs[g].NMemb = 0;
@@ -2308,7 +2310,7 @@ void LoadAI( SaveBuf* SB )
 
 		for (int k = 0; k < NBRIGA; k++)
 		{
-			word brg;
+			unsigned short brg;
 			xBlockRead( SB, &brg, 2 );
 			Brigade* BRR = CT->Brigs + brg;
 			BRR->Enabled = true;
@@ -2316,15 +2318,15 @@ void LoadAI( SaveBuf* SB )
 
 			if (BRR->MaxMemb)
 			{
-				BRR->Memb = new word[BRR->MaxMemb];
-				BRR->MembSN = new word[BRR->MaxMemb];
+				BRR->Memb = new unsigned short[BRR->MaxMemb];
+				BRR->MembSN = new unsigned short[BRR->MaxMemb];
 			}
 
 			xBlockRead( SB, BRR->Memb, BRR->NMemb * 2 );
 			xBlockRead( SB, BRR->MembSN, BRR->NMemb * 2 );
 			xBlockRead( SB, &BRR->SN, 2 );
 			xBlockRead( SB, &BRR->ErasureTime, 2 );
-			word r;
+			unsigned short r;
 			xBlockRead( SB, &r, 2 );
 
 			if (r)
@@ -2344,7 +2346,7 @@ void LoadAI( SaveBuf* SB )
 
 			xBlockRead( SB, &chk, 4 );
 
-			byte c;
+			unsigned char c;
 			xBlockRead( SB, &c, 1 );
 
 			if (c == 0xFF)
@@ -2362,7 +2364,7 @@ void LoadAI( SaveBuf* SB )
 			if (N)
 			{
 				BRR->BOrder = nullptr;
-				word szz;
+				unsigned short szz;
 				for (int p = 0; p < N; p++)
 				{
 					xBlockRead( SB, &szz, 2 );
@@ -2385,11 +2387,11 @@ void LoadAI( SaveBuf* SB )
 			xBlockRead( SB, &chk, 4 );
 
 			//2.Armies
-			word NARM;
+			unsigned short NARM;
 			xBlockRead( SB, &NARM, 2 );
 			for (int i = 0; i < NARM; i++)
 			{
-				word aid;
+				unsigned short aid;
 				xBlockRead( SB, &aid, 2 );
 				AI_Army* AR = CT->ARMS + aid;
 				AR->Enabled = true;
@@ -2414,12 +2416,12 @@ void LoadAI( SaveBuf* SB )
 				}
 
 				xBlockRead( SB, &AR->NI, 1 );
-				word naor;
+				unsigned short naor;
 				xBlockRead( SB, &naor, 2 );
 				AR->AOrder = nullptr;
 				for (int k = 0; k < naor; k++)
 				{
-					word aos;
+					unsigned short aos;
 					xBlockRead( SB, &aos, 2 );
 					ArmyOrder* AOR = AR->CreateOrder( 2, aos );
 					xBlockRead( SB, AOR, aos );
@@ -2431,7 +2433,7 @@ void LoadAI( SaveBuf* SB )
 
 			if (CT->NDefArms)
 			{
-				CT->DefArms = new word[CT->MaxDefArms];
+				CT->DefArms = new unsigned short[CT->MaxDefArms];
 				xBlockRead( SB, CT->DefArms, 2 * CT->NDefArms );
 			}
 			xBlockRead( SB, &chk, 4 );
@@ -2445,8 +2447,8 @@ void LoadAI( SaveBuf* SB )
 					xBlockRead( SB, DIN, int( &DIN->Def ) - int( DIN ) );
 					if (DIN->MaxDefs)
 					{
-						DIN->Def = new word[DIN->MaxDefs];
-						DIN->DefSN = new word[DIN->MaxDefs];
+						DIN->Def = new unsigned short[DIN->MaxDefs];
+						DIN->DefSN = new unsigned short[DIN->MaxDefs];
 					}
 					else
 					{
@@ -2467,11 +2469,11 @@ void LoadAI( SaveBuf* SB )
 			if (CT->INFORM)
 			{
 				CT->INFORM = nullptr;
-				word ninf;
+				unsigned short ninf;
 				xBlockRead( SB, &ninf, 2 );
 				for (int p = 0; p < ninf; p++)
 				{
-					word infs;
+					unsigned short infs;
 					xBlockRead( SB, &infs, 2 );
 					Inform* dat = (Inform*) malloc( infs );
 					CT->AddInform( dat, nullptr );
@@ -2489,7 +2491,7 @@ void LoadAI( SaveBuf* SB )
 			if (CT->IDEA)
 			{
 				CT->IDEA = nullptr;
-				word nide;
+				unsigned short nide;
 				xBlockRead( SB, &nide, 2 );
 
 				for (int p = 0; p < nide; p++)
@@ -2572,7 +2574,7 @@ void LoadAI( SaveBuf* SB )
 		}
 
 		//safe places for grenaders
-		word N = 0;
+		unsigned short N = 0;
 		xBlockRead( SB, &N, 2 );
 		memset( EINF->SCINF, 0, sizeof EINF->SCINF );
 
@@ -2669,8 +2671,8 @@ void LoadActiveObjects( SaveBuf* f1 )
 		xBlockRead( f1, &sz, 1 );
 		AG->Name = new char[sz];
 		xBlockRead( f1, AG->Name, sz );
-		AG->Units = new word[AG->N];
-		AG->Serials = new word[AG->N];
+		AG->Units = new unsigned short[AG->N];
+		AG->Serials = new unsigned short[AG->N];
 		xBlockRead( f1, AG->Units, AG->N * 2 );
 		xBlockRead( f1, AG->Serials, AG->N * 2 );
 	}
@@ -2786,8 +2788,8 @@ void LoadMission( SaveBuf* SB )
 		xBlockRead( SB, &UG->N, 4 );
 		if (UG->N)
 		{
-			UG->IDS = new word[UG->N];
-			UG->SNS = new word[UG->N];
+			UG->IDS = new unsigned short[UG->N];
+			UG->SNS = new unsigned short[UG->N];
 			xBlockRead( SB, UG->IDS, UG->N * 2 );
 			xBlockRead( SB, UG->SNS, UG->N * 2 );
 		}
@@ -2838,8 +2840,8 @@ void LoadCost( SaveBuf* SB )
 	xBlockRead( SB, COSTPL, NC * sizeof CostPlace );
 }
 
-extern word rpos;
-extern word NPlayers;
+extern unsigned short rpos;
+extern unsigned short NPlayers;
 extern int tmtmt;
 
 void CreateMaskForSaveFile( char* Name )
@@ -2869,7 +2871,7 @@ int GetMapSUMM( char* Name )
 	return s;
 }
 
-int GetCurGamePtr( byte** Ptr );
+int GetCurGamePtr( unsigned char** Ptr );
 
 extern int MaxPeaceTime;
 
@@ -2924,10 +2926,10 @@ void PreSaveGame( SaveBuf* SB, char* Messtr, int ID )
 	LS_SaveTopology( SB );
 	SaveActiveObjects( SB );
 	SaveMission( SB );
-	byte* bfr;
+	unsigned char* bfr;
 	int sz = GetEconomyData( &bfr );
 	xBlockWrite( SB, bfr, sz );
-	word ddd = 0xFFFF;
+	unsigned short ddd = 0xFFFF;
 	xBlockWrite( SB, &ddd, 2 );
 	xBlockWrite( SB, &rpos, 2 );
 	xBlockWrite( SB, &REALTIME, 4 );
@@ -2947,7 +2949,7 @@ void PreSaveGame( SaveBuf* SB, char* Messtr, int ID )
 	int v = tmtmt + CURTMTMT;
 	xBlockWrite( SB, &v, 4 );
 	xBlockWrite( SB, &GameTime, 4 );
-	byte* Ptr;
+	unsigned char* Ptr;
 	sz = GetCurGamePtr( &Ptr );
 
 	xBlockWrite( SB, &sz, 4 );
@@ -2960,7 +2962,7 @@ void PreSaveGame( SaveBuf* SB, char* Messtr, int ID )
 	xBlockWrite( SB, &ShipyardState, 4 );
 	xBlockWrite( SB, &MarketState, 4 );
 
-	byte NN = MyNation;
+	unsigned char NN = MyNation;
 	xBlockWrite( SB, &NN, 8 );
 	xBlockWrite( SB, NatRefTBL, 8 );
 	int tt = 2;
@@ -3000,15 +3002,15 @@ void SaveGame( char* Name, char* Messtr, int ID )
 	}
 }
 
-void ResearchCurrentIsland( byte Nat );
+void ResearchCurrentIsland( unsigned char Nat );
 void SetMonstersInCells();
 void CreateMiniMap();
 void UpdateCurGame();
 
 char PL_Names[8][32];
-byte PL_Colors[8];
+unsigned char PL_Colors[8];
 int PL_NPlayers = 0;
-byte PL_NatRefTBL[8];
+unsigned char PL_NatRefTBL[8];
 
 void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 {
@@ -3078,13 +3080,13 @@ void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 
 	LoadMission( SB );
 
-	byte* bfr;
+	unsigned char* bfr;
 
 	int sz = GetEconomyData( &bfr );
 
 	xBlockRead( SB, bfr, sz );
 
-	word ddd;
+	unsigned short ddd;
 
 	xBlockRead( SB, &ddd, 2 );
 
@@ -3149,7 +3151,7 @@ void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 	xBlockRead( SB, &CURTMTMT, 4 );
 	xBlockRead( SB, &GameTime, 4 );
 
-	byte* Ptr;
+	unsigned char* Ptr;
 	sz = GetCurGamePtr( &Ptr );
 
 	xBlockRead( SB, &sz, 4 );
@@ -3165,16 +3167,16 @@ void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 	if (LoadNation)
 	{
 		SetMyNation( 0 );
-		byte NN;
+		unsigned char NN;
 		xBlockRead( SB, &NN, 1 );
 		SetMyNation( NN );
-		byte BUF[8];
+		unsigned char BUF[8];
 		xBlockRead( SB, BUF, 7 );
 		xBlockRead( SB, NatRefTBL, 8 );
 	}
 	else
 	{
-		byte BUF[8];
+		unsigned char BUF[8];
 		xBlockRead( SB, BUF, 8 );
 		xBlockRead( SB, BUF, 8 );
 	}
@@ -3212,35 +3214,35 @@ void SFLB_LoadGame( char* fnm, bool LoadNation )
 //1)fmap
 int LX_fmap;
 
-word GetV_fmap( int x, int y )
+unsigned short GetV_fmap( int x, int y )
 {
 	ARR_RETVAL( x, y, fmap, LX_fmap );
 }
 
 extern int FMSX;
 extern int FMSX2;
-extern word* fmap1;
+extern unsigned short* fmap1;
 
-extern byte* MCount;
-extern word* BLDList;
+extern unsigned char* MCount;
+extern unsigned short* BLDList;
 
-extern byte* NPresence;
-extern byte* TmpMC;
+extern unsigned char* NPresence;
+extern unsigned char* TmpMC;
 extern WallCell** WRefs;
-extern byte* NSpri;
+extern unsigned char* NSpri;
 extern int** SpRefs;
-extern byte* WaterDeep;
-extern byte* WaterBright;
-extern word** Obj3Map;
-extern word*  NObj3;
-extern byte* InfoMap;
-extern byte* CantBuild;
-extern word* TopRef;
-extern word* WTopRef;
+extern unsigned char* WaterDeep;
+extern unsigned char* WaterBright;
+extern unsigned short** Obj3Map;
+extern unsigned short*  NObj3;
+extern unsigned char* InfoMap;
+extern unsigned char* CantBuild;
+extern unsigned short* TopRef;
+extern unsigned short* WTopRef;
 
 extern short* THMap;// Map of heights in vertices
-extern byte* TexMap;//Map of textures in vertices
-extern byte* SectMap;//Map of sections on lines
+extern unsigned char* TexMap;//Map of textures in vertices
+extern unsigned char* SectMap;//Map of sections on lines
 
 //Bitshift for mapsize dependent calculations
 //1 = normal maps
@@ -3298,12 +3300,12 @@ extern int SqMaxY;
 extern int SqDX;
 extern int SqDY;
 
-extern byte* DANGMAP;
-extern word* DCHTIME;
+extern unsigned char* DANGMAP;
+extern unsigned short* DCHTIME;
 int RivNX;
 int RivSH;
-extern byte* RivDir;
-extern byte* RivVol;
+extern unsigned char* RivDir;
+extern unsigned char* RivVol;
 void InitRiv();
 
 struct VertOver
@@ -3313,15 +3315,15 @@ struct VertOver
 	short xz;
 	int   v;
 	bool Visible;
-	byte* Data;
+	unsigned char* Data;
 };
 
 class OverTriangle
 {
 public:
 	VertOver** TRIANG;
-	word*      NTRIANG;
-	byte** Buffer;
+	unsigned short*      NTRIANG;
+	unsigned char** Buffer;
 	int MaxElm;
 	int CurElm;
 	OverTriangle();
@@ -3339,8 +3341,8 @@ extern VirtualScreen SVSC;
 void FreeArrays();
 
 int ARRSZ = 0;
-word* MRef = nullptr;//32768 bytes memset
-word* MCash = nullptr;
+unsigned short* MRef = nullptr;//32768 bytes memset
+unsigned short* MCash = nullptr;
 int MaxMCash = 0;
 int CurMCash = 0;
 int ACTUAL_ADDSH;
@@ -3453,11 +3455,11 @@ void SetupArrays()
 	}
 	int TOTAL = 0;
 	LX_fmap = 134 << ( ADDSH - 1 );
-	fmap = new word[LX_fmap*LX_fmap];
+	fmap = new unsigned short[LX_fmap*LX_fmap];
 	int szz = LX_fmap*LX_fmap * 2;
 	ARRSZ += szz;
 	memset( fmap, 0, LX_fmap*LX_fmap * 2 );
-	fmap1 = new word[LX_fmap*LX_fmap];
+	fmap1 = new unsigned short[LX_fmap*LX_fmap];
 	ARRSZ += szz;
 	memset( fmap1, 0, LX_fmap*LX_fmap * 2 );
 	MAXCX = ( 64 << ADDSH );
@@ -3514,41 +3516,41 @@ void SetupArrays()
 	SqDY = ( 480 << ( ADDSH - 1 ) ) * 32 / 256;
 	SVSC.SetSize( RealLx, RealLy );
 
-	RivDir = new byte[RivNX*RivNX];
+	RivDir = new unsigned char[RivNX*RivNX];
 	szz = RivNX*RivNX;
 	ARRSZ += szz;
 	memset( RivDir, 0, RivNX*RivNX );
-	RivVol = new byte[RivNX*RivNX];
+	RivVol = new unsigned char[RivNX*RivNX];
 	ARRSZ += szz;
 	memset( RivVol, 0, RivNX*RivNX );
 
 	VAL_MAXCX = ( 64 << ADDSH );
 
-	MCount = new byte[VAL_MAXCIOFS];
+	MCount = new unsigned char[VAL_MAXCIOFS];
 
 	szz = VAL_MAXCIOFS;
 	ARRSZ += szz;
 	memset( MCount, 0, VAL_MAXCIOFS );
-	MRef = new word[VAL_MAXCIOFS];//unsigned short MRef[16384]
+	MRef = new unsigned short[VAL_MAXCIOFS];//unsigned short MRef[16384]
 	memset( MRef, 0xFF, VAL_MAXCIOFS * 2 );
 	szz = VAL_MAXCIOFS * 2;
 	ARRSZ += szz;
-	BLDList = new word[VAL_MAXCIOFS];
+	BLDList = new unsigned short[VAL_MAXCIOFS];
 	szz = VAL_MAXCIOFS * 2;
 	ARRSZ += szz;
 	memset( BLDList, 0, VAL_MAXCIOFS * 2 );
-	NPresence = new byte[VAL_MAXCIOFS];
+	NPresence = new unsigned char[VAL_MAXCIOFS];
 	szz = VAL_MAXCIOFS;
 	ARRSZ += szz;
 	memset( NPresence, 0, VAL_MAXCIOFS );
-	TmpMC = new byte[VAL_MAXCIOFS];
+	TmpMC = new unsigned char[VAL_MAXCIOFS];
 	szz = VAL_MAXCIOFS;
 	ARRSZ += szz;
 
 	WRefs = (WallCell**) calloc( VAL_MAXCIOFS * 4 * 4, 1 );
 	szz = VAL_MAXCIOFS * 4 * 4;
 	ARRSZ += szz;
-	NSpri = new byte[VAL_SPRSIZE];
+	NSpri = new unsigned char[VAL_SPRSIZE];
 	szz = VAL_SPRSIZE;
 	ARRSZ += szz;
 	memset( NSpri, 0, VAL_SPRSIZE );
@@ -3556,11 +3558,11 @@ void SetupArrays()
 	szz = VAL_SPRSIZE * 4;
 	ARRSZ += szz;
 	memset( SpRefs, 0, VAL_SPRSIZE * 4 );
-	WaterDeep = new byte[( VAL_MAPSX*VAL_MAPSX ) >> 2];
+	WaterDeep = new unsigned char[( VAL_MAPSX*VAL_MAPSX ) >> 2];
 	szz = ( VAL_MAPSX*VAL_MAPSX ) >> 2;
 	ARRSZ += szz;
 	memset( WaterDeep, 0, ( VAL_MAPSX*VAL_MAPSX ) >> 2 );
-	WaterBright = new byte[( VAL_MAPSX*VAL_MAPSX ) >> 2];
+	WaterBright = new unsigned char[( VAL_MAPSX*VAL_MAPSX ) >> 2];
 	ARRSZ += szz;
 	memset( WaterBright, 0, ( VAL_MAPSX*VAL_MAPSX ) >> 2 );
 	WMPSIZE = ( ( MAPSX*MAPSY ) >> 2 );
@@ -3571,25 +3573,25 @@ void SetupArrays()
 	}
 
 	UnitsField.Allocate();
-	Obj3Map = (word**) calloc( B3SZ * 4, 1 );
+	Obj3Map = (unsigned short**) calloc( B3SZ * 4, 1 );
 	szz = B3SZ * 4;
 	ARRSZ += szz;
-	NObj3 = new word[B3SZ];
+	NObj3 = new unsigned short[B3SZ];
 	szz = B3SZ * 2;
 	ARRSZ += szz;
 	memset( NObj3, 0, B3SZ * 2 );
-	InfoMap = new byte[VAL_SPRNX*VAL_SPRNX];
+	InfoMap = new unsigned char[VAL_SPRNX*VAL_SPRNX];
 	szz = VAL_SPRNX*VAL_SPRNX;
 	ARRSZ += szz;
 	memset( InfoMap, 0, VAL_SPRNX*VAL_SPRNX );
-	CantBuild = new byte[VAL_SPRNX*VAL_SPRNX];
+	CantBuild = new unsigned char[VAL_SPRNX*VAL_SPRNX];
 	ARRSZ += szz;
 	memset( CantBuild, 0, VAL_SPRNX*VAL_SPRNX );
-	TopRef = new word[TopLx*TopLx];
+	TopRef = new unsigned short[TopLx*TopLx];
 	szz = TopLx*TopLx * 2;
 	ARRSZ += szz;
 	memset( TopRef, 0, TopLx*TopLx * 2 );
-	WTopRef = new word[WTopLx*WTopLx];
+	WTopRef = new unsigned short[WTopLx*WTopLx];
 	szz = WTopLx*WTopLx * 2;
 	ARRSZ += szz;
 	memset( WTopRef, 0, WTopLx*WTopLx * 2 );
@@ -3597,16 +3599,16 @@ void SetupArrays()
 	szz = ( MaxTH + 1 )*MaxTH * 2;
 	ARRSZ += szz;
 	memset( THMap, 0, ( MaxTH + 1 )*MaxTH * 2 );
-	//AddTHMap=new byte [(MaxTH+1)*MaxTH];
+	//AddTHMap=new unsigned char [(MaxTH+1)*MaxTH];
 	//memset(AddTHMap,0,(MaxTH+1)*MaxTH);
-	TexMap = new byte[( MaxTH + 1 )*MaxTH];
+	TexMap = new unsigned char[( MaxTH + 1 )*MaxTH];
 	szz = ( MaxTH + 1 )*MaxTH;
 	ARRSZ += szz;
 	memset( TexMap, 0, ( MaxTH + 1 )*MaxTH );
 
 	if (ADDSH == 1)
 	{
-		SectMap = new byte[MaxSector*MaxTH * 6];
+		SectMap = new unsigned char[MaxSector*MaxTH * 6];
 		szz = MaxSector*MaxTH * 6;
 		ARRSZ += szz;
 		memset( SectMap, 0, MaxSector*MaxTH * 6 );
@@ -3619,7 +3621,7 @@ void SetupArrays()
 	OTRI.TRIANG = (VertOver**) calloc( VertLx*VertLx * 4, 1 );
 	szz = VertLx*VertLx * 4;
 	ARRSZ += szz;
-	OTRI.NTRIANG = new word[VertLx*VertLx];
+	OTRI.NTRIANG = new unsigned short[VertLx*VertLx];
 	szz = VertLx*VertLx * 2;
 	ARRSZ += szz;
 
@@ -3629,11 +3631,11 @@ void SetupArrays()
 		OTRI.NTRIANG[i] = 0;
 	}
 
-	DANGMAP = new byte[DangLx*DangLx];
+	DANGMAP = new unsigned char[DangLx*DangLx];
 	szz = DangLx*DangLx;
 	ARRSZ += szz;
 	memset( DANGMAP, 0, DangLx*DangLx );
-	DCHTIME = new word[DangLx*DangLx];
+	DCHTIME = new unsigned short[DangLx*DangLx];
 	szz = DangLx*DangLx * 2;
 	ARRSZ += szz;
 	memset( DCHTIME, 0, DangLx*DangLx * 2 );
@@ -3643,7 +3645,7 @@ void SetupArrays()
 	SetupFog();
 }
 
-extern byte* NatDeals;
+extern unsigned char* NatDeals;
 
 void FreeArrays()
 {
@@ -3728,9 +3730,9 @@ void FreeArrays()
 
 void MotionField::Allocate()
 {
-	//MapH=new byte[MAPSY*BMSX];
+	//MapH=new unsigned char[MAPSY*BMSX];
 	//memset(MapH,0,MAPSY*BMSX);
-	MapV = new byte[MAPSY*BMSX];
+	MapV = new unsigned char[MAPSY*BMSX];
 	memset( MapV, 0, MAPSY*BMSX );
 }
 
@@ -3742,15 +3744,15 @@ void MotionField::FreeAlloc()
 
 void EnemyInfo::ALLOCATE()
 {
-	ProtectionMap = new byte[MAXCIOFS];
-	SupMortBestID = new word[MAXCIOFS];
-	SupMortLastTime = new word[MAXCIOFS];
-	InflMap = new DWORD[TopLx*TopLx];
-	SafeMAP = new byte[SafeMLx*SafeMLx];
+	ProtectionMap = new unsigned char[MAXCIOFS];
+	SupMortBestID = new unsigned short[MAXCIOFS];
+	SupMortLastTime = new unsigned short[MAXCIOFS];
+	InflMap = new unsigned long[TopLx*TopLx];
+	SafeMAP = new unsigned char[SafeMLx*SafeMLx];
 	SCINF = (SafeCellInfo**) calloc( SafeLX*SafeLX * 4, 1 );
-	NUN = new word[TSX*TSX];
-	TMAP = new byte[TSX*TSX];
-	GAINF.ArmDistr = new word[StratLx*StratLy];
+	NUN = new unsigned short[TSX*TSX];
+	TMAP = new unsigned char[TSX*TSX];
+	GAINF.ArmDistr = new unsigned short[StratLx*StratLy];
 	memset( GAINF.ArmDistr, 0xFF, StratLx*StratLy * 2 );
 }
 
@@ -3762,7 +3764,7 @@ void EnemyInfo::FREE()
 	free( GAINF.ArmDistr );
 }
 
-word GetNMSL( int i )
+unsigned short GetNMSL( int i )
 {
 	int v = i >> 6;// : 64
 
@@ -3779,7 +3781,7 @@ word GetNMSL( int i )
 	return 0;
 }
 
-void SetNMSL( int i, word W )
+void SetNMSL( int i, unsigned short W )
 {
 	int v = i >> 6;
 	int idx = MRef[v];
@@ -3788,7 +3790,7 @@ void SetNMSL( int i, word W )
 		if (CurMCash >= MaxMCash)
 		{
 			MaxMCash += 512;
-			MCash = (word*) realloc( MCash, MaxMCash << 7 );
+			MCash = (unsigned short*) realloc( MCash, MaxMCash << 7 );
 		}
 		idx = CurMCash;
 		CurMCash++;

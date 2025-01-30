@@ -35,12 +35,12 @@
 #include "ConstStr.h"
 class NetSample {
 public:
-	word* Danger;
-	word* Pretty;
+	unsigned short* Danger;
+	unsigned short* Pretty;
 	int NZ;
 	int LastUpdate;
-	void CreateDiversantMap(byte NI);
-	void CreateGrenadersMap(byte NI);
+	void CreateDiversantMap(unsigned char NI);
+	void CreateGrenadersMap(unsigned char NI);
 	NetSample();
 	~NetSample();
 };
@@ -50,13 +50,13 @@ public:
 	NetSample Grenader;
 	/*
 	int LastUpdate;
-	byte NI;
+	unsigned char NI;
 	int NZ;
-	word* CellDanger;
-	word* CellPretty;
+	unsigned short* CellDanger;
+	unsigned short* CellPretty;
 	*/
-	word FindNextCell(int F, int Start, NetSample* Net);
-	word FindWayTo(int F, int Start, int Fin, NetSample* Net);
+	unsigned short FindNextCell(int F, int Start, NetSample* Net);
+	unsigned short FindWayTo(int F, int Start, int Fin, NetSample* Net);
 	//void CreateMaps();
 	SafeNet();
 	~SafeNet();
@@ -80,24 +80,24 @@ SafeNet::SafeNet() {
 SafeNet::~SafeNet() {
 };
 extern int tmtmt;
-void NetSample::CreateDiversantMap(byte NI) {
+void NetSample::CreateDiversantMap(unsigned char NI) {
 	if (tmtmt - LastUpdate < 20 && NZ == NAreas)return;
 	if (NZ != NAreas) {
-		Danger = (word*)realloc(Danger, 2 * NAreas);
-		Pretty = (word*)realloc(Pretty, 2 * NAreas);
+		Danger = (unsigned short*)realloc(Danger, 2 * NAreas);
+		Pretty = (unsigned short*)realloc(Pretty, 2 * NAreas);
 		NZ = NAreas;
 	};
 	int N2 = 2 * NAreas;
-	word addDam[2048];
+	unsigned short addDam[2048];
 	memset(Danger, 0, N2);
 	memset(Pretty, 0, N2);
 	memset(addDam, 0, N2);
-	byte Mask = 1 << NI;
+	unsigned char Mask = 1 << NI;
 	for (int i = 0; i < MAXOBJECT; i++) {
 		OneObject* OB = Group[i];
 		if (OB && !(OB->Sdoxlo || OB->NMask&Mask)) {
 			NewMonster* NM = OB->newMons;
-			byte Use = NM->Usage;
+			unsigned char Use = NM->Usage;
 			int Pret = 0;
 			int Dang = 0;
 			if (NM->Capture) {
@@ -141,7 +141,7 @@ void NetSample::CreateDiversantMap(byte NI) {
 				int cy = OB->RealY >> 10;
 				int ofs = cx + (cy << TopSH);
 				if (ofs >= 0 || ofs < TopLx*TopLy) {
-					word Top = TopRef[ofs];
+					unsigned short Top = TopRef[ofs];
 					if (Top < 0xFFFE) {
 						Danger[Top] += Dang;
 						Pretty[Top] += Pret;
@@ -166,33 +166,33 @@ void NetSample::CreateDiversantMap(byte NI) {
 	};
 	for (int i = 0; i < NAreas; i++)Danger[i] += addDam[i];
 };
-void NetSample::CreateGrenadersMap(byte NI) {
+void NetSample::CreateGrenadersMap(unsigned char NI) {
 	if (tmtmt - LastUpdate < 20 && NZ == NAreas)return;
 	if (NZ != NAreas) {
-		Danger = (word*)realloc(Danger, 2 * NAreas);
-		Pretty = (word*)realloc(Pretty, 2 * NAreas);
+		Danger = (unsigned short*)realloc(Danger, 2 * NAreas);
+		Pretty = (unsigned short*)realloc(Pretty, 2 * NAreas);
 		NZ = NAreas;
 	};
 	int N2 = 2 * NAreas;
-	word addDam[2048];
+	unsigned short addDam[2048];
 	memset(Danger, 0, N2);
 	memset(Pretty, 0, N2);
 	memset(addDam, 0, N2);
-	byte Mask = 1 << NI;
+	unsigned char Mask = 1 << NI;
 	for (int i = 0; i < MAXOBJECT; i++) {
 		OneObject* OB = Group[i];
 		int Pret = 0;
 		int Dang = 0;
 		if (OB && (!OB->Sdoxlo) && !(OB->NMask&Mask)) {
 			NewMonster* NM = OB->newMons;
-			byte Use = NM->Usage;
+			unsigned char Use = NM->Usage;
 			if (OB->Wall) {
 				if (!(OB->Ready&&OB->SafeWall)) {
 					int cx = OB->RealX >> 10;
 					int cy = OB->RealY >> 10;
 					if (cx > 0 && cx < TopLx - 1 && cy>0 && cy < TopLy - 1) {
 						int ofs = cx + (cy << TopSH);
-						word Top = TopRef[ofs + 1];
+						unsigned short Top = TopRef[ofs + 1];
 						if (Top < 0xFFFE)Pretty[Top] += 10;
 						Top = TopRef[ofs - 1];
 						if (Top < 0xFFFE)Pretty[Top] += 10;
@@ -218,7 +218,7 @@ void NetSample::CreateGrenadersMap(byte NI) {
 						int cy = OB->RealY >> 10;
 						int ofs = cx + (cy << TopSH);
 						if (ofs >= 0 || ofs < TopLx*TopLy) {
-							word Top = TopRef[ofs];
+							unsigned short Top = TopRef[ofs];
 							if (Top < 0xFFFE) {
 								Danger[Top] += Dang;
 								Pretty[Top] += Pret;
@@ -230,27 +230,27 @@ void NetSample::CreateGrenadersMap(byte NI) {
 	};
 };
 #define MAXAR 700
-word SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
+unsigned short SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
 	int NZ = Net->NZ;
 	if (Cell < NZ) {
 		int F0 = F >> 2;
 		int F1 = F >> 1;
 		int F2 = F0 + F1;
 		int F3 = F + F0;
-		word* CellDanger = Net->Danger;
-		word* CellPretty = Net->Pretty;
-		word AddPrett[2048];
+		unsigned short* CellDanger = Net->Danger;
+		unsigned short* CellPretty = Net->Pretty;
+		unsigned short AddPrett[2048];
 		memcpy(AddPrett, CellPretty, NZ << 1);
 		for (int i = 0; i < NAreas; i++) {
-			word cdn = CellDanger[i];
+			unsigned short cdn = CellDanger[i];
 			if (cdn <= F1&&cdn > 3) {
 				AddPrett[i] += 20;
 			};
 		};
 		if (AddPrett[Cell])return Cell;
-		byte CantGo[MAXAR];
+		unsigned char CantGo[MAXAR];
 		for (int i = 0; i < NAreas; i++) {
-			word dang = CellDanger[i];
+			unsigned short dang = CellDanger[i];
 			CantGo[i] = dang > F1;
 		};
 		Area* AR = TopMap;
@@ -258,7 +258,7 @@ word SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
 			if (CantGo[i] == 1) {
 				int NL = AR->NLinks;
 				for (int j = 0; j < NL; j++) {
-					word id = AR->Link[j + j];
+					unsigned short id = AR->Link[j + j];
 					if (!CantGo[id])CantGo[id] = 2;
 				};
 			};
@@ -267,21 +267,21 @@ word SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
 
 		//now we are ready to find a way
 
-		word DistArr[2048];
-		word DistID[2048];
-		byte Checked[2048];
+		unsigned short DistArr[2048];
+		unsigned short DistID[2048];
+		unsigned char Checked[2048];
 
 		memset(DistArr, 0, NAreas << 1);
 		memset(Checked, 0, NAreas);
-		word BoundCells[200];
+		unsigned short BoundCells[200];
 		int NBound = 0;
-		word NewBound[200];
+		unsigned short NewBound[200];
 		int NNewB = 0;
 
 		NBound = 1;
 		BoundCells[0] = Cell;
 		DistArr[Cell] = 1;
-		word LastPrettyID = 0xFFFF;
+		unsigned short LastPrettyID = 0xFFFF;
 		do {
 			NNewB = 0;
 			for (int i = 0; i < NBound; i++)Checked[BoundCells[i]] = 1;
@@ -291,7 +291,7 @@ word SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
 				int N = BA->NLinks;
 				int L0 = DistArr[i];
 				for (int j = 0; j < N; j++) {
-					word id = BA->Link[j + j];
+					unsigned short id = BA->Link[j + j];
 					if (!(CantGo[id] || Checked[id] == 1)) {
 						int d = L0 + BA->Link[j + j + 1];
 						if (DistArr[id]) {
@@ -334,37 +334,37 @@ word SafeNet::FindNextCell(int F, int Cell, NetSample* Net) {
 	return 0xFFFF;
 };
 
-word SafeNet::FindWayTo(int F, int Cell, int Fin, NetSample* Net) {
+unsigned short SafeNet::FindWayTo(int F, int Cell, int Fin, NetSample* Net) {
 	//CreateMaps();
 	if (Cell < Net->NZ) {
-		word* CellDanger = Net->Danger;
+		unsigned short* CellDanger = Net->Danger;
 		int F0 = F >> 2;
 		int F1 = F >> 1;
 		int F2 = F0 + F1;
 		int F3 = F + F0;
-		byte CantGo[MAXAR];
+		unsigned char CantGo[MAXAR];
 		for (int i = 0; i < NAreas; i++) {
-			word dang = CellDanger[i];
+			unsigned short dang = CellDanger[i];
 			CantGo[i] = dang > F1;
 		};
 
 		//now we are ready to find a way
 
-		word DistArr[2048];
-		word DistID[2048];
-		byte Checked[2048];
+		unsigned short DistArr[2048];
+		unsigned short DistID[2048];
+		unsigned char Checked[2048];
 
 		memset(DistArr, 0, NAreas << 1);
 		memset(Checked, 0, NAreas);
-		word BoundCells[200];
+		unsigned short BoundCells[200];
 		int NBound = 0;
-		word NewBound[200];
+		unsigned short NewBound[200];
 		int NNewB = 0;
 
 		NBound = 1;
 		BoundCells[0] = Cell;
 		DistArr[Cell] = 1;
-		word LastPrettyID = 0xFFFF;
+		unsigned short LastPrettyID = 0xFFFF;
 		do {
 			NNewB = 0;
 			for (int i = 0; i < NBound; i++)Checked[BoundCells[i]] = 1;
@@ -374,7 +374,7 @@ word SafeNet::FindWayTo(int F, int Cell, int Fin, NetSample* Net) {
 				int N = BA->NLinks;
 				int L0 = DistArr[i];
 				for (int j = 0; j < N; j++) {
-					word id = BA->Link[j + j];
+					unsigned short id = BA->Link[j + j];
 					if (!(CantGo[id] || Checked[id] == 1)) {
 						int d = L0 + BA->Link[j + j + 1];
 						if (DistArr[id]) {
@@ -417,15 +417,15 @@ word SafeNet::FindWayTo(int F, int Cell, int Fin, NetSample* Net) {
 	return 0xFFFF;
 };
 SafeNet SAFNET[8];
-word GetNextSafeCell(byte NI, int F, int start, int Fin) {
+unsigned short GetNextSafeCell(unsigned char NI, int F, int start, int Fin) {
 	SAFNET[NI].Diversant.CreateDiversantMap(NI);
 	return SAFNET[NI].FindWayTo(F, start, Fin, &SAFNET[NI].Diversant);
 };
-word GetNextDivCell(byte NI, int F, int Start) {
+unsigned short GetNextDivCell(unsigned char NI, int F, int Start) {
 	SAFNET[NI].Diversant.CreateDiversantMap(NI);
 	return SAFNET[NI].FindNextCell(F, Start, &SAFNET[NI].Diversant);
 };
-word GetNextGreCell(byte NI, int F, int Start) {
+unsigned short GetNextGreCell(unsigned char NI, int F, int Start) {
 	SAFNET[NI].Grenader.CreateGrenadersMap(NI);
 	return SAFNET[NI].FindNextCell(F, Start, &SAFNET[NI].Grenader);
 };

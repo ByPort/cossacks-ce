@@ -2,20 +2,20 @@ class ActiveZone{
 public:
 	int x,y,R;
 	char* Name;
-	byte Dir;
+	unsigned char Dir;
 //--------------------//
 	void Draw();
 };
 class ActiveGroup{
 public:
-	word* Units;
-	word* Serials;
+	unsigned short* Units;
+	unsigned short* Serials;
 	int N;
 	char* Name;
 	int MinX,MinY,MaxX,MaxY;
 	int AminX,AminY,AmaxX,AmaxY;
 	bool Visible;
-	void Draw(byte c);
+	void Draw(unsigned char c);
 };
 extern ActiveGroup* AGroups;
 extern int NAGroups;

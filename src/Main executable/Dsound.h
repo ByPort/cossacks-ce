@@ -53,51 +53,51 @@ typedef struct IDirectSoundNotify *LPDIRECTSOUNDNOTIFY;
 
 typedef struct _DSCAPS
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwMinSecondarySampleRate;
-    DWORD           dwMaxSecondarySampleRate;
-    DWORD           dwPrimaryBuffers;
-    DWORD           dwMaxHwMixingAllBuffers;
-    DWORD           dwMaxHwMixingStaticBuffers;
-    DWORD           dwMaxHwMixingStreamingBuffers;
-    DWORD           dwFreeHwMixingAllBuffers;
-    DWORD           dwFreeHwMixingStaticBuffers;
-    DWORD           dwFreeHwMixingStreamingBuffers;
-    DWORD           dwMaxHw3DAllBuffers;
-    DWORD           dwMaxHw3DStaticBuffers;
-    DWORD           dwMaxHw3DStreamingBuffers;
-    DWORD           dwFreeHw3DAllBuffers;
-    DWORD           dwFreeHw3DStaticBuffers;
-    DWORD           dwFreeHw3DStreamingBuffers;
-    DWORD           dwTotalHwMemBytes;
-    DWORD           dwFreeHwMemBytes;
-    DWORD           dwMaxContigFreeHwMemBytes;
-    DWORD           dwUnlockTransferRateHwBuffers;
-    DWORD           dwPlayCpuOverheadSwBuffers;
-    DWORD           dwReserved1;
-    DWORD           dwReserved2;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwMinSecondarySampleRate;
+    unsigned long           dwMaxSecondarySampleRate;
+    unsigned long           dwPrimaryBuffers;
+    unsigned long           dwMaxHwMixingAllBuffers;
+    unsigned long           dwMaxHwMixingStaticBuffers;
+    unsigned long           dwMaxHwMixingStreamingBuffers;
+    unsigned long           dwFreeHwMixingAllBuffers;
+    unsigned long           dwFreeHwMixingStaticBuffers;
+    unsigned long           dwFreeHwMixingStreamingBuffers;
+    unsigned long           dwMaxHw3DAllBuffers;
+    unsigned long           dwMaxHw3DStaticBuffers;
+    unsigned long           dwMaxHw3DStreamingBuffers;
+    unsigned long           dwFreeHw3DAllBuffers;
+    unsigned long           dwFreeHw3DStaticBuffers;
+    unsigned long           dwFreeHw3DStreamingBuffers;
+    unsigned long           dwTotalHwMemBytes;
+    unsigned long           dwFreeHwMemBytes;
+    unsigned long           dwMaxContigFreeHwMemBytes;
+    unsigned long           dwUnlockTransferRateHwBuffers;
+    unsigned long           dwPlayCpuOverheadSwBuffers;
+    unsigned long           dwReserved1;
+    unsigned long           dwReserved2;
 } DSCAPS, *LPDSCAPS;
 
 typedef const DSCAPS *LPCDSCAPS;
 
 typedef struct _DSBCAPS
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwBufferBytes;
-    DWORD           dwUnlockTransferRate;
-    DWORD           dwPlayCpuOverhead;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwBufferBytes;
+    unsigned long           dwUnlockTransferRate;
+    unsigned long           dwPlayCpuOverhead;
 } DSBCAPS, *LPDSBCAPS;
 
 typedef const DSBCAPS *LPCDSBCAPS;
 
 typedef struct _DSBUFFERDESC
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwBufferBytes;
-    DWORD           dwReserved;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwBufferBytes;
+    unsigned long           dwReserved;
     LPWAVEFORMATEX  lpwfxFormat;
 } DSBUFFERDESC, *LPDSBUFFERDESC;
 
@@ -105,23 +105,23 @@ typedef const DSBUFFERDESC *LPCDSBUFFERDESC;
 
 typedef struct _DS3DBUFFER
 {
-    DWORD           dwSize;
+    unsigned long           dwSize;
     D3DVECTOR       vPosition;
     D3DVECTOR       vVelocity;
-    DWORD           dwInsideConeAngle;
-    DWORD           dwOutsideConeAngle;
+    unsigned long           dwInsideConeAngle;
+    unsigned long           dwOutsideConeAngle;
     D3DVECTOR       vConeOrientation;
-    LONG            lConeOutsideVolume;
+    long            lConeOutsideVolume;
     D3DVALUE        flMinDistance;
     D3DVALUE        flMaxDistance;
-    DWORD           dwMode;
+    unsigned long           dwMode;
 } DS3DBUFFER, *LPDS3DBUFFER;
 
 typedef const DS3DBUFFER *LPCDS3DBUFFER;
 
 typedef struct _DS3DLISTENER
 {
-    DWORD           dwSize;
+    unsigned long           dwSize;
     D3DVECTOR       vPosition;
     D3DVECTOR       vVelocity;
     D3DVECTOR       vOrientFront;
@@ -135,20 +135,20 @@ typedef const DS3DLISTENER *LPCDS3DLISTENER;
 
 typedef struct _DSCCAPS
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwFormats;
-    DWORD           dwChannels;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwFormats;
+    unsigned long           dwChannels;
 } DSCCAPS, *LPDSCCAPS;
 
 typedef const DSCCAPS *LPCDSCCAPS;
 
 typedef struct _DSCBUFFERDESC
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwBufferBytes;
-    DWORD           dwReserved;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwBufferBytes;
+    unsigned long           dwReserved;
     LPWAVEFORMATEX  lpwfxFormat;
 } DSCBUFFERDESC, *LPDSCBUFFERDESC;
 
@@ -156,17 +156,17 @@ typedef const DSCBUFFERDESC *LPCDSCBUFFERDESC;
 
 typedef struct _DSCBCAPS 
 {
-    DWORD           dwSize;
-    DWORD           dwFlags;
-    DWORD           dwBufferBytes;
-    DWORD           dwReserved;
+    unsigned long           dwSize;
+    unsigned long           dwFlags;
+    unsigned long           dwBufferBytes;
+    unsigned long           dwReserved;
 } DSCBCAPS, *LPDSCBCAPS;
 
 typedef const DSCBCAPS *LPCDSCBCAPS;
 
 typedef struct _DSBPOSITIONNOTIFY
 {
-    DWORD           dwOffset;
+    unsigned long           dwOffset;
     HANDLE          hEventNotify;
 } DSBPOSITIONNOTIFY, *LPDSBPOSITIONNOTIFY;
 
@@ -183,23 +183,23 @@ typedef LPDIRECTSOUND3DBUFFER *LPLPDIRECTSOUND3DBUFFER;
 typedef LPDIRECTSOUNDCAPTURE *LPLPDIRECTSOUNDCAPTURE;
 typedef LPDIRECTSOUNDCAPTUREBUFFER *LPLPDIRECTSOUNDCAPTUREBUFFER;
 typedef LPDIRECTSOUNDNOTIFY *LPLPDIRECTSOUNDNOTIFY;
-typedef LPVOID *LPLPVOID;
+typedef void* *LPLPVOID;
 typedef const WAVEFORMATEX *LPCWAVEFORMATEX;
 
 //
 // DirectSound API
 //
 
-typedef BOOL (CALLBACK *LPDSENUMCALLBACKW)(LPGUID, LPCWSTR, LPCWSTR, LPVOID);
-typedef BOOL (CALLBACK *LPDSENUMCALLBACKA)(LPGUID, LPCSTR, LPCSTR, LPVOID);
+typedef BOOL (CALLBACK *LPDSENUMCALLBACKW)(LPGUID, LPCWSTR, LPCWSTR, void*);
+typedef BOOL (CALLBACK *LPDSENUMCALLBACKA)(LPGUID, const char*, const char*, void*);
 
 extern HRESULT WINAPI DirectSoundCreate(LPGUID, LPDIRECTSOUND *, LPUNKNOWN);
-extern HRESULT WINAPI DirectSoundEnumerateW(LPDSENUMCALLBACKW, LPVOID);
-extern HRESULT WINAPI DirectSoundEnumerateA(LPDSENUMCALLBACKA, LPVOID);
+extern HRESULT WINAPI DirectSoundEnumerateW(LPDSENUMCALLBACKW, void*);
+extern HRESULT WINAPI DirectSoundEnumerateA(LPDSENUMCALLBACKA, void*);
 
 extern HRESULT WINAPI DirectSoundCaptureCreate(LPGUID, LPDIRECTSOUNDCAPTURE *, LPUNKNOWN);
-extern HRESULT WINAPI DirectSoundCaptureEnumerateW(LPDSENUMCALLBACKW, LPVOID);
-extern HRESULT WINAPI DirectSoundCaptureEnumerateA(LPDSENUMCALLBACKA, LPVOID);
+extern HRESULT WINAPI DirectSoundCaptureEnumerateW(LPDSENUMCALLBACKW, void*);
+extern HRESULT WINAPI DirectSoundCaptureEnumerateA(LPDSENUMCALLBACKA, void*);
 
 #ifdef UNICODE
 #define LPDSENUMCALLBACK            LPDSENUMCALLBACKW
@@ -223,7 +223,7 @@ DEFINE_GUID(IID_IDirectSound, 0x279AFA83, 0x4981, 0x11CE, 0xA5, 0x21, 0x00, 0x20
 DECLARE_INTERFACE_(IDirectSound, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)       (THIS_ REFIID, LPVOID FAR *) PURE;
+    STDMETHOD(QueryInterface)       (THIS_ REFIID, void* FAR *) PURE;
     STDMETHOD_(ULONG,AddRef)        (THIS) PURE;
     STDMETHOD_(ULONG,Release)       (THIS) PURE;
     
@@ -231,10 +231,10 @@ DECLARE_INTERFACE_(IDirectSound, IUnknown)
     STDMETHOD(CreateSoundBuffer)    (THIS_ LPCDSBUFFERDESC, LPDIRECTSOUNDBUFFER *, LPUNKNOWN) PURE;
     STDMETHOD(GetCaps)              (THIS_ LPDSCAPS) PURE;
     STDMETHOD(DuplicateSoundBuffer) (THIS_ LPDIRECTSOUNDBUFFER, LPDIRECTSOUNDBUFFER *) PURE;
-    STDMETHOD(SetCooperativeLevel)  (THIS_ HWND, DWORD) PURE;
+    STDMETHOD(SetCooperativeLevel)  (THIS_ HWND, unsigned long) PURE;
     STDMETHOD(Compact)              (THIS) PURE;
     STDMETHOD(GetSpeakerConfig)     (THIS_ LPDWORD) PURE;
-    STDMETHOD(SetSpeakerConfig)     (THIS_ DWORD) PURE;
+    STDMETHOD(SetSpeakerConfig)     (THIS_ unsigned long) PURE;
     STDMETHOD(Initialize)           (THIS_ LPGUID) PURE;
 };
 
@@ -276,28 +276,28 @@ DEFINE_GUID(IID_IDirectSoundBuffer, 0x279AFA85, 0x4981, 0x11CE, 0xA5, 0x21, 0x00
 DECLARE_INTERFACE_(IDirectSoundBuffer, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)       (THIS_ REFIID, LPVOID FAR *) PURE;
+    STDMETHOD(QueryInterface)       (THIS_ REFIID, void* FAR *) PURE;
     STDMETHOD_(ULONG,AddRef)        (THIS) PURE;
     STDMETHOD_(ULONG,Release)       (THIS) PURE;
     
     // IDirectSoundBuffer methods
     STDMETHOD(GetCaps)              (THIS_ LPDSBCAPS) PURE;
     STDMETHOD(GetCurrentPosition)   (THIS_ LPDWORD, LPDWORD) PURE;
-    STDMETHOD(GetFormat)            (THIS_ LPWAVEFORMATEX, DWORD, LPDWORD) PURE;
+    STDMETHOD(GetFormat)            (THIS_ LPWAVEFORMATEX, unsigned long, LPDWORD) PURE;
     STDMETHOD(GetVolume)            (THIS_ LPLONG) PURE;
     STDMETHOD(GetPan)               (THIS_ LPLONG) PURE;
     STDMETHOD(GetFrequency)         (THIS_ LPDWORD) PURE;
     STDMETHOD(GetStatus)            (THIS_ LPDWORD) PURE;
     STDMETHOD(Initialize)           (THIS_ LPDIRECTSOUND, LPCDSBUFFERDESC) PURE;
-    STDMETHOD(Lock)                 (THIS_ DWORD, DWORD, LPVOID *, LPDWORD, LPVOID *, LPDWORD, DWORD) PURE;
-    STDMETHOD(Play)                 (THIS_ DWORD, DWORD, DWORD) PURE;
-    STDMETHOD(SetCurrentPosition)   (THIS_ DWORD) PURE;
+    STDMETHOD(Lock)                 (THIS_ unsigned long, unsigned long, void* *, LPDWORD, void* *, LPDWORD, unsigned long) PURE;
+    STDMETHOD(Play)                 (THIS_ unsigned long, unsigned long, unsigned long) PURE;
+    STDMETHOD(SetCurrentPosition)   (THIS_ unsigned long) PURE;
     STDMETHOD(SetFormat)            (THIS_ LPCWAVEFORMATEX) PURE;
-    STDMETHOD(SetVolume)            (THIS_ LONG) PURE;
-    STDMETHOD(SetPan)               (THIS_ LONG) PURE;
-    STDMETHOD(SetFrequency)         (THIS_ DWORD) PURE;
+    STDMETHOD(SetVolume)            (THIS_ long) PURE;
+    STDMETHOD(SetPan)               (THIS_ long) PURE;
+    STDMETHOD(SetFrequency)         (THIS_ unsigned long) PURE;
     STDMETHOD(Stop)                 (THIS) PURE;
-    STDMETHOD(Unlock)               (THIS_ LPVOID, DWORD, LPVOID, DWORD) PURE;
+    STDMETHOD(Unlock)               (THIS_ void*, unsigned long, void*, unsigned long) PURE;
     STDMETHOD(Restore)              (THIS) PURE;
 };
 
@@ -359,7 +359,7 @@ DEFINE_GUID(IID_IDirectSound3DListener, 0x279AFA84, 0x4981, 0x11CE, 0xA5, 0x21, 
 DECLARE_INTERFACE_(IDirectSound3DListener, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)           (THIS_ REFIID, LPVOID FAR *) PURE;
+    STDMETHOD(QueryInterface)           (THIS_ REFIID, void* FAR *) PURE;
     STDMETHOD_(ULONG,AddRef)            (THIS) PURE;
     STDMETHOD_(ULONG,Release)           (THIS) PURE;
 
@@ -371,13 +371,13 @@ DECLARE_INTERFACE_(IDirectSound3DListener, IUnknown)
     STDMETHOD(GetPosition)              (THIS_ LPD3DVECTOR) PURE;
     STDMETHOD(GetRolloffFactor)         (THIS_ LPD3DVALUE) PURE;
     STDMETHOD(GetVelocity)              (THIS_ LPD3DVECTOR) PURE;
-    STDMETHOD(SetAllParameters)         (THIS_ LPCDS3DLISTENER, DWORD) PURE;
-    STDMETHOD(SetDistanceFactor)        (THIS_ D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetDopplerFactor)         (THIS_ D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetOrientation)           (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetPosition)              (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetRolloffFactor)         (THIS_ D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetVelocity)              (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
+    STDMETHOD(SetAllParameters)         (THIS_ LPCDS3DLISTENER, unsigned long) PURE;
+    STDMETHOD(SetDistanceFactor)        (THIS_ D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetDopplerFactor)         (THIS_ D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetOrientation)           (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetPosition)              (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetRolloffFactor)         (THIS_ D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetVelocity)              (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
     STDMETHOD(CommitDeferredSettings)   (THIS) PURE;
 };
 
@@ -433,7 +433,7 @@ DEFINE_GUID(IID_IDirectSound3DBuffer, 0x279AFA86, 0x4981, 0x11CE, 0xA5, 0x21, 0x
 DECLARE_INTERFACE_(IDirectSound3DBuffer, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)       (THIS_ REFIID, LPVOID *) PURE;
+    STDMETHOD(QueryInterface)       (THIS_ REFIID, void* *) PURE;
     STDMETHOD_(ULONG,AddRef)        (THIS) PURE;
     STDMETHOD_(ULONG,Release)       (THIS) PURE;
 
@@ -447,15 +447,15 @@ DECLARE_INTERFACE_(IDirectSound3DBuffer, IUnknown)
     STDMETHOD(GetMode)              (THIS_ LPDWORD) PURE;
     STDMETHOD(GetPosition)          (THIS_ LPD3DVECTOR) PURE;
     STDMETHOD(GetVelocity)          (THIS_ LPD3DVECTOR) PURE;
-    STDMETHOD(SetAllParameters)     (THIS_ LPCDS3DBUFFER, DWORD) PURE;
-    STDMETHOD(SetConeAngles)        (THIS_ DWORD, DWORD, DWORD) PURE;
-    STDMETHOD(SetConeOrientation)   (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetConeOutsideVolume) (THIS_ LONG, DWORD) PURE;
-    STDMETHOD(SetMaxDistance)       (THIS_ D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetMinDistance)       (THIS_ D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetMode)              (THIS_ DWORD, DWORD) PURE;
-    STDMETHOD(SetPosition)          (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
-    STDMETHOD(SetVelocity)          (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, DWORD) PURE;
+    STDMETHOD(SetAllParameters)     (THIS_ LPCDS3DBUFFER, unsigned long) PURE;
+    STDMETHOD(SetConeAngles)        (THIS_ unsigned long, unsigned long, unsigned long) PURE;
+    STDMETHOD(SetConeOrientation)   (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetConeOutsideVolume) (THIS_ long, unsigned long) PURE;
+    STDMETHOD(SetMaxDistance)       (THIS_ D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetMinDistance)       (THIS_ D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetMode)              (THIS_ unsigned long, unsigned long) PURE;
+    STDMETHOD(SetPosition)          (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
+    STDMETHOD(SetVelocity)          (THIS_ D3DVALUE, D3DVALUE, D3DVALUE, unsigned long) PURE;
 };
 
 #if !defined(__cplusplus) || defined(CINTERFACE)
@@ -516,7 +516,7 @@ DEFINE_GUID(IID_IDirectSoundCapture, 0xb0210781, 0x89cd, 0x11d0, 0xaf, 0x8, 0x0,
 DECLARE_INTERFACE_(IDirectSoundCapture, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)       (THIS_ REFIID, LPVOID *) PURE;
+    STDMETHOD(QueryInterface)       (THIS_ REFIID, void* *) PURE;
     STDMETHOD_(ULONG,AddRef)        (THIS) PURE;
     STDMETHOD_(ULONG,Release)       (THIS) PURE;
 
@@ -554,20 +554,20 @@ DEFINE_GUID(IID_IDirectSoundCaptureBuffer, 0xb0210782, 0x89cd, 0x11d0, 0xaf, 0x8
 DECLARE_INTERFACE_(IDirectSoundCaptureBuffer, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)       (THIS_ REFIID, LPVOID *) PURE;
+    STDMETHOD(QueryInterface)       (THIS_ REFIID, void* *) PURE;
     STDMETHOD_(ULONG,AddRef)        (THIS) PURE;
     STDMETHOD_(ULONG,Release)       (THIS) PURE;
 
     // IDirectSoundCaptureBuffer methods
     STDMETHOD(GetCaps)              (THIS_ LPDSCBCAPS ) PURE;
     STDMETHOD(GetCurrentPosition)   (THIS_ LPDWORD, LPDWORD ) PURE;
-    STDMETHOD(GetFormat)            (THIS_ LPWAVEFORMATEX, DWORD, LPDWORD ) PURE;
+    STDMETHOD(GetFormat)            (THIS_ LPWAVEFORMATEX, unsigned long, LPDWORD ) PURE;
     STDMETHOD(GetStatus)            (THIS_ LPDWORD ) PURE;
     STDMETHOD(Initialize)           (THIS_ LPDIRECTSOUNDCAPTURE, LPCDSCBUFFERDESC) PURE;
-    STDMETHOD(Lock)                 (THIS_ DWORD, DWORD, LPVOID *, LPDWORD, LPVOID *, LPDWORD, DWORD) PURE;
-    STDMETHOD(Start)                (THIS_ DWORD) PURE;
+    STDMETHOD(Lock)                 (THIS_ unsigned long, unsigned long, void* *, LPDWORD, void* *, LPDWORD, unsigned long) PURE;
+    STDMETHOD(Start)                (THIS_ unsigned long) PURE;
     STDMETHOD(Stop)                 (THIS) PURE;
-    STDMETHOD(Unlock)               (THIS_ LPVOID, DWORD, LPVOID, DWORD) PURE;
+    STDMETHOD(Unlock)               (THIS_ void*, unsigned long, void*, unsigned long) PURE;
 };
 
 #if !defined(__cplusplus) || defined(CINTERFACE)
@@ -610,12 +610,12 @@ DEFINE_GUID(IID_IDirectSoundNotify, 0xb0210783, 0x89cd, 0x11d0, 0xaf, 0x8, 0x0, 
 DECLARE_INTERFACE_(IDirectSoundNotify, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)           (THIS_ REFIID, LPVOID *) PURE;
+    STDMETHOD(QueryInterface)           (THIS_ REFIID, void* *) PURE;
     STDMETHOD_(ULONG,AddRef)            (THIS) PURE;
     STDMETHOD_(ULONG,Release)           (THIS) PURE;
 
     // IDirectSoundNotify methods
-    STDMETHOD(SetNotificationPositions) (THIS_ DWORD, LPCDSBPOSITIONNOTIFY) PURE;
+    STDMETHOD(SetNotificationPositions) (THIS_ unsigned long, LPCDSBPOSITIONNOTIFY) PURE;
 };
 
 #if !defined(__cplusplus) || defined(CINTERFACE)
@@ -655,13 +655,13 @@ DEFINE_GUID(IID_IKsPropertySet, 0x31efac30, 0x515c, 0x11d0, 0xa9, 0xaa, 0x00, 0x
 DECLARE_INTERFACE_(IKsPropertySet, IUnknown)
 {
     // IUnknown methods
-    STDMETHOD(QueryInterface)   (THIS_ REFIID, LPVOID *) PURE;
+    STDMETHOD(QueryInterface)   (THIS_ REFIID, void* *) PURE;
     STDMETHOD_(ULONG,AddRef)    (THIS) PURE;
     STDMETHOD_(ULONG,Release)   (THIS) PURE;
 
     // IKsPropertySet methods
-    STDMETHOD(Get)              (THIS_ REFGUID, ULONG, LPVOID, ULONG, LPVOID, ULONG, PULONG) PURE;
-    STDMETHOD(Set)              (THIS_ REFGUID, ULONG, LPVOID, ULONG, LPVOID, ULONG) PURE;
+    STDMETHOD(Get)              (THIS_ REFGUID, ULONG, void*, ULONG, void*, ULONG, PULONG) PURE;
+    STDMETHOD(Set)              (THIS_ REFGUID, ULONG, void*, ULONG, void*, ULONG) PURE;
     STDMETHOD(QuerySupport)     (THIS_ REFGUID, ULONG, PULONG) PURE;
 };
 
@@ -827,9 +827,9 @@ DECLARE_INTERFACE_(IKsPropertySet, IUnknown)
 #define DSSPEAKER_GEOMETRY_WIDE     0x00000014  //  20 degrees
 #define DSSPEAKER_GEOMETRY_MAX      0x000000B4  // 180 degrees
 
-#define DSSPEAKER_COMBINED(c, g)    ((DWORD)(((BYTE)(c)) | ((DWORD)((BYTE)(g))) << 16))
+#define DSSPEAKER_COMBINED(c, g)    ((unsigned long)(((BYTE)(c)) | ((unsigned long)((BYTE)(g))) << 16))
 #define DSSPEAKER_CONFIG(a)         ((BYTE)(a))
-#define DSSPEAKER_GEOMETRY(a)       ((BYTE)(((DWORD)(a) >> 16) & 0x00FF))
+#define DSSPEAKER_GEOMETRY(a)       ((BYTE)(((unsigned long)(a) >> 16) & 0x00FF))
 
 #define DSCCAPS_EMULDRIVER          0x00000020
 

@@ -19,11 +19,11 @@ void NLine( GFILE* f );
 int mul3( int );
 void ErrM( char* s );
 int GetWTP1( int x, int y );
-extern word TexList[128];
-extern word NTextures;
+extern unsigned short TexList[128];
+extern unsigned short NTextures;
 WallCharacter* GetWChar( OneObject* OB );
 int GetWCharID( OneObject* OB );
-void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word Sprite );
+void AddToVisual( short uy, short x, short y, OneObject* OB, unsigned short FileID, unsigned short Sprite );
 
 WallCluster::WallCluster()
 {
@@ -58,11 +58,11 @@ void WallCluster::SetSize( int N )
 	NCells = N;
 }
 
-static byte GD8[9] = { 7,6,5,0,0,4,1,2,3 };
+static unsigned char GD8[9] = { 7,6,5,0,0,4,1,2,3 };
 static char DX8[8] = { 0,1,1,1,0,-1,-1,-1 };
 static char DY8[8] = { -1,-1,0,1,1,1,0,-1 };
 
-byte GetDir8( int dx, int dy )
+unsigned char GetDir8( int dx, int dy )
 {
 	return GD8[dx + dx + dx + dy + 4];
 }
@@ -83,7 +83,7 @@ void WallCluster::ConnectToPoint( short x, short y, bool Vis )
 		FinalY = y;
 		AddPoint( x, y, Vis );
 		NCornPt = 1;
-		CornPt = new word;
+		CornPt = new unsigned short;
 		CornPt[0] = 0;
 	}
 	else
@@ -221,7 +221,7 @@ void WallCluster::UndoSegment()
 //Called four times when finishing wall (double click)
 void WallCluster::KeepSegment()
 {
-	CornPt = (word*) realloc( (void*) CornPt, ( NCornPt + 1 ) * 2 );
+	CornPt = (unsigned short*) realloc( (void*) CornPt, ( NCornPt + 1 ) * 2 );
 	CornPt[NCornPt] = NCells - 1;
 	LastX = Cells[NCells - 1].x;
 	LastY = Cells[NCells - 1].y;
@@ -234,7 +234,7 @@ void WallCluster::SetPreviousSegment()
 	UndoSegment();
 	if ( NCornPt > 1 )
 	{
-		CornPt = (word*) realloc( (void*) CornPt, ( NCornPt - 1 ) << 1 );
+		CornPt = (unsigned short*) realloc( (void*) CornPt, ( NCornPt - 1 ) << 1 );
 		NCornPt--;
 		UndoSegment();
 	}
@@ -285,24 +285,24 @@ void WallCluster::CreateSprites()
 		//assert(Cells[i].Sprite<14);
 	};
 };
-//word Size
+//unsigned short Size
 //data format:
-//byte NI;
-//byte Type;
-//word NCells;
-//word NIndex;
-//word Health;
+//unsigned char NI;
+//unsigned char Type;
+//unsigned short NCells;
+//unsigned short NIndex;
+//unsigned short Health;
 //By 1 cell:
 //short x;
 //short y;
 
-int WallCluster::CreateData( word* Data, word Health )
+int WallCluster::CreateData( unsigned short* Data, unsigned short Health )
 {
 	int size = 10 + ( NCells * 4 );
 
-	Data[0] = word( size );
-	( (byte*) Data )[2] = NI;
-	( (byte*) Data )[3] = Type;
+	Data[0] = unsigned short( size );
+	( (unsigned char*) Data )[2] = NI;
+	( (unsigned char*) Data )[3] = Type;
 	Data[2] = NCells;
 	Data[3] = NIndex;
 	Data[4] = Health;
@@ -321,18 +321,18 @@ int WallCluster::CreateData( word* Data, word Health )
 
 extern bool CmdDone[ULIMIT];
 
-void WallCluster::SendSelectedToWork( byte pNI, byte OrdType )
+void WallCluster::SendSelectedToWork( unsigned char pNI, unsigned char OrdType )
 {
 	int NSel = NSL[pNI];
-	word* SMon = Selm[pNI];
-	word* ser = SerN[pNI];
+	unsigned short* SMon = Selm[pNI];
+	unsigned short* ser = SerN[pNI];
 	int CurCell = 0;
 	bool Opdone = false;
 	for ( int i = 0; i < NSel; i++ )
 	{
 		if ( CurCell < NCells )
 		{
-			word MID = SMon[i];
+			unsigned short MID = SMon[i];
 			if ( MID != 0xFFFF )
 			{
 				OneObject* OB = Group[MID];
@@ -353,7 +353,7 @@ void WallCluster::SendSelectedToWork( byte pNI, byte OrdType )
 		{
 			if ( CurCell < NCells )
 			{
-				word MID = SMon[i];
+				unsigned short MID = SMon[i];
 				if ( MID != 0xFFFF )
 				{
 					OneObject* OB = Group[MID];
@@ -367,13 +367,13 @@ void WallCluster::SendSelectedToWork( byte pNI, byte OrdType )
 	}
 }
 
-void WallCluster::CreateByData( word* Data )
+void WallCluster::CreateByData( unsigned short* Data )
 {
-	NI = ( (byte*) Data )[2];
-	Type = ( (byte*) Data )[3];
+	NI = ( (unsigned char*) Data )[2];
+	Type = ( (unsigned char*) Data )[3];
 	NCells = Data[2];
 	NIndex = Data[3];
-	word Health = Data[4];
+	unsigned short Health = Data[4];
 	Nation* NT = &NATIONS[NI];
 	NM = NT->Mon[NIndex]->newMons;
 	Cells = new WallCell[NCells];
@@ -526,7 +526,7 @@ static char* CluF = "      "
 " **** "
 " **** "
 "      ";
-char* GetLockData( byte id )
+char* GetLockData( unsigned char id )
 {
 	switch ( id )
 	{
@@ -660,7 +660,7 @@ void WallCell::ClearLocking()
 int NChar;
 WallCharacter WChar[32];
 WallCell** WRefs;
-void SetTexturedRound( int x, int y, int rx, byte Tex );
+void SetTexturedRound( int x, int y, int rx, unsigned char Tex );
 bool WallCell::StandOnLand( WallCluster* WC )
 {
 	NewMonster* NM = WC->NM;
@@ -932,7 +932,7 @@ void SetLife( WallCell* WC, int Health )
 //Usage of walls
 extern int NRLFiles;
 extern char* RLNames[512];
-void LoadWallSprites( char* Name, char* Gate, word Type )
+void LoadWallSprites( char* Name, char* Gate, unsigned short Type )
 {
 	WChar[Type].RIndex = GPS.PreLoadGPImage( Name );
 	WChar[Type].GateFile = GPS.PreLoadGPImage( Gate );
@@ -941,7 +941,7 @@ void LoadWallSprites( char* Name, char* Gate, word Type )
 int GetIconByName( char* Name );
 int GetResID( char* );
 extern char* SoundID[512];
-extern word NSounds;
+extern unsigned short NSounds;
 int SearchStr( char** Res, char* s, int count );
 void LoadAllWalls()
 {
@@ -1102,7 +1102,7 @@ int GetWallType( char* Name )
 	return -1;
 };
 extern bool TransMode;
-void RegisterVisibleGP( word Index, int FileIndex, int SprIndex, int x, int y );
+void RegisterVisibleGP( unsigned short Index, int FileIndex, int SprIndex, int x, int y );
 void WallCluster::View()
 {
 	int x0 = mapx << 5;
@@ -1283,11 +1283,11 @@ void WallCluster::Preview()
 
 WallCluster TMPCluster;
 WallSystem WSys;
-byte WallType;
+unsigned char WallType;
 
 bool BuildWall;
 bool FirstWall;
-void SetWallBuildMode( byte NI, word NIndex )
+void SetWallBuildMode( unsigned char NI, unsigned short NIndex )
 {
 	TMPCluster.~WallCluster();
 	if ( NI != 0xFF )
@@ -1314,8 +1314,8 @@ void WallHandleDraw()
 static int xpre = 100000000;
 static int ypre = 100000000;
 int ConvScrY( int x, int y );
-void CmdCreateWall( byte NI );
-extern byte SpecCmd;
+void CmdCreateWall( unsigned char NI );
+extern unsigned char SpecCmd;
 
 void WallHandleMouse()
 {
@@ -1518,7 +1518,7 @@ bool GetFreeCell( int* x, int* y, int bx, int by, int *bdist )
 	return Fnd;
 }
 
-bool FindPlaceForWallBuilder( byte NI, int *x, int *y, int bx, int by )
+bool FindPlaceForWallBuilder( unsigned char NI, int *x, int *y, int bx, int by )
 {
 	//1. search for wall segment
 	int xx, yy, xx1, yy1;
@@ -1656,7 +1656,7 @@ bool FindPlaceForWallBuilder( byte NI, int *x, int *y, int bx, int by )
 
 void BuildWallLink( OneObject* OB );
 
-bool OneObject::BuildWall( int xx, int yy, byte Prio, byte OrdType, bool TempBlock )
+bool OneObject::BuildWall( int xx, int yy, unsigned char Prio, unsigned char OrdType, bool TempBlock )
 {
 	if ( CheckOrderAbility() || PrioryLevel > Prio )
 	{
@@ -1709,7 +1709,7 @@ void TempUnLock( OneObject* OBJ )
 	}
 }
 
-bool CheckSideForBuild( byte NI, int x, int y )
+bool CheckSideForBuild( unsigned char NI, int x, int y )
 {
 	if ( x >= 0 && y >= 0 && x < MaxLIX&&y < MaxLIY )
 	{
@@ -2235,7 +2235,7 @@ void InitGates()
 	NGates = 0;
 }
 
-int AddGate( short x, short y, byte NI )
+int AddGate( short x, short y, unsigned char NI )
 {
 	int curg = NGates;
 	int j;
@@ -2270,14 +2270,14 @@ void DelGate( int ID )
 	//assert(ID<NGates);
 	Gates[ID].NI = 0xFF;
 };
-bool CheckUnitsInCell( int cell, byte NMask, int x, int y, int R )
+bool CheckUnitsInCell( int cell, unsigned char NMask, int x, int y, int R )
 {
 	cell += VAL_MAXCX + 1;
 	if ( cell < 0 || cell >= VAL_MAXCIOFS )return false;
 	int NMon = MCount[cell];
 	if ( !NMon )return NULL;
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -2289,7 +2289,7 @@ bool CheckUnitsInCell( int cell, byte NMask, int x, int y, int R )
 	};
 	return false;
 };
-bool CheckNTPresence( int x, int y, int R, byte NMask )
+bool CheckNTPresence( int x, int y, int R, unsigned char NMask )
 {
 	int cell = ( ( y / 128 ) * 128 ) + ( x / 128 );
 
@@ -2307,7 +2307,7 @@ bool CheckNTPresence( int x, int y, int R, byte NMask )
 
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
 
-	byte* bpt = NPresence + stcell;
+	unsigned char* bpt = NPresence + stcell;
 
 	for ( int nx = 0; nx < rx2; nx++ )
 	{
@@ -2396,9 +2396,9 @@ void ControlGates()
 	}
 }
 
-extern word OWNER;
+extern unsigned short OWNER;
 
-bool CheckVisibility( int x1, int y1, int x2, int y2, word MyID )
+bool CheckVisibility( int x1, int y1, int x2, int y2, unsigned short MyID )
 {
 	x1 <<= 2;
 	y1 <<= 2;
@@ -2439,7 +2439,7 @@ void SquishUnitsInCell( int cell, int x, int y, int R )
 	}
 
 	int ofs1 = cell << SHFCELL;
-	word MID;
+	unsigned short MID;
 	for ( int i = 0; i < NMon; i++ )
 	{
 		MID = GetNMSL( ofs1 + i );
@@ -2460,7 +2460,7 @@ void SquishUnitsInCell( int cell, int x, int y, int R )
 	}
 }
 
-void SquishUnits( int x, int y, int R, byte NMask )
+void SquishUnits( int x, int y, int R, unsigned char NMask )
 {
 	int cell = ( ( y / 128 ) * 128 ) + ( x / 128 );
 	x *= 16;
@@ -2477,8 +2477,8 @@ void SquishUnits( int x, int y, int R, byte NMask )
 
 	int stcell = cell - rx1 - ( rx1 << VAL_SHFCX );
 
-	byte* bpt = NPresence + stcell;
-	byte nms = ~NMask;
+	unsigned char* bpt = NPresence + stcell;
+	unsigned char nms = ~NMask;
 
 	for ( int nx = 0; nx < rx2; nx++ )
 	{

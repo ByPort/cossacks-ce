@@ -4,39 +4,39 @@
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::InitNetwork()
+int CCommCore::InitNetwork()
 {
 	_log_message("InitNetwork()");
 
 	WSADATA WSAData;
 
 	if(WSAStartup(MAKEWORD(2,2),&WSAData)!=0)
-		return FALSE;
+		return 0;
 
 	if(!InitSocket())
-		return FALSE;
+		return 0;
 
 	if(!InitHost())
-		return FALSE;
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::InitHost()
+int CCommCore::InitHost()
 {
 	_log_message("InitHost()");
 
 	if(gethostname(m_szUserName,255)==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
 	HOSTENT * pHostEnt;
 
 	pHostEnt=gethostbyname(m_szUserName);
 
 	if(!pHostEnt)
-		return FALSE;
+		return 0;
 
 	m_uAddrCount=0;
 
@@ -45,44 +45,44 @@ BOOL CCommCore::InitHost()
 		m_uAddrCount++;
 	};
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::CloseNetwork()
+int CCommCore::CloseNetwork()
 {
 	_log_message("CloseNetwork()");
 
 	if(!CloseSocket())
-		return FALSE;
+		return 0;
 
 	if(WSACleanup()==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::InitSocket()
+int CCommCore::InitSocket()
 {
 	_log_message("InitSocket()");
 
 	m_DataSocket=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
 	if(m_DataSocket==INVALID_SOCKET)
-		return FALSE;
+		return 0;
 
-	u_long	lArgP=0x01;
+	unsigned long	lArgP=0x01;
 	if(ioctlsocket(m_DataSocket,FIONBIO,&lArgP)==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	u_long	lMaxSize;
-	int		iSizeOfMaxSize=sizeof(u_long);
+	unsigned long	lMaxSize;
+	int		iSizeOfMaxSize=sizeof(unsigned long);
 	if(getsockopt(m_DataSocket,SOL_SOCKET,SO_MAX_MSG_SIZE,(char *)&lMaxSize,&iSizeOfMaxSize)==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	m_uMaxMsgSize=(u_short)lMaxSize;
+	m_uMaxMsgSize=(unsigned short)lMaxSize;
 
 	sockaddr_in locaddr;
 
@@ -91,21 +91,21 @@ BOOL CCommCore::InitSocket()
 	locaddr.sin_port=htons(DATA_PORT);
 
 	if(bind(m_DataSocket,(sockaddr *)&locaddr,sizeof(sockaddr_in))==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::CloseSocket()
+int CCommCore::CloseSocket()
 {
 	_log_message("CloseSocket()");
 
 	if(closesocket(m_DataSocket)==SOCKET_ERROR)
-		return FALSE;
+		return 0;
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------

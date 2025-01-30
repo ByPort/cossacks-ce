@@ -4,12 +4,12 @@
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::SendServerList()
+int CCommCore::SendServerList()
 {
 	_log_message("SendServerList()");
 
 	LPCC_PK_SERVER_LIST		lpServerList;
-	LPBYTE					lpbOffset;
+	unsigned char*					lpbOffset;
 
 	int						iUserDataSize = 0;
 	int						iServerListSize = 0;
@@ -40,33 +40,33 @@ BOOL CCommCore::SendServerList()
 		if (!SendRawPacket(m_PeerList[i].m_ex_Addr,
 			m_PeerList[i].m_ex_Port,
 			CC_PT_SERVER_LIST,
-			(LPBYTE)lpServerList,
-			(u_short)iServerListSize,
-			TRUE,
-			FALSE))
+			(unsigned char*)lpServerList,
+			(unsigned short)iServerListSize,
+			1,
+			0))
 		{
 			free(lpServerList);
-			return FALSE;
+			return 0;
 		};
 
 	free(lpServerList);
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------
 
-BOOL CCommCore::ProcessServerList(LPCC_PK_SERVER_LIST lpServerList)
+int CCommCore::ProcessServerList(LPCC_PK_SERVER_LIST lpServerList)
 {
 	_log_message("ProcessServerList()");
 
 	int			i;
-	LPBYTE		lpbOffset;
+	unsigned char*		lpbOffset;
 
 	PEER_PORT	ppaExPort[MAX_PEERS];
 	PEER_ADDR	paaExAddr[MAX_PEERS];
 	PEER_ID		piaId[MAX_PEERS];
-	u_short		OldPeerCount = m_uPeerCount;
+	unsigned short		OldPeerCount = m_uPeerCount;
 	// ----------------------------------------------------------------------
 	for (i = 0; i < OldPeerCount; i++) {
 		ppaExPort[i] = m_PeerList[i].m_ex_Port;
@@ -86,7 +86,7 @@ BOOL CCommCore::ProcessServerList(LPCC_PK_SERVER_LIST lpServerList)
 	for (i = 0; i < m_uPeerCount; i++) {
 		memcpy(&m_PeerList[i], lpbOffset, sizeof(PEER_ENTRY));
 		if (m_PeerList[i].m_lpbUserData) {
-			m_PeerList[i].m_lpbUserData = (LPBYTE)malloc(m_PeerList[i].m_uUserDataSize);
+			m_PeerList[i].m_lpbUserData = (unsigned char*)malloc(m_PeerList[i].m_uUserDataSize);
 			assert(m_PeerList[i].m_lpbUserData);
 			memcpy(m_PeerList[i].m_lpbUserData, lpbOffset + sizeof(PEER_ENTRY), m_PeerList[i].m_uUserDataSize);
 		};
@@ -110,7 +110,7 @@ BOOL CCommCore::ProcessServerList(LPCC_PK_SERVER_LIST lpServerList)
 	};
 	// ----------------------------------------------------------------------
 
-	return TRUE;
+	return 1;
 }
 
 // ---------------------------------------------------------------------------------------------

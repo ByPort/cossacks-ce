@@ -15,19 +15,19 @@
 class GFILE_API CGSCset  
 {
 public:
-	LPGSCfile gWriteOpen(LPCSTR lpcsFileName);
-	BOOL gWriteFile(LPGSCfile gFile, LPBYTE lpbBuffer, DWORD dwSize);
-	LPBYTE gMapFile(LPGSCfile gFile);
-	DWORD gFileSize(LPGSCfile gFile);
-	VOID gClose();
-	BOOL gOpen();
-	BOOL gFindNext(LPGSCFindInfo gFindInfo);
-	LPGSCFindInfo gFindFirst(LPCSTR lpcsMask);
-	DWORD gFilePos(LPGSCfile gFile);
-	VOID gSeekFile(LPGSCfile gFile, DWORD dwPosition);
-	VOID gReadFile(LPGSCfile gFile, LPBYTE lpbBuffer, DWORD dwSize);
-	VOID gCloseFile(LPGSCfile gFile);
-	LPGSCfile gOpenFile(LPCSTR lpcsFileName,bool Only);
+	LPGSCfile gWriteOpen(const char* lpcsFileName);
+	int gWriteFile(LPGSCfile gFile, unsigned char* lpbBuffer, unsigned long dwSize);
+	unsigned char* gMapFile(LPGSCfile gFile);
+	unsigned long gFileSize(LPGSCfile gFile);
+	void gClose();
+	int gOpen();
+	int gFindNext(LPGSCFindInfo gFindInfo);
+	LPGSCFindInfo gFindFirst(const char* lpcsMask);
+	unsigned long gFilePos(LPGSCfile gFile);
+	void gSeekFile(LPGSCfile gFile, unsigned long dwPosition);
+	void gReadFile(LPGSCfile gFile, unsigned char* lpbBuffer, unsigned long dwSize);
+	void gCloseFile(LPGSCfile gFile);
+	LPGSCfile gOpenFile(const char* lpcsFileName,bool Only);
 	CGSCset();
 	virtual ~CGSCset();
 

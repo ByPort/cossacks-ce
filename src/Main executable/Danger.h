@@ -1,3 +1,3 @@
 void InitDANGER();
 void CheckDOBJS();
-byte GetDangValue(int x,int y);
+unsigned char GetDangValue(int x,int y);

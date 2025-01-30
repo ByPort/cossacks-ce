@@ -21,7 +21,7 @@ public:
 	bool	MakeShift : 1;
 	bool	ChangeFont : 1;
 	bool	EraseOnChoose : 1;
-	LPCSTR  items;
+	const char*  items;
 	int		MenuLy;
 	int		ItemLy;
 	int		NItems;
@@ -33,11 +33,11 @@ public:
 	lpRLCFont font;
 	lpRLCFont font1;
 	int		evHandler;
-	void	CreateMenu(LPCSTR s, lpRLCFont f, lpRLCFont f1, fnc* ff, int style);
+	void	CreateMenu(const char* s, lpRLCFont f, lpRLCFont f1, fnc* ff, int style);
 	void	Show(int n);
 	int		GetAmount();
-	LPCSTR  GetNstr(int n);
-	int		GetLen(LPCSTR s);
+	const char*  GetNstr(int n);
+	int		GetLen(const char* s);
 	void	ShowModal();
 	void	Close();
 
@@ -73,35 +73,35 @@ int Menu::GetAmount() {
 	for (i = 0; items[i] != 0; i++)if (items[i] == '|')j++;
 	return j + 1;
 };
-LPCSTR Menu::GetNstr(int n) {
+const char* Menu::GetNstr(int n) {
 	int j = 0;
 	int i;
 	tmpstr[0] = 0;
-	if (!int(items))return LPCSTR(&tmpstr);
+	if (!int(items))return (const char*)(&tmpstr);
 	for (i = 0; j < n&&items[i] != 0; i++)
 	{
 		if (items[i] == '|')j++;
 	};
-	if (j != n)return LPCSTR(&tmpstr);
+	if (j != n)return (const char*)(&tmpstr);
 	int k;
 	for (k = 0; items[i] != 0 && items[i] != '|'; i++, k++)
 	{
 		tmpstr[k] = items[i];
 	}
 	tmpstr[k] = 0;
-	return LPCSTR(&tmpstr);
+	return (const char*)(&tmpstr);
 };
-int Menu::GetLen(LPCSTR s) {
+int Menu::GetLen(const char* s) {
 	if (!int(s))return 0;
 	int x = 0;
 	for (int i = 0; s[i] != 0; i++) {
 		int L = 1;
-		x += GetRLCWidthUNICODE(font->RLC, (byte*)(s + i), &L);
+		x += GetRLCWidthUNICODE(font->RLC, (unsigned char*)(s + i), &L);
 		i += L - 1;
 	};
 	return x;
 };
-void Menu::CreateMenu(LPCSTR s, lpRLCFont f, lpRLCFont f1, fnc* ff, int style) {
+void Menu::CreateMenu(const char* s, lpRLCFont f, lpRLCFont f1, fnc* ff, int style) {
 	if (!int(items))delete((void*)items);
 	items = new(char[strlen(s) + 1]);
 	memcpy((void*)items, s, strlen(s) + 1);
@@ -114,7 +114,7 @@ void Menu::CreateMenu(LPCSTR s, lpRLCFont f, lpRLCFont f1, fnc* ff, int style) {
 	StartY = (RSCRSizeY - MenuLy) / 2;
 	int Ly = 0;
 	for (int i = 0; i < NItems; i++) {
-		LPCSTR ss = GetNstr(i);
+		const char* ss = GetNstr(i);
 		int Lx = GetLen(ss);
 		Zone[i].x = (COPYSizeX - Lx) / 2 + 100;
 		Zone[i].y = StartY + i*ItemLy;
@@ -132,7 +132,7 @@ void Menu::Show(int n) {
 	if (!int(items)) return;
 	if (int(RedrawBackground))(*RedrawBackground)();
 	for (int i = 0; i < NItems; i++) {
-		LPCSTR s = GetNstr(i);
+		const char* s = GetNstr(i);
 		int x = Zone[i].x;
 		int y = Zone[i].y;
 		lpRLCFont ff = font;
