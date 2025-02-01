@@ -981,6 +981,8 @@ void ReceiveMessage()
 #ifndef NODPLAY
 		else
 		{
+			HRESULT hr;
+
 			if (!dwMsgBufferSize)
 			{
 				hr = lpDPInfo->lpDirectPlay3A->Receive( &idFrom, &idTo, DPRECEIVE_ALL || DPRECEIVE_PEEK,
@@ -1119,10 +1121,10 @@ void SetupConnection()
 //Init DirectPlay and DPInfo structure
 void SetupMultiplayer()
 {
-	SetupConnection();
 #ifndef NODPLAY
 	lpDPInfo = &DPInfo;
 #endif
+	SetupConnection();
 }
 
 extern bool IPCORE_INIT;
@@ -1201,7 +1203,7 @@ HRESULT CreateDirectPlayInterface()
 		IID_IDirectPlay3A, (LPVOID*) &lpDirectPlay3Alocal );
 
 	// return interface created
-	*lpDirectPlay3A = lpDirectPlay3Alocal;
+	lpDirectPlay3A = lpDirectPlay3Alocal;
 
 	return ( hr );
 }
@@ -1666,7 +1668,7 @@ bool CreateSession( char* SessName, char* Name, DWORD User2, int MaxPlayers )
 #ifndef NODPLAY
 	else
 	{
-		HRESULT hr = HostSession( SessName, Name, lpDPInfo, User2 );
+		HRESULT hr = HostSession( SessName, Name, User2 );
 		if FAILED( hr )return false;
 		else return true;
 	}
@@ -1774,6 +1776,8 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 #ifndef NODPLAY
 		else
 		{
+			HRESULT hr;
+
 			if (G)hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, DPSEND_GUARANTEED, lpData, Size );
 			else hr = lpDirectPlay3A->Send( MyDPID, DPID_ALLPLAYERS, 0, lpData, Size );
 
@@ -1841,6 +1845,8 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 #ifndef NODPLAY
 	else
 	{
+		HRESULT hr;
+
 		if (G)hr = lpDirectPlay3A->Send(MyDPID, DPID_ALLPLAYERS, DPSEND_GUARANTEED, lpData, Size);
 		else hr = lpDirectPlay3A->Send(MyDPID, DPID_ALLPLAYERS, 0, lpData, Size);
 
@@ -1915,6 +1921,8 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 #ifndef NODPLAY
 		else
 		{
+			HRESULT hr;
+
 			hr = lpDirectPlay3A->Send(MyDPID, DPID, 0, lpData, Size);
 			success = (hr == DP_OK);
 		}
@@ -1967,6 +1975,8 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 #ifndef NODPLAY
 	else
 	{
+		HRESULT hr;
+
 		hr = lpDirectPlay3A->Send(MyDPID, DPID, 0, lpData, Size);
 		success = (hr == DP_OK);
 		busy = (hr == DPERR_BUSY);
@@ -2188,6 +2198,8 @@ bool SendToServer( DWORD Size, LPVOID lpData )
 #ifndef NODPLAY
 		else
 		{
+			HRESULT hr;
+
 			hr = lpDirectPlay3A->Send(MyDPID, ServerDPID,
 				DPSEND_GUARANTEED, lpData, Size);
 			success = (hr == DP_OK);
@@ -3502,7 +3514,13 @@ void SETPLAYERNAME( char* name, bool change )
 #ifndef NODPLAY
 	else
 	{
-		lpDirectPlay3A->SetPlayerName( MyDPID, lpdpName, DPSET_REMOTE );
+		DPNAME dpName;
+		ZeroMemory(&dpName, sizeof(DPNAME));
+		dpName.dwSize = sizeof(DPNAME);
+		dpName.lpszShortNameA = name;
+		dpName.lpszLongNameA = nullptr;
+
+		lpDirectPlay3A->SetPlayerName( MyDPID, &dpName, DPSET_REMOTE );
 	}
 #endif
 }

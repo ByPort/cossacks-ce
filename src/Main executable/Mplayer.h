@@ -1,3 +1,7 @@
+#ifndef NODPLAY
+#include "Dplay.h"
+#endif
+
 #define MaxPL 8
 
 struct EXBUFFER
