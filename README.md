@@ -17,16 +17,16 @@ The list is not exhaustive and will be updated as the project progresses.
 
 | Description | Status | Comments |
 |-------------|--------|----------|
-| Migrate from DirectDraw to SDL | ✅ Done | There are some visual artifacts during loading, not affecting the gameplay |
+| Migrate from DirectDraw to SDL | ✅ Done | There are some visual artifacts on some screens (e.g. loading, game menu), not affecting the gameplay |
 | Migrate from DirectSound to SDL | ✅ Done | The sounds are a little "crunchy" |
 | Remove DirectPlay | ⏳ In Progress | Hidden under the `NODPLAY` definition (lobby works, but the gameplay was not tested) |
-| Migrate Music system (MCI CD audio) to SDL | ⏳ In Progress | The music plays for a few seconds and then turns off |
-| Remove Windows-specific symbols and types | ⏳ In Progress ||
+| Migrate Music system (MCI CD audio) to SDL | ✅ Done ||
+| Remove Windows-specific symbols and types | 🚧 Not Started ||
 | Migrate window management from Win32 to SDL | 🚧 Not Started ||
 | Migrate from Winsock to cross-platform sockets | 🚧 Not Started ||
 | Remove or replace binary dependencies | 🚧 Not Started | Known so far: `Pinger.lib`, `unrar.dll`, `dplayx.lib` (when `NODPLAY` is not defined) |
 | Recreate the AI | 🚧 Not Started | Some source code was found on an old Cossacks forum; building from it might be a better option than disassembling AI DLLs |
-| Rewrite assembler code to C++ | 🚧 Not Started | >200 places with inline assembly 😢, related mostly to rendering |
+| Rewrite assembler code to C++ | 🚧 Not Started | Over 200 places with inline assembly 😢, related mostly to rendering |
 | Migrate build system to CMake | 🚧 Not Started ||
 | Migrate to other platforms | 🚧 Not Started ||
 
