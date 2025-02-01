@@ -1,3 +1,5 @@
+#include <windows.h>
+
 class GFILE{
 	byte Buf[16384];
 	int NBytesRead;

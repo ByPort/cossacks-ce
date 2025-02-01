@@ -29,7 +29,6 @@
 #include "3DMapEd.h"
 #include "mode.h"
 #include "Curve.h"
-#include <crtdbg.h>
 void CheckGP();
 BlockBars LockBars;
 BlockBars UnLockBars;
@@ -701,7 +700,7 @@ void CreateMiniMap()
 	}
 }
 
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 extern int tmtmt;
 void ShowPen(int x, int y1, int r, byte ptc) {
 	SetRLCWindow(smapx, smapy, smaplx << 5, mul3(smaply) << 3, ScrWidth);

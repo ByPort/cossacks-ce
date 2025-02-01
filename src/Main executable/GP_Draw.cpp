@@ -5,7 +5,6 @@
 #include "Lines.h"
 #include <stdio.h>
 #include <assert.h>
-#include <CrtDbg.h>
 #include "CTables.h"
 #include "GP_Draw.h"
 #include "mapdiscr.h"

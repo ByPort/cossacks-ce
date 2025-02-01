@@ -38,8 +38,6 @@ CDeviceCD::~CDeviceCD()
 }
 
 
-// CDeviceCD message handlers
-MCIDEVICEID glFDeviceID;
 bool CDeviceCD::Open()
 {
 	bool success = SDL_InitSubSystem(SDL_INIT_AUDIO);

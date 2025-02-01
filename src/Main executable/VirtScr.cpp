@@ -22,7 +22,6 @@
 #include "VirtScreen.h"
 #include "MapSprites.h"
 #include "NewMon.h"
-#include <crtdbg.h>
 
 extern byte *tex1;
 extern RLCTable SimpleMask;

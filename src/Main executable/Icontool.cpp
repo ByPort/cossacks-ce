@@ -22,7 +22,7 @@ extern int IconLy;
 extern int AddIconLx;
 extern int AddIconLy;
 extern byte GraySet[256];
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 extern byte KeyCodes[512][2];
 #define NKEYS 61
 extern char* KeyNames[NKEYS];

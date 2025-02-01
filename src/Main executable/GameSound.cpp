@@ -155,7 +155,7 @@ void PlayEffect(int n, int pan, int vol) {
 				if (!poss) {
 					CDS->SetVolume(sid, vol/*+CDS->Volume[sid]*/);
 					CDS->SetPan(sid, pan);
-					CDS->PlaySound(sid);
+					CDS->PlaySoundNum(sid);
 					sndmade = false;
 				}
 				else {
@@ -169,7 +169,7 @@ void PlayEffect(int n, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundNum(SndTable[n][nnn]);
 			};
 			*/
 		};
@@ -205,7 +205,7 @@ void PlayCoorEffect(int n, int x, int y, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundNum(SndTable[n][nnn]);
 			};
 			*/
 		};
@@ -232,7 +232,7 @@ void PlaySingleEffect(int n, int pan, int vol) {
 				if (!poss) {
 					CDS->SetVolume(sid, vol);
 					CDS->SetPan(sid, pan);
-					CDS->PlaySound(sid);
+					CDS->PlaySoundNum(sid);
 					sndmade = false;
 				}
 				else {
@@ -246,7 +246,7 @@ void PlaySingleEffect(int n, int pan, int vol) {
 				int nnn=(srando()*maxsnd)>>15;
 				CDS->SetVolume(SndTable[n][nnn],vol);
 				CDS->SetPan(SndTable[n][nnn],pan);
-				CDS->PlaySound(SndTable[n][nnn]);
+				CDS->PlaySoundNum(SndTable[n][nnn]);
 			};
 			*/
 		};

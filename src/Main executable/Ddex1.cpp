@@ -39,7 +39,6 @@ DWORD window_style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MI
 #include "GSound.h"
 #include "MapSprites.h"
 #include "VirtScreen.h"
-#include <crtdbg.h>
 #include "RealWater.h"
 #include "Transport.h"
 #include "AntiBug.h"
@@ -2300,8 +2299,6 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 		return 0;
 	}
 
-	CurrentSurface = FALSE;
-
 	//create the main DirectDraw object
 	PalDone = false;
 
@@ -2340,6 +2337,7 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 			exit( 0 );
 		}
 
+		//TODO: check if this always returns true and replace with return true
 		if (SetTimer( hwnd, TIMER_ID, 20, nullptr ))
 		{
 			return TRUE;
@@ -3266,23 +3264,23 @@ int PASCAL WinMain(
 		}
 	}
 
-	//if (strstr( lpCmdLine, "/window" ))
-	//{
-	//	window_mode = true;
-	//}
-	//else
-	//{
-	//	window_mode = false;
-	//}
+	if (strstr( lpCmdLine, "/window" ))
+	{
+		window_mode = true;
+	}
+	else
+	{
+		window_mode = false;
+	}
 
-	//if ( strstr( lpCmdLine, "/borderless" ) )
-	//{
-	//	window_mode = true;
-	//	window_style = WS_POPUP;
-	//}
+	if ( strstr( lpCmdLine, "/borderless" ) )
+	{
+		window_mode = true;
+		window_style = WS_POPUP;
+	}
 	//window_mode = false;
-	window_mode = true;
-	window_style = WS_POPUP;
+	//window_mode = true;
+	//window_style = WS_POPUP;
 
 	// Init SDL window
 	InitSDL();

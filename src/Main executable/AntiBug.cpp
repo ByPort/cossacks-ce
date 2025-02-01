@@ -10,7 +10,6 @@
 #include "walls.h"
 #include "Nature.h"
 #include <assert.h>
-#include <crtdbg.h>
 #define CHECKMODE
 struct AskMove{
 	word ReqID;//индекс перемещаемого

@@ -16,8 +16,6 @@
 #include "fonts.h"
 #include "VirtScreen.h"
 
-void Rept( LPSTR sz, ... );
-
 //Dimensions of possible screen resolutions
 __declspec( dllexport ) int ModeLX[32];
 __declspec( dllexport ) int ModeLY[32];
@@ -52,10 +50,6 @@ SDL_Surface* primarySurface;            // SDL primary surface
 SDL_Texture* primaryTexture;            // SDL primary texture
 SDL_Surface* backSurface;               // SDL back surface
 BOOL                    bActive;        // is application active (not minimized / has focus)?
-BOOL                    CurrentSurface; //=FALSE if backbuffer
-										// is active (Primary surface is visible)
-										//=TRUE if  primary surface is active
-										// (but backbuffer is visible)
 //BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 bool                    SDLError;       // false if SDL works normally
 //DDSURFACEDESC           ddsd;
@@ -65,12 +59,6 @@ SDL_Palette*            sdlPal;
 
 extern bool PalDone;
 extern word PlayerMenuMode;
-
-struct zzz
-{
-	BITMAPINFO bmp;
-	PALETTEENTRY XPal[255];
-};
 
 // Get closest palette color from RGB
 __declspec( dllexport ) byte GetPaletteColor( int r, int g, int b )
@@ -89,7 +77,6 @@ __declspec( dllexport ) byte GetPaletteColor( int r, int g, int b )
 	return bestc;
 }
 
-zzz xxt;
 //typedef byte barr[ScreenSizeX*ScreenSizeY];
 void* offScreenPtr;
 /*
@@ -342,7 +329,6 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 	bool success;
 	char buf[256];
 	SDLError = false;
-	CurrentSurface = true;
 
 	if (window_mode)
 	{
@@ -749,7 +735,7 @@ void LoadPalette( LPCSTR lpFileName )
 		}
 	}
 }
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void SetDarkPalette()
 {
@@ -777,7 +763,7 @@ void SetDarkPalette()
 // And it worked because changes reflected on the screen immediately
 // TODO: Rewrite SlowLoadPalette to render each palette update or to make fade-in effect different way
 // For now just rendering once after SlowLoadPalette
-__declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
+__declspec( dllexport ) void SlowLoadPalette( const char* lpFileName )
 {
 	if (SDLError)
 	{
@@ -901,7 +887,7 @@ __declspec( dllexport ) void SlowLoadPalette( LPCSTR lpFileName )
 	}
 }
 
-__declspec( dllexport ) void SlowUnLoadPalette( LPCSTR lpFileName )
+__declspec( dllexport ) void SlowUnLoadPalette( const char* lpFileName )
 {
 	if (SDLError)
 	{

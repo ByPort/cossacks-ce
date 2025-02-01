@@ -5,13 +5,10 @@
 #ifndef __CDIRSND_H
 #define __CDIRSND_H
 
-//#include <afxwin.h>
 #include <windows.h>
 #include "cwave.h"
-//#include "dsound.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
-//#include <mmsystem.h>
 
 #define MAXSND 600
 #define MAXSND1 601
@@ -67,7 +64,10 @@ public:
     BOOL CopyWaveToBuffer(CWave* pWave, UINT bufferNum);
 	void SetVolume(UINT bufferNum,int vol);
 	void SetPan(UINT bufferNum,int pan);
-    BOOL PlaySound(UINT bufferNum);
+    // GameSound includes windows.h which defines PlaySound as PlaySoundA,
+    // so GameSound.obj expects symbol PlaySoundA, and Cdirsnd.obj generates PlaySound
+    // TODO: maybe handle this somehow other than renaming the function
+    BOOL PlaySoundNum(UINT bufferNum);
     BOOL StopSound(UINT bufferNum);
 	BOOL PlayCoorSound(UINT bufferNum,int x,int vx);
 	void ControlPan(UINT bufferNum);

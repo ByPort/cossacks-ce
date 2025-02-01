@@ -3,7 +3,6 @@
 //                class.
 ///////////////////////////////////////////////////////////
 
-//#include <stdafx.h>
 #include "cdirsnd.h"
 
 static void StreamAudioBuffer(SoundBuffer* pSoundBuffer, Sint16* destSamples, int additionalAmount)
@@ -311,7 +310,7 @@ BOOL CDirSound::DirectSoundOK()
 // This member function plays the sound stored in the given
 // buffer.
 ///////////////////////////////////////////////////////////
-BOOL CDirSound::PlaySound(UINT bufferNum)
+BOOL CDirSound::PlaySoundNum(UINT bufferNum)
 {
 	// Check for a valid buffer number.
 	if ((bufferNum > m_currentBufferNum) || (bufferNum == 0))

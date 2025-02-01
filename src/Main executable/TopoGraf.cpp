@@ -25,7 +25,6 @@
 #include "CDirSnd.h"
 #include "NewAI.h"
 #include "TopoGraf.h"
-#include <CrtDbg.h>
 #include "fonts.h"
 MediaTop GTOP[2];
 Radio Rarr[RRad];
@@ -1340,7 +1339,7 @@ void CreateWTopMap() {
 extern word TopAreasDanger[2048];
 extern word WTopNear[64];
 extern int NWTopNear;
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 extern int NIslands;
 
 #define MaxIsl 64

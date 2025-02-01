@@ -1,4 +1,5 @@
 #define INITGUID
+#include "../CommCore library/CommCore.h"
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -27,7 +28,6 @@
 #include "Gp_Draw.h"
 #include "Megapolis.h"
 #pragma pack(4)
-#include "CommCore.h"
 #include "Pinger.h"
 #pragma pack(1)
 #include "IR.h"
@@ -2220,7 +2220,7 @@ extern int LastKey;
 extern bool KeyPressed;
 extern int GLOBALTIME;
 extern int PGLOBALTIME;
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void CreateNationalMaskForRandomMap( char* );
 void CreateMaskForSaveFile( char* );
 void CreateNationalMaskForMap( char* );

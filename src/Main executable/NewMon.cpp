@@ -9887,7 +9887,7 @@ int Prop43( int y )
 	return y * 2;
 }
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 extern byte LockGrid;
 extern bool VHMode;
 void TopShow();

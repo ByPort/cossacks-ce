@@ -4299,7 +4299,7 @@ void LocalSendShipsLink( Brigade* BR )
 };
 extern int RealLx;
 extern int RealLy;
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void ShowShipsDest( Brigade* BR )
 {
 	if ( BR->BOrder&&BR->BOrder->BLink == LocalSendShipsLink )

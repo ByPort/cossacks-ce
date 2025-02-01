@@ -32,7 +32,6 @@
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 #include "Conststr.h"
-#include <Process.h>
 #include "MPlayer.h"
 #include "Recorder.h"
 #include "GSINC.H"
@@ -124,8 +123,8 @@ bool CHKV( char* Name );
 bool WaitingHostGame( int );
 void NewMap( int szX, int szY );
 bool WaitingJoinGame( int );
-void SlowLoadPalette( LPCSTR lpFileName );
-void SlowUnLoadPalette( LPCSTR lpFileName );
+void SlowLoadPalette( const char* lpFileName );
+void SlowUnLoadPalette( const char* lpFileName );
 void SetDarkPalette();
 void CopyToScreen( int x, int y, int Lx, int Ly );
 void ChooseInterior( int Type );
@@ -146,7 +145,7 @@ int DecodeOptionsFromNumber( const int number, int *result );
 
 char CurrentMap[64];
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void PrepareEditMedia( byte myid );
 extern bool EditMapMode;
 extern int RES[8][8];

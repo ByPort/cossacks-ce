@@ -2,11 +2,7 @@
 // CWAVE.CPP: Implementation file for the WAVE class.
 ///////////////////////////////////////////////////////////
 
-//#include <stdafx.h>
-//#include <afx.h>
 #include <windows.h>
-#include "windowsx.h"
-//#include "stdafx.h"
 #include "cwave.h"
 
 ///////////////////////////////////////////////////////////

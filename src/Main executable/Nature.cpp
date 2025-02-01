@@ -16,7 +16,6 @@
 #include "GSound.h"
 #include "NewMon.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include "ConstStr.h"
 #include "GP_Draw.h"
 #include "DrawForm.h"

@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #pragma pack(4)
 #include "Chat\chat.h"

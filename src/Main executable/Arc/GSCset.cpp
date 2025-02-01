@@ -2,9 +2,6 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-//#include "stdafx.h"
-//#include "GSCset.h"
-
 #include <stdio.h>
 #include "GSCtypes.h"
 #include "GSCarch.h"

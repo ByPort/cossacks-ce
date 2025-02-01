@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../Main executable/common.h"
 #include "Chat\chat.h"
 #include "cs_chat.h"

@@ -5484,7 +5484,7 @@ void SamplesSet::EditRootParam( int x, int y )
 };
 int DDDXX[8] = { 0,1,1,1,0,-1,-1,-1 };
 int DDDYY[8] = { -1,-1,0,1,1,1,0,-1 };
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void xLine( int x, int y, int x1, int y1, byte c );
 void SamplesSet::Draw()
 {

@@ -15,7 +15,6 @@
 #include <assert.h>
 
 #include "3DSurf.h"
-#include "crtdbg.h"
 #include "3DBars.h"
 #include "Path.h"
 #include "MapSprites.h"

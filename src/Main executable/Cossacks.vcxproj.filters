@@ -68,9 +68,6 @@
     <ClCompile Include="Cdirsnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Chkinet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ConstStr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -254,9 +251,6 @@
     <ClCompile Include="Timing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tmixer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TopoGraf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -373,9 +367,6 @@
     <ClInclude Include="Danger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dbgint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Ddini.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -395,9 +386,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Drawform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Dsound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EinfoClass.h">
@@ -523,22 +511,10 @@
     <ClInclude Include="Sort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stdarg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Strategyresearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Stringhash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Tmixer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Tntfileio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TopoGraf.h">
@@ -583,9 +559,6 @@
     <ClInclude Include="Dialogs\InitFonts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="queryreporting\Gqueryreporting.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Arc\Isimasks.h">
       <Filter>Arc</Filter>
     </ClInclude>
@@ -593,9 +566,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlayerInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NewCode\UdpHolePuncher.h">

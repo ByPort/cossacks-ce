@@ -1897,7 +1897,7 @@ void Loadtextures()
 
 extern int COUNTER;
 
-void CBar(int x, int y, int Lx, int Ly, byte c);
+void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 
 void TestGP();
 

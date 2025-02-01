@@ -17,7 +17,6 @@
 #include "dialogs.h"
 #include <assert.h>
 #include <math.h>
-#include <crtdbg.h>
 
 #define MediaMax 8
 #define CompoMax 8

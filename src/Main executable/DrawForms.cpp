@@ -25,7 +25,6 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ActiveScenary.h"
 #include "DrawForm.h"
 
@@ -553,7 +552,7 @@ void DrawPaperPanelShadow( int x0, int y0, int x1, int y1 )
 	DrawRect4( x0, y0, x1, y1, &Paper, BordGP );
 }
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void DrawHintPattern( int x0, int y0, int x1, int y1 )
 {

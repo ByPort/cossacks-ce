@@ -8,7 +8,6 @@
 #include "fog.h"
 #include "walls.h"
 #include "Nature.h"
-#include <crtdbg.h>
 #include <math.h>
 
 #include "Megapolis.h"
@@ -924,7 +923,7 @@ void ShowMiniHealth( OneObject* ZZ )
 
 static int tmt = 0;
 char* GetTextByID( char* ID );
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void GetDiscreta( int* x, int* y, int val );
 char* WINNER = nullptr;

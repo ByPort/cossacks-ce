@@ -272,7 +272,7 @@ int GetBar3DOwner( int x, int y )
 	return Owner;
 }
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 __declspec( dllexport ) void xLine( int x, int y, int x1, int y1, byte c )
 {

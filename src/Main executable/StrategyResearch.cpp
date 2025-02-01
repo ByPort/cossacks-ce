@@ -26,7 +26,6 @@
 #include "CDirSnd.h"
 #include "NewAI.h"
 #include "StrategyResearch.h"
-#include <crtdbg.h>
 #include "TopoGraf.h"
 
 #include "Safety.h"

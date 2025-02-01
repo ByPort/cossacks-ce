@@ -37,7 +37,7 @@
 
 #pragma warning (disable : 4200)
 
-#pragma pack(1)
+#pragma pack(push,1)
 
 // ---------------------------------------------------------------------------------------------
 
@@ -501,5 +501,7 @@ protected:
 };
 
 #pragma warning (default : 4200)
+
+#pragma pack(pop)
 
 #endif // _COMM_CORE_H_INCLUDED_

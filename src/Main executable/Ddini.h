@@ -9,8 +9,6 @@
 #define __DDINI_H_
 
 #include <windows.h>
-#include <windowsx.h>
-//#include <ddraw.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <stdlib.h>
@@ -44,10 +42,6 @@ extern SDL_Surface* primarySurface;            // SDL primary surface
 extern SDL_Texture* primaryTexture;            // SDL primary texture
 extern SDL_Surface* backSurface;               // SDL back surface
 extern BOOL                    bActive;        // is application active?
-extern BOOL                    CurrentSurface; //=FALSE if backbuffer
-											   // is active (Primary surface is visible)
-											   //=TRUE if  primary surface is active
-											   // (but backbuffer is visible)
 //extern BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 extern bool                    SDLError;       // false if SDL works normally 
 //extern DDSURFACEDESC   ddsd;

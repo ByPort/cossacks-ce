@@ -25,7 +25,6 @@
 #include "IconTool.h"
 #include "GP_Draw.h"
 #include "3DRandMap.h"
-#include <crtdbg.h>
 #include "ConstStr.h"
 #include "DrawForm.h"
 

@@ -15,6 +15,7 @@ void OutProcessFileError(int Error);
 int ChangeVolProc(char *ArcName, int Mode);
 int ProcessDataProc(unsigned char *Addr, int Size);
 
+// TODO: replace with cross-platform lib or even remove since the game doesn't seem to deal with rar archives currently
 //Handle to unrar.dll
 HMODULE hLib;
 void* LoadF(char* Name)

@@ -23,7 +23,6 @@
 #include "3DmapEd.h"
 #include "NewMon.h"
 #include "ZBuffer.h"
-#include <crtdbg.h>
 #include "TopoGraf.h"
 
 int GetTopology( int x, int y );

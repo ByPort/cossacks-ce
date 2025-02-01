@@ -8,7 +8,6 @@
 #include "Dialogs.h"
 #include "fonts.h"
 #include <assert.h>
-#include <crtdbg.h>
 #include "GP_Draw.h"
 #include "bmptool.h"
 #include "DrawForm.h"
@@ -177,7 +176,7 @@ bool CanvasDestroy( SimpleDialog* SD )
 };
 #define CV_INT(x) (*(int*)(CAN->DrawData+pos+x))
 #define CV_BYTE(x) CAN->DrawData[pos+x]
-__declspec( dllexport ) void CBar( int x, int y, int Lx, int Ly, byte c );
+__declspec( dllexport ) void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 void xLine( int x, int y, int x1, int y1, byte c );
 bool CanvasDraw( SimpleDialog* SD )
 {
@@ -2842,7 +2841,7 @@ CheckBox* DialogsSystem::addGP_CheckBox( SimpleDialog* Parent,
 //--------end of CheckBox--------------------//
 
 //-----------colored bar---------------------//
-__declspec( dllexport ) void CBar( int x0, int y0, int Lx0, int Ly0, byte c )
+__declspec( dllexport ) void CBar( int x0, int y0, int Lx0, int Ly0, unsigned char c )
 {
 	if (Lx0 <= 0 || Ly0 <= 0 || x0<0 || y0<0 || x0 + Lx0>ScrWidth || y0 + Ly0>SCRSizeY)
 	{

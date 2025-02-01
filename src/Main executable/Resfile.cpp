@@ -5,12 +5,10 @@
  * the resource file, you even will not recognise where
  * the given file is.
  */
- //#include <afx.h>
 
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include "tntFileIO.h"
 #include "unrar.h"
 #include "Arc\GSCSet.h"
 #include "assert.h"

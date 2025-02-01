@@ -28,7 +28,6 @@
 #include "Sort.h"
 #include "ConstStr.h"
 #include "EinfoClass.h"
-#include <crtdbg.h>
 
 extern const int kImportantMessageDisplayTime;
 

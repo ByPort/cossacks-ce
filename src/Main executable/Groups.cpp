@@ -6,7 +6,6 @@
 #include <assert.h>
 #include "sort.h"
 #include "math.h"
-#include <crtdbg.h>
 #include "NewMon.h"
 #include "Megapolis.h"
 

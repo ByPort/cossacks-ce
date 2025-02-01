@@ -482,7 +482,7 @@ extern int IDLE_MY;
 
 void PerformUpgradeLink( OneObject* OBJ );
 
-void CBar( int x, int y, int Lx, int Ly, byte c );
+void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 
 void CmdSelectIdlePeasants( byte );
 

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <memory.h>
 #include <string.h>
 typedef unsigned char byte;
 #include "StringHash.h"

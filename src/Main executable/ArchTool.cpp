@@ -1,6 +1,5 @@
 #include "stdio.h"
 #include "windows.h"
-//#include "stdafx.h"
 #include "ResFile.h"
 #include "math.h"
 #include "bmptool.h"
