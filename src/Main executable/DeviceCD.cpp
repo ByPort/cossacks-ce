@@ -16,6 +16,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+void PlayRandomTrack();
+
+static void SDLCALL MusicStreamCallback(void* userdata, SDL_AudioStream* stream, int additionalAmount, int totalAmount)
+{
+	if (!SDL_GetAudioStreamAvailable(stream))
+	{
+		PlayRandomTrack();
+	}
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CDeviceCD
 int StartTrack = 2;
@@ -58,6 +69,7 @@ bool CDeviceCD::Open()
 		audioError = true;
 		return false;
 	}
+
 	success = SDL_ResumeAudioStreamDevice(audioStream);
 	if (!success)
 	{
@@ -77,6 +89,7 @@ bool CDeviceCD::Close()
 {
 	if (FOpened)
 	{
+		SDL_SetAudioStreamGetCallback(audioStream, nullptr, nullptr);
 		SDL_DestroyAudioStream(audioStream);
 
 		FOpened = false;
@@ -90,7 +103,7 @@ bool CDeviceCD::Close()
 
 bool CDeviceCD::Pause()
 {
-
+	
 
 	if (FOpened)
 	{
@@ -147,11 +160,16 @@ bool CDeviceCD::SetVolume(DWORD Volume)
 extern HWND hwnd;
 bool CDeviceCD::Play(DWORD Track)
 {
-	// TODO: FREE BUFFER IF NEEDED, CLEAN STREAM (to stop the current music) and PLAY NEXT
-	// TODO: Music stops after ~30 sec
 	if (FOpened)
 	{
 		bool success;
+		
+		success = SDL_ClearAudioStream(audioStream);
+		if (!success)
+		{
+			return false;
+		}
+
 		int channels;
 		int sampleRate;
 		short* buffer;
@@ -164,6 +182,8 @@ bool CDeviceCD::Play(DWORD Track)
 
 		sprintf(filename, "Tracks\\Track_%02d.ogg", Track);
 
+		// TODO: probably need to make this in a separate thread to avoid blocking the main thread with decoding
+		// (if SDL doesn't call this from a separate thread already)
 		dataRead = stb_vorbis_decode_filename(filename, &channels, &sampleRate, &buffer);
 		if (dataRead == -1)
 		{
@@ -178,7 +198,8 @@ bool CDeviceCD::Play(DWORD Track)
 			SDL_free(buffer);
 			return false;
 		}
-		success = SDL_PutAudioStreamData(conversionStream, buffer, dataRead);
+		success = SDL_PutAudioStreamData(conversionStream, buffer, dataRead * channels * 2);
+		const char* error = SDL_GetError();
 		if (!success)
 		{
 			SDL_free(buffer);
@@ -193,12 +214,11 @@ bool CDeviceCD::Play(DWORD Track)
 			return false;
 		}
 
-		// We assume that this will return the whole buffer
 		int availableBufLen = SDL_GetAudioStreamAvailable(conversionStream);
 
 		void* convertedData = malloc(availableBufLen);
 		int numRead = SDL_GetAudioStreamData(conversionStream, convertedData, availableBufLen);
-		if (numRead != availableBufLen)
+		if (!(numRead == availableBufLen && numRead == dataRead * channels * 2))
 		{
 			SDL_free(buffer);
 			SDL_DestroyAudioStream(conversionStream);
@@ -210,16 +230,23 @@ bool CDeviceCD::Play(DWORD Track)
 		SDL_DestroyAudioStream(conversionStream);
 
 		success = SDL_PutAudioStreamData(audioStream, convertedData, availableBufLen);
+		SDL_free(convertedData);
 		if (!success)
 		{
-			SDL_free(convertedData);
 			return false;
 		}
+		success = SDL_FlushAudioStream(audioStream);
+		if (!success)
+		{
+			return false;
+		}
+
+		success = SDL_SetAudioStreamGetCallback(audioStream, MusicStreamCallback, nullptr);
 
 		return true;
 	}
 	else
-		return FALSE;
+		return false;
 }
 int PrevTrack3 = -1;
 int PrevTrack2 = -1;
@@ -227,7 +254,6 @@ int PrevTrack1 = -1;
 int NextCommand = -1;
 void PlayCDTrack(int Id);
 extern int srando();
-void PlayRandomTrack();
 
 CDeviceCD CDPLAY;
 void PlayCDTrack(int Id) {
