@@ -493,9 +493,6 @@
     <ClInclude Include="Newupgrade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Nonport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Nucl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -583,12 +580,6 @@
     <ClInclude Include="Arc\GSCtypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CEngine\Goaceng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Chat\Chat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Dialogs\InitFonts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -621,13 +612,10 @@
     <Library Include="libraries\dplayx.lib">
       <Filter>Libraries</Filter>
     </Library>
+    <Library Include="..\Temp\IChat.lib">
+      <Filter>Libraries</Filter>
+    </Library>
     <Library Include="libraries\Pinger.lib">
-      <Filter>Libraries</Filter>
-    </Library>
-    <Library Include="libraries\ProTest.lib">
-      <Filter>Libraries</Filter>
-    </Library>
-    <Library Include="libraries\tntFileIO.lib">
       <Filter>Libraries</Filter>
     </Library>
   </ItemGroup>

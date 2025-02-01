@@ -27,6 +27,7 @@ typedef struct _ihdr{
   USHORT i_seq;
 }IcmpHeader,*PIcmpHeader;
 
+// Pinger.lib
 class CPinger  
 {
 public:

@@ -352,8 +352,6 @@
     <Library Include="..\Temp\IChat.lib" />
     <Library Include="libraries\dplayx.lib" />
     <Library Include="libraries\Pinger.lib" />
-    <Library Include="libraries\ProTest.lib" />
-    <Library Include="libraries\tntFileIO.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Script1.rc" />
