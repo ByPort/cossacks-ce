@@ -1167,7 +1167,7 @@ __declspec( dllexport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF )
 			CHVIEW[0]->ChatDY = 0;
 		}
 
-		if (LastKey == 13)
+		if (LastKey == SDLK_RETURN)
 		{
 			if (CHATMESSAGE[0])
 			{

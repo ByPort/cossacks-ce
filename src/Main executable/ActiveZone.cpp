@@ -149,7 +149,7 @@ void ControlAZones( int x, int y )
 		return;
 	};
 	ProcessAGroups( x, y );
-	if (( KeyPressed&&LastKey == 13 && ( GetKeyState( VK_CONTROL ) & 0x8000 ) ) || ZoneCmd)
+	if (( KeyPressed&&LastKey == SDLK_RETURN && ( GetKeyState( VK_CONTROL ) & 0x8000 ) ) || ZoneCmd)
 	{
 		if (NSL[MyNation] && ZoneCmd != 1)
 		{

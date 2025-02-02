@@ -1030,15 +1030,15 @@ bool InitSDL()
 	return true;
 }
 
-bool CreateSDLWindow()
-{
-	SDL_PropertiesID props = SDL_CreateProperties();
-	SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hwnd);
-	sdlWindow = SDL_CreateWindowWithProperties(props);
-	if (!sdlWindow)
-	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
-		exit(0);
-	}
-	return true;
-}
+//bool CreateSDLWindow()
+//{
+//	SDL_PropertiesID props = SDL_CreateProperties();
+//	SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hwnd);
+//	sdlWindow = SDL_CreateWindowWithProperties(props);
+//	if (!sdlWindow)
+//	{
+//		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
+//		exit(0);
+//	}
+//	return true;
+//}

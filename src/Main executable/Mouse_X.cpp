@@ -253,7 +253,7 @@ void RestoreMData( void* scrn, void* buf, void* comp, int x, int y, int SSizeX, 
 }
 
 //Sets mouse[X|Y] & real[L|R]pressed variables according to mouse state
-void SetMPtr( int x, int y, int key )
+void SetMPtr( int x, int y, SDL_MouseButtonFlags mouseFlags )
 {
 	if (x > RSCRSizeX - 1)
 	{
@@ -264,8 +264,8 @@ void SetMPtr( int x, int y, int key )
 	{
 		mouseX = x;
 		mouseY = y;
-		realLpressed = ( ( key & MK_LBUTTON ) != 0 );
-		realRpressed = ( ( key & MK_RBUTTON ) != 0 );
+		realLpressed = ( ( mouseFlags & SDL_BUTTON_LMASK ) != 0 );
+		realRpressed = ( ( mouseFlags & SDL_BUTTON_RMASK ) != 0 );
 	}
 }
 

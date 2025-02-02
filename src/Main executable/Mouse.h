@@ -1,5 +1,5 @@
 void LoadPointer(LPCSTR s);
-void SetMPtr(int x,int y,int key);
+void SetMPtr(int x,int y,SDL_MouseButtonFlags mouseFlags);
 //void ShowMPtr();
 //void ShowMPtra();
 extern int mouseX;

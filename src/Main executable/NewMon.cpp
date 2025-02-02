@@ -461,6 +461,7 @@ char* KeyNames[NKEYS] = { "0","1","2","3","4","5","6","7","8","9",
 "NUM0","NUM1","NUM2","NUM3","NUM4","NUM5","NUM6","NUM7","NUM8","NUM9",
 "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","PGUP","PGDN","HOME","END","INS","NUM+","NUM-","NUM*","NUM/","<",">","?" };
 
+// Only these values are used as index for ScanPressed array
 byte ScanKeys[NKEYS] = { '0','1','2','3','4','5','6','7','8','9',
 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
 VK_NUMPAD0,VK_NUMPAD1,VK_NUMPAD2,VK_NUMPAD3,VK_NUMPAD4,VK_NUMPAD5,VK_NUMPAD6,VK_NUMPAD7,VK_NUMPAD8,VK_NUMPAD9,

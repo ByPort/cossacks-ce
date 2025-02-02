@@ -1536,6 +1536,7 @@ int MM_ProcessSinglePlayer()
 	int pp = 1;
 	KeyPressed = false;
 	LastKey = 0;
+	// Single player menu loop
 	do
 	{
 		ProcessMessages();
@@ -6565,6 +6566,7 @@ int processMainMenu()
 		KeyPressed = 0;
 		RejectThisPlayer = 0;
 
+		// Main menu loop
 		do
 		{
 			//Check conditions and roll credits
@@ -9240,6 +9242,8 @@ int GetRndVid( int N )
 void AllGame()
 {
 	int menuChoice;
+	// Each iteration = separate screen
+	// E.g. main menu, single player, game, editor
 	do
 	{
 		menuChoice = processMainMenu();
@@ -13622,6 +13626,7 @@ KRT:
 		return;
 	}
 
+	// TODO: check usage of the LastKey
 	LastKey = ReadKey();
 	KeyPressed = 0;
 

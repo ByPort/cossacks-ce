@@ -2819,7 +2819,7 @@ extern int LastKey;
 extern bool KeyPressed;
 void ProcessTexPiece( int x, int y, bool press )
 {
-	if ( KeyPressed&&LastKey == 27 )
+	if ( KeyPressed&&LastKey == SDLK_ESCAPE )
 	{
 		MakeUndo();
 		RM_PreLoadClose();

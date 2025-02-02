@@ -95,9 +95,9 @@ void NoDebugMode();
 //HRESULT DirectDrawCreate_wrapper(GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter);
 
 bool CreateSDLRenderer();
-// TODO: move to Ddex1.cpp along with InitSDL.
-// Why this works and moving to Ddex1.cpp doesn't?
-bool CreateSDLWindow();
+//// TODO: move to Ddex1.cpp along with InitSDL.
+//// Why this works and moving to Ddex1.cpp doesn't?
+//bool CreateSDLWindow();
 
 //#endif
 #endif //__DDINI_H_

@@ -9,9 +9,13 @@
 #define NAME "CEW_KERNEL"
 #define TITLE "Cossacks"
 
+#define SDL_MAIN_USE_CALLBACKS
+#include <SDL3/SDL_main.h>
+
 #include "ddini.h"
 
 bool window_mode;
+bool borderless = false;
 int screen_width;
 int screen_height;
 double screen_ratio;
@@ -811,7 +815,6 @@ void UnPress()
 }
 
 extern int CurPalette;
-LRESULT CD_MCINotify( WPARAM wFlags, LONG lDevId );
 int SHIFT_VAL = 0;
 void HandleMouse( int x, int y );
 extern bool PalDone;
@@ -871,6 +874,261 @@ bool ReadWinString( GFILE* F, char* STR, int Max );
 void OnWTPacket( WPARAM wSerial, LPARAM hCtx );
 
 void CmdEndGame( byte NI, byte state, byte cause );
+
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
+{
+	static BYTE phase = 0;
+
+	switch (event->type)
+	{
+		// TODO: no idea where this is posted to the message queue
+		//case 0xABCD:
+		//{
+		//	GFILE* F = Gopen("UserMissions\\start.dat", "r");
+		//	if (F)
+		//	{
+		//		ReadWinString(F, USERMISSPATH, 120);
+		//		Gclose(F);
+		//		if (lParam == 1)
+		//		{
+		//			RUNMAPEDITOR = 1;
+		//		}
+		//		if (lParam == 0)
+		//		{
+		//			RUNUSERMISSION = 1;
+		//		}
+		//	}
+		//}
+		//break;
+
+	case SDL_EVENT_MOUSE_WHEEL:
+		// TODO: value might need some tweaking
+		WheelDelta = static_cast<short>(round(event->wheel.y));
+		break;
+
+	case SDL_EVENT_MOUSE_BUTTON_DOWN:
+	{
+		SDL_MouseButtonFlags mouseFlags = SDL_GetMouseState(nullptr, nullptr);
+		if (event->button.button == SDL_BUTTON_LEFT)
+		{
+			mouseFlags |= SDL_BUTTON_LMASK;
+			Lpressed = true;
+			realLpressed = true;
+			fixed = false;
+			SetMPtr(event->button.x, event->button.y, mouseFlags);
+			AddMouseEvent(mouseX, mouseY, Lpressed, Rpressed);
+		}
+		else if (event->button.button == SDL_BUTTON_RIGHT)
+		{
+			mouseFlags |= SDL_BUTTON_RMASK;
+			Rpressed = true;
+			realRpressed = true;
+			fixed = false;
+			if (ScreenPtr)
+			{
+				SetMPtr(event->button.x, event->button.y, mouseFlags);
+			}
+			AddMouseEvent(mouseX, mouseY, Lpressed, Rpressed);
+		}
+		break;
+	}
+
+	case SDL_EVENT_MOUSE_BUTTON_UP:
+	{
+		SDL_MouseButtonFlags mouseFlags = SDL_GetMouseState(nullptr, nullptr);
+		if (event->button.button == SDL_BUTTON_LEFT)
+		{
+			// !MK_LBUTTON always yields 0, probably ~MK_LBUTTON was meant
+			// But keep the original code for compatibility
+			//mouseFlags &= ~SDL_BUTTON_LMASK;
+			mouseFlags &= !SDL_BUTTON_LMASK;
+			if (fixed)
+			{
+				Lpressed = false;
+			}
+			realLpressed = false;
+
+			SetMPtr(event->button.x, event->button.y, mouseFlags);
+
+			AddMouseEvent(mouseX, mouseY, Lpressed, Rpressed);
+
+			//Double click
+			if (!BuildMode//BUGFIX: Prevent unit selection while placing buildings
+				&& (abs(mouseX - LastUMX) + abs(mouseY - LastUMY)) < 16
+				&& GetTickCount() - LastUTime < 600)
+			{
+				//Select all units of selected type on screen
+				SpecCmd = 241;
+			}
+
+			LastUMX = mouseX;
+			LastUMY = mouseY;
+			LastUTime = GetTickCount();
+		}
+		else if (event->button.button == SDL_BUTTON_RIGHT)
+		{
+			//mouseFlags &= ~SDL_BUTTON_LMASK;
+			mouseFlags &= !SDL_BUTTON_RMASK;
+			Rpressed = false;
+			realRpressed = false;
+			if (ScreenPtr)
+			{
+				SetMPtr(event->button.x, event->button.y, mouseFlags);
+			}
+			AddMouseEvent(mouseX, mouseY, Lpressed, Rpressed);
+		}
+		break;
+	}
+
+	case SDL_EVENT_MOUSE_MOTION:
+	{
+		if (ScreenPtr)
+		{
+			if (event->motion.x != mouseX || event->motion.y != mouseY)
+			{
+				SDL_MouseButtonFlags mouseFlags = SDL_GetMouseState(nullptr, nullptr);
+				SetMPtr(event->motion.x, event->motion.y, mouseFlags);
+				OnMouseMoveRedraw();
+			}
+		}
+		break;
+	}
+
+	case SDL_EVENT_WINDOW_MOVED:
+	case SDL_EVENT_WINDOW_RESIZED:
+		//Adjust cursor zone after window was moved
+		ClipCursorToWindowArea();
+		break;
+
+	case SDL_EVENT_WINDOW_RESTORED:
+		//Restore cursor zone after window was minimized
+		ClipCursorToWindowArea();
+		break;
+
+	case SDL_EVENT_WINDOW_FOCUS_GAINED:
+		//Restore cursor zone after alt-tab
+		ClipCursorToWindowArea();
+
+		// Alternative to WM_ACTIVATEAPP
+		bActive = true;
+		if (primarySurface)
+		{
+			CreateDDObjects(sdlWindow);
+			LockSurface();
+			UnlockSurface();
+			LoadFog(CurPalette);
+			char cc[64];
+			sprintf(cc, "%d\\agew_1.pal", CurPalette);
+			PalDone = 0;
+			LoadPalette(cc);
+		}
+		break;
+
+	// No SDL equivalent
+	//case WM_SETCURSOR:
+	//	SetCursor(NULL);
+	//	return TRUE;
+
+	case SDL_EVENT_KEY_DOWN:
+	{
+		SDL_Keycode keycode = event->key.key;
+		unsigned int mappedKey = 256;
+
+		// Only these keycode are used in ScanPressed
+		if (SDLK_0 <= keycode && keycode <= SDLK_9) mappedKey = keycode;
+		else if (SDLK_A <= keycode && keycode <= SDLK_Z) mappedKey = keycode - (SDLK_A - 'A');
+		else if (keycode == SDLK_KP_0) mappedKey = VK_NUMPAD0;
+		else if (SDLK_KP_1 <= keycode && keycode <= SDLK_KP_9) mappedKey = keycode - (SDLK_KP_1 - VK_NUMPAD1);
+		else if (SDLK_F1 <= keycode && keycode <= SDLK_F10) mappedKey = keycode - (SDLK_F1 - VK_F1);
+		else if (keycode == SDLK_PAGEDOWN) mappedKey = VK_NEXT;
+		else if (keycode == SDLK_PAGEUP) mappedKey = VK_PRIOR;
+		else if (keycode == SDLK_HOME) mappedKey = VK_HOME;
+		else if (keycode == SDLK_END) mappedKey = VK_END;
+		else if (keycode == SDLK_INSERT) mappedKey = VK_INSERT;
+		else if (keycode == SDLK_PLUS) mappedKey = VK_ADD;
+		else if (keycode == SDLK_KP_PLUS) mappedKey = VK_ADD;
+		else if (keycode == SDLK_MINUS) mappedKey = VK_SUBTRACT;
+		else if (keycode == SDLK_KP_MINUS) mappedKey = VK_SUBTRACT;
+		else if (keycode == SDLK_ASTERISK) mappedKey = VK_MULTIPLY;
+		else if (keycode == SDLK_KP_MULTIPLY) mappedKey = VK_MULTIPLY;
+		else if (keycode == SDLK_SLASH) mappedKey = VK_DIVIDE;
+		else if (keycode == SDLK_KP_DIVIDE) mappedKey = VK_DIVIDE;
+		else if (keycode == SDLK_COMMA) mappedKey = VK_OEM_COMMA;
+		else if (keycode == SDLK_PERIOD) mappedKey = VK_OEM_PERIOD;
+		else if (keycode == SDLK_QUESTION) mappedKey = VK_OEM_2;
+
+		if (mappedKey < 256)
+		{
+			ScanPressed[mappedKey] = 1;
+		}
+
+		LastKey = keycode;
+		KeyPressed = true;
+
+		if (LastKey == SDLK_F11)
+		{
+			SaveScreen();
+		}
+
+		/*
+		//Can't see where it was supposed to work. Cut it out.
+		if (( !GameInProgress ) && LastKey == SDLK_R &&
+			GetKeyState( VK_CONTROL ) & 0x8000)
+		{
+			//RecordMode = !RecordMode;//BUGFIX: remove switching record mode in real time
+		}
+		*/
+
+		{
+			char ascii_key;
+			int result = 0;
+			if (keycode <= 127)
+			{
+				ascii_key = (char)keycode;
+				result = 1;
+			}
+
+			//UTF code is in cyrillic range
+			//Adjust ascii code to match sprite index in mainfont.gp file
+			//Sprites 192 to 255 ('А' to 'я')
+			//(taken from russian cossacks version ALL.GSC)
+			if (1040 <= keycode && keycode <= 1103)
+			{
+				ascii_key = keycode - 848;
+				// result = 1;
+			}
+
+			if (1 == result)
+			{
+				LastAsciiKey = ascii_key;
+			}
+			else
+			{
+				LastAsciiKey = 0;
+			}
+
+			// TODO: Check how this works with SDL
+			AddKey(keycode, LastAsciiKey);
+		}
+		break;
+	}
+
+	case SDL_EVENT_QUIT:
+		//Leave game and assign defeat
+		IAmLeft();
+		LOOSEANDEXITFAST();
+		break;
+
+	// Handled by SDL_AppQuit
+	//case WM_DESTROY:
+	//	finiObjects();
+	//	PostQuitMessage(0);
+	//	exit(0);
+	//	break;
+	}
+
+	return SDL_APP_CONTINUE;
+}
 
 long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 	WPARAM wParam, LPARAM lParam )
@@ -2210,63 +2468,35 @@ extern bool Lpressed;
 void FilesExit();
 
 //Register winapi window class, init DirectDraw, sounds and cursor
-static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
+static BOOL doInit()
 {
-	WNDCLASS wc;
-	char buf[256];
+	SDL_WindowFlags windowFlags = 0;
+	if (!window_mode)
+	{
+		windowFlags |= SDL_WINDOW_FULLSCREEN;
+	}
+	if (borderless)
+	{
+		windowFlags |= SDL_WINDOW_BORDERLESS;
+	}
 
-	//set up and register window class
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WindowProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon( hInstance, IDI_APPLICATION );
-	wc.hCursor = LoadCursor( NULL, IDC_ARROW );
-	wc.hbrBackground = NULL;
-	wc.lpszMenuName = NULL;
-	wc.lpszClassName = NAME;
-	RegisterClass( &wc );
-
+	sdlWindow = SDL_CreateWindow(
+		TITLE,
+		window_mode ? RealLx : screen_width,
+		window_mode ? RealLy : screen_height,
+		windowFlags
+	);
+	if (!sdlWindow)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
+		return false;
+	}
+	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	if (window_mode)
 	{
-		hwnd = CreateWindow(
-			NAME,
-			TITLE,
-			window_style,
-			50, 50,
-			RealLx,
-			RealLy,
-			NULL,
-			NULL,
-			hInstance,
-			NULL
-		);
 		ResizeAndCenterWindow();
 	}
-	else
-	{
-		hwnd = CreateWindowEx(
-			WS_EX_APPWINDOW,
-			NAME,
-			TITLE,
-			WS_POPUP,
-			0, 0,
-			screen_width,
-			screen_height,
-			NULL,
-			NULL,
-			hInstance,
-			NULL
-		);
-	}
-	if (!hwnd)
-	{
-		return FALSE;
-	}
 	
-	CreateSDLWindow();
-
 	ShowWindow( hwnd, SW_SHOWNORMAL );
 
 	UpdateWindow( hwnd );
@@ -2344,9 +2574,8 @@ static BOOL doInit( HINSTANCE hInstance, int nCmdShow )
 		}
 	}
 
-	wsprintf( buf, "SDL Init Failed\n" );
-	//MessageBox( hwnd, buf, "ERROR", MB_OK );
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", buf, nullptr);
+	//MessageBox( hwnd, "SDL Init Failed\n", "ERROR", MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", "SDL Init Failed\n", nullptr);
 	finiObjects();
 	DestroyWindow( hwnd );
 	return FALSE;
@@ -3243,7 +3472,337 @@ void FinExplorer();
 
 void __declspec( dllexport ) SFINIT2_InitLAND();
 
-int PASCAL WinMain(
+SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
+{
+	for (int i = 0; i < argc; i++)
+	{
+		if (strcmp(argv[i], "/MAPEDITOR") == 0)
+		{
+			RUNMAPEDITOR = 1;
+			strcpy(USERMISSPATH, argv[i+1]);
+		}
+		else if (strcmp(argv[i], "/MISSION") == 0)
+		{
+			RUNUSERMISSION = 1;
+			strcpy(USERMISSPATH, argv[i+1]);
+		}
+
+		if (strcmp(argv[i], "/window") == 0)
+		{
+			window_mode = true;
+		}
+		else
+		{
+			window_mode = false;
+		}
+
+		if (strcmp(argv[i], "/borderless") == 0)
+		{
+			window_mode = true;
+			window_style = WS_POPUP;
+			borderless = true;
+		}
+	}
+	//window_mode = false;
+	//window_mode = true;
+	//window_style = WS_POPUP;
+
+		// Init SDL window
+	InitSDL();
+
+	//Init DirectDraw and find possible resolutions
+	EnumModesOnly();
+
+	//Create "Cossacks.reg" with Microsoft DirectPlay key
+	CreateReg();
+
+	//Load unrar.dll, call CGSCset::gOpen() to load archives
+	if (!FilesInit())
+	{
+		FilesExit();
+		PostMessage(hwnd, WM_CLOSE, 0, 0);
+	}
+
+	//Delete random generated *.m3d map files
+	EraseRND();
+
+	//Pointer to the DirectDraw screen buffer
+	ScreenPtr = nullptr;
+
+	ChangeNation = false;
+	MultiTvar = false;
+	MEditMode = false;
+	WaterEditMode = false;
+
+	Shifter = 5;
+	Multip = 0;
+	AutoTime = 0;
+	BlobMode = 0;
+	CostThickness = 4;
+	EditMedia = 0;
+	CreateRadio();
+	SpecCmd = 0;
+	sfVersion = 285;
+	Quality = 2;
+
+	RealLx = 1024;
+	RealLy = 768;
+	exRealLx = 1024;
+	exRealLy = 768;
+
+	WarSound = 0;
+	WorkSound = 0;
+	OrderSound = 0;
+	MidiSound = 0;
+
+	//Zero 3D Bars variables (?)
+	InitObjs3();
+
+	//Load settings
+	GFILE* fff = Gopen("mode.dat", "rt");
+	ScrollSpeed = 5;
+	if (fff)
+	{
+		//Distinguish between last window adn fullscreen resolutions
+		int ex_window_x, ex_window_y, ex_x, ex_y;
+		int dummy;
+		//7th value was FPSTime
+		Gscanf(fff, "%d%d%d%d%d%d%d%d%d%d%d%d",
+			&ex_window_x, &ex_window_y, &ex_x, &ex_y,
+			&WarSound, &OrderSound, &OrderSound, &MidiSound,
+			&dummy, &ScrollSpeed, &exFMode, &PlayMode);
+		Gclose(fff);
+
+		//Set last 'global resolution' according to current mode
+		if (window_mode)
+		{
+			exRealLx = ex_window_x;
+			exRealLy = ex_window_y;
+			ex_other_RealLx = ex_x;
+			ex_other_RealLy = ex_y;
+		}
+		else
+		{
+			exRealLx = ex_x;
+			exRealLy = ex_y;
+			ex_other_RealLx = ex_window_x;
+			ex_other_RealLy = ex_window_y;
+		}
+	}
+	GFILE* rec_settings_file = Gopen("rec.dat", "rt");
+	if (rec_settings_file)
+	{
+		Gscanf(rec_settings_file, "%d%s", &RecordMode, &RECFILE);
+		Gclose(rec_settings_file);
+	}
+
+	//Look if loaded values match possible screen resolutions
+	bool ExMode = 0;
+	for (int i = 0; i < NModes; i++)
+	{
+		if (ModeLX[i] == exRealLx && ModeLY[i] == exRealLy)
+		{
+			ExMode = 1;
+		}
+	}
+
+	if (!ExMode)
+	{//Loaded resolution not possible, reset do default
+		exRealLx = 1024;
+		exRealLy = 768;
+	}
+
+	//Save native display resolution for future use
+	SDL_DisplayID displayId = SDL_GetPrimaryDisplay();
+	SDL_Rect displayRect;
+	SDL_GetDisplayBounds(displayId, &displayRect);
+	screen_width = displayRect.w;
+	screen_height = displayRect.h;
+
+	//Calculate native resolution aspect ratio
+	double scale = 0.01;
+	screen_ratio = (double)screen_width / screen_height;
+	screen_ratio = (int)(screen_ratio / scale) * scale;
+
+	WindX = 0;
+	WindY = 0;
+	WindX1 = 1023;
+	WindY1 = 767;
+	WindLx = 1024;
+	WindLy = 768;
+
+	MSG msg;
+
+	tima = 0;
+	PlayerMask = 1;
+	Flips = 0;
+	tmtim = 0;
+
+	HealthMode = false;
+	InfoMode = true;
+	DeathMode = false;
+	AttackMode = false;
+
+	//Zero FishMap pointer
+	InitFishMap();
+
+	//Init Gates[32] array
+	SetupGates();
+
+	LockGrid = false;
+
+	FILE* Fx = fopen("cew.dll", "r");
+	if (!Fx)
+	{
+		MessageBox(nullptr, "CEW.DLL not found. Unable to run Cossacks.", "Error...", MB_ICONERROR);
+		return SDL_APP_FAILURE;
+	}
+	else
+	{
+		fclose(Fx);
+	}
+
+	//Init buffers for national units?
+	SetupNatList();
+
+	//Something about fog?
+	makeFden();
+
+	PlayerMenuMode = 1;
+
+	Creator = 4096 + 255;
+	xxx = 0;
+	cadr = 0;
+
+	//MouseZones?
+	InitZones();
+
+	//Order execution buffer position = 0?
+	InitEBuf();
+
+	TransMode = false;
+	MUSTDRAW = false;
+
+	//Calculate XShift for... mirroring and water and stuff?
+	InitXShift();
+
+	//Read players.txt, load dialog resources
+	SFLB_InitDialogs();
+
+	//Water colors and buffers
+	InitWater();
+
+	//Load fonts(?)
+	LoadRLC("xrcross.rlc", &RCross);
+
+	memset(Events, 0, sizeof Events);
+
+	//Probably just to define PREVT
+	GetRealTime();
+
+	//Register winapi window class, init DirectDraw, sounds and cursor
+	if (!doInit())
+	{
+		return SDL_APP_FAILURE;
+	}
+
+	//Load specific palette and fog resources (alphas etc)
+	LoadFog(2);
+	LoadPalette("2\\agew_1.pal");
+
+	//Init DirectPlay and DPInfo structure
+	SetupMultiplayer();
+
+	//Init variables
+	InitMultiDialogs();
+
+	//UI color masking?
+	SetupHint();
+
+	//Main internal counter for intervals
+	tmtmt = 0;
+
+	REALTIME = 0;
+	KeyPressed = false;
+
+	OnMouseMoveRedraw();
+
+	if (PlayMode)
+	{
+		PlayRandomTrack();
+	}
+
+	StartExplorer();
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void* appstate)
+{
+	// Using coroutines would be perfect for this code,
+	// since each menu is a separate function with render loop.
+
+	// TODO: game loop iteration here
+
+	return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void* appstate, SDL_AppResult result)
+{
+	ClearScreen();
+	//Zero variables and pointers
+	UnLoading();
+	CloseExplosions();
+	ShutdownMultiplayer(1);
+
+	//Distinguish between last window adn fullscreen resolutions
+	int ex_window_x, ex_window_y, ex_x, ex_y;
+
+	//Set last 'global resolution' according to current mode
+	if (window_mode)
+	{
+		ex_window_x = exRealLx;
+		ex_window_y = exRealLy;
+		ex_x = ex_other_RealLx;
+		ex_y = ex_other_RealLy;
+	}
+	else
+	{
+		ex_x = exRealLx;
+		ex_y = exRealLy;
+		ex_window_x = ex_other_RealLx;
+		ex_window_y = ex_other_RealLy;
+	}
+
+	//Save settings before closing
+	GFILE* fff = Gopen("mode.dat", "wt");
+	if (fff)
+	{
+		//7th value was FPSTime
+		Gprintf(fff, "%d %d %d %d %d %d %d %d %d %d %d %d",
+			ex_window_x, ex_window_y, ex_x, ex_y,
+			WarSound, OrderSound, OrderSound,
+			MidiSound, 0, ScrollSpeed, exFMode, PlayMode);
+		Gclose(fff);
+	}
+	GFILE* rec_settings_file = Gopen("rec.dat", "wt");
+	if (rec_settings_file)
+	{
+		Gprintf(rec_settings_file, "%d %s", RecordMode, RECFILE);
+		Gclose(rec_settings_file);
+	}
+
+	FilesExit();
+	StopPlayCD();
+	PostMessage(hwnd, WM_CLOSE, 0, 0);
+	FinExplorer();
+
+	finiObjects();
+	PostQuitMessage(0);
+	exit(0);
+}
+
+int PASCAL __WinMain(
 	HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow
 )
@@ -3277,6 +3836,7 @@ int PASCAL WinMain(
 	{
 		window_mode = true;
 		window_style = WS_POPUP;
+		borderless = true;
 	}
 	//window_mode = false;
 	//window_mode = true;
@@ -3476,7 +4036,7 @@ int PASCAL WinMain(
 	GetRealTime();
 
 	//Register winapi window class, init DirectDraw, sounds and cursor
-	if (!doInit( hInstance, nCmdShow ))
+	if (!doInit())
 	{
 		return FALSE;
 	}
