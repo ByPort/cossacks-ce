@@ -2274,6 +2274,7 @@ static BOOL doInit()
 		return false;
 	}
 	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	SDL_HideCursor();
 	if (window_mode)
 	{
 		ResizeAndCenterWindow();
