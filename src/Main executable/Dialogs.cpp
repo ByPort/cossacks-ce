@@ -4867,11 +4867,14 @@ void SimpleDialog::AssignSound( char* Name, int Usage )
 	AssignSound( ID, Usage );
 };
 
+extern void yield();
+
 //----copy rectangle to screen----//
 void CopyToScreen( int zx, int zy, int zLx, int zLy )
 {
 	if (!bActive)
 	{
+		yield();
 		return;
 	}
 
@@ -4897,7 +4900,10 @@ void CopyToScreen( int zx, int zy, int zLx, int zLy )
 		Ly = RealLy - y;
 
 	if (Lx < 0 || Ly < 0)
+	{
+		yield();
 		return;
+	}
 
 	int scof = int( ScreenPtr ) + x + y*SCRSizeX;
 	int reof = int( RealScreenPtr ) + x + y*RSCRSizeX;
@@ -4947,6 +4953,8 @@ void CopyToScreen( int zx, int zy, int zLx, int zLy )
 	SDL_RenderPresent(renderer);
 
 	SDL_DestroySurface(srcSurface);
+
+	yield();
 }
 
 void CopyToOffScreen( int zx, int zy,
@@ -5696,6 +5704,7 @@ void DialogsSystem::RefreshView()
 
 	if (!bActive)
 	{
+		yield();
 		return;
 	}
 

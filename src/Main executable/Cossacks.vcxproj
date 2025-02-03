@@ -54,8 +54,8 @@
     <IntDir>../Temp/dmcr/</IntDir>
     <TargetName>dmcr</TargetName>
     <LinkIncremental />
-    <IncludePath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\include;C:\Users\Uladzimir Sernatski\SDL3_image-3.1.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\lib\x86;C:\Users\Uladzimir Sernatski\SDL3_image-3.1.1\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\include;C:\Users\Uladzimir Sernatski\SDL3_image-3.1.1\include;C:\Users\Uladzimir Sernatski\boost_1_82_0;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\lib\x86;C:\Users\Uladzimir Sernatski\SDL3_image-3.1.1\lib\x86;C:\local\boost_1_82_0\lib32-msvc-14.3;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">
     <ClCompile>
@@ -118,7 +118,8 @@
       </AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>NODPLAY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -137,6 +138,7 @@
       <ImportLibrary>../Temp/dmcr.lib</ImportLibrary>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -314,7 +316,6 @@
     <ClInclude Include="Pinger.h" />
     <ClInclude Include="PlayerInfo.h" />
     <ClInclude Include="Process.h" />
-    <ClInclude Include="queryreporting\Gqueryreporting.h" />
     <ClInclude Include="Realwater.h" />
     <ClInclude Include="Recorder.h" />
     <ClInclude Include="Resfile.h" />

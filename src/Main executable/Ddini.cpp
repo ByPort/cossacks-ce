@@ -97,12 +97,15 @@ void ClearRGB()
 
 extern bool InGame;
 
+extern void yield();
+
 //Copies secundary screen buffer into primary buffer
 //Call rate: menu ~545 Hz, ingame ~38 Hz
 __declspec( dllexport ) void FlipPages( void )
 {
 	if (!bActive)
 	{
+		yield();
 		return;
 	}
 
@@ -124,6 +127,8 @@ __declspec( dllexport ) void FlipPages( void )
 		SDL_RenderPresent(renderer);
 
 		SDL_DestroySurface(srcSurface);
+
+		yield();
 
 		return;
 	}
@@ -170,6 +175,8 @@ __declspec( dllexport ) void FlipPages( void )
 		dest += RaddOf;
 	}
 	*/
+
+	yield();
 }
 
 /*

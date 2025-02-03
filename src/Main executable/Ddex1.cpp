@@ -9,6 +9,8 @@
 #define NAME "CEW_KERNEL"
 #define TITLE "Cossacks"
 
+#include <boost/coroutine2/all.hpp>
+
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
 
@@ -1128,226 +1130,6 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 	}
 
 	return SDL_APP_CONTINUE;
-}
-
-long FAR PASCAL WindowProc( HWND hWnd, UINT message,
-	WPARAM wParam, LPARAM lParam )
-{
-	static BYTE phase = 0;
-
-	switch (message)
-	{
-	case 0xABCD:
-	{
-		GFILE* F = Gopen( "UserMissions\\start.dat", "r" );
-		if (F)
-		{
-			ReadWinString( F, USERMISSPATH, 120 );
-			Gclose( F );
-			if (lParam == 1)
-			{
-				RUNMAPEDITOR = 1;
-			}
-			if (lParam == 0)
-			{
-				RUNUSERMISSION = 1;
-			}
-		}
-	}
-	break;
-
-	case 0x020A://WM_MOUSEWHEEL:
-		WheelDelta = (short) HIWORD( wParam );
-		break;
-
-	case MM_MCINOTIFY:
-		//CD_MCINotify( wParam, lParam );
-		break;
-
-	case WM_LBUTTONDOWN:
-		wParam = wParam | MK_LBUTTON;
-		Lpressed = true;
-		realLpressed = true;
-		fixed = false;
-		SetMPtr( LOWORD( lParam ), HIWORD( lParam ), wParam );
-		AddMouseEvent( mouseX, mouseY, Lpressed, Rpressed );
-		break;
-
-	case WM_LBUTTONUP:
-		wParam = wParam & !MK_LBUTTON;
-		if (fixed)
-		{
-			Lpressed = false;
-		}
-		realLpressed = false;
-
-		SetMPtr( LOWORD( lParam ), HIWORD( lParam ), wParam );
-
-		AddMouseEvent( mouseX, mouseY, Lpressed, Rpressed );
-
-		//Double click
-		if (!BuildMode//BUGFIX: Prevent unit selection while placing buildings
-			&& ( abs( mouseX - LastUMX ) + abs( mouseY - LastUMY ) ) < 16
-			&& GetTickCount() - LastUTime < 600)
-		{
-			//Select all units of selected type on screen
-			SpecCmd = 241;
-		}
-
-		LastUMX = mouseX;
-		LastUMY = mouseY;
-		LastUTime = GetTickCount();
-		break;
-
-	case WM_RBUTTONDOWN:
-		wParam = wParam | MK_RBUTTON;
-		Rpressed = true;
-		realRpressed = true;
-		fixed = false;
-		if (ScreenPtr)
-		{
-			SetMPtr( LOWORD( lParam ), HIWORD( lParam ), wParam );
-		}
-		AddMouseEvent( mouseX, mouseY, Lpressed, Rpressed );
-		break;
-
-	case WM_RBUTTONUP:
-		wParam = wParam & !MK_RBUTTON;
-		Rpressed = false;
-		if (fixed)
-		{
-			Rpressed = false;
-		}
-		realRpressed = false;
-		if (ScreenPtr)
-		{
-			SetMPtr( LOWORD( lParam ), HIWORD( lParam ), wParam );
-		}
-		AddMouseEvent( mouseX, mouseY, Lpressed, Rpressed );
-		break;
-
-	case WM_MOUSEMOVE:
-		if (ScreenPtr)
-		{
-			if (LOWORD( lParam ) != mouseX || HIWORD( lParam ) != mouseY)
-			{
-				SetMPtr( LOWORD( lParam ), HIWORD( lParam ), wParam );
-				OnMouseMoveRedraw();
-			}
-		}
-		break;
-
-	case WM_EXITSIZEMOVE:
-		//Adjust cursor zone after window was moved
-		ClipCursorToWindowArea();
-		break;
-
-	case WM_SIZE:
-		if (SIZE_RESTORED == wParam)
-		{//Restore cursor zone after window was minimized
-			ClipCursorToWindowArea();
-		}
-		break;
-
-	case WM_SETFOCUS:
-		//Restore cursor zone after alt-tab
-		ClipCursorToWindowArea();
-		break;
-
-	case WM_ACTIVATEAPP:
-		bActive = wParam;
-		if (bActive)
-		{
-			if (primarySurface)
-			{
-				CreateDDObjects( sdlWindow );
-				LockSurface();
-				UnlockSurface();
-				LoadFog( CurPalette );
-				char cc[64];
-				sprintf( cc, "%d\\agew_1.pal", CurPalette );
-				PalDone = 0;
-				LoadPalette( cc );
-			}
-		}
-		break;
-
-	case WM_SETCURSOR:
-		SetCursor( NULL );
-		return TRUE;
-
-	case WM_KEYDOWN:
-		if (wParam < 256)
-		{
-			ScanPressed[wParam] = 1;
-		}
-
-		LastKey = wParam;
-		KeyPressed = true;
-
-		if (LastKey == VK_F11)
-		{
-			SaveScreen();
-		}
-
-		/*
-		//Can't see where it was supposed to work. Cut it out.
-		if (( !GameInProgress ) && LastKey == 'R' &&
-			GetKeyState( VK_CONTROL ) & 0x8000)
-		{
-			//RecordMode = !RecordMode;//BUGFIX: remove switching record mode in real time
-		}
-		*/
-
-		{
-			int nVirtKey = (int) wParam;
-			int lKeyData = lParam;
-			byte PST[256];
-			GetKeyboardState( PST );
-
-			word ascii_key;
-			int result = ToAscii( nVirtKey, lKeyData, PST, &ascii_key, 0 );
-
-			WCHAR u_buf[5] = {};
-			if (1 <= ToUnicode( nVirtKey, lKeyData, PST, u_buf, 4, 0 ))
-			{//Valid UTF character
-				wchar_t unicode_char = u_buf[0];
-				if (1040 <= unicode_char && 1103 >= unicode_char)
-				{//UTF code is in cyrillic range
-					//Adjust ascii code to match sprite index in mainfont.gp file
-					//Sprites 192 to 255 ('А' to 'я')
-					//(taken from russian cossacks version ALL.GSC)
-					ascii_key = unicode_char - 848;
-				}
-			}
-
-			if (1 == result)
-			{
-				LastAsciiKey = ascii_key;
-			}
-			else
-			{
-				LastAsciiKey = 0;
-			}
-
-			AddKey( wParam, LastAsciiKey );
-		}
-		break;
-
-	case WM_CLOSE:
-		//Leave game and assign defeat
-		IAmLeft();
-		LOOSEANDEXITFAST();
-		break;
-
-	case WM_DESTROY:
-		finiObjects();
-		PostQuitMessage( 0 );
-		exit( 0 );
-		break;
-	}
-
-	return DefWindowProc( hWnd, message, wParam, lParam );
 }
 
 /*
@@ -3232,7 +3014,7 @@ void PostDrawGameProcess()
 }
 
 void InitWaves();
-void AllGame();
+void AllGame(boost::coroutines2::coroutine<void>::push_type& yield);
 
 extern byte MI_Mode;
 extern int RES[8][8];
@@ -3471,6 +3253,8 @@ void StartExplorer();
 void FinExplorer();
 
 void __declspec( dllexport ) SFINIT2_InitLAND();
+
+boost::coroutines2::coroutine<void>::pull_type* AllGameCoroutine = nullptr;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 {
@@ -3734,6 +3518,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 
 	StartExplorer();
 
+	AllGameCoroutine = new boost::coroutines2::coroutine<void>::pull_type(AllGame);
+
 	return SDL_APP_CONTINUE;
 }
 
@@ -3742,13 +3528,20 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	// Using coroutines would be perfect for this code,
 	// since each menu is a separate function with render loop.
 
-	// TODO: game loop iteration here
+	if (!*AllGameCoroutine)
+	{
+		return SDL_APP_SUCCESS;
+	}
 
+	(*AllGameCoroutine)();
 	return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	delete AllGameCoroutine;
+	AllGameCoroutine = nullptr;
+
 	ClearScreen();
 	//Zero variables and pointers
 	UnLoading();
@@ -3800,343 +3593,4 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 	finiObjects();
 	PostQuitMessage(0);
 	exit(0);
-}
-
-int PASCAL __WinMain(
-	HINSTANCE hInstance, HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine, int nCmdShow
-)
-{
-	char* ss = strstr( lpCmdLine, "/MAPEDITOR" );
-	if (ss)
-	{
-		RUNMAPEDITOR = 1;
-		strcpy( USERMISSPATH, ss + 11 );
-	}
-	else
-	{
-		ss = strstr( lpCmdLine, "/MISSION" );
-		if (ss)
-		{
-			RUNUSERMISSION = 1;
-			strcpy( USERMISSPATH, ss + 9 );
-		}
-	}
-
-	if (strstr( lpCmdLine, "/window" ))
-	{
-		window_mode = true;
-	}
-	else
-	{
-		window_mode = false;
-	}
-
-	if ( strstr( lpCmdLine, "/borderless" ) )
-	{
-		window_mode = true;
-		window_style = WS_POPUP;
-		borderless = true;
-	}
-	//window_mode = false;
-	//window_mode = true;
-	//window_style = WS_POPUP;
-
-	// Init SDL window
-	InitSDL();
-
-	//Init DirectDraw and find possible resolutions
-	EnumModesOnly();
-
-	//Create "Cossacks.reg" with Microsoft DirectPlay key
-	CreateReg();
-
-	//Load unrar.dll, call CGSCset::gOpen() to load archives
-	if (!FilesInit())
-	{
-		FilesExit();
-		PostMessage( hwnd, WM_CLOSE, 0, 0 );
-	}
-
-	//Delete random generated *.m3d map files
-	EraseRND();
-
-	//Pointer to the DirectDraw screen buffer
-	ScreenPtr = nullptr;
-
-	ChangeNation = false;
-	MultiTvar = false;
-	MEditMode = false;
-	WaterEditMode = false;
-
-	Shifter = 5;
-	Multip = 0;
-	AutoTime = 0;
-	BlobMode = 0;
-	CostThickness = 4;
-	EditMedia = 0;
-	CreateRadio();
-	SpecCmd = 0;
-	sfVersion = 285;
-	Quality = 2;
-
-	RealLx = 1024;
-	RealLy = 768;
-	exRealLx = 1024;
-	exRealLy = 768;
-
-	WarSound = 0;
-	WorkSound = 0;
-	OrderSound = 0;
-	MidiSound = 0;
-
-	//Zero 3D Bars variables (?)
-	InitObjs3();
-
-	//Load settings
-	GFILE* fff = Gopen( "mode.dat", "rt" );
-	ScrollSpeed = 5;
-	if (fff)
-	{
-		//Distinguish between last window adn fullscreen resolutions
-		int ex_window_x, ex_window_y, ex_x, ex_y;
-		int dummy;
-		//7th value was FPSTime
-		Gscanf( fff, "%d%d%d%d%d%d%d%d%d%d%d%d",
-			&ex_window_x, &ex_window_y, &ex_x, &ex_y,
-			&WarSound, &OrderSound, &OrderSound, &MidiSound,
-			&dummy, &ScrollSpeed, &exFMode, &PlayMode );
-		Gclose( fff );
-
-		//Set last 'global resolution' according to current mode
-		if (window_mode)
-		{
-			exRealLx = ex_window_x;
-			exRealLy = ex_window_y;
-			ex_other_RealLx = ex_x;
-			ex_other_RealLy = ex_y;
-		}
-		else
-		{
-			exRealLx = ex_x;
-			exRealLy = ex_y;
-			ex_other_RealLx = ex_window_x;
-			ex_other_RealLy = ex_window_y;
-		}
-	}
-	GFILE *rec_settings_file = Gopen( "rec.dat", "rt" );
-	if (rec_settings_file)
-	{
-		Gscanf( rec_settings_file, "%d%s", &RecordMode, &RECFILE );
-		Gclose( rec_settings_file );
-	}
-
-	//Look if loaded values match possible screen resolutions
-	bool ExMode = 0;
-	for (int i = 0; i < NModes; i++)
-	{
-		if (ModeLX[i] == exRealLx && ModeLY[i] == exRealLy)
-		{
-			ExMode = 1;
-		}
-	}
-
-	if (!ExMode)
-	{//Loaded resolution not possible, reset do default
-		exRealLx = 1024;
-		exRealLy = 768;
-	}
-
-	//Save native display resolution for future use
-	SDL_DisplayID displayId = SDL_GetPrimaryDisplay();
-	SDL_Rect displayRect;
-	SDL_GetDisplayBounds(displayId, &displayRect);
-	screen_width = displayRect.w;
-	screen_height = displayRect.h;
-
-	//Calculate native resolution aspect ratio
-	double scale = 0.01;
-	screen_ratio = (double) screen_width / screen_height;
-	screen_ratio = (int) ( screen_ratio / scale ) * scale;
-
-	WindX = 0;
-	WindY = 0;
-	WindX1 = 1023;
-	WindY1 = 767;
-	WindLx = 1024;
-	WindLy = 768;
-
-	MSG msg;
-
-	tima = 0;
-	PlayerMask = 1;
-	Flips = 0;
-	tmtim = 0;
-
-	HealthMode = false;
-	InfoMode = true;
-	DeathMode = false;
-	AttackMode = false;
-
-	//Zero FishMap pointer
-	InitFishMap();
-
-	//Init Gates[32] array
-	SetupGates();
-
-	LockGrid = false;
-
-	FILE* Fx = fopen( "cew.dll", "r" );
-	if (!Fx)
-	{
-		MessageBox( nullptr, "CEW.DLL not found. Unable to run Cossacks.", "Error...", MB_ICONERROR );
-		return 0;
-	}
-	else
-	{
-		fclose( Fx );
-	}
-
-	//Init buffers for national units?
-	SetupNatList();
-
-	//Something about fog?
-	makeFden();
-
-	PlayerMenuMode = 1;
-
-	Creator = 4096 + 255;
-	xxx = 0;
-	cadr = 0;
-
-	//MouseZones?
-	InitZones();
-
-	//Order execution buffer position = 0?
-	InitEBuf();
-
-	TransMode = false;
-	MUSTDRAW = false;
-
-	//Calculate XShift for... mirroring and water and stuff?
-	InitXShift();
-
-	//Read players.txt, load dialog resources
-	SFLB_InitDialogs();
-
-	//Water colors and buffers
-	InitWater();
-
-	//Load fonts(?)
-	LoadRLC( "xrcross.rlc", &RCross );
-
-	memset( Events, 0, sizeof Events );
-
-	//Probably just to define PREVT
-	GetRealTime();
-
-	//Register winapi window class, init DirectDraw, sounds and cursor
-	if (!doInit())
-	{
-		return FALSE;
-	}
-
-	//Load specific palette and fog resources (alphas etc)
-	LoadFog( 2 );
-	LoadPalette( "2\\agew_1.pal" );
-
-	//Init DirectPlay and DPInfo structure
-	SetupMultiplayer();
-
-	//Init variables
-	InitMultiDialogs();
-
-	//UI color masking?
-	SetupHint();
-
-	//Main internal counter for intervals
-	tmtmt = 0;
-
-	REALTIME = 0;
-	KeyPressed = false;
-
-	OnMouseMoveRedraw();
-
-	if (PlayMode)
-	{
-		PlayRandomTrack();
-	}
-
-	//Program loop to handle WM_QUIT; everything else handles AllGame()
-	while (true)
-	{
-		while (PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ))
-		{
-			if (msg.message == WM_QUIT)
-			{
-				PostQuitMessage( msg.wParam );
-				return 1;
-			}
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
-		}
-
-		//Check if window has focus
-		if (bActive)
-		{
-			//Load IntExplorer.dll
-			StartExplorer();
-
-			//Main game loop (runs until Exit button is clicked)
-			AllGame();
-
-			ClearScreen();
-			UnLoading();
-			CloseExplosions();
-			ShutdownMultiplayer( 1 );
-
-			//Distinguish between last window adn fullscreen resolutions
-			int ex_window_x, ex_window_y, ex_x, ex_y;
-
-			//Set last 'global resolution' according to current mode
-			if (window_mode)
-			{
-				ex_window_x = exRealLx;
-				ex_window_y = exRealLy;
-				ex_x = ex_other_RealLx;
-				ex_y = ex_other_RealLy;
-			}
-			else
-			{
-				ex_x = exRealLx;
-				ex_y = exRealLy;
-				ex_window_x = ex_other_RealLx;
-				ex_window_y = ex_other_RealLy;
-			}
-
-			//Save settings before closing
-			GFILE *fff = Gopen( "mode.dat", "wt" );
-			if (fff)
-			{
-				//7th value was FPSTime
-				Gprintf( fff, "%d %d %d %d %d %d %d %d %d %d %d %d",
-					ex_window_x, ex_window_y, ex_x, ex_y,
-					WarSound, OrderSound, OrderSound,
-					MidiSound, 0, ScrollSpeed, exFMode, PlayMode );
-				Gclose( fff );
-			}
-			GFILE *rec_settings_file = Gopen( "rec.dat", "wt" );
-			if (rec_settings_file)
-			{
-				Gprintf( rec_settings_file, "%d %s", RecordMode, RECFILE );
-				Gclose( rec_settings_file );
-			}
-
-			FilesExit();
-			StopPlayCD();
-			PostMessage( hwnd, WM_CLOSE, 0, 0 );
-			FinExplorer();
-		}
-	}
-	return msg.wParam;
 }

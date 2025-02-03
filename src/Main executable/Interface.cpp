@@ -2,6 +2,8 @@
 //it's winsock includes will mess up the project >_<
 #include "NewCode/UdpHolePuncher.h"
 
+#include <boost/coroutine2/all.hpp>
+
 #include "ddini.h"
 #include "ResFile.h"
 #include "FastDraw.h"
@@ -1492,6 +1494,14 @@ void ProcessFranceMission();
 bool SingleOptions();
 
 bool SelectSingleMission();
+
+boost::coroutines2::coroutine<void>::push_type* yieldObject;
+
+// Call this function from anywhere while AllGame() is running to return control to the main loop
+void yield()
+{
+	(*yieldObject)();
+}
 
 int MM_ProcessSinglePlayer()
 {
@@ -9239,8 +9249,11 @@ int GetRndVid( int N )
 }
 
 //Main game loop function
-void AllGame()
+void AllGame(boost::coroutines2::coroutine<void>::push_type& yield)
 {
+	// Save yield for reuse in nested functions
+	yieldObject = &yield;
+
 	int menuChoice;
 	// Each iteration = separate screen
 	// E.g. main menu, single player, game, editor
@@ -9263,6 +9276,8 @@ void AllGame()
 			UnLoading();
 		}
 	} while ( mcmExit != menuChoice );
+
+	yieldObject = nullptr;
 }
 
 extern int PLNAT[8];

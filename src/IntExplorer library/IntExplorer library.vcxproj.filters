@@ -59,5 +59,6 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Temp\dmcr.lib" />
+    <Library Include="..\Temp\IChat.lib" />
   </ItemGroup>
 </Project>
