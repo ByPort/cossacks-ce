@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommCore library", "CommCore library\CommCore library.vcxproj", "{41643FD4-FCB7-4FD2-8A6D-219C11DC2693}"
 EndProject
@@ -38,7 +38,6 @@ Global
 		{44B11E0B-D6E6-4D14-A756-D79D0647F007}.Testing|x86.ActiveCfg = Release|Win32
 		{44B11E0B-D6E6-4D14-A756-D79D0647F007}.Testing|x86.Build.0 = Release|Win32
 		{5BABC94F-2709-4194-9CB2-00F8776AA78F}.Release|x86.ActiveCfg = Release|Win32
-		{5BABC94F-2709-4194-9CB2-00F8776AA78F}.Release|x86.Build.0 = Release|Win32
 		{5BABC94F-2709-4194-9CB2-00F8776AA78F}.Testing|x86.ActiveCfg = Release|Win32
 		{5BABC94F-2709-4194-9CB2-00F8776AA78F}.Testing|x86.Build.0 = Release|Win32
 	EndGlobalSection
