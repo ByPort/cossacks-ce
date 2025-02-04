@@ -174,17 +174,20 @@ void Nation::GetUpgradeCostString( char* st, word UI )
 		};
 	};
 };
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 word SELSET[32];
 int NSelSet = 0;
 void HPSEL( int i )
 {
-	if (GetKeyState( VK_CONTROL ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 	{
 		CmdChooseUnSelType( MyNation, i );
 	}
 	else
 	{
-		if (GetKeyState( VK_SHIFT ) & 0x8000)
+		if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 		{
 			if (NSelSet < 32)
 			{
@@ -201,13 +204,13 @@ void HPSEL( int i )
 
 void HPSELBRIG( int i )
 {
-	if (GetKeyState( VK_CONTROL ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 	{
 		CmdChooseUnSelBrig( MyNation, i );
 	}
 	else
 	{
-		if (GetKeyState( VK_SHIFT ) & 0x8000)
+		if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 		{
 			if (NSelSet < 32)
 			{
@@ -268,7 +271,7 @@ void OLIHPRO( int i )
 
 void SELBRIG( int i )
 {
-	if (GetKeyState( VK_SHIFT ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 	{
 		CmdSelBrig( MyNation, 1, i );
 	}
@@ -584,7 +587,7 @@ void ShowProp()
 			{
 				if (NSelSet)
 				{
-					if (GetKeyState( VK_SHIFT ) & 0x8000)
+					if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 					{
 						if (IsItInSelSet( OBJ->NIndex ))
 						{
@@ -642,7 +645,7 @@ void ShowProp()
 				OI->AssignIntParam( bid + 1 );
 				if (NSelSet)
 				{
-					if (GetKeyState( VK_SHIFT ) & 0x8000)
+					if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 					{
 						if (IsItInSelSet( bid + 32768 ))
 						{
@@ -895,7 +898,7 @@ void ShowProp()
 		};
 	};
 
-	if (NSelSet && !( GetKeyState( VK_SHIFT ) & 0x8000 ))
+	if (NSelSet && !( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))
 	{
 		NSelSet = 0;
 	}
@@ -1179,7 +1182,7 @@ void HPR1( int i )
 	}
 	else
 	{
-		if (GetKeyState( VK_SHIFT ) & 0x8000)
+		if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 		{
 			CmdProduceObj( MyNation, i );
 			CmdProduceObj( MyNation, i );

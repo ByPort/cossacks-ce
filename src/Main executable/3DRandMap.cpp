@@ -4989,6 +4989,8 @@ void SetFractalTexture();
 
 void ClearAllZones();
 
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft )
 {
 	GMAP.Allocate();
@@ -5110,7 +5112,7 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		byte NTex[40];
 		int NTLines;
 		int Divisor;
-		if ( !( GetKeyState( VK_CONTROL ) & 0x8000 ) )
+		if ( !( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) )
 			SetFractalTexture();
 		SetNextInfStage( "Creating cost" );
 		GFILE* f = Gopen( "Terrain\\cost.dat", "r" );

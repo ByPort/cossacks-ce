@@ -3434,6 +3434,9 @@ ChatViewer* DialogsSystem::addChatViewer( SimpleDialog* Parent, int x, int y, in
 	};
 	return nullptr;
 };
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 //-----------------Bit Pictures Viewer-------------
 bool BPXView_OnDraw( SimpleDialog* SD )
 {
@@ -3509,7 +3512,7 @@ bool BPXView_OnDraw( SimpleDialog* SD )
 				  pop		esi
 		}
 	}
-	bool SSTAT = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+	bool SSTAT = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) != 0;
 	for (int ix = 0; ix < BV->Nx; ix++)
 	{
 		for (int iy = 0; iy < BV->Ny; iy++)
@@ -3552,7 +3555,7 @@ bool BPXView_OnMouseOver( SimpleDialog* SD )
 		int bx = div( mouseX - BV->x, BV->OneLx ).quot;
 		int by = div( mouseY - BV->y, BV->OneLy ).quot;
 		BV->ChoosedPos = bx + ( by + BV->PosY )*BV->Nx;
-		if (!( GetKeyState( VK_CONTROL ) & 0x8000 ))
+		if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 		{
 			if (Lpressed)
 			{
@@ -3688,7 +3691,7 @@ bool RLCListBox_OnMouseOver( SimpleDialog* SD )
 		{
 			pos = i - 1;
 			//item is choosed;
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				RB->Choosed[pos] ^= 1;
 			}

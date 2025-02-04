@@ -716,9 +716,36 @@ void MiniRenderAllMap()
 	};
 	NoText = false;
 };
+
+bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true)
+{
+	int numkeys;
+	const bool* keyboardState = SDL_GetKeyboardState(&numkeys);
+	if (scancode >= numkeys)
+	{
+		return false;
+	}
+	if (leftright)
+	{
+		switch (scancode)
+		{
+		case SDL_SCANCODE_LSHIFT:
+		case SDL_SCANCODE_RSHIFT:
+			return keyboardState[SDL_SCANCODE_LSHIFT] || keyboardState[SDL_SCANCODE_RSHIFT];
+		case SDL_SCANCODE_LCTRL:
+		case SDL_SCANCODE_RCTRL:
+			return keyboardState[SDL_SCANCODE_LCTRL] || keyboardState[SDL_SCANCODE_RCTRL];
+		case SDL_SCANCODE_LALT:
+		case SDL_SCANCODE_RALT:
+			return keyboardState[SDL_SCANCODE_LALT] || keyboardState[SDL_SCANCODE_RALT];
+		}
+	}
+	return keyboardState[scancode];
+}
+
 void RenderAllMap()
 {
-	if (GetKeyState( VK_SHIFT ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 	{
 		MiniRenderAllMap();
 		return;
@@ -772,8 +799,8 @@ void AddMouseEvent( int x, int y, bool L, bool R )
 		MSTC[NInStack].Rpressed = R;
 		MSTC[NInStack].rLpressed = L;
 		MSTC[NInStack].rRpressed = R;
-		MSTC[NInStack].Control = ( GetKeyState( VK_CONTROL ) & 0x8000 ) != 0;
-		MSTC[NInStack].Shift = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+		MSTC[NInStack].Control = ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) != 0;
+		MSTC[NInStack].Shift = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) != 0;
 		NInStack++;
 	}
 }
@@ -1075,7 +1102,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 		/*
 		//Can't see where it was supposed to work. Cut it out.
 		if (( !GameInProgress ) && LastKey == SDLK_R &&
-			GetKeyState( VK_CONTROL ) & 0x8000)
+			(GetSDLKeyState( SDL_SCANCODE_LCTRL )))
 		{
 			//RecordMode = !RecordMode;//BUGFIX: remove switching record mode in real time
 		}
@@ -1236,7 +1263,7 @@ void GameKeyCheck()
 			Recreate = 1;
 			break;
 		case 'M':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 114;
 			}
@@ -1294,11 +1321,11 @@ void GameKeyCheck()
 
 		/*
 		case 'D':
-			if (!( GetKeyState( VK_CONTROL ) & 0x8000 ))
+			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
 				if (NPlayers < 2)
 				{
-					if (( GetKeyState( VK_SHIFT ) & 0x8000 ))
+					if (( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))
 					{
 						switch (HISPEED)
 						{
@@ -1326,13 +1353,13 @@ void GameKeyCheck()
 		*/
 
 		case 'A':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 				SpecCmd = 1;
 			else if (NSL[MyNation])
 				GoAndAttackMode = 1;
 			break;
 		case 'S':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 				SpecCmd = 201;
 			break;
 		case 'W':
@@ -1354,7 +1381,7 @@ void GameKeyCheck()
 			}
 			break;
 		case 'K':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				RealPause -= 2;
 			}
@@ -1373,7 +1400,7 @@ void GameKeyCheck()
 			Recreate = 1;
 			break;
 		case 'B':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 9;
 			}
@@ -1383,7 +1410,7 @@ void GameKeyCheck()
 			}
 			break;
 		case 'Z':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 11;
 			}
@@ -1394,7 +1421,7 @@ void GameKeyCheck()
 			}
 			break;
 		case 'F':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 13;
 			}
@@ -1506,7 +1533,7 @@ void GameKeyCheck()
 			PlayerMask = 128;
 			break;
 		case 'I':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				InfoMode = !InfoMode;
 			}
@@ -1530,7 +1557,7 @@ void GameKeyCheck()
 			break;
 
 		case 'O':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				if (PlayGameMode == 2 || CheckFlagsNeed())
 				{
@@ -1549,7 +1576,7 @@ void GameKeyCheck()
 			}
 			break;
 		case 'P':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 113;
 			}
@@ -1638,47 +1665,47 @@ void EditorKeyCheck()
 			break;
 		case '1':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 1;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 1;
 			else ReliefBrush = 1;
 			break;
 		case '2':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 2;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 2;
 			else ReliefBrush = 2;
 			break;
 		case '3':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 3;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 3;
 			else ReliefBrush = 3;
 			break;
 		case '4':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 4;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 4;
 			else ReliefBrush = 4;
 			break;
 		case '5':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 5;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 5;
 			else ReliefBrush = 5;
 			break;
 		case '6':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 6;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 6;
 			else ReliefBrush = 9;
 			break;
 		case '7':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 7;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 7;
 			else ReliefBrush = 20;
 			break;
 		case '8':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 8;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 8;
 			else ReliefBrush = 50;
 			break;
 		case '9':
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CostThickness = 9;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 9;
 			else ReliefBrush = 100;
 			break;
 		case 'H':
@@ -1688,7 +1715,7 @@ void EditorKeyCheck()
 			RenderAllMap();
 			break;
 		case 'V':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				ClearModes();
 				NeedToPopUp = 20;
@@ -1722,7 +1749,7 @@ void EditorKeyCheck()
 			};
 			break;
 		case 13:
-			if (!( GetKeyState( VK_CONTROL ) & 0x8000 ))
+			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
 				//MakeMenu=true;
 				//MenuType=3;
@@ -1800,7 +1827,7 @@ void EditorKeyCheck()
 			};
 			break;
 		case 'U':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)CINFMOD = !CINFMOD;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CINFMOD = !CINFMOD;
 			else if (Inform != 2)Inform = 2; else Inform = 0;
 			MiniActive = 0;
 			Recreate = 1;
@@ -1808,7 +1835,7 @@ void EditorKeyCheck()
 			break;
 		case 'F':
 			//SVSC.Zero();
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				TestGenMap();
 			}
@@ -1850,7 +1877,7 @@ void EditorKeyCheck()
 			};
 			break;
 		case 'N':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				AutoSMSSet();
 			}
@@ -1868,9 +1895,9 @@ void EditorKeyCheck()
 
 		/*
 		case 'D':
-			if (!( GetKeyState( VK_CONTROL ) & 0x8000 ))
+			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
-				if (( GetKeyState( VK_SHIFT ) & 0x8000 ))//&& PlayGameMode)
+				if (( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))//&& PlayGameMode)
 				{
 					switch (HISPEED)
 					{
@@ -1898,12 +1925,12 @@ void EditorKeyCheck()
 		*/
 
 		case 'A':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)SpecCmd = 1;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SpecCmd = 1;
 			else if (NSL[MyNation])GoAndAttackMode = 1;
 			break;
 		case 'S':
 			//ClearModes();
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				//EnterRandomParams();
 			}
@@ -1927,7 +1954,7 @@ void EditorKeyCheck()
 			};
 			break;
 		case 'W':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)ProcessSaveInSquares();
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))ProcessSaveInSquares();
 			else PeaceMode = !PeaceMode;
 			break;
 			/*
@@ -1949,7 +1976,7 @@ void EditorKeyCheck()
 			//break;
 		case 'C':
 			//CINFMOD=!CINFMOD;
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 217;
 			}
@@ -1960,9 +1987,9 @@ void EditorKeyCheck()
 			};
 			break;
 		case 'X':
-			//if(GetKeyState(VK_CONTROL)&0x8000)SpecCmd=5;
+			//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))SpecCmd=5;
 			//else SpecCmd=6;
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				EraseAreas();
 				rando();//!!
@@ -1983,7 +2010,7 @@ void EditorKeyCheck()
 			Recreate = 1;
 			break;
 		case 'B':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)SpecCmd = 9;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SpecCmd = 9;
 			else SpecCmd = 10;
 			//ClearMaps();
 			//CreateUnitsLocking();
@@ -1992,7 +2019,7 @@ void EditorKeyCheck()
 			//if(DrawPixMode){
 			//	PerformPixUndo();
 			//};
-			//if(GetKeyState(VK_CONTROL)&0x8000)SpecCmd=11;
+			//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))SpecCmd=11;
 			//else SpecCmd=12;
 
 			break;
@@ -2054,14 +2081,14 @@ void EditorKeyCheck()
 			HeightEditMode = false; PlayerMask = 128;
 			break;
 		case 'I':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)InfoMode = !InfoMode;
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))InfoMode = !InfoMode;
 			else if (Inform != 1)Inform = 1; else Inform = 0;
 			MiniActive = 0;
 			Recreate = 1;
 			//InfoMode=1;
 			break;
 		case 'O':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				OptHidden = !OptHidden;
 			}
@@ -2076,12 +2103,12 @@ void EditorKeyCheck()
 			//if(MsPerFrame)MsPerFrame--;
 		case 'P':
 			//MsPerFrame++;
-			//if(GetKeyState(VK_CONTROL)&0x8000)RotatePhiI();
+			//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))RotatePhiI();
 			//RotatePhi();
 			NeedToPopUp = 2;
 			break;
 		case 'R':
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				//ProcessMapOptions();
 			}
@@ -2104,14 +2131,14 @@ void EditorKeyCheck()
 		case 'T':
 			//HeightEditMode=false;
 			//ChoosePosition=true;
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				ToolsHidden = !ToolsHidden;
 			};
 			break;
 		case 'G':
-			//if(GetKeyState(VK_SHIFT)&0x8000)CreateMapShot();
-			if (GetKeyState( VK_CONTROL ) & 0x8000)SelectNextGridMode();
+			//if(GetSDLKeyState(SDL_SCANCODE_LSHIFT))CreateMapShot();
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SelectNextGridMode();
 			else SaveScreen();
 			//SVSC.Grids=!SVSC.Grids;
 			//SVSC.RefreshScreen();
@@ -2130,7 +2157,7 @@ void EditorKeyCheck()
 			break;
 		case 'M'://NUM 0
 			//if(HeightEditMode)HiStyle=5;
-			if (GetKeyState( VK_CONTROL ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				//AddHill();
 				GenerateRandomRoad( 5 );
@@ -2151,7 +2178,7 @@ void EditorKeyCheck()
 		default:
 			if (wParam >= '0'&&wParam <= '9')
 			{
-				if (GetKeyState( VK_SHIFT ) & 0x8000)
+				if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 				{
 					int v = wParam - '0';
 					SHIFT_VAL = SHIFT_VAL * 10 + v;
@@ -2163,7 +2190,7 @@ void EditorKeyCheck()
 						CmdMemSelection( MyNation, wParam - '0' );
 					}
 					else CmdRememSelection( MyNation, wParam - '0' );
-					//if(GetKeyState(VK_CONTROL)&0x8000)
+					//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))
 					//	CmdMemSelection(MyNation,wParam-'0');
 					//else CmdRememSelection(MyNation,wParam-'0');
 				};
@@ -3531,7 +3558,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	{
 		return SDL_APP_SUCCESS;
 	}
-
+	bool pressed = GetSDLKeyState(SDL_SCANCODE_LSHIFT);
 	(*AllGameCoroutine)();
 	return SDL_APP_CONTINUE;
 }

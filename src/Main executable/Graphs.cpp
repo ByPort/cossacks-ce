@@ -171,7 +171,7 @@ Graph GRPS[10];
 void DrawAllGrp()
 {
 #ifndef NOGRAF
-	if (GetKeyState(VK_SCROLL)) {
+	if ((SDL_GetModState() & SDL_KMOD_SCROLL) || GetSDLKeyState(SDL_SCANCODE_SCROLLLOCK)) {
 		for (int i = 0; i < 10; i++) {
 			GRPS[i].Header = GHDR[i];
 			GRPS[i].Draw(10 + (i / 5) * 400, 50 + (i % 5) * 110, 390, 100);

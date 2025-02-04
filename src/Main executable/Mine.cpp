@@ -338,9 +338,11 @@ void OneObject::ShowMe()
 	Sdoxlo = 0;
 }
 
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 void PushUnitOutOfMine( int i )
 {
-	if (GetKeyState( VK_SHIFT ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 	{
 		CmdLeaveMine( MyNation, i );
 		CmdLeaveMine( MyNation, i );

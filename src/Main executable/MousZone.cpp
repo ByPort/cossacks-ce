@@ -213,6 +213,9 @@ int CreateZone(int x, int y, int lx, int ly, HandlePro* HPro, int Index, char* H
 };
 bool MouseOverZone = 0;
 extern byte SpecCmd;
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 byte LastPressedCodes[8] = { 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };
 extern bool EnterChatMode;
 extern bool EditMapMode;
@@ -229,17 +232,17 @@ int CheckZonePressed(int i) {
 				byte Scan = Zones[i].ScanCode;
 
 				if (State & 1) {
-					if (!(GetKeyState(VK_CONTROL) & 0x8000))return false;
+					if (!(GetSDLKeyState(SDL_SCANCODE_LCTRL)))return false;
 				}
-				else if (GetKeyState(VK_CONTROL) & 0x8000)return false;
+				else if (GetSDLKeyState(SDL_SCANCODE_LCTRL))return false;
 				if (State & 2) {
-					if (!(GetKeyState(VK_MENU) & 0x8000))return false;
+					if (!(GetSDLKeyState(SDL_SCANCODE_LALT)))return false;
 				}
-				else if (GetKeyState(VK_MENU) & 0x8000)return false;
+				else if (GetSDLKeyState(SDL_SCANCODE_LALT))return false;
 				if (State & 4) {
-					if (!(GetKeyState(VK_SHIFT) & 0x8000))return false;
+					if (!(GetSDLKeyState(SDL_SCANCODE_LSHIFT)))return false;
 				}
-				else if (GetKeyState(VK_SHIFT) & 0x8000)return false;
+				else if (GetSDLKeyState(SDL_SCANCODE_LSHIFT))return false;
 
 				for (int j = 0; j < 8; j++)if (LastPressedCodes[j] == Scan)return 1;
 				for (int j = 0; j < 8; j++)if (LastPressedCodes[j] == 0xFF) {
@@ -264,17 +267,17 @@ bool CheckSpritePressed(int sp) {
 			byte State = KeyCodes[sp][1];
 			byte Scan = ScanKeys[KeyCodes[sp][0]];
 			if (State & 1) {
-				if (!(GetKeyState(VK_CONTROL) & 0x8000))return false;
+				if (!(GetSDLKeyState(SDL_SCANCODE_LCTRL)))return false;
 			}
-			else if (GetKeyState(VK_CONTROL) & 0x8000)return false;
+			else if (GetSDLKeyState(SDL_SCANCODE_LCTRL))return false;
 			if (State & 2) {
-				if (!(GetKeyState(VK_MENU) & 0x8000))return false;
+				if (!(GetSDLKeyState(SDL_SCANCODE_LALT)))return false;
 			}
-			else if (GetKeyState(VK_MENU) & 0x8000)return false;
+			else if (GetSDLKeyState(SDL_SCANCODE_LALT))return false;
 			if (State & 4) {
-				if (!(GetKeyState(VK_SHIFT) & 0x8000))return false;
+				if (!(GetSDLKeyState(SDL_SCANCODE_LSHIFT)))return false;
 			}
-			else if (GetKeyState(VK_SHIFT) & 0x8000)return false;
+			else if (GetSDLKeyState(SDL_SCANCODE_LSHIFT))return false;
 			return 1;
 		};
 	};

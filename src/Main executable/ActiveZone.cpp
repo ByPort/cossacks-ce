@@ -141,15 +141,18 @@ int ZoneCmd = 0;
 bool WasUnpress = 0;
 void UnPress();
 void ClearMStack();
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 void ControlAZones( int x, int y )
 {
-	if (!GetKeyState( VK_SCROLL ))
+	if (!((SDL_GetModState() & SDL_KMOD_SCROLL) || GetSDLKeyState(SDL_SCANCODE_SCROLLLOCK)))
 	{
 		ZoneCmd = 0;
 		return;
 	};
 	ProcessAGroups( x, y );
-	if (( KeyPressed&&LastKey == SDLK_RETURN && ( GetKeyState( VK_CONTROL ) & 0x8000 ) ) || ZoneCmd)
+	if (( KeyPressed&&LastKey == SDLK_RETURN && ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) ) || ZoneCmd)
 	{
 		if (NSL[MyNation] && ZoneCmd != 1)
 		{

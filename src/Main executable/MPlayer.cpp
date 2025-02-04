@@ -3997,11 +3997,14 @@ int GetPing( CDPID pid );
 void StartPing( DWORD DPID, int ID );
 void EndPing( int ID );
 char* GetLString( DWORD DPID );
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 char* LOSS_PN = nullptr;
 void CreateDiffStr( char* str )
 {
 	if (!LOSS_PN)LOSS_PN = GetTextByID( "LOSS_PN" );
-	if (( GetKeyState( VK_CONTROL ) & 0x8000 ) && ( GetKeyState( VK_SHIFT ) & 0x8000 ))
+	if (( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) && ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))
 	{
 		str[0] = 0;
 		for (int i = 0; i < NPlayers; i++)

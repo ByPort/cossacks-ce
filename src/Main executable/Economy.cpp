@@ -264,9 +264,11 @@ void SelectCLEAR( int i )
 	ECO.NeedToSell = 0;
 }
 
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 void SelectCHANGE( int i )
 {
-	if (GetKeyState( VK_SHIFT ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 	{
 		ECO.NeedToSell += i * 100;
 	}

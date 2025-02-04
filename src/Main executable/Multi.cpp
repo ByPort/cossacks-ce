@@ -87,6 +87,9 @@ void CmdCreateSelection( byte NI, byte x, byte y, byte x1, byte y1 )
 	EBPos += 6;
 
 };
+
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 extern bool GoAndAttackMode;
 void AddXYPulse( int x, int y );
 extern int curptr;
@@ -96,9 +99,9 @@ void CmdSendToXY( byte NI, int x, int y, short Dir )
 	//if(!NOPAUSE)return;//!!!
 
 	byte Type = 0;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Type = 2;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )Type = 2;
 	if ( GoAndAttackMode )Type |= 8;
-	if ( GetKeyState( VK_CONTROL ) & 0x8000 )Type |= 16;
+	if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )Type |= 16;
 	GoAndAttackMode = 0;
 	ExBuf[EBPos] = 2;
 	ExBuf[EBPos + 1] = NI;
@@ -117,7 +120,7 @@ void CmdAttackObj( byte NI, word ObjID, short DIR )
 	//if(!NOPAUSE)return;//!!!
 
 	byte Type = 0;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Type = 2;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )Type = 2;
 	ExBuf[EBPos] = 3;
 	ExBuf[EBPos + 1] = NI;
 	*(word*) ( &ExBuf[EBPos + 2] ) = ObjID;
@@ -149,7 +152,7 @@ void CmdCreateBuilding( byte NI, int x, int y, word Type )
 	*(int*) ( &ExBuf[EBPos + 2] ) = x;
 	*(int*) ( &ExBuf[EBPos + 6] ) = y;
 	*(word*) ( &ExBuf[EBPos + 10] ) = Type;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )ExBuf[EBPos + 12] = 2;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )ExBuf[EBPos + 12] = 2;
 	else ExBuf[EBPos + 12] = 0;
 	EBPos += 13;
 
@@ -160,7 +163,7 @@ int PrevProdUnit = 0;
 void CmdProduceObj( byte NI, word Type )
 {
 	//if(!NOPAUSE)return;//!!!
-	if ( GetKeyState( VK_CONTROL ) & 0x8000 )Type |= 8192;
+	if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )Type |= 8192;
 	if ( !AddUnitsToCash( NI, Type ) )return;
 	if ( PrevProdPos != -1 && PrevProdUnit == Type )
 	{
@@ -195,7 +198,7 @@ void CmdRememSelection( byte NI, byte Index )
 {
 	//if(!NOPAUSE)return;//!!!
 
-	byte SHIFT = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+	byte SHIFT = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) != 0;
 	bool shift = 0 != SHIFT;
 	SelSet[NI * 10 + ( Index & 127 )].ImSelectMembers( NI, shift );
 	ImCorrectBrigadesSelection( NI );
@@ -212,7 +215,7 @@ void CmdBuildObj( byte NI, word ObjID )
 	ExBuf[EBPos] = 9;
 	ExBuf[EBPos + 1] = NI;
 	*(word*) ( &ExBuf[EBPos + 2] ) = ObjID;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )
 	{
 		ExBuf[EBPos + 4] = 2;
 	}
@@ -242,7 +245,7 @@ void CmdRepairWall( byte NI, short xx, short yy )
 	ExBuf[EBPos + 1] = NI;
 	*(word*) ( &ExBuf[EBPos + 2] ) = xx;
 	*(word*) ( &ExBuf[EBPos + 4] ) = yy;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )ExBuf[EBPos + 6] = 2;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )ExBuf[EBPos + 6] = 2;
 	else ExBuf[EBPos + 6] = 0;
 	EBPos += 7;
 
@@ -331,7 +334,7 @@ void CmdCreateGoodSelection( byte NI, word x, word y, word x1, word y1 )
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Addon = true;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )Addon = true;
 	CreateGoodSelection( NI, x, y, x1, y1, nullptr, 0, Addon );
 };
 //[13][NI][x][y][x1][y1][Kind]
@@ -339,7 +342,7 @@ void CmdCreateGoodKindSelection( byte NI, word x, word y, word x1, word y1, byte
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Addon = true;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )Addon = true;
 	CreateGoodSelection( NI, x, y, x1, y1, &FnKind, Kind, Addon );
 };
 //[14][NI][x][y][x1][y1][Type]
@@ -347,7 +350,7 @@ void CmdCreateGoodTypeSelection( byte NI, word x, word y, word x1, word y1, word
 {
 	//if(!NOPAUSE)return;//!!!
 	bool Addon = false;
-	if ( GetKeyState( VK_SHIFT ) & 0x8000 )Addon = true;
+	if ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) )Addon = true;
 	CreateGoodSelection( NI, x, y, x1, y1, &FnType, Type, Addon );
 };
 //[15][NI][x][y]

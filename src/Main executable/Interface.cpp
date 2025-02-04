@@ -290,6 +290,8 @@ extern tpProcessDownloadInternetFiles* ProcessDownloadInternetFiles;
 extern tpSendRecBuffer* SendRecBuffer;
 //-----------------------------------------------------------//
 
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 __declspec( dllexport ) bool ProcessMessages()
 {
 	if ( PDIF_Inside )
@@ -424,7 +426,7 @@ __declspec( dllexport ) bool ProcessMessages()
 			}
 
 
-			if ( GetKeyState( VK_CONTROL ) & 0x8000 )
+			if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )
 			{
 				LastCTRLPressTime = GetTickCount();
 			}
@@ -535,7 +537,7 @@ void ProcessVotingKeys();
 
 bool ProcessMessagesEx()
 {
-	if ( GetKeyState( VK_CONTROL ) & 0x8000 )
+	if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )
 	{
 		LastCTRLPressTime = GetTickCount();
 	}
@@ -4950,7 +4952,7 @@ ffe2:
 			//BUGFIX: Disable no direct connection check
 			if (!CheckExistConn())
 			{
-				if (!( GetKeyState( VK_CONTROL ) & 0x8000 ))
+				if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 				{
 					OkBtn->Enabled = 0;
 					OkBtn->Visible = 0;
@@ -13660,7 +13662,7 @@ KRT:
 
 		CreateTimedHintEx( ChatString, kChatMessageDisplayTime, 16 + NatRefTBL[MyNation] );//Chat message
 
-		bool ally = ( ( GetKeyState( VK_CONTROL ) & 0x8000 ) != 0 );
+		bool ally = ( ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) != 0 );
 		SendChat( ChatString, ally );
 		ChatCursPos = 0;
 
@@ -14740,7 +14742,7 @@ SprGroup* CURSG;
 bool ON_SPRITE_CLICK( SimpleDialog* SD )
 {
 	ColoredBar* CB = (ColoredBar*) SD;
-	if ( GetKeyState( VK_CONTROL ) & 0x8000 )
+	if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )
 	{
 		if ( CB->color == PS_COLOR )CB->color = AC_COLOR;
 		else CB->color = PS_COLOR;

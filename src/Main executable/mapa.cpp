@@ -278,6 +278,8 @@ void DelInGrid( int x, int y )
 	}
 }
 
+extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
+
 void DrawGrids()
 {
 	int x0 = ( mapx - GridX * 2 ) / ( 2 * GridLx );
@@ -322,7 +324,7 @@ void DrawGrids()
 			DrawLine( xMin, y, xMax, y, 0x9A );
 		};
 	};
-	if (GetKeyState( VK_CONTROL ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 	{
 		int Dx = GridLx * 32;
 		for (int i = 0; i < Nx + 2; i++)
@@ -2399,7 +2401,7 @@ void DrawMinAZonesVis( int x, int y );
 //Copy minimap into screen buffer
 void GMiniShow()
 {
-	//Inform=GetKeyState(VK_MENU);
+	//Inform=GetSDLKeyState(SDL_SCANCODE_LALT);
 	if (NoText || PlayGameMode == 1)
 		return;
 
@@ -2553,7 +2555,7 @@ void GMiniShow()
 		Vline( minix + x - MiniX, miniy + y - 2 - MiniY, miniy + y - 2 + 4 - MiniX, 255 );
 		ShowMiniDestn();
 
-		if (GetKeyState( VK_CONTROL ) & 0x8000)
+		if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			DrawMinAZones( minix - MiniX, miniy - MiniY );
 
 		SetRLCWindow( 0, 0, COPYSizeX, RSCRSizeY, SCRSizeX );
@@ -2564,7 +2566,7 @@ void GMiniShow()
 		ShowMiniDestn();
 		SetRLCWindow( 0, 0, COPYSizeX, RSCRSizeY, SCRSizeX );
 
-		if (GetKeyState( VK_CONTROL ) & 0x8000)
+		if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			DrawMinAZonesVis( minix - MiniX, miniy - MiniY );
 	}
 
@@ -2900,8 +2902,8 @@ void GlobalHandleMouse(bool process_scrolling)
 		bool rp = Rpressed;
 		bool rlp = realLpressed;
 		bool rrp = realRpressed;
-		bool Ctrl = ( GetKeyState( VK_CONTROL ) & 0x8000 ) != 0;
-		bool Shift = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+		bool Ctrl = ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ) != 0;
+		bool Shift = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) != 0;
 		int x, y;
 		do
 		{
@@ -3079,7 +3081,7 @@ void HandleMouse( int x, int y )
 	NoPress = false;
 
 	//Unit selection
-	if (!( GetKeyState( VK_SHIFT ) & 0x8000 ))
+	if (!( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))
 	{
 		if (SHIFT_VAL)
 		{
@@ -3567,7 +3569,7 @@ void HandleMouse( int x, int y )
 					break;
 				};
 			};
-			bool Shpress = ( GetKeyState( VK_SHIFT ) & 0x8000 ) || HeightEditMode == 13;
+			bool Shpress = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) || HeightEditMode == 13;
 			if (CheckCurve() || Shpress)
 			{
 				bool LINK = CheckCurveLinked( xmx, yreal );
@@ -3696,7 +3698,7 @@ void HandleMouse( int x, int y )
 			};
 			if (MEditMode)
 			{
-				bool Shpress = ( GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
+				bool Shpress = ( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ) != 0;
 				if (CheckCurve() || Shpress)
 				{
 					AddPointToCurve( xmx, yreal, !Shpress, 1 );
@@ -3739,7 +3741,7 @@ void HandleMouse( int x, int y )
 				{
 					;
 					CmdCreateBuilding( MyNation, x0, y0, BuildingID );
-					if (!( GetKeyState( VK_SHIFT ) & 0x8000 ))BuildMode = false;
+					if (!( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))BuildMode = false;
 					Lpressed = false;
 					UnPress();
 				};
@@ -3931,7 +3933,7 @@ void HandleMouse( int x, int y )
 						{
 							curptr = 2;
 						}
-						if (GetKeyState( VK_CONTROL ) & 0x8000)
+						if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 						{
 							if (AOB->newMons->CanBeCapturedWhenFree)
 							{
@@ -3998,7 +4000,7 @@ void HandleMouse( int x, int y )
 				DoSelSound( 1 );
 				Rpressed = false;
 				UnPress();
-				if (GetKeyState( VK_CONTROL ) & 0x8000)
+				if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 				{
 					CmdSetDst( MyNation, xmx << 4, yreal << 4 );
 					SetDestMode = false;
@@ -4065,7 +4067,7 @@ void HandleMouse( int x, int y )
 						{
 							if (!( AOBJ->NMask&MyMask ))
 							{
-								if (GetKeyState( VK_CONTROL ) & 0x8000)
+								if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 								{
 									if (AOBJ->newMons->CanBeCapturedWhenFree)
 									{
@@ -4179,25 +4181,25 @@ void EDGETEST()
 		//Check arrow keys
 		if (!( EnterChatMode || RESMODE ))
 		{
-			if (GetKeyState( VK_RIGHT ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_RIGHT ))
 			{
 				StepX = kKeyboardScrollSpeed;
 				MoveX = true;
 			}
 
-			if (GetKeyState( VK_LEFT ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_LEFT ))
 			{
 				StepX = -kKeyboardScrollSpeed;
 				MoveX = true;
 			}
 
-			if (GetKeyState( VK_UP ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_UP ))
 			{
 				StepY = -kKeyboardScrollSpeed;
 				MoveY = true;
 			}
 
-			if (GetKeyState( VK_DOWN ) & 0x8000)
+			if (GetSDLKeyState( SDL_SCANCODE_DOWN ))
 			{
 				StepY = kKeyboardScrollSpeed;
 				MoveY = true;
@@ -4359,7 +4361,7 @@ void EDGETEST()
 		}
 	}
 
-	if (GetKeyState( VK_SHIFT ) & 0x8000)
+	if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 	{
 		curptr = 0;
 	}
