@@ -568,10 +568,12 @@ void ProcessLandAI()
 		TryUpgrade(&mortira_BUILD3, 30, 50);
 		TryUpgrade(&mortira_BUILD4, 30, 50);
 		TryUpgrade(&mortira_BUILD5, 30, 50);
-		if (UpgIsDone(&mortira_BUILD5)) {
+		if (UpgIsDone(&mortira_BUILD5))
+		{
 			TryUnit(&mortira, 10, 10, 50);
 		}
-		if (UpgIsDone(&pushka_BUILD5)) {
+		if (UpgIsDone(&pushka_BUILD5))
+		{
 			TryUnit(&pushka, 12, 10, 50);
 		}
 		TryUnit(&mortira_b, 50, 10, 50);
@@ -588,7 +590,8 @@ void ProcessLandAI()
 		TryUpgrade(&mameluk_SHIELD6, 30, 50);
 		TryUpgrade(&mameluk_SHIELD7, 30, 50);
 	}
-	if (GetUnits(&krestian) > 35) {
+	if (GetUnits(&krestian) > 35)
+	{
 		TryUpgrade(&pikiner_ATTACK, 90, 100);
 		TryUpgrade(&pikiner_ATTACK3, 90, 100);
 		TryUpgrade(&pikiner_ATTACK4, 90, 100);
