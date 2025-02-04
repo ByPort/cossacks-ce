@@ -106,7 +106,7 @@ ResDiscr::ResDiscr()
 ResDiscr RDS[8];
 void Errr( LPCSTR s )
 {
-	MessageBox( hwnd, s, "Nature loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nature loading failed...", s, sdlWindow);
 	assert( false );
 };
 int GetUnitKind( char* Name )

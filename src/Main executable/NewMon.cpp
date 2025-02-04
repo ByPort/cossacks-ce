@@ -309,7 +309,7 @@ void ErrM( char* s )
 			LoadPalette( "0\\agew_1.pal" );
 		}
 	}
-	MessageBox( hwnd, s, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "LOADING FAILED...", s, sdlWindow);
 }
 
 void NEPar( char* name, int line, char* Sect, int Need )

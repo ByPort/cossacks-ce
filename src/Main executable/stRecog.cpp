@@ -43,7 +43,7 @@ void NLine(GFILE* f)
 
 void Errx(LPCSTR s)
 {
-	MessageBox(hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nation loading failed...", s, sdlWindow);
 	assert(false);
 }
 

@@ -1,10 +1,14 @@
 #include <windows.h>
+#include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #pragma pack(1)
 #include "ResFile.h"
 #include "gFile.h"
 #define LOADSCX
+
+extern SDL_Window* sdlWindow;
+
 char* GetTextByID(char* ID);
 char* HiEdMode;//"Редактирование высот."
 void LOADSC(char* ID,char** str){
@@ -12,7 +16,7 @@ void LOADSC(char* ID,char** str){
 	if(!strcmp(*str,ID)){
 		char cc[128];
 		sprintf(cc,"Unknown string: %s (see COMMENT.TXT)",ID);
-		MessageBox(NULL,cc,"String not found...",0);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "String not found...", cc, sdlWindow);
 	};
 };
 // FIXME: something strange's happening here

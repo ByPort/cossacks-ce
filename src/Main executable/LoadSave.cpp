@@ -164,11 +164,11 @@ void LOutErr( LPCSTR s )
 {
 	if (CurPalette == 2)LoadPalette( "2\\agew_1.pal" );
 	else LoadPalette( "0\\agew_1.pal" );
-	MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, sdlWindow);
 };
 void SOutErr( LPCSTR s )
 {
-	MessageBox( hwnd, s, "Saving failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Saving failed...", s, sdlWindow);
 };
 void SavePackArray( SaveBuf* ff1, word defval, word* dest, int size )
 {

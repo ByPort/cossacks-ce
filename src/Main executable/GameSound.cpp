@@ -34,7 +34,7 @@ word NSounds;
 int NoMineSound = -1;
 void Errs(LPCSTR s)
 {
-	MessageBox(hwnd, s, "Sound loading failed...", MB_ICONWARNING | MB_OK);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Sound loading failed...", s, sdlWindow);
 	assert(false);
 };
 extern short randoma[8192];

@@ -252,7 +252,7 @@ void ScenErr( char* Mess )
 	if ( FFF != INVALID_HANDLE_VALUE )
 	{
 		RClose( FFF );
-		MessageBox( NULL, Mess, "Scenary error...", MB_TOPMOST );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Scenary error...", Mess, sdlWindow);
 		assert( false );
 	}
 }
@@ -457,11 +457,11 @@ void IntErr( char* Mess )
 		RClose( FFF );
 		if ( AiIsRunNow )
 		{
-			MessageBox( NULL, Mess, "AI registration error...", MB_TOPMOST );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AI registration error...", Mess, sdlWindow);
 		}
 		else
 		{
-			MessageBox( NULL, Mess, SCENINF.DLLName, MB_TOPMOST );
+			SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, SCENINF.DLLName, Mess, sdlWindow );
 		}
 	}
 }
@@ -4742,7 +4742,7 @@ char* CurAIDLL = NULL;
 
 void AIER( char* Mess )
 {
-	MessageBox( NULL, Mess, CurAIDLL, MB_TOPMOST );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, CurAIDLL, Mess, sdlWindow);
 }
 
 void AI_Error()
@@ -5581,7 +5581,7 @@ void ErrM( char* s, char* s1 )
 	else LoadPalette( "0\\agew_1.pal" );
 	char cc2[200];
 	sprintf( cc2, s, s1 );
-	MessageBox( hwnd, cc2, "LOADING FAILED...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "LOADING FAILED...", cc2, sdlWindow);
 	assert( false );
 }
 
@@ -5646,7 +5646,7 @@ void MissPack::LoadMissions()
 	}
 	else
 	{
-		MessageBox( NULL, "Could not open Missions\\Missions.txt", "Missions loading failed...", MB_TOPMOST );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Missions loading failed...", "Could not open Missions\\Missions.txt", sdlWindow);
 	}
 
 	ProtectionMode = 1;
@@ -5677,7 +5677,7 @@ void MissPack::LoadMissions()
 	}
 	else
 	{
-		MessageBox( NULL, "Could not open Missions\\SingleMiss.txt", "Missions loading failed...", MB_TOPMOST );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Missions loading failed...", "Could not open Missions\\SingleMiss.txt", sdlWindow);
 	}
 }
 
@@ -5809,7 +5809,7 @@ void LoadAIFromDLL( byte Nat, char* Name )
 		{
 			char cc[128];
 			sprintf( cc, "%s : Could not load <void ProcessAI()>", Name );
-			MessageBox( NULL, cc, "AI loadind from DLL", MB_TOPMOST );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AI loadind from DLL", cc, sdlWindow);
 			assert( 0 );
 		}
 		else
@@ -5819,7 +5819,7 @@ void LoadAIFromDLL( byte Nat, char* Name )
 			{
 				char cc[128];
 				sprintf( cc, "%s : Could not load <void InitAI()>", Name );
-				MessageBox( NULL, cc, "AI loadind from DLL", MB_TOPMOST );
+				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AI loadind from DLL", cc, sdlWindow);
 				assert( 0 );
 			}
 			AiIsRunNow = true;
@@ -5833,7 +5833,7 @@ void LoadAIFromDLL( byte Nat, char* Name )
 #ifndef STARFORCE
 		char cc[128];
 		sprintf( cc, "Could not load %s", Name );
-		MessageBox( NULL, cc, "AI loadind from DLL", MB_TOPMOST );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AI loadind from DLL", cc, sdlWindow);
 		assert( 0 );
 #endif
 	}
@@ -6096,7 +6096,7 @@ WarPack::~WarPack()
 
 extern "C" __declspec( dllexport ) void MissErrorMessage( char* Header, char* Message )
 {
-	MessageBox( hwnd, Message, Header, 0 );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, Header, Message, sdlWindow);
 }
 
 //Is the map editor running?

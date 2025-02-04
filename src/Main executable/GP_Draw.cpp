@@ -10083,7 +10083,7 @@ UNIFONTS::~UNIFONTS()
 };
 void FONERR()
 {
-	MessageBox( NULL, "Invalid Unicode.dat", "ERROR!", 0 );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Invalid Unicode.dat", sdlWindow);
 	assert( 0 );
 };
 

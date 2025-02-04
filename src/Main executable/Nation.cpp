@@ -112,7 +112,7 @@ RLCTable miniMImage[maximage];
 int MaxImage;
 void Err( LPCSTR s )
 {
-	MessageBox( hwnd, s, "Nation loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Nation loading failed...", s, sdlWindow);
 }
 
 //Загрузка нации из файла

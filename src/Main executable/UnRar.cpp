@@ -1,5 +1,6 @@
 #define STRICT
 #include <windows.h>
+#include <SDL3/SDL.h>;
 #include <stdio.h>
 #include <ctype.h>
 #include "unrar.h"
@@ -15,6 +16,8 @@ void OutProcessFileError(int Error);
 int ChangeVolProc(char *ArcName, int Mode);
 int ProcessDataProc(unsigned char *Addr, int Size);
 
+extern SDL_Window* sdlWindow;
+
 // TODO: replace with cross-platform lib or even remove since the game doesn't seem to deal with rar archives currently
 //Handle to unrar.dll
 HMODULE hLib;
@@ -25,7 +28,7 @@ void* LoadF(char* Name)
 	{
 		char ccc[256];
 		sprintf(ccc, "UNRAR.DLL does not contain function: %s", Name);
-		MessageBox(NULL, ccc, "DLL init error.", 0);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "DLL init error.", ccc, sdlWindow);
 	}
 	return fn;
 }
@@ -36,7 +39,7 @@ void LoadRARLib()
 	hLib = LoadLibrary("unrar.dll");
 	if (!hLib) 
 	{
-		MessageBox(NULL, "Could not load unrar.dll", "ERROR!", 0);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Could not load unrar.dll", sdlWindow);
 		return;
 	}
 	else 

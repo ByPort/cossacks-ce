@@ -296,21 +296,6 @@ void SDLModeCallback(SDL_DisplayMode* mode)
 //Init DirectDraw and find possible resolutions
 bool EnumModesOnly()
 {
-	//HRESULT ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-	//if (ddrval == DD_OK)
-	//{
-	//	lpDD->EnumDisplayModes( 0, NULL, NULL, ModeCallback );
-	//	lpDD->Release();
-	//	lpDD = NULL;
-
-	//	return true;
-	//}
-	//else
-	//{
-	//	MessageBox( hwnd, "Unable to initialise Direct Draw. Cossacks should not run.", "Loading error", MB_ICONSTOP );
-	//	exit( 0 );
-	//}
-
 	SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
 	if (primaryDisplay)
 	{
@@ -332,9 +317,7 @@ bool EnumModesOnly()
 
 bool CreateDDObjects( SDL_Window* sdlWindow )
 {
-	//HRESULT ddrval;
 	bool success;
-	char buf[256];
 	SDLError = false;
 
 	if (window_mode)
@@ -405,7 +388,7 @@ bool CreateDDObjects( SDL_Window* sdlWindow )
 		//	}
 		//}
 
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), NULL);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), sdlWindow);
 		return false;
 	}
 
@@ -480,173 +463,9 @@ SDMOD:;
 			}
 		}
 	}
-	//wsprintf( buf, "SDL Init Failed (%08lx)\n", ddrval );
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), NULL);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", SDL_GetError(), sdlWindow);
 	return false;
 }
-
-//BOOL CreateRGBDDObjects( HWND hwnd )
-//{
-//	HRESULT ddrval;
-//	char    buf[256];
-//	DDError = false;
-//	CurrentSurface = true;
-//	if (window_mode)
-//	{
-//
-//		DDError = false;
-//		SCRSizeX = MaxSizeX;
-//		SCRSizeY = MaxSizeY;
-//		COPYSizeX = RealLx;
-//		RSCRSizeX = RealLx;
-//		RSCRSizeY = RealLy;
-//		ScrHeight = SCRSizeY;
-//		ScrWidth = SCRSizeX;
-//		InitRLCWindows();
-//		WindX = 0;
-//		WindY = 0;
-//		WindLx = RealLx;
-//		WindLy = RealLy;
-//		WindX1 = WindLx - 1;
-//		WindY1 = WindLy - 1;
-//		BytesPerPixel = 1;
-//		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
-//		return true;
-//	}
-//#ifdef COPYSCR
-//	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
-//#endif
-//	if (lpDD)
-//	{
-//		lpDDSPrimary->Release();
-//		goto SDMOD;
-//	}
-//	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-//	if (ddrval == DD_OK)
-//	{
-//		// Get exclusive mode
-//		ddrval = lpDD->SetCooperativeLevel( hwnd,
-//			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
-//		if (ddrval == DD_OK)
-//		{
-//SDMOD:
-//			ddrval = lpDD->SetDisplayMode( 800, 600, 32 ); //COPYSizeX,RSCRSizeY, 8 );
-//			if (ddrval == DD_OK)
-//			{
-//				// Create the primary surface with 1 back buffer
-//				ddsd.dwSize = sizeof( ddsd );
-//				ddsd.dwFlags = DDSD_CAPS;
-//				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-//				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
-//				if (ddrval == DD_OK)
-//				{
-//					DDError = false;
-//					SCRSizeX = MaxSizeX;
-//					SCRSizeY = MaxSizeY;
-//					RSCRSizeX = RealLx;//ddsd.lPitch;
-//					Pitch = ddsd.lPitch;
-//					COPYSizeX = RealLx;
-//					RSCRSizeY = RealLy;
-//					ScrHeight = SCRSizeY;
-//					ScrWidth = SCRSizeX;
-//					WindX = 0;
-//					WindY = 0;
-//					WindLx = SCRSizeX;
-//					WindLy = SCRSizeY;
-//					WindX1 = WindLx - 1;
-//					WindY1 = WindLy - 1;
-//					BytesPerPixel = 1;
-//					return true;
-//				}
-//			}
-//		}
-//	}
-//	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
-//	MessageBox( hwnd, buf, "ERROR", MB_OK );
-//	return false;
-//}
-
-//BOOL CreateRGB640DDObjects( HWND hwnd )
-//{
-//	HRESULT ddrval;
-//	//DDSCAPS ddscaps;
-//	char    buf[256];
-//	DDError = false;
-//	CurrentSurface = true;
-//	if (window_mode)
-//	{
-//
-//		DDError = false;
-//		SCRSizeX = MaxSizeX;
-//		SCRSizeY = MaxSizeY;
-//		COPYSizeX = RealLx;
-//		RSCRSizeX = RealLx;
-//		RSCRSizeY = RealLy;
-//		ScrHeight = SCRSizeY;
-//		ScrWidth = SCRSizeX;
-//		InitRLCWindows();
-//		WindX = 0;
-//		WindY = 0;
-//		WindLx = SCRSizeX;
-//		WindLy = SCRSizeY;
-//		WindX1 = WindLx - 1;
-//		WindY1 = WindLy - 1;
-//		BytesPerPixel = 1;
-//		offScreenPtr = ( malloc( SCRSizeX*( SCRSizeY + 32 * 4 ) ) );
-//		return true;
-//	}
-//#ifdef COPYSCR
-//	offScreenPtr = offScreenPtr = ( malloc( MaxSizeX*( MaxSizeY + 32 * 4 ) ) );
-//#endif
-//	if (lpDD)
-//	{
-//		lpDDSPrimary->Release();
-//		goto SDMOD;
-//	};
-//	ddrval = DirectDrawCreate_wrapper( NULL, &lpDD, NULL );
-//	if (ddrval == DD_OK)
-//	{
-//SDMOD:;
-//		// Get exclusive mode
-//		ddrval = lpDD->SetCooperativeLevel( hwnd,
-//			DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
-//		if (ddrval == DD_OK)
-//		{
-//			ddrval = lpDD->SetDisplayMode( 640, 480, BestBPP ); //COPYSizeX,RSCRSizeY, 8 );
-//			if (ddrval == DD_OK)
-//			{
-//				// Create the primary surface with 1 back buffer
-//				ddsd.dwSize = sizeof( ddsd );
-//				ddsd.dwFlags = DDSD_CAPS;
-//				ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-//				ddrval = lpDD->CreateSurface( &ddsd, &lpDDSPrimary, NULL );
-//				if (ddrval == DD_OK)
-//				{
-//					DDError = false;
-//					SCRSizeX = MaxSizeX;
-//					SCRSizeY = MaxSizeY;
-//					RSCRSizeX = RealLx;//ddsd.lPitch;
-//					Pitch = ddsd.lPitch;
-//					COPYSizeX = RealLx;
-//					RSCRSizeY = RealLy;
-//					ScrHeight = SCRSizeY;
-//					ScrWidth = SCRSizeX;
-//					WindX = 0;
-//					WindY = 0;
-//					WindLx = SCRSizeX;
-//					WindLy = SCRSizeY;
-//					WindX1 = WindLx - 1;
-//					WindY1 = WindLy - 1;
-//					BytesPerPixel = 1;
-//					return true;
-//				}
-//			}
-//		}
-//	}
-//	wsprintf( buf, "Direct Draw Init Failed (%08lx)\n", ddrval );
-//	MessageBox( hwnd, buf, "ERROR", MB_OK );
-//	return false;
-//}
 
 /*   Direct Draw palette loading*/
 void LoadPalette( LPCSTR lpFileName )
@@ -1018,7 +837,7 @@ bool CreateSDLRenderer()
 	renderer = SDL_CreateRenderer(sdlWindow, NULL);
 	if (!renderer)
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL renderer", NULL);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL renderer", sdlWindow);
 		//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		//SDL_RenderClear(renderer);
 		//SDL_RenderPresent(renderer);
@@ -1031,21 +850,8 @@ bool InitSDL()
 {
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to initialise SDL3", NULL);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to initialise SDL3", nullptr);
 		exit(0);
 	}
 	return true;
 }
-
-//bool CreateSDLWindow()
-//{
-//	SDL_PropertiesID props = SDL_CreateProperties();
-//	SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hwnd);
-//	sdlWindow = SDL_CreateWindowWithProperties(props);
-//	if (!sdlWindow)
-//	{
-//		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
-//		exit(0);
-//	}
-//	return true;
-//}

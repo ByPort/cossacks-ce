@@ -2,6 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include <SDL3/SDL.h>
 #include <stdio.h>
 #include "GSCtypes.h"
 #include "GSCarch.h"
@@ -17,9 +18,11 @@ CGSCarch::CGSCarch()
 GFILE_API CGSCarch::~CGSCarch()
 {}
 
+extern SDL_Window* sdlWindow;
+
 void GSC_OpenError()
 {
-	MessageBox( NULL, "Unable to map files into memory.", "Loading error...", MB_ICONERROR );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error...", "Unable to map files into memory.", sdlWindow);
 }
 
 BOOL CGSCarch::Open( LPCSTR lpcsArchFileName )

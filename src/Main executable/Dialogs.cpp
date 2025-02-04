@@ -41,7 +41,7 @@ void ErrD( LPCSTR s )
 	char pal[128];
 	sprintf( pal, "%d\\agew_1.pal", CurPalette );
 	LoadPalette( pal );
-	MessageBox( hwnd, s, "Loading failed...", MB_ICONWARNING | MB_OK );
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, sdlWindow);
 	assert( false );
 }
 
@@ -62,7 +62,7 @@ __declspec( dllexport ) int GetSound( char* Name )
 	{
 		char cc[128];
 		sprintf( cc, "Unknown sound ID: %s", Name );
-		MessageBox( nullptr, cc, "ERROR!", 0 );
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", cc, sdlWindow);
 		ErrM( cc );
 		return -1;
 	};

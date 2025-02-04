@@ -2190,7 +2190,7 @@ bool InitScreen()
 
 		if (!RealScreenPtr)
 		{
-			MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[1]", MB_ICONSTOP );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[1]", "Unable to initialise SDL. It is possible that hardware acceleration is turned off.", sdlWindow);
 			exit( 0 );
 		}
 
@@ -2270,7 +2270,7 @@ static BOOL doInit()
 	);
 	if (!sdlWindow)
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", NULL);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", nullptr);
 		return false;
 	}
 	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
@@ -2298,7 +2298,7 @@ static BOOL doInit()
 		RClose( F );
 		if (B > 102)
 		{
-			MessageBox( hwnd, "Unable to use this testing version.", "WARNING!", 0 );
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "WARNING!", "Unable to use this testing version.", sdlWindow);
 			FilesExit();
 			PostMessage( hwnd, WM_CLOSE, 0, 0 );
 			return 0;
@@ -2345,8 +2345,7 @@ static BOOL doInit()
 
 		if (!RealScreenPtr)
 		{
-			//MessageBox( hwnd, "Unable to initialise Direct Draw. It is possible that hardware acceleration is turned off.", "Loading error[2]", MB_ICONSTOP );
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[2]", "Unable to initialise SDL. It is possible that hardware acceleration is turned off.", nullptr);
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[2]", "Unable to initialise SDL. It is possible that hardware acceleration is turned off.", sdlWindow);
 			exit( 0 );
 		}
 
@@ -2357,8 +2356,7 @@ static BOOL doInit()
 		}
 	}
 
-	//MessageBox( hwnd, "SDL Init Failed\n", "ERROR", MB_OK );
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", "SDL Init Failed\n", nullptr);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", "SDL Init Failed\n", sdlWindow);
 	finiObjects();
 	DestroyWindow( hwnd );
 	return FALSE;
@@ -3439,7 +3437,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	FILE* Fx = fopen("cew.dll", "r");
 	if (!Fx)
 	{
-		MessageBox(nullptr, "CEW.DLL not found. Unable to run Cossacks.", "Error...", MB_ICONERROR);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error...", "CEW.DLL not found. Unable to run Cossacks.", nullptr);
 		return SDL_APP_FAILURE;
 	}
 	else

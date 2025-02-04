@@ -6122,7 +6122,7 @@ void SearchArmyLink( OneObject* OBJ )
 						};
 						if ( cidx == -1 )
 						{
-							MessageBox( NULL, "Could not find fomation: #SQUARE36", "ERROR!", 0 );
+							SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Could not find fomation: #SQUARE36", sdlWindow);
 							//assert(cidx);
 						};
 						OrderDescription* ODS = ElementaryOrders + cidx;
