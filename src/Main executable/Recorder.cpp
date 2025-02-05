@@ -956,7 +956,7 @@ bool ProcessMessages();
 void GSYSDRAW();
 char* DOWNLOADING = NULL;
 void ShowCentralMessage4( char* Message, int GPIDX, int DX );
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern int CurPalette;
 extern int HISPEED;
 extern bool SHOWSLIDE;
@@ -1049,7 +1049,7 @@ int InternetStream::ReadSomething( byte* Buf, int MaxLen, bool Scroll, bool Bloc
 						ShowCentralMessage4( DOWNLOADING, BOR2.GPID, 0 );
 					}
 					else ShowCentralMessage4( DOWNLOADING, 0, 0 );
-					if ( LastKey == 27 || TT - T0 > 60000 )
+					if ( LastKey == SDLK_ESCAPE || TT - T0 > 60000 )
 					{
 						return -1;
 					};

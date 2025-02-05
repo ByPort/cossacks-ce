@@ -233,7 +233,7 @@ extern int sfVersion;
 
 extern char SaveFileName[128];
 
-extern byte ScanPressed[256];
+extern bool ScanPressed[SDL_SCANCODE_KP_0 + 1];
 extern byte SpecCmd;
 extern word PlayerMenuMode;
 extern word rpos;
@@ -242,7 +242,7 @@ extern BlockBars UnLockBars;
 extern CDirSound* CDS;
 
 __declspec( dllexport ) bool KeyPressed;
-__declspec( dllexport ) int LastKey;
+__declspec( dllexport ) SDL_Keycode LastKey;
 
 void InitDialogs();
 void SFLB_LoadGame( char* fnm, bool LoadNation );
@@ -830,7 +830,6 @@ void ClearMStack()
 }
 
 extern bool unpress;
-extern byte ScanPressed[256];
 
 void UnPress()
 {
@@ -840,23 +839,24 @@ void UnPress()
 		MSTC[i].Rpressed = 0;
 	}
 	unpress = 1;
-	memset( ScanPressed, 0, 256 );
+	memset( ScanPressed, false, sizeof(ScanPressed));
 }
 
 extern int CurPalette;
 int SHIFT_VAL = 0;
 void HandleMouse( int x, int y );
 extern bool PalDone;
-byte KeyStack[32];
+SDL_Keycode KeyStack[32];
 byte AsciiStack[32];
 int NKeys = 0;
+// This is used only in InputBox_OnKeyDown()
 byte LastAsciiKey = 0;
 
-void AddKey( byte Key, byte Ascii )
+void AddKey( SDL_Keycode Key, byte Ascii )
 {
 	if (32 <= NKeys)
 	{//Push the stack back by one element
-		memcpy( KeyStack, KeyStack + 1, 31 );
+		memcpy( &KeyStack[0], &KeyStack[1], sizeof(KeyStack) - sizeof(SDL_Keycode));
 		memcpy( AsciiStack, AsciiStack + 1, 31 );
 		NKeys--;
 	}
@@ -865,17 +865,18 @@ void AddKey( byte Key, byte Ascii )
 	NKeys++;
 }
 
+// This is used only in ProcessChatKeys()
 byte LastAscii = 0;
 wchar_t last_unicode = 0;
-int ReadKey()
+SDL_Keycode ReadKey()
 {//Called only for chat input and resource transfer
 	if (NKeys)
 	{
-		byte c = KeyStack[0];
+		SDL_Keycode c = KeyStack[0];
 		LastAscii = AsciiStack[0];
 		if (NKeys)
 		{
-			memcpy( KeyStack, KeyStack + 1, NKeys - 1 );
+			memcpy( &KeyStack[0], &KeyStack[1], sizeof(SDL_Keycode) * (NKeys - 1) );
 			memcpy( AsciiStack, AsciiStack + 1, NKeys - 1 );
 		}
 		NKeys--;
@@ -883,7 +884,7 @@ int ReadKey()
 	}
 	else
 	{
-		return -1;
+		return SDLK_UNKNOWN;
 	}
 }
 
@@ -1061,34 +1062,12 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 	case SDL_EVENT_KEY_DOWN:
 	{
 		SDL_Keycode keycode = event->key.key;
-		unsigned int mappedKey = 256;
+		SDL_Scancode scancode = event->key.scancode;
 
-		// Only these keycode are used in ScanPressed
-		if (SDLK_0 <= keycode && keycode <= SDLK_9) mappedKey = keycode;
-		else if (SDLK_A <= keycode && keycode <= SDLK_Z) mappedKey = keycode - (SDLK_A - 'A');
-		else if (keycode == SDLK_KP_0) mappedKey = VK_NUMPAD0;
-		else if (SDLK_KP_1 <= keycode && keycode <= SDLK_KP_9) mappedKey = keycode - (SDLK_KP_1 - VK_NUMPAD1);
-		else if (SDLK_F1 <= keycode && keycode <= SDLK_F10) mappedKey = keycode - (SDLK_F1 - VK_F1);
-		else if (keycode == SDLK_PAGEDOWN) mappedKey = VK_NEXT;
-		else if (keycode == SDLK_PAGEUP) mappedKey = VK_PRIOR;
-		else if (keycode == SDLK_HOME) mappedKey = VK_HOME;
-		else if (keycode == SDLK_END) mappedKey = VK_END;
-		else if (keycode == SDLK_INSERT) mappedKey = VK_INSERT;
-		else if (keycode == SDLK_PLUS) mappedKey = VK_ADD;
-		else if (keycode == SDLK_KP_PLUS) mappedKey = VK_ADD;
-		else if (keycode == SDLK_MINUS) mappedKey = VK_SUBTRACT;
-		else if (keycode == SDLK_KP_MINUS) mappedKey = VK_SUBTRACT;
-		else if (keycode == SDLK_ASTERISK) mappedKey = VK_MULTIPLY;
-		else if (keycode == SDLK_KP_MULTIPLY) mappedKey = VK_MULTIPLY;
-		else if (keycode == SDLK_SLASH) mappedKey = VK_DIVIDE;
-		else if (keycode == SDLK_KP_DIVIDE) mappedKey = VK_DIVIDE;
-		else if (keycode == SDLK_COMMA) mappedKey = VK_OEM_COMMA;
-		else if (keycode == SDLK_PERIOD) mappedKey = VK_OEM_PERIOD;
-		else if (keycode == SDLK_QUESTION) mappedKey = VK_OEM_2;
-
-		if (mappedKey < 256)
+		// TODO: This is fine, but we don't need all keys, only the ones from ScanKeys
+		if (scancode < SDL_SCANCODE_KP_0 + 1)
 		{
-			ScanPressed[mappedKey] = 1;
+			ScanPressed[scancode] = true;
 		}
 
 		LastKey = keycode;
@@ -1109,36 +1088,37 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 		*/
 
 		{
-			char ascii_key;
-			int result = 0;
-			if (keycode <= 127)
-			{
-				ascii_key = (char)keycode;
-				result = 1;
-			}
-
-			//UTF code is in cyrillic range
-			//Adjust ascii code to match sprite index in mainfont.gp file
-			//Sprites 192 to 255 ('А' to 'я')
-			//(taken from russian cossacks version ALL.GSC)
-			if (1040 <= keycode && keycode <= 1103)
-			{
-				ascii_key = keycode - 848;
-				// result = 1;
-			}
-
-			if (1 == result)
-			{
-				LastAsciiKey = ascii_key;
-			}
-			else
-			{
-				LastAsciiKey = 0;
-			}
-
-			// TODO: Check how this works with SDL
+			LastAsciiKey = 0;
 			AddKey(keycode, LastAsciiKey);
 		}
+		break;
+	}
+	case SDL_EVENT_TEXT_INPUT:
+	{
+		const char* text = event->text.text;
+
+		Uint32 decoded = SDL_StepUTF8(&text, nullptr);
+
+		// FIXME: this will work fine on desktop but will need to be adjusted for mobile
+		// Since mobile yields the whole string at a time (TODO: check if this is true)
+
+		//UTF code is in cyrillic range
+		//Adjust ascii code to match sprite index in mainfont.gp file
+		//Sprites 192 to 255 ('А' to 'я')
+		//(taken from russian cossacks version ALL.GSC)
+		if (1040 <= decoded && decoded <= 1103)
+		{
+			decoded = decoded - 848;
+		}
+
+		if (decoded < 256)
+		{
+			LastAsciiKey = (char)decoded;
+			// Overwrite the latest key event with the ascii code
+			// Here we assume that SDL_EVENT_KEY_DOWN was already handled
+			AsciiStack[NKeys - 1] = LastAsciiKey;
+		}
+
 		break;
 	}
 
@@ -1220,10 +1200,10 @@ void GameKeyCheck()
 	if (KeyPressed)
 	{
 		KeyPressed = false;
-		int wParam = LastKey;
+		SDL_Keycode wParam = LastKey;
 		switch (wParam)
 		{
-		case VK_ESCAPE:
+		case SDLK_ESCAPE:
 			ClearModes();
 			BuildMode = false;
 			GetCoord = false;
@@ -1244,13 +1224,13 @@ void GameKeyCheck()
 
 			AttGrMode = 0;
 			break;
-		case ' ':
+		case SDLK_SPACE:
 			SpecCmd = 111;
 			break;
-		case 8:
+		case SDLK_BACKSPACE:
 			SpecCmd = 112;
 			break;
-		case 'U':
+		case SDLK_U:
 			if (Inform != 2)
 			{
 				Inform = 2;
@@ -1262,7 +1242,7 @@ void GameKeyCheck()
 			MiniActive = 0;
 			Recreate = 1;
 			break;
-		case 'M':
+		case SDLK_M:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 114;
@@ -1274,53 +1254,53 @@ void GameKeyCheck()
 			MiniActive = 0;
 			Recreate = 1;
 			break;
-		case VK_F12:
+		case SDLK_F12:
 			MenuType = 1;
 			MakeMenu = true;
 			break;
-		case VK_F1:
+		case SDLK_F1:
 			if (!CheckFNSend( 0 ))
 			{
 				MenuType = 4;
 				MakeMenu = true;
 			}
 			break;
-		case VK_F2:
+		case SDLK_F2:
 			CheckFNSend( 1 );
 			break;
-		case VK_F3:
+		case SDLK_F3:
 			CheckFNSend( 2 );
 			break;
-		case VK_F4:
+		case SDLK_F4:
 			CheckFNSend( 3 );
 			break;
-		case VK_F5:
+		case SDLK_F5:
 			CheckFNSend( 4 );
 			break;
-		case VK_F6:
+		case SDLK_F6:
 			CheckFNSend( 5 );
 			break;
-		case VK_F7:
+		case SDLK_F7:
 			CheckFNSend( 6 );
 			break;
-		case VK_F8:
+		case SDLK_F8:
 			CheckFNSend( 7 );
 			break;
-		case VK_F9:
+		case SDLK_F9:
 			if (!CheckFNSend( 8 ))
 			{
 				Creator = 4096 + 255;
 			}
 			break;
-		case 192:
+		case SDLK_TILDE:
 			HealthMode = !HealthMode;
 			break;
-		case 46:
+		case SDLK_DELETE:
 			SpecCmd = 200;
 			break;
 
 		/*
-		case 'D':
+		case SDLK_D:
 			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
 				if (NPlayers < 2)
@@ -1352,19 +1332,19 @@ void GameKeyCheck()
 			break;
 		*/
 
-		case 'A':
+		case SDLK_A:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 				SpecCmd = 1;
 			else if (NSL[MyNation])
 				GoAndAttackMode = 1;
 			break;
-		case 'S':
+		case SDLK_S:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 				SpecCmd = 201;
 			break;
-		case 'W':
+		case SDLK_W:
 			break;
-		case 'J':
+		case SDLK_J:
 			if (PlayGameMode == 2)
 			{
 				int ExRX = RealLx;
@@ -1380,7 +1360,7 @@ void GameKeyCheck()
 				}
 			}
 			break;
-		case 'K':
+		case SDLK_K:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				RealPause -= 2;
@@ -1390,7 +1370,7 @@ void GameKeyCheck()
 				RealPause += 2;
 			}
 			break;
-		case 'Q':
+		case SDLK_Q:
 			LockGrid += 2;
 			if (LockGrid > 3)
 			{
@@ -1399,7 +1379,7 @@ void GameKeyCheck()
 			MiniActive = 0;
 			Recreate = 1;
 			break;
-		case 'B':
+		case SDLK_B:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 9;
@@ -1409,7 +1389,7 @@ void GameKeyCheck()
 				SpecCmd = 10;
 			}
 			break;
-		case 'Z':
+		case SDLK_Z:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 11;
@@ -1420,7 +1400,7 @@ void GameKeyCheck()
 				SpecCmd = 241;
 			}
 			break;
-		case 'F':
+		case SDLK_F:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 13;
@@ -1430,7 +1410,7 @@ void GameKeyCheck()
 				SpecCmd = 14;
 			}
 			break;
-		case VK_NUMPAD1:
+		case SDLK_KP_1:
 			if (MEditMode)
 			{
 				EditMedia = 0;
@@ -1444,7 +1424,7 @@ void GameKeyCheck()
 				PlayerMask = 1;
 			}
 			break;
-		case VK_NUMPAD2:
+		case SDLK_KP_2:
 			if (MEditMode)EditMedia = 1;
 			else
 			{
@@ -1455,7 +1435,7 @@ void GameKeyCheck()
 				PlayerMask = 2;
 			}
 			break;
-		case VK_NUMPAD3:
+		case SDLK_KP_3:
 			if (MEditMode)
 			{
 				EditMedia = 2;
@@ -1469,7 +1449,7 @@ void GameKeyCheck()
 				PlayerMask = 4;
 			}
 			break;
-		case VK_NUMPAD4:
+		case SDLK_KP_4:
 			if (MEditMode)
 			{
 				EditMedia = 3;
@@ -1483,7 +1463,7 @@ void GameKeyCheck()
 				PlayerMask = 8;
 			}
 			break;
-		case VK_NUMPAD5:
+		case SDLK_KP_5:
 			if (MEditMode)
 			{
 				EditMedia = 4;
@@ -1497,7 +1477,7 @@ void GameKeyCheck()
 				PlayerMask = 16;
 			}
 			break;
-		case VK_NUMPAD6:
+		case SDLK_KP_6:
 			if (MEditMode)
 			{
 				BlobMode = 1;
@@ -1511,7 +1491,7 @@ void GameKeyCheck()
 				PlayerMask = 32;
 			}
 			break;
-		case VK_NUMPAD7:
+		case SDLK_KP_7:
 			if (MEditMode)
 			{
 				BlobMode = -1;
@@ -1525,14 +1505,14 @@ void GameKeyCheck()
 				PlayerMask = 64;
 			}
 			break;
-		case VK_NUMPAD8:
+		case SDLK_KP_8:
 			if (NPlayers < 2 && ChangeNation)
 			{
 				SetMyNation( 7 );
 			}
 			PlayerMask = 128;
 			break;
-		case 'I':
+		case SDLK_I:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				InfoMode = !InfoMode;
@@ -1552,11 +1532,11 @@ void GameKeyCheck()
 			}
 			break;
 
-		case VK_CAPITAL:
+		case SDLK_CAPSLOCK:
 			EgoFlag = !EgoFlag;
 			break;
 
-		case 'O':
+		case SDLK_O:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				if (PlayGameMode == 2 || CheckFlagsNeed())
@@ -1575,7 +1555,7 @@ void GameKeyCheck()
 				Recreate = 1;
 			}
 			break;
-		case 'P':
+		case SDLK_P:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				SpecCmd = 113;
@@ -1589,13 +1569,13 @@ void GameKeyCheck()
 				}
 			}
 			break;
-		case 19://Pause
+		case SDLK_PAUSE:
 			if (tmtmt > 32 && !LockPause)
 			{
 				SpecCmd = 137;
 			}
 			break;
-		case 13:
+		case SDLK_RETURN:
 			if (!RESMODE)
 			{
 				EnterChatMode = 1;
@@ -1603,15 +1583,15 @@ void GameKeyCheck()
 			}
 			break;
 		default:
-			if (wParam >= '0' && wParam <= '9')
+			if (SDLK_0 <= wParam && wParam <= SDLK_9)
 			{
 				if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 				{
-					CmdMemSelection( MyNation, wParam - '0' );
+					CmdMemSelection( MyNation, wParam - SDLK_0 );
 				}
 				else
 				{
-					CmdRememSelection( MyNation, wParam - '0' );
+					CmdRememSelection( MyNation, wParam - SDLK_0 );
 				}
 			}
 		}
@@ -1642,79 +1622,79 @@ void EditorKeyCheck()
 	if (KeyPressed)
 	{
 		KeyPressed = false;
-		int wParam = LastKey;
+		SDL_Keycode wParam = LastKey;
 		switch (wParam)
 		{
-		case VK_RIGHT:
+		case SDLK_RIGHT:
 			//if(DrawPixMode||DrawGroundMode)TexStDX=(TexStDX+1)&7;
 			break;
-		case VK_UP:
+		case SDLK_UP:
 			//if(DrawPixMode||DrawGroundMode)TexStDY=(TexStDY-1)&7;
 			break;
-		case VK_LEFT:
+		case SDLK_LEFT:
 			//if(DrawPixMode||DrawGroundMode)TexStDX=(TexStDX-1)&7;
 			break;
-		case VK_DOWN:
+		case SDLK_DOWN:
 			//if(DrawPixMode||DrawGroundMode)TexStDY=(TexStDY+1)&7;
 			break;
-		case 'E':
+		case SDLK_E:
 			FastMode = !FastMode;
 			break;
-		case '0':
+		case SDLK_0:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);
 			break;
-		case '1':
+		case SDLK_1:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 1;
 			else ReliefBrush = 1;
 			break;
-		case '2':
+		case SDLK_2:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 2;
 			else ReliefBrush = 2;
 			break;
-		case '3':
+		case SDLK_3:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 3;
 			else ReliefBrush = 3;
 			break;
-		case '4':
+		case SDLK_4:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 4;
 			else ReliefBrush = 4;
 			break;
-		case '5':
+		case SDLK_5:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 5;
 			else ReliefBrush = 5;
 			break;
-		case '6':
+		case SDLK_6:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 6;
 			else ReliefBrush = 9;
 			break;
-		case '7':
+		case SDLK_7:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 7;
 			else ReliefBrush = 20;
 			break;
-		case '8':
+		case SDLK_8:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 8;
 			else ReliefBrush = 50;
 			break;
-		case '9':
+		case SDLK_9:
 			//if(DrawPixMode||DrawGroundMode)STBRR(wParam);else
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CostThickness = 9;
 			else ReliefBrush = 100;
 			break;
-		case 'H':
+		case SDLK_H:
 			//FullScreenMode=!FullScreenMode;
 			//GameNeedToDraw=true;
 			//GSSetup800();
 			RenderAllMap();
 			break;
-		case 'V':
+		case SDLK_V:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				ClearModes();
@@ -1748,7 +1728,7 @@ void EditorKeyCheck()
 				*/
 			};
 			break;
-		case 13:
+		case SDLK_RETURN:
 			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
 				//MakeMenu=true;
@@ -1758,15 +1738,15 @@ void EditorKeyCheck()
 			}
 			else KeyPressed = true;
 			break;
-		case 'J':
+		case SDLK_J:
 			//RSCRSizeX++;
 			//ShowStatistics();
 			break;
-		case 19://Pause
+		case SDLK_PAUSE:
 			if (!LockPause)SpecCmd = 137;
 			//PauseMode=!PauseMode;
 			break;
-		case VK_ESCAPE:
+		case SDLK_ESCAPE:
 			AttGrMode = 0;
 			if (CheckCurve())
 			{
@@ -1792,7 +1772,7 @@ void EditorKeyCheck()
 			//MainMenu.ShowModal();
 			//Options.ShowModal();
 			break;
-		case VK_F12:
+		case SDLK_F12:
 			//UnlockSurface();
 			//CloseExplosions();
 			//ShutdownMultiplayer();
@@ -1800,22 +1780,22 @@ void EditorKeyCheck()
 			MenuType = 1;
 			MakeMenu = true;
 			break;
-		case 192:
+		case SDLK_TILDE:
 			HealthMode = !HealthMode;
 			break;
-		case VK_F1:
+		case SDLK_F1:
 			HelpMode = !HelpMode;
 			break;
-		case VK_F2:
+		case SDLK_F2:
 			NeedToPopUp = 6;
 			break;
-		case VK_F3:
+		case SDLK_F3:
 			NeedToPopUp = 15;
 			break;
-		case VK_F4:
+		case SDLK_F4:
 			NeedToPopUp = 4;
 			break;
-		case VK_F5:
+		case SDLK_F5:
 			if (WaterEditMode)
 			{
 				WaterEditMode = 1;
@@ -1826,14 +1806,14 @@ void EditorKeyCheck()
 				NeedToPopUp = 5;
 			};
 			break;
-		case 'U':
+		case SDLK_U:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))CINFMOD = !CINFMOD;
 			else if (Inform != 2)Inform = 2; else Inform = 0;
 			MiniActive = 0;
 			Recreate = 1;
 			//CINFMOD=0;
 			break;
-		case 'F':
+		case SDLK_F:
 			//SVSC.Zero();
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
@@ -1844,7 +1824,7 @@ void EditorKeyCheck()
 			//MEditMode=true;
 			//EditMedia=5;
 			break;
-		case VK_F6:
+		case SDLK_F6:
 			if (WaterEditMode)
 			{
 				WaterEditMode = 2;
@@ -1857,7 +1837,7 @@ void EditorKeyCheck()
 				MenuType = 6;
 			};
 			break;
-		case VK_F7:
+		case SDLK_F7:
 			if (WaterEditMode)
 			{
 				WaterEditMode = 3;
@@ -1865,7 +1845,7 @@ void EditorKeyCheck()
 			}
 			else Reset3D();
 			break;
-		case VK_F8:
+		case SDLK_F8:
 			if (WaterEditMode)
 			{
 				WaterEditMode = 4;
@@ -1876,7 +1856,7 @@ void EditorKeyCheck()
 				NeedToPopUp = 3;
 			};
 			break;
-		case 'N':
+		case SDLK_N:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				AutoSMSSet();
@@ -1889,12 +1869,12 @@ void EditorKeyCheck()
 				//EditMedia=5;
 			};
 			break;
-		case 46:
+		case SDLK_DELETE:
 			if (!DelCurrentAZone())SpecCmd = 200;
 			break;
 
 		/*
-		case 'D':
+		case SDLK_D:
 			if (!( GetSDLKeyState( SDL_SCANCODE_LCTRL ) ))
 			{
 				if (( GetSDLKeyState( SDL_SCANCODE_LSHIFT ) ))//&& PlayGameMode)
@@ -1924,11 +1904,11 @@ void EditorKeyCheck()
 			break;
 		*/
 
-		case 'A':
+		case SDLK_A:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SpecCmd = 1;
 			else if (NSL[MyNation])GoAndAttackMode = 1;
 			break;
-		case 'S':
+		case SDLK_S:
 			//ClearModes();
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
@@ -1953,7 +1933,7 @@ void EditorKeyCheck()
 				};
 			};
 			break;
-		case 'W':
+		case SDLK_W:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))ProcessSaveInSquares();
 			else PeaceMode = !PeaceMode;
 			break;
@@ -1974,7 +1954,7 @@ void EditorKeyCheck()
 			/*if(RSCRSizeX!=1024)RSCRSizeX=1024;
 			else RSCRSizeX=800;*/
 			//break;
-		case 'C':
+		case SDLK_C:
 			//CINFMOD=!CINFMOD;
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
@@ -1986,7 +1966,7 @@ void EditorKeyCheck()
 				NeedToPopUp = 8;
 			};
 			break;
-		case 'X':
+		case SDLK_X:
 			//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))SpecCmd=5;
 			//else SpecCmd=6;
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
@@ -2003,19 +1983,19 @@ void EditorKeyCheck()
 				NeedToPopUp = 21;
 			};
 			break;
-		case 'Q':
+		case SDLK_Q:
 			LockGrid += 2;//++;
 			if (LockGrid > 3)LockGrid = 0;
 			MiniActive = 0;
 			Recreate = 1;
 			break;
-		case 'B':
+		case SDLK_B:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SpecCmd = 9;
 			else SpecCmd = 10;
 			//ClearMaps();
 			//CreateUnitsLocking();
 			break;
-		case 'Z':
+		case SDLK_Z:
 			//if(DrawPixMode){
 			//	PerformPixUndo();
 			//};
@@ -2023,71 +2003,71 @@ void EditorKeyCheck()
 			//else SpecCmd=12;
 
 			break;
-			//case VK_F11:
+			//case SDLK_F11:
 			//	WaterCorrection();
 			//	break;
-		case VK_F9:
+		case SDLK_F9:
 			MEditMode = false;
 			HeightEditMode = false;
 			LockMode = 0;
 			Creator = 4096 + 255;
 			NeedToPopUp = 1;
 			break;
-		case VK_NUMPAD1:
+		case SDLK_KP_1:
 			SetMyNation( 0 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 1;
 			break;
-		case VK_NUMPAD2:
+		case SDLK_KP_2:
 			SetMyNation( 1 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 2;
 			break;
-		case VK_NUMPAD3:
+		case SDLK_KP_3:
 			SetMyNation( 2 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 4;
 			break;
-		case VK_NUMPAD4:
+		case SDLK_KP_4:
 			SetMyNation( 3 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 8;
 			break;
-		case VK_NUMPAD5:
+		case SDLK_KP_5:
 			SetMyNation( 4 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 16;
 			break;
-		case VK_NUMPAD6:
+		case SDLK_KP_6:
 			SetMyNation( 5 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 32;
 			break;
-		case VK_NUMPAD7:
+		case SDLK_KP_7:
 			SetMyNation( 6 );
 			MEditMode = false;
 			HeightEditMode = false;
 			PlayerMask = 64;
 			break;
-		case VK_NUMPAD8:
+		case SDLK_KP_8:
 			SetMyNation( 7 );
 			MEditMode = false;
 			HeightEditMode = false; PlayerMask = 128;
 			break;
-		case 'I':
+		case SDLK_I:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))InfoMode = !InfoMode;
 			else if (Inform != 1)Inform = 1; else Inform = 0;
 			MiniActive = 0;
 			Recreate = 1;
 			//InfoMode=1;
 			break;
-		case 'O':
+		case SDLK_O:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				OptHidden = !OptHidden;
@@ -2101,13 +2081,13 @@ void EditorKeyCheck()
 			break;
 			//WaterCorrection();
 			//if(MsPerFrame)MsPerFrame--;
-		case 'P':
+		case SDLK_P:
 			//MsPerFrame++;
 			//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))RotatePhiI();
 			//RotatePhi();
 			NeedToPopUp = 2;
 			break;
-		case 'R':
+		case SDLK_R:
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
 				//ProcessMapOptions();
@@ -2120,7 +2100,7 @@ void EditorKeyCheck()
 				MenuType = 31;
 			};
 			break;
-		case 'L':
+		case SDLK_L:
 			/*
 			if(!MiniMode)SetMiniMode();
 			else ClearMiniMode();
@@ -2128,7 +2108,7 @@ void EditorKeyCheck()
 			*/
 			//ReverseLMode();
 			break;
-		case 'T':
+		case SDLK_T:
 			//HeightEditMode=false;
 			//ChoosePosition=true;
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
@@ -2136,26 +2116,26 @@ void EditorKeyCheck()
 				ToolsHidden = !ToolsHidden;
 			};
 			break;
-		case 'G':
+		case SDLK_G:
 			//if(GetSDLKeyState(SDL_SCANCODE_LSHIFT))CreateMapShot();
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))SelectNextGridMode();
 			else SaveScreen();
 			//SVSC.Grids=!SVSC.Grids;
 			//SVSC.RefreshScreen();
 			break;
-		case 107://NUM +
+		case SDLK_KP_PLUS:
 			if (HeightEditMode)HiStyle = 1;
 			break;
-		case 109://NUM -
+		case SDLK_KP_MINUS:
 			if (HeightEditMode)HiStyle = 2;
 			break;
-		case 106://NUM *
+		case SDLK_KP_MULTIPLY:
 			if (HeightEditMode)HiStyle = 3;
 			break;
-		case 111://NUM /
+		case SDLK_KP_DIVIDE:
 			if (HeightEditMode)HiStyle = 4;
 			break;
-		case 'M'://NUM 0
+		case SDLK_M://NUM 0 // why?
 			//if(HeightEditMode)HiStyle=5;
 			if (GetSDLKeyState( SDL_SCANCODE_LCTRL ))
 			{
@@ -2166,33 +2146,33 @@ void EditorKeyCheck()
 			MiniActive = 0;
 			Recreate = 1;
 			break;
-		case 33:
+		case SDLK_PAGEUP:
 			if (HeightEditMode)HiStyle = 7;
 			break;
-		case 34:
+		case SDLK_PAGEDOWN:
 			if (HeightEditMode)HiStyle = 8;
 			break;
-		case 36:
+		case SDLK_HOME:
 			if (HeightEditMode)HiStyle = 9;
 			break;
 		default:
-			if (wParam >= '0'&&wParam <= '9')
+			if (SDLK_0 <= wParam && wParam <= SDLK_9)
 			{
 				if (GetSDLKeyState( SDL_SCANCODE_LSHIFT ))
 				{
-					int v = wParam - '0';
+					int v = wParam - SDLK_0;
 					SHIFT_VAL = SHIFT_VAL * 10 + v;
 				}
 				else
 				{
 					if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 					{
-						CmdMemSelection( MyNation, wParam - '0' );
+						CmdMemSelection( MyNation, wParam - SDLK_0 );
 					}
-					else CmdRememSelection( MyNation, wParam - '0' );
+					else CmdRememSelection( MyNation, wParam - SDLK_0 );
 					//if(GetSDLKeyState(SDL_SCANCODE_LCTRL))
-					//	CmdMemSelection(MyNation,wParam-'0');
-					//else CmdRememSelection(MyNation,wParam-'0');
+					//	CmdMemSelection(MyNation,wParam-SDLK_0);
+					//else CmdRememSelection(MyNation,wParam-SDLK_0);
 				};
 			};
 		};
@@ -3544,6 +3524,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 
 	StartExplorer();
 
+	// FIXME: need to be called only when focused on textboxes
+	// Fine on desktop, but not on mobile
+	SDL_StartTextInput(sdlWindow);
+
 	AllGameCoroutine = new boost::coroutines2::coroutine<void>::pull_type(AllGame);
 
 	return SDL_APP_CONTINUE;
@@ -3565,6 +3549,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	SDL_StopTextInput(sdlWindow);
+
 	delete AllGameCoroutine;
 	AllGameCoroutine = nullptr;
 

@@ -23,7 +23,7 @@ extern int UNI_HINTDLY2;
 
 extern bool realLpressed;
 extern bool KeyPressed;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool MUSTDRAW;
 extern int RealLx;
 extern int RealLy;
@@ -32,8 +32,6 @@ extern byte LastAsciiKey;
 void ShowCharUNICODE( int x, int y, byte* strptr, lpRLCFont lpr );
 void ShowChar( int x, int y, char c, lpRLCFont lpf );
 void ClearKeyStack();
-int ReadKey();
-void AddKey( byte Key, byte Ascii );
 extern int CurPalette;
 
 void ErrD( LPCSTR s )
@@ -2065,13 +2063,13 @@ bool ListBox_OnDraw( SimpleDialog* SD )
 		if (!LB->MouseOver)LB->CurMouseOver = -1;
 		if (KeyPressed&&LB->NItems&&LB->Active)
 		{
-			if (LastKey == 40)LB->CurItem++;
-			if (LastKey == 38)LB->CurItem--;
-			if (LastKey == 34)LB->CurItem += 3;
-			if (LastKey == 33)LB->CurItem -= 3;
+			if (LastKey == SDLK_DOWN)LB->CurItem++;
+			if (LastKey == SDLK_UP)LB->CurItem--;
+			if (LastKey == SDLK_PAGEDOWN)LB->CurItem += 3;
+			if (LastKey == SDLK_PAGEUP)LB->CurItem -= 3;
 			if (LB->CurItem < 0)LB->CurItem = 0;
 			if (LB->CurItem > LB->NItems - 1)LB->CurItem = LB->NItems - 1;
-			if (LastKey == 40 || LastKey == 38 || LastKey == 34 || LastKey == 33)
+			if (LastKey == SDLK_DOWN || LastKey == SDLK_UP || LastKey == SDLK_PAGEDOWN || LastKey == SDLK_PAGEUP)
 			{
 				if (LB->CurItem < LB->FLItem)LB->FLItem = LB->CurItem;
 				if (LB->CurItem - LB->FLItem >= LB->ny)LB->FLItem = LB->CurItem - LB->ny + 1;
@@ -2447,39 +2445,39 @@ bool InputBox_OnKeyDown( SimpleDialog* SD )
 {
 	SD->NeedToDraw = true;
 	InputBox* IB = (InputBox*) SD;
-	if (LastKey == VK_LEFT)
+	if (LastKey == SDLK_LEFT)
 	{
 		if (IB->CursPos > 0)IB->CursPos--;
 		KeyPressed = 0;
-		LastKey = 0;
+		LastKey = SDLK_UNKNOWN;
 		return true;
 	}
 	else
-		if (LastKey == VK_RIGHT)
+		if (LastKey == SDLK_RIGHT)
 		{
 			if (IB->CursPos < strlen( IB->Str ))IB->CursPos++;
 			KeyPressed = 0;
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 			return true;
 		}
 		else
-			if (LastKey == VK_END)
+			if (LastKey == SDLK_END)
 			{
 				IB->CursPos = strlen( IB->Str );
 				KeyPressed = 0;
-				LastKey = 0;
+				LastKey = SDLK_UNKNOWN;
 				return true;
 			}
 			else
-				if (LastKey == VK_HOME)
+				if (LastKey == SDLK_HOME)
 				{
 					IB->CursPos = 0;
 					KeyPressed = 0;
-					LastKey = 0;
+					LastKey = SDLK_UNKNOWN;
 					return true;
 				}
 				else
-					if (LastKey == VK_BACK)
+					if (LastKey == SDLK_BACKSPACE)
 					{
 						if (IB->CursPos > 0)
 						{
@@ -2490,8 +2488,8 @@ bool InputBox_OnKeyDown( SimpleDialog* SD )
 						return true;
 					}
 					else
-						if (LastKey == 46)
-						{//VK_DEL
+						if (LastKey == SDLK_DELETE)
+						{
 							if (IB->CursPos < strlen( IB->Str ))
 							{
 								strcpy( IB->Str + IB->CursPos, IB->Str + IB->CursPos + 1 );
@@ -2503,10 +2501,9 @@ bool InputBox_OnKeyDown( SimpleDialog* SD )
 						{
 							if (LastAsciiKey&&LastAsciiKey >= 32)
 							{
-								LastKey = LastAsciiKey;
 								char xx[2];
 								xx[1] = 0;
-								xx[0] = char( LastKey );
+								xx[0] = char( LastAsciiKey );
 								if (strlen( IB->Str ) + 1 < DWORD( IB->StrMaxLen ))
 								{
 									char ccc[2048];
@@ -3234,19 +3231,19 @@ bool TextView_OnKeyDown( SimpleDialog* SD )
 	{
 		switch (LastKey)
 		{
-		case 38:
+		case SDLK_UP:
 			TV->Line--;
 			KeyPressed = false;
 			break;
-		case 40:
+		case SDLK_DOWN:
 			TV->Line++;
 			KeyPressed = false;
 			break;
-		case 33:
+		case SDLK_PAGEUP:
 			TV->Line -= TV->PageSize - 1;
 			KeyPressed = false;
 			break;
-		case 34:
+		case SDLK_PAGEDOWN:
 			TV->Line += TV->PageSize - 1;
 			KeyPressed = false;
 			break;

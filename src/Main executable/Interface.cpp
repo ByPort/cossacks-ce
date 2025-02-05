@@ -158,7 +158,7 @@ void InitGame();
 int nsmaplx;
 int nsmaply;
 int GameMode;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool KeyPressed;
 void MFix();
 
@@ -609,20 +609,20 @@ bool CHANGESORT( SimpleDialog* SD )
 __declspec( dllexport )
 void StdKeys()
 {
-	if ( KeyPressed && ( LastKey == 27 || LastKey == 13 ) )
+	if ( KeyPressed && ( LastKey == SDLK_ESCAPE || LastKey == SDLK_RETURN ) )
 	{
-		if ( LastKey == 13 )
+		if ( LastKey == SDLK_RETURN )
 		{
 			ItemChoose = mcmOk;
 		}
 
-		if ( LastKey == 27 )
+		if ( LastKey == SDLK_ESCAPE )
 		{
 			ItemChoose = mcmCancel;
 		}
 
 		KeyPressed = 0;
-		LastKey = 0;
+		LastKey = SDLK_UNKNOWN;
 	}
 }
 
@@ -1547,12 +1547,12 @@ int MM_ProcessSinglePlayer()
 	ItemChoose = -1;
 	int pp = 1;
 	KeyPressed = false;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	// Single player menu loop
 	do
 	{
 		ProcessMessages();
-		if ( KeyPressed&&LastKey == 27 )
+		if ( KeyPressed&&LastKey == SDLK_ESCAPE )
 		{
 			ItemChoose = 5;
 			KeyPressed = 0;
@@ -2118,7 +2118,7 @@ bool EnterPassword()
 	ColoredBar* CB = DSS.addColoredBar( RealLx / 2 - 150, RealLy / 2 - 4, 300, 24, 0xAD );
 	CB->Style = 1;
 	ItemChoose = -1;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	KeyPressed = 0;
 	do
 	{
@@ -2168,7 +2168,7 @@ void EnterPersonalMessage( char* Nick )
 
 
 	ItemChoose = -1;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	KeyPressed = 0;
 	do
 	{
@@ -2293,7 +2293,7 @@ void AddChatString( char* Nick, char* str, int MaxLx, lpRLCFont FONT,
 bool SENDPRIVMESS( SimpleDialog* SD )
 {
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	return true;
 }
 
@@ -3511,7 +3511,7 @@ ffe2:
 		//Handle chat window
 		if ( !SINGLE )
 		{
-			if ( KeyPressed && LastKey == 13 )
+			if ( KeyPressed && LastKey == SDLK_RETURN )
 			{
 				if ( CHATBOX->Active&&CHATMESSAGE[0] )
 				{
@@ -3532,7 +3532,7 @@ ffe2:
 					CHATMESSAGE[0] = 0;
 				}
 				KeyPressed = 0;
-				LastKey = 0;
+				LastKey = SDLK_UNKNOWN;
 			}
 
 			if ( CHATSTRING[0] )
@@ -5505,13 +5505,13 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 		ProcessMessages();
 		if ( KeyPressed&&Host )
 		{
-			if ( LastKey == 109 )
+			if ( LastKey == SDLK_MINUS )
 			{
 				BattleID = SetCurrentBattle( BattleID - 1, &Prev, MNATION, BTTXT );
 				KeyPressed = 0;
 				PINFO[HostID].MapStyle = BattleID;
 			};
-			if ( LastKey == 107 )
+			if ( LastKey == SDLK_PLUS )
 			{
 				BattleID = SetCurrentBattle( BattleID + 1, &Prev, MNATION, BTTXT );
 				KeyPressed = 0;
@@ -5519,7 +5519,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 			};
 		};
 		if ( GameInProgress )goto FinCLC;
-		if ( KeyPressed&&LastKey == 13 )
+		if ( KeyPressed&&LastKey == SDLK_RETURN )
 		{
 			if ( CHATBOX->Active&&CHATMESSAGE[0] )
 			{
@@ -5533,7 +5533,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 				CHATMESSAGE[0] = 0;
 			}
 			KeyPressed = 0;
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 		};
 		if ( CHATSTRING[0] )
 		{
@@ -5988,13 +5988,13 @@ int MM_ProcessMultiPlayer()
 	ItemChoose = -1;
 	UnPress();
 	Lpressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	KeyPressed = 0;
 	int pp = 1;
 	do
 	{
 		ProcessMessages();
-		if ( KeyPressed&&LastKey == 27 )
+		if ( KeyPressed&&LastKey == SDLK_ESCAPE )
 		{
 			ItemChoose = 5;
 			KeyPressed = 0;
@@ -6574,7 +6574,7 @@ int processMainMenu()
 
 		StTime = GetTickCount();
 
-		LastKey = 0;
+		LastKey = SDLK_UNKNOWN;
 		KeyPressed = 0;
 		RejectThisPlayer = 0;
 
@@ -6975,7 +6975,7 @@ void ProcessGLoadGame()
 	ItemChoose = -1;
 	int pp = 1;
 	int LastCTime = GetRealTime();
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	int StartTime = GetTickCount();
 
 	do
@@ -7041,8 +7041,8 @@ void ProcessFranceMission()
 	{
 		ProcessMessages();
 	} while ( !( GetRealTime() - t0 > 15000 || Lpressed || KeyPressed ) );
-	if ( LastKey == 27 )return;
-	LastKey = 0;
+	if ( LastKey == SDLK_ESCAPE )return;
+	LastKey = SDLK_UNKNOWN;
 	SlowUnLoadPalette( "1\\agew_1.pal" );
 	Pan2.Draw( 0, 0 );
 	FlipPages();
@@ -7053,7 +7053,7 @@ void ProcessFranceMission()
 	{
 		ProcessMessages();
 	} while ( !( GetRealTime() - t0 > 15000 || Lpressed || KeyPressed ) );
-	if ( LastKey == 27 )return;
+	if ( LastKey == SDLK_ESCAPE )return;
 
 	strcpy( CurrentMap, MISSLIST.MISS[0].MapName );
 	CreateNationalMaskForMap( CurrentMap );
@@ -7208,12 +7208,12 @@ bool EnterVal( int * val, char* Message )
 		ProcessMessages();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )
+			if ( LastKey == SDLK_RETURN )
 			{
 				ItemChoose = mcmOk;
 				KeyPressed = false;
 			}
-			if ( LastKey == 27 )
+			if ( LastKey == SDLK_ESCAPE )
 			{
 				ItemChoose = mcmCancel;
 				KeyPressed = false;
@@ -7263,12 +7263,12 @@ bool EnterStr( char * str, char* Message )
 		ProcessMessages();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )
+			if ( LastKey == SDLK_RETURN )
 			{
 				ItemChoose = mcmOk;
 				KeyPressed = false;
 			};
-			if ( LastKey == 27 )
+			if ( LastKey == SDLK_ESCAPE )
 			{
 				ItemChoose = mcmCancel;
 				KeyPressed = false;
@@ -7343,12 +7343,12 @@ int EnterHi( int * val, int Type )
 		ProcessMessages();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )
+			if ( LastKey == SDLK_RETURN )
 			{
 				ItemChoose = mcmOk;
 				KeyPressed = false;
 			};
-			if ( LastKey == 27 )
+			if ( LastKey == SDLK_ESCAPE )
 			{
 				ItemChoose = mcmCancel;
 				KeyPressed = false;
@@ -7389,7 +7389,7 @@ void EnterChat()
 		DrawStdBar( DSY.BaseX, DSY.BaseY, DSY.BaseX + 288, DSY.BaseY + 128 );
 		DSY.MarkToDraw();
 		ProcessMessages();
-		if ( KeyPressed&&LastKey == 13 )
+		if ( KeyPressed&&LastKey == SDLK_RETURN )
 		{
 			ItemChoose = mcmOk;
 			KeyPressed = false;
@@ -8698,13 +8698,13 @@ bool IngameYesNoDialog( char* dialog_text )
 
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )
+			if ( LastKey == SDLK_RETURN )
 			{
 				ItemChoose = mcmOk;
 			}
 			else
 			{
-				if ( LastKey == 27 )
+				if ( LastKey == SDLK_ESCAPE )
 				{
 					ItemChoose = mcmCancel;
 				}
@@ -9395,7 +9395,7 @@ void ProcessHelp()
 	{
 		DrawPaperPanel( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
 		ProcessMessages();
-		if ( KeyPressed && ( LastKey == 13 || LastKey == 27 ) )
+		if ( KeyPressed && ( LastKey == SDLK_RETURN || LastKey == SDLK_ESCAPE ) )
 		{
 			KeyPressed = false;
 			ItemChoose = mcmOk;
@@ -9570,7 +9570,7 @@ int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp
 	do
 	{
 		ProcessMessages();
-		//if(KeyPressed&&(LastKey==13||LastKey==27)){
+		//if(KeyPressed&&(LastKey==SDLK_RETURN||LastKey==SDLK_ESCAPE)){
 		//	KeyPressed=false;
 		//	ItemChoose=mcmOk;
 		//};
@@ -9732,7 +9732,7 @@ int ProcessMultilineQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Q
 			};
 		};
 		ProcessMessages();
-		//if(KeyPressed&&(LastKey==13||LastKey==27)){
+		//if(KeyPressed&&(LastKey==SDLK_RETURN||LastKey==SDLK_ESCAPE)){
 		//	KeyPressed=false;
 		//	ItemChoose=mcmOk;
 		//};
@@ -9826,7 +9826,7 @@ void ProcessMissionText( char* Bmp, char* Text )
 	{
 		DrawPaperPanel( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
 		ProcessMessages();
-		if ( KeyPressed && ( LastKey == 13 || LastKey == 27 ) )
+		if ( KeyPressed && ( LastKey == SDLK_RETURN || LastKey == SDLK_ESCAPE) )
 		{
 			KeyPressed = false;
 			ItemChoose = mcmOk;
@@ -9929,8 +9929,8 @@ int ShowHistryItem( char* Bmp, char* Text )
 		ProcessMessages();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )ItemChoose = 3;
-			else if ( LastKey == 27 )ItemChoose = 3;
+			if ( LastKey == SDLK_RETURN )ItemChoose = 3;
+			else if ( LastKey == SDLK_ESCAPE )ItemChoose = 3;
 			KeyPressed = false;
 		};
 		GMM.MarkToDraw();
@@ -10035,8 +10035,8 @@ bool AskMissionQuestion( char* Bmp, char* Text )
 		ProcessMessages();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )ItemChoose = mcmOk;
-			else if ( LastKey == 27 )ItemChoose = mcmCancel;
+			if ( LastKey == SDLK_RETURN )ItemChoose = mcmOk;
+			else if ( LastKey == SDLK_ESCAPE )ItemChoose = mcmCancel;
 			KeyPressed = false;
 		};
 		GMM.MarkToDraw();
@@ -10211,7 +10211,7 @@ bool ProcessLoadingFile( char* Mask, char* DestName, int Header )
 	ItemChoose = -1;
 	int pp = 1;
 	int LastCTime = GetRealTime();
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	do
 	{
 		MMenu.MarkToDraw();
@@ -11730,7 +11730,7 @@ void RandomMapDialog( char* Result )
 	do
 	{
 		ProcessMessages();
-		if ( KeyPressed && ( LastKey == 13 || LastKey == 27 ) )
+		if ( KeyPressed && ( LastKey == SDLK_RETURN || LastKey == SDLK_ESCAPE ) )
 		{
 			KeyPressed = false;
 			ItemChoose = mcmOk;
@@ -11830,8 +11830,8 @@ void EnterRandomParams()
 		DSY.RefreshView();
 		if ( KeyPressed )
 		{
-			if ( LastKey == 13 )ItemChoose = mcmOk;
-			if ( LastKey == 27 )ItemChoose = mcmCancel;
+			if ( LastKey == SDLK_RETURN )ItemChoose = mcmOk;
+			if ( LastKey == SDLK_ESCAPE )ItemChoose = mcmCancel;
 			KeyPressed = false;
 		};
 	} while ( ItemChoose == -1 );
@@ -11912,8 +11912,8 @@ bool ProcessSingleMission( int n, int Diff )
 		bool exit = false;
 		do
 		{
-			if ( KeyPressed&&LastKey == 27 )exit = true;
-			if ( Lpressed || ( KeyPressed && ( LastKey == 34 || LastKey == 13 || LastKey == ' ' ) ) )
+			if ( KeyPressed&&LastKey == SDLK_ESCAPE )exit = true;
+			if ( Lpressed || ( KeyPressed && ( LastKey == SDLK_PAGEDOWN || LastKey == SDLK_RETURN || LastKey == SDLK_SPACE ) ) )
 			{
 				LinesUp = 8;
 				LinesDn = 0;
@@ -11925,7 +11925,7 @@ bool ProcessSingleMission( int n, int Diff )
 					if ( Lpressed )exit = true;
 				};
 			};
-			if ( KeyPressed&&LastKey == 33 )
+			if ( KeyPressed&&LastKey == SDLK_PAGEUP )
 			{
 				LinesUp = 0;
 				LinesDn = 9;
@@ -12024,7 +12024,7 @@ bool ProcessSingleMission( int n, int Diff )
 bool ProcessSingleCampagin( int n )
 {
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 
 	SQPicture Back( CAMPAGINS.SCamp[n].CampBmp );
 
@@ -12272,7 +12272,7 @@ bool SelectSingleMission()
 {
 	if ( !MISSLIST.MSMiss )return false;
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	/*
 	byte* Preview=new byte[(292*190)+4];
 	((word*)Preview)[0]=292;
@@ -12505,7 +12505,7 @@ void ProcessCampagins( int Options )
 	}
 
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	LoadFog( 2 );
 
 	SQPicture Back( "Interface\\Background_Campaign_Menu.bmp" );
@@ -12625,7 +12625,7 @@ HHH1:
 bool ProcessOneBattle( int BtlID )
 {
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	SQPicture Back( "Interface\\Background_Historical_Battle_01.bmp" );
 	LocalGP BTNS( "Interface\\Wars" );
 	LocalGP Mask( "Interface\\Historical_mask" );
@@ -12709,7 +12709,7 @@ int ProcessWars()
 {
 	if ( !WARS.NWars )return false;
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	SQPicture Back( "Interface\\Background_Historical_Wars.bmp" );
 	LocalGP BTNS( "Interface\\Wars" );
 	LocalGP OCAM( "Interface\\One_Campaign" );
@@ -13624,7 +13624,7 @@ bool Superuser = 0;
 void CreateTimedHint( char* s, int time );
 void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount );
 void CmdMoney( byte NI );
-int ReadKey();
+SDL_Keycode ReadKey();
 extern int NKeys;
 extern char CHATSTRING[256];
 size_t ChatCursPos = 0;
@@ -13643,19 +13643,18 @@ KRT:
 		return;
 	}
 
-	// TODO: check usage of the LastKey
 	LastKey = ReadKey();
 	KeyPressed = 0;
 
-	if ( 27 == LastKey )
-	{//Escape key
+	if ( SDLK_ESCAPE == LastKey )
+	{
 		EnterChatMode = 0;
 		ChatString[0] = 0;
 		return;
 	}
 
-	if ( 13 == LastKey )
-	{//Enter key
+	if ( SDLK_RETURN == LastKey )
+	{
 		HandleSMSChat( ChatString );
 
 		EnterChatMode = 0;
@@ -13854,9 +13853,9 @@ KRT:
 		return;
 	}
 
-	if ( LastKey >= VK_F1 && LastKey < VK_F9 )
+	if ( LastKey >= SDLK_F1 && LastKey < SDLK_F9 )
 	{
-		if ( CheckFNSend( LastKey - VK_F1 ) )
+		if ( CheckFNSend( LastKey - SDLK_F1 ) )
 		{
 			EnterChatMode = 0;
 			NKeys = 0;
@@ -13864,42 +13863,42 @@ KRT:
 		}
 	}
 
-	if ( LastKey == VK_LEFT )
+	if ( LastKey == SDLK_LEFT )
 	{
 		if ( ChatCursPos > 0 )
 		{
 			ChatCursPos--;
 		}
 		KeyPressed = 0;
-		LastKey = 0;
+		LastKey = SDLK_UNKNOWN;
 		goto KRT;
 	}
 	else
-		if ( LastKey == VK_RIGHT )
+		if ( LastKey == SDLK_RIGHT )
 		{
 			if ( ChatCursPos < strlen( ChatString ) )ChatCursPos++;
 			KeyPressed = 0;
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 			goto KRT;
 		}
 		else
-			if ( LastKey == VK_END )
+			if ( LastKey == SDLK_END )
 			{
 				ChatCursPos = strlen( ChatString );
 				KeyPressed = 0;
-				LastKey = 0;
+				LastKey = SDLK_UNKNOWN;
 				goto KRT;
 			}
 			else
-				if ( LastKey == VK_HOME )
+				if ( LastKey == SDLK_HOME )
 				{
 					ChatCursPos = 0;
 					KeyPressed = 0;
-					LastKey = 0;
+					LastKey = SDLK_UNKNOWN;
 					goto KRT;
 				}
 				else
-					if ( LastKey == VK_BACK )
+					if ( LastKey == SDLK_BACKSPACE )
 					{
 						if ( ChatCursPos > 0 )
 						{
@@ -13909,8 +13908,8 @@ KRT:
 						goto KRT;
 					}
 					else
-						if ( 46 == LastKey )
-						{//VK_DEL
+						if ( SDLK_DELETE == LastKey )
+						{
 							if ( ChatCursPos < strlen( ChatString ) )
 							{
 								strcpy( ChatString + ChatCursPos, ChatString + ChatCursPos + 1 );
@@ -13937,10 +13936,9 @@ KRT:
 
 							if ( LastAscii )
 							{//Ordinary letter, append to chat string
-								LastKey = LastAscii;
 								char xx[2];
 								xx[1] = 0;
-								xx[0] = char( LastKey );
+								xx[0] = char( LastAscii );
 
 								if ( 120 > strlen( ChatString ) + 1 )
 								{
@@ -16271,11 +16269,11 @@ void ProcessTerrainEditor()
 	{
 		if ( !( realLpressed || realRpressed ) )PUNDO.OpenNewChunk();
 		ProcessMessages();
-		if ( KeyPressed&&LastKey == 'Z' )
+		if ( KeyPressed&&LastKey == SDLK_Z )
 		{
 			PUNDO.PerformUndo();
 			RenderToResult( 0, 0, 255, 255 );
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 			KeyPressed = 0;
 		};
 		DSS.ProcessDialogs();
@@ -16362,7 +16360,7 @@ void ProcessTerrainEditor()
 		{
 			PUNDO.PerformUndo();
 			RenderToResult( 0, 0, 255, 255 );
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 			KeyPressed = 0;
 			ItemChoose = -1;
 		};

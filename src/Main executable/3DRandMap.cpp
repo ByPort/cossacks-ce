@@ -2815,7 +2815,7 @@ void ProcessRM_Save( int x0, int y0, int x1, int y1 )
 	}
 }
 
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool KeyPressed;
 void ProcessTexPiece( int x, int y, bool press )
 {

@@ -131,7 +131,7 @@ bool DelCurrentAZone()
 	else return true;
 };
 extern bool KeyPressed;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool realLpressed;
 bool EnterStr( char * str, char* Message );
 void ProcessAGroups( int x, int y );

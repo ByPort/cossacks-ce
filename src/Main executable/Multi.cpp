@@ -1273,7 +1273,7 @@ void ComDoVote( DWORD DPID, byte result )
 void DontMakeRaiting();
 extern bool EnterChatMode;
 extern bool KeyPressed;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 void UnPress();
 extern byte SpecCmd;
 void ExplorerOpenRef( int Index, char* ref );
@@ -1285,17 +1285,17 @@ void ProcessVotingKeys()
 		{
 			if ( KeyPressed )
 			{
-				if ( LastKey == 'y' || LastKey == 'Y' )
+				if ( LastKey == SDLK_Y )
 				{
 					SpecCmd = 171;
-					LastKey = 0;
+					LastKey = SDLK_UNKNOWN;
 					KeyPressed = 0;
 					UnPress();
 				};
-				if ( LastKey == 'n' || LastKey == 'N' )
+				if ( LastKey == SDLK_N )
 				{
 					SpecCmd = 172;
-					LastKey = 0;
+					LastKey = SDLK_UNKNOWN;
 					KeyPressed = 0;
 					UnPress();
 				};

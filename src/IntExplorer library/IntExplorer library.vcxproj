@@ -57,6 +57,7 @@
     <IntDir>../Temp/IntExplorer/</IntDir>
     <TargetName>IntExplorer</TargetName>
     <TargetExt>.dll</TargetExt>
+    <IncludePath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">
     <ClCompile>

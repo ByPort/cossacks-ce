@@ -2228,7 +2228,7 @@ void FreePDatas()
 extern int RunMethod;
 extern int RealLx;
 extern int RealLy;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool KeyPressed;
 extern int GLOBALTIME;
 extern int PGLOBALTIME;
@@ -2740,7 +2740,6 @@ void IAmLeft()
 }
 
 int GetRLen( char* s, RLCFont* font );
-extern int LastKey;
 extern bool KeyPressed;
 void RetryNet( bool GUAR );
 
@@ -2940,7 +2939,7 @@ void HandleMultiplayer()
 	LockPing = ( GetRealTime() - PREVTIME ) > 50;
 	PREVTIME = GetRealTime();
 
-	if (LastKey == VK_F3)
+	if (LastKey == SDLK_F3)
 	{
 		KeyPressed = 0;
 	}
@@ -3228,7 +3227,7 @@ void HandleMultiplayer()
 				//FlipPages();
 				if (UseF3)
 				{
-					if (LastKey == VK_F3)
+					if (LastKey == SDLK_F3)
 					{
 						mpl_time_1 = 10000000;
 						for (int i = 0; i < NPlayers; i++)

@@ -1,3 +1,6 @@
+// TODO: this include forces IChat and IntExplorer to add SDL includes
+// Need to find a way to avoid this
+#include <SDL3/SDL_keycode.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -51,7 +54,7 @@ extern __declspec(dllimport) int ItemChoose;
 extern __declspec(dllimport) char IPADDR[128];
 extern __declspec(dllimport) int selected_network_protocol;
 extern __declspec(dllimport) bool TOTALEXIT;
-extern __declspec(dllimport) int LastKey;
+extern __declspec(dllimport) SDL_Keycode LastKey;
 
 __declspec(dllimport) void CBar(int x0,int y0,int Lx0,int Ly0,unsigned char c);
 __declspec(dllimport) bool MMItemChoose(SimpleDialog* SD);

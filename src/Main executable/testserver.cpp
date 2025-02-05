@@ -57,7 +57,6 @@ typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestNa
 typedef void tpProcessDownloadInternetFiles();
 typedef void tpSendRecBuffer( byte* Data, int size, bool Final );
 extern bool KeyPressed;
-extern int LastKey;
 
 HMODULE H_Exp = nullptr;
 HMODULE H_ExpOld = nullptr;

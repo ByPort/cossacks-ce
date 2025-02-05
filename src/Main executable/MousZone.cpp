@@ -12,7 +12,7 @@ class MouseZone
 {
 public:
 	int x, y, x1, y1, Index, MoveIndex;
-	byte ScanCode;
+	SDL_Scancode ScanCode;
 	byte KeyState;
 	byte Pressed;
 	HandlePro* Pro;
@@ -67,7 +67,7 @@ int CreateRZone(int x, int y, int lx, int ly, HandlePro* HPro, HandlePro* RHPro,
 		Z->Hint = new char[strlen(Hint) + 1];
 		strcpy(Z->Hint, Hint);
 		Z->KeyState = 0;
-		Z->ScanCode = 0xFF;
+		Z->ScanCode = SDL_SCANCODE_UNKNOWN;
 		return i;
 	}
 	return -1;
@@ -99,7 +99,7 @@ int CreateRZone(
 		Z->Index = Index;
 		Z->Pressed = false;
 		Z->KeyState = 0;
-		Z->ScanCode = 0xFF;
+		Z->ScanCode = SDL_SCANCODE_UNKNOWN;
 
 		if (Z->Hint) 
 		{
@@ -145,7 +145,7 @@ int CreateZone(int x, int y, int lx, int ly, HandlePro* HPro, int Index, char* H
 		Z->Index = Index;
 		Z->Pressed = false;
 		Z->KeyState = 0;
-		Z->ScanCode = 0xFF;
+		Z->ScanCode = SDL_SCANCODE_UNKNOWN;
 		if (int(Z->Hint))
 			free(Z->Hint);
 		Z->Hint = new char[strlen(Hint) + 1];
@@ -164,7 +164,7 @@ void AssignMovePro(int i, HandlePro* HPro, int id)
 	}
 }
 
-void AssignKeys(int i, byte Scan, byte State) 
+void AssignKeys(int i, SDL_Scancode Scan, byte State) 
 {
 	if (i != -1) 
 	{
@@ -190,7 +190,7 @@ int CreateZone(int x, int y, int lx, int ly, HandlePro* HPro, int Index, char* H
 		Z->Index = Index;
 		Z->Pressed = false;
 		Z->KeyState = 0;
-		Z->ScanCode = 0xFF;
+		Z->ScanCode = SDL_SCANCODE_UNKNOWN;
 		if (int(Z->Hint)) {
 			free(Z->Hint);
 			Z->Hint = NULL;
@@ -216,20 +216,31 @@ extern byte SpecCmd;
 
 extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
 
-byte LastPressedCodes[8] = { 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };
+SDL_Scancode LastPressedCodes[8] = {
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN,
+	SDL_SCANCODE_UNKNOWN
+};
 extern bool EnterChatMode;
 extern bool EditMapMode;
-byte ScanPressed[256];
+// TODO: this better be a dictionary of <SDL_Scancode:bool>
+// For now we'll just use an array with size of the maximum value from ScanKeys: SDL_SCANCODE_KP_0 + 1
+bool ScanPressed[SDL_SCANCODE_KP_0 + 1];
 int CheckZonePressed(int i) {
 	if (EnterChatMode || EditMapMode)return false;
-	for (int j = 0; j < 8; j++)if (LastPressedCodes[j] != 0xFF) {
-		if (!(GetKeyState(LastPressedCodes[j]) & 0x8000))LastPressedCodes[j] = 0xFF;
+	for (int j = 0; j < 8; j++)if (LastPressedCodes[j] != SDL_SCANCODE_UNKNOWN) {
+		if (!(GetSDLKeyState(LastPressedCodes[j])))LastPressedCodes[j] = SDL_SCANCODE_UNKNOWN;
 	};
 	if (i < NZones&&Zones[i].Index != -1) {
-		if (Zones[i].ScanCode != 0xFF) {
-			if ((GetKeyState(Zones[i].ScanCode) & 0x8000) || ScanPressed[Zones[i].ScanCode]) {
+		if (Zones[i].ScanCode != SDL_SCANCODE_UNKNOWN) {
+			if ((GetSDLKeyState(Zones[i].ScanCode)) || ScanPressed[Zones[i].ScanCode]) {
 				byte State = Zones[i].KeyState;
-				byte Scan = Zones[i].ScanCode;
+				SDL_Scancode Scan = Zones[i].ScanCode;
 
 				if (State & 1) {
 					if (!(GetSDLKeyState(SDL_SCANCODE_LCTRL)))return false;
@@ -245,7 +256,7 @@ int CheckZonePressed(int i) {
 				else if (GetSDLKeyState(SDL_SCANCODE_LSHIFT))return false;
 
 				for (int j = 0; j < 8; j++)if (LastPressedCodes[j] == Scan)return 1;
-				for (int j = 0; j < 8; j++)if (LastPressedCodes[j] == 0xFF) {
+				for (int j = 0; j < 8; j++)if (LastPressedCodes[j] == SDL_SCANCODE_UNKNOWN) {
 					LastPressedCodes[j] = Scan;
 					return 2;
 				};
@@ -259,13 +270,12 @@ int CheckZonePressed(int i) {
 };
 extern byte KeyCodes[512][2];
 #define NKEYS 61
-extern byte ScanKeys[NKEYS];
+extern SDL_Scancode ScanKeys[NKEYS];
 bool CheckSpritePressed(int sp) {
 	if (sp < 0 || sp >= 512 || EnterChatMode || EditMapMode)return false;
 	if (KeyCodes[sp][0]) {
-		if ((GetKeyState(ScanKeys[KeyCodes[sp][0]]) & 0x8000) || ScanPressed[ScanKeys[KeyCodes[sp][0]]]) {
+		if ((GetSDLKeyState(ScanKeys[KeyCodes[sp][0]])) || ScanPressed[ScanKeys[KeyCodes[sp][0]]]) {
 			byte State = KeyCodes[sp][1];
-			byte Scan = ScanKeys[KeyCodes[sp][0]];
 			if (State & 1) {
 				if (!(GetSDLKeyState(SDL_SCANCODE_LCTRL)))return false;
 			}
@@ -355,7 +365,7 @@ void ControlZones()
 	{
 		Zones[i].Pressed = 0;
 	}
-	memset(ScanPressed, 0, 256);
+	memset(ScanPressed, false, sizeof(ScanPressed));
 }
 
 void DeleteZone(int i)

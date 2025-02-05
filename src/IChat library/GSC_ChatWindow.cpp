@@ -1167,7 +1167,7 @@ __declspec( dllexport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF )
 			CHVIEW[0]->ChatDY = 0;
 		}
 
-		if (LastKey == 0x0000000du /* SDLK_RETURN */)
+		if (LastKey == SDLK_RETURN)
 		{
 			if (CHATMESSAGE[0])
 			{
@@ -1177,7 +1177,7 @@ __declspec( dllexport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF )
 				}
 				CHATMESSAGE[0] = 0;
 			}
-			LastKey = 0;
+			LastKey = SDLK_UNKNOWN;
 		}
 
 		PLLIST->N = CSYS.NAbsPlayers + CSYS.CCH[CSYS.CurChannel].NPlayers;

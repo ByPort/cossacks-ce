@@ -129,7 +129,7 @@ extern bool EditMapMode;
 extern int HeightEditMode;
 extern bool HelpMode;
 extern bool ChoosePosition;
-extern int LastKey;
+extern SDL_Keycode LastKey;
 extern bool PeaceMode;
 extern byte LockMode;
 
@@ -6855,7 +6855,7 @@ void CreateRESSEND()
 	RESSEND.CloseDialogs();
 	ClearKeyStack();
 	KeyPressed = 0;
-	LastKey = 0;
+	LastKey = SDLK_UNKNOWN;
 	int X0 = ( RealLx - WinLX ) / 2;
 	int Y0 = ( RealLy - WinLY ) / 2;
 	if (!STR1)
@@ -6935,7 +6935,7 @@ void CreateRESSEND()
 
 void DrawHdrTable( int x0, int y0, int x1, int y1 );
 void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount );
-int ReadKey();
+SDL_Keycode ReadKey();
 
 //Process resource transfer dialog
 void ProcessRESSEND()
@@ -6953,31 +6953,31 @@ void ProcessRESSEND()
 		int y0 = ( RealLy - WinLY ) / 2;
 		DrawHdrTable( x0, y0, x0 + WinLX, y0 + WinLY );
 		GAME_CLICK_RESULT = -1;
-		int K;
+		SDL_Keycode K;
 		do
 		{
 			KeyPressed = 0;
 			K = ReadKey();
-			if (13 == K)
-			{//Enter
+			if (SDLK_RETURN == K)
+			{
 				GAME_CLICK_RESULT = 1;
 				K = -1;
 			}
-			if (21 == K)
-			{//Escape
+			if (SDLK_ESCAPE == K)
+			{
 				GAME_CLICK_RESULT = 0;
 				K = -1;
 			}
-			if (-1 != K)
+			if (SDLK_UNKNOWN != K)
 			{
 				KeyPressed = 1;
 				LastKey = K;
 				RSN_IB->OnKeyDown( RSN_IB );
 			}
-		} while (K != -1);
+		} while (K != SDLK_UNKNOWN);
 
 		KeyPressed = 0;
-		LastKey = 0;
+		LastKey = SDLK_UNKNOWN;
 
 		RESSEND.ProcessDialogs();
 

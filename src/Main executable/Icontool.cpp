@@ -26,7 +26,7 @@ void CBar( int x, int y, int Lx, int Ly, unsigned char c );
 extern byte KeyCodes[512][2];
 #define NKEYS 61
 extern char* KeyNames[NKEYS];
-extern byte ScanKeys[NKEYS];
+extern SDL_Scancode ScanKeys[NKEYS];
 void OneIcon::InitIcon()
 {
 	FileID = 0xFFFF;
@@ -412,7 +412,7 @@ OneIcon* IconSet::AddIcon( word FileID, word SpriteID, byte Color, char* Hint )
 	return OI;
 };
 void AssignMovePro( int i, HandlePro* HPro, int id );
-void AssignKeys( int i, byte Scan, byte State );
+void AssignKeys( int i, SDL_Scancode Scan, byte State );
 extern IconSet PrpPanel;
 void IconSet::DrawIconSet( int x, int y, int Nx, int Ny, int NyStart )
 {
