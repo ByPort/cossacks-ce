@@ -904,10 +904,6 @@ void HandleSystemMessage(void* lpMsg, DWORD dwMsgSize,
 	// post string to chat window
 	if (lpszStr)
 	{
-		// make sure window is still valid
-		//if (ghChatWnd)
-		// PostMessage(ghChatWnd, WM_USER_ADDSTRING, (WPARAM) 0, (LPARAM) lpszStr);
-		//else
 		free( lpszStr );
 	}
 }

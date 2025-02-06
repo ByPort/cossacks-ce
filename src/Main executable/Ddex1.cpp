@@ -1773,10 +1773,6 @@ void EditorKeyCheck()
 			//Options.ShowModal();
 			break;
 		case SDLK_F12:
-			//UnlockSurface();
-			//CloseExplosions();
-			//ShutdownMultiplayer();
-			//PostMessage(hwnd, WM_CLOSE, 0, 0);
 			MenuType = 1;
 			MakeMenu = true;
 			break;
@@ -2307,7 +2303,10 @@ static BOOL doInit()
 		{
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "WARNING!", "Unable to use this testing version.", sdlWindow);
 			FilesExit();
-			PostMessage( hwnd, WM_CLOSE, 0, 0 );
+			SDL_Event e;
+			e.type = SDL_EVENT_QUIT;
+			e.quit.timestamp = SDL_GetTicks();
+			SDL_PushEvent(&e);
 			return 0;
 		}
 	}
@@ -2315,7 +2314,10 @@ static BOOL doInit()
 	if (!Loading())
 	{
 		FilesExit();
-		PostMessage( hwnd, WM_CLOSE, 0, 0 );
+		SDL_Event e;
+		e.type = SDL_EVENT_QUIT;
+		e.quit.timestamp = SDL_GetTicks();
+		SDL_PushEvent(&e);
 		return 0;
 	}
 
@@ -3310,7 +3312,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	if (!FilesInit())
 	{
 		FilesExit();
-		PostMessage(hwnd, WM_CLOSE, 0, 0);
+		SDL_Event e;
+		e.type = SDL_EVENT_QUIT;
+		e.quit.timestamp = SDL_GetTicks();
+		SDL_PushEvent(&e);
 	}
 
 	//Delete random generated *.m3d map files
@@ -3599,7 +3604,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 
 	FilesExit();
 	StopPlayCD();
-	PostMessage(hwnd, WM_CLOSE, 0, 0);
 	FinExplorer();
 
 	finiObjects();
