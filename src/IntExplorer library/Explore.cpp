@@ -61,7 +61,7 @@ void OneSicWindow::Process()
 	{
 		return;
 	}
-	int TT = GetTickCount();
+	uint64_t TT = GetSDLTickCount();
 	for (int V = 0; V < NTIME; V++)
 	{
 		if (TimeLimit[V] && TT - TimeLimit[V] > 0)
@@ -1753,12 +1753,12 @@ extern "C" __declspec( dllexport ) void ProcessSXP( int Index, DialogsSystem* DS
 
 	if (!SXPR->LastReparseTime)
 	{
-		SXPR->LastReparseTime = GetTickCount();
+		SXPR->LastReparseTime = GetSDLTickCount();
 	}
 
-	if (GetTickCount() - SXPR->LastReparseTime > 3000)
+	if (GetSDLTickCount() - SXPR->LastReparseTime > 3000)
 	{
-		SXPR->LastReparseTime = GetTickCount();
+		SXPR->LastReparseTime = GetSDLTickCount();
 		for (int i = 0; i < SXPR->NDownl; i++)
 		{
 			byte* DNMASK = SXPR->DOWNL[i].ReqMask;

@@ -35,7 +35,7 @@
 #include "PlayerInfo.h"
 extern PlayerInfo PINFO[8];
 
-extern const int kSystemMessageDisplayTime;
+extern const uint64_t kSystemMessageDisplayTime;
 
 #define NOMPINFO
 #define SINGLETESTNETWORK
@@ -46,10 +46,7 @@ char* GetLString( DWORD DPID );
 CCommCore IPCORE;
 bool InternetProto = 0;
 
-int GetAbsoluteRealTime();
-
 extern int NeedCurrentTime;
-unsigned long GetRealTime();
 char* GetTextByID( char* ID );
 char* GetPName( int i );
 extern char SaveFileName[128];
@@ -66,7 +63,6 @@ Menu StartMultiplayer;
 word PlayerMenuMode;
 word PrevRpos;
 extern bool DoNewInet;
-extern int COUNTER;
 bool ProcessMessages();
 int WaitCycle;
 bool NetworkGame;
@@ -339,7 +335,7 @@ void SortPLIDS()
 	};
 }
 
-int prevtime = 0;
+uint64_t prevtime = 0;
 
 //Recieves lobby player data via IPCORE.GetUserData and stores it in PINFLOC[]
 BOOL __stdcall IPCORE_EnumProc( const PEER_ID PeerID, LPCSTR lpcszPeerName )
@@ -366,9 +362,11 @@ BOOL __stdcall IPCORE_EnumProc( const PEER_ID PeerID, LPCSTR lpcszPeerName )
 	return true;
 }
 
-int GetLastAnswerT( DWORD ID );
+uint64_t GetLastAnswerT( DWORD ID );
 void ShowCentralMessage( char* Message, int GPIDX );
 void DelBADPL();
+
+extern uint64_t GetSDLTickCount();
 
 bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 {
@@ -376,7 +374,7 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 	{
 		return true;
 	}
-	if (GetTickCount() - prevtime < 250)
+	if (GetSDLTickCount() - prevtime < 250)
 	{
 		return true;
 	}
@@ -388,8 +386,8 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 			{
 				if (PINFO[i].PlayerID != MyDPID)
 				{
-					int T = GetLastAnswerT( PINFO[i].PlayerID );
-					if (T && GetTickCount() - T > 20000)
+					uint64_t T = GetLastAnswerT( PINFO[i].PlayerID );
+					if (T && GetSDLTickCount() - T > 20000)
 					{
 						IPCORE.DeletePeer( PINFO[i].PlayerID );
 					}
@@ -398,23 +396,23 @@ bool PIEnumeratePlayers( PlayerInfo* PIN, bool DoMsg )
 		}
 		else
 		{
-			int T = GetLastAnswerT( ServerDPID );
-			if (T && GetTickCount() - T > 20000)
+			uint64_t T = GetLastAnswerT( ServerDPID );
+			if (T && GetSDLTickCount() - T > 20000)
 			{
 				LocalGP BARS( "Interface\\bor2" );
 				ShowCentralMessage( GetTextByID( "NOSRCONN" ), BARS.GPID );
 				FlipPages();
-				int tt = GetTickCount();
+				uint64_t tt = GetSDLTickCount();
 				do
 				{
 					ProcessMessages();
-				} while (GetTickCount() - tt < 3000);
+				} while (GetSDLTickCount() - tt < 3000);
 				return false;
 			}
 		}
 	}
 
-	prevtime = GetTickCount();
+	prevtime = GetSDLTickCount();
 	NPlayers = 0;
 	PlayersList[0] = 0;
 	PINFLOC = PIN;
@@ -458,7 +456,7 @@ bool LockPing = 0;
 int CurrentMaxPing[8] = { -1,-1,-1,-1,-1,-1,-1,-1 };
 extern DWORD MAPREPL[8];
 int GetMapSUMM( char* Name );
-extern int AutoTime;
+extern uint64_t AutoTime;
 
 int NFROMID[8] = { 0 };
 int NTOTFROM[8] = { 0 };
@@ -702,7 +700,7 @@ STAGENEXT:
 									}
 								}
 							}
-							AutoTime = GetTickCount() - 20000;
+							AutoTime = GetSDLTickCount() - 20000;
 						}
 						else
 						{
@@ -727,7 +725,7 @@ STAGENEXT:
 								{
 									if (lp[0] == 'PING' && lp[0] + lp[1] + lp[2] + lp[3] + lp[4] == lp[5])
 									{
-										lp[3] = GetAbsoluteRealTime();
+										lp[3] = static_cast<DWORD>(GetSDLTickCount());
 										lp[4] = MyDPID;
 										lp[0] = 'ANSW';
 										lp[5] = lp[0] + lp[1] + lp[2] + lp[3] + lp[4];
@@ -738,7 +736,7 @@ STAGENEXT:
 									{
 										if (lp[0] == 'ANSW' && lp[0] + lp[1] + lp[2] + lp[3] + lp[4] == lp[5])
 										{
-											PSUMM.AddPing( lp[4], lp[2], lp[3], GetAbsoluteRealTime() );
+											PSUMM.AddPing( lp[4], lp[2], lp[3], static_cast<DWORD>(GetSDLTickCount()) );
 											EndPing( lp[2] );
 										}
 										else
@@ -919,11 +917,11 @@ DWORD MessIDTo[64];
 int MessData[64][64];
 int NSysM;
 //--------------------------------------------------
-int PREVGRAPHRT = 0;
+uint64_t PREVGRAPHRT = 0;
 int PREVGRAPHRSZ = 0;
 int PREVGRAPHRSZA = 0;
 int PREVGRAPHRSZS = 0;
-int PREVGRAPHST = 0;
+uint64_t PREVGRAPHST = 0;
 int PREVGRAPHSSZ = 0;
 int NSENDP = 0;
 unsigned long MAXSENDP = 0;
@@ -1022,7 +1020,7 @@ void ReceiveMessage()
 		( dwMsgBufferSize >= sizeof( DWORD ) )) // and it is big enough
 	{
 		// check for system message
-		int tt = GetTickCount();
+		uint64_t tt = GetSDLTickCount();
 		if (!PREVGRAPHRT)
 		{
 			PREVGRAPHRT = tt;
@@ -1046,8 +1044,9 @@ void ReceiveMessage()
 
 		if (tt - PREVGRAPHRT > 1000)
 		{
-			int dt = tt - PREVGRAPHRT;
+			uint64_t dt = tt - PREVGRAPHRT;
 			PREVGRAPHRT = tt;
+			// TODO: sending uint64_t tt instead of int, might overflow, but since it's a delta, this should be fine
 			ADDGR( 3, tt, ( PREVGRAPHRSZ * 1000 ) / dt, 0xD0 );
 			ADDGR( 3, tt, ( PREVGRAPHRSZA * 1000 ) / dt, 0xD4 );
 			ADDGR( 3, tt, ( PREVGRAPHRSZS * 1000 ) / dt, 0xD8 );
@@ -1435,14 +1434,14 @@ bool FindSessionAndJoin( char* Name, char* Nick, unsigned short port )
 	sessionDesc.dwSize = sizeof( DPSESSIONDESC2 );
 	sessionDesc.guidApplication = DPCHAT_GUID;
 	// start enumerating the sessions
-	int T0 = GetTickCount();
+	uint64_t T0 = GetSDLTickCount();
 	do
 	{
 		lpDirectPlay3A->EnumSessions( &sessionDesc, 0,
 			SR_EnumSessionsCallback, LPVOID( Name ),
 			DPENUMSESSIONS_AVAILABLE | DPENUMSESSIONS_ASYNC );
 		ProcessMessages();
-	} while (!( NSessions || GetTickCount() - T0 > 10000 ));
+	} while (!( NSessions || GetSDLTickCount() - T0 > 10000 ));
 
 	if (NSessions)
 	{
@@ -1784,7 +1783,7 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 #endif
 		if (success)
 		{
-			int tt = GetTickCount();
+			uint64_t tt = GetSDLTickCount();
 			if (!PREVGRAPHST)
 			{
 				PREVGRAPHST = tt;
@@ -1794,7 +1793,7 @@ bool SendToAllPlayersEx( DWORD Size, LPVOID lpData, bool G )
 			if (Size > MAXSENDP)MAXSENDP = Size;
 			if (tt - PREVGRAPHST > 1000)
 			{
-				int dt = tt - PREVGRAPHST;
+				uint64_t dt = tt - PREVGRAPHST;
 				PREVGRAPHST = tt;
 				ADDGR( 4, tt, ( PREVGRAPHSSZ * 1000 ) / dt, 0xD0 );
 				PREVGRAPHSSZ = 0;
@@ -1856,7 +1855,7 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 	{
 		if (Type == 1)NSEN1++;
 		if (Type == 2)NSEN2++;
-		int tt = GetTickCount();
+		uint64_t tt = GetSDLTickCount();
 		if (!PREVGRAPHST)
 		{
 			PREVGRAPHST = tt;
@@ -1869,7 +1868,7 @@ bool SendToAllPlayersExNew( DWORD Size, LPVOID lpData, bool G )
 		}
 		if (tt - PREVGRAPHST > 1000)
 		{
-			int dt = tt - PREVGRAPHST;
+			uint64_t dt = tt - PREVGRAPHST;
 			PREVGRAPHST = tt;
 			ADDGR( 4, tt, ( PREVGRAPHSSZ * 1000 ) / dt, 0xD0 );
 			PREVGRAPHSSZ = 0;
@@ -1927,7 +1926,7 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 #endif
 		if (success)
 		{
-			int tt = GetTickCount();
+			uint64_t tt = GetSDLTickCount();
 			if (!PREVGRAPHST)
 			{
 				PREVGRAPHST = tt;
@@ -1936,7 +1935,7 @@ bool SendToPlayerEx( DWORD Size, LPVOID lpData, DWORD DPID )
 			NSENDP++;
 			if (tt - PREVGRAPHST > 1000)
 			{
-				int dt = tt - PREVGRAPHST;
+				uint64_t dt = tt - PREVGRAPHST;
 				PREVGRAPHST = tt;
 				ADDGR( 4, tt, ( PREVGRAPHSSZ * 1000 ) / dt, 0xD0 );
 				PREVGRAPHSSZ = 0;
@@ -1982,7 +1981,7 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 #endif
 	if (success)
 	{
-		int tt = GetTickCount();
+		uint64_t tt = GetSDLTickCount();
 		if (!PREVGRAPHST)
 		{
 			PREVGRAPHST = tt;
@@ -1991,7 +1990,7 @@ bool SendToPlayerExNew( DWORD Size, LPVOID lpData, DWORD DPID )
 		NSENDP++;
 		if (tt - PREVGRAPHST > 1000)
 		{
-			int dt = tt - PREVGRAPHST;
+			uint64_t dt = tt - PREVGRAPHST;
 			PREVGRAPHST = tt;
 			ADDGR( 4, tt, ( PREVGRAPHSSZ * 1000 ) / dt, 0xD0 );
 			PREVGRAPHSSZ = 0;
@@ -2024,7 +2023,7 @@ void NetCash::AddOne( byte* Data, int size, CDPID idTo )
 		CELLS = (NetCell*) realloc( CELLS, MaxCells * sizeof NetCell );
 	}
 
-	int T0 = int( 250 * ( sin( float( GetTickCount() ) / 20000 ) + 1 ) ) + ( idt + idf ) * 95;
+	int T0 = int( 250 * ( sin( float( GetSDLTickCount() ) / 20000 ) + 1 ) ) + ( idt + idf ) * 95;
 	if (!T0)
 	{
 		T0 = 1;
@@ -2303,7 +2302,7 @@ void ComeInGame()
 	BUF[5] = 0;
 	BUF[6] = 0;
 	BUF[7] = 81;
-	*( (int*) ( BUF + 8 ) ) = GetRealTime() - NeedCurrentTime + 4000;
+	*( (int*) ( BUF + 8 ) ) = GetSDLTickCount() - NeedCurrentTime + 4000;
 
 	word s = 0;
 	for (int i = 0; i < 12; i++)
@@ -2817,7 +2816,7 @@ void SHOWDUMP( char* Message, int x, int y, int L, byte* Data, int Lx )
 	ShowString( x, y + 18, ccc, &WhiteFont );
 }
 
-extern int SUBTIME;
+extern uint64_t SUBTIME;
 extern int NPROCM;
 extern int TPROCM;
 extern byte PlayGameMode;
@@ -2887,8 +2886,8 @@ void HandleMultiplayer()
 		}
 	}
 
-	ADDGR( 8, GetTickCount(), MaxPingTime, 0xFF );
-	ADDGR( 8, GetTickCount(), 0, 0 );
+	ADDGR( 8, GetSDLTickCount(), MaxPingTime, 0xFF );
+	ADDGR( 8, GetSDLTickCount(), 0, 0 );
 
 	CurStatus = 1;
 	if (NPlayers < 2)
@@ -2942,9 +2941,9 @@ void HandleMultiplayer()
 
 	ClearFAILS();
 	CPinger PINGS;
-	int T0 = PREVTIME;
+	uint64_t T0 = PREVTIME;
 	bool PStart = 0;
-	int FPT0 = 0;
+	uint64_t FPT0 = 0;
 	int NPRECV = 0;
 	do
 	{
@@ -2952,7 +2951,7 @@ void HandleMultiplayer()
 		{
 			if (DoNewInet)
 			{
-				int T1 = GetTickCount();
+				uint64_t T1 = GetSDLTickCount();
 				if (T1 - T0 > 15000 && !PStart)
 				{
 					PINGS.InitNetwork();
@@ -3424,8 +3423,8 @@ __declspec( dllexport ) void CloseMPL()
 	}
 }
 
-int PS_TIME1 = 0;
-int PS_TIME2 = 0;
+uint64_t PS_TIME1 = 0;
+uint64_t PS_TIME2 = 0;
 bool PS1_change = 0;
 bool PS2_change = 0;
 
@@ -3436,7 +3435,7 @@ void SETPLAYERDATA( DWORD ID, void* Data, int size, bool change )
 		PS1_change = 1;
 	}
 
-	int TT = GetTickCount();
+	uint64_t TT = GetSDLTickCount();
 
 	if (!PS_TIME1)
 	{
@@ -3479,7 +3478,7 @@ void SETPLAYERNAME( char* name, bool change )
 		PS2_change = 1;
 	}
 
-	int TT = GetTickCount();
+	uint64_t TT = GetSDLTickCount();
 	if (!PS_TIME2)
 	{
 		PS_TIME2 = TT;
@@ -3885,7 +3884,7 @@ int LastSynTime = 0;
 extern char LASTSAVEFILE[64];
 void DontMakeRaiting();
 void ExplorerOpenRef( int Index, char* ref );
-int PREVSYNC = 0;
+uint64_t PREVSYNC = 0;
 void SyncroDoctor()
 {
 	//return;
@@ -3907,11 +3906,11 @@ void SyncroDoctor()
 		// strcpy(SaveFileName,"SYNCRO.sav");
 		// CmdLoadNetworkGame(MyNation,0,"SYNCRO.sav");
 		//};
-		if (!PREVSYNC)PREVSYNC = GetTickCount() - 30000;
-		if (use_gsc_network_protocol && ( GetTickCount() - PREVSYNC > 20000 ))
+		if (!PREVSYNC)PREVSYNC = GetSDLTickCount() - 30000;
+		if (use_gsc_network_protocol && ( GetSDLTickCount() - PREVSYNC > 20000 ))
 		{
 			ExplorerOpenRef( 0, "GW|unsync" );
-			PREVSYNC = GetTickCount();
+			PREVSYNC = GetSDLTickCount();
 		};
 		LastSynTime = GetRealTime();
 	};
@@ -4088,7 +4087,7 @@ void PingSumm::ClearPingInfo()
 	NPL = 0;
 }
 
-int PrevPingTime = 0;
+uint64_t PrevPingTime = 0;
 
 __declspec( dllexport ) void SendPings()
 {
@@ -4096,11 +4095,11 @@ __declspec( dllexport ) void SendPings()
 	{
 		return;
 	}
-	if (GetRealTime() - PrevPingTime < 1000)
+	if (GetSDLTickCount() - PrevPingTime < 1000)
 	{
 		return;
 	}
-	int stv = GetAbsoluteRealTime();
+	int stv = static_cast<DWORD>(GetSDLTickCount());
 	for (int i = 0; i < NPlayers; i++)
 	{
 		if (PINFO[i].PlayerID != MyDPID)
@@ -4117,7 +4116,7 @@ __declspec( dllexport ) void SendPings()
 			StartPing( PINFO[i].PlayerID, lp[2] );
 		}
 	}
-	PrevPingTime = GetRealTime();
+	PrevPingTime = GetSDLTickCount();
 }
 
 bool CheckPingsReady()
@@ -4518,7 +4517,7 @@ RETRANS RETSYS;
 struct OneLPing
 {
 	DWORD UniqID;
-	int StartTime;
+	uint64_t StartTime;
 };
 class OneLostID
 {
@@ -4528,8 +4527,8 @@ public:
 	int NReceived;
 	OneLPing* PING;
 	int NPings;
-	int LastAccessTime;
-	int LastReceiveTime;
+	uint64_t LastAccessTime;
+	uint64_t LastReceiveTime;
 };
 class LoosedPack
 {
@@ -4538,7 +4537,7 @@ public:
 	~LoosedPack();
 	OneLostID OLID[16];
 	int GetLoosePercent( DWORD ID );
-	int GetLastAnswerTime( DWORD ID );
+	uint64_t GetLastAnswerTime( DWORD ID );
 	void Clear();
 	void DeleteBadPlayers();
 	void Add( DWORD DPID, int ID );
@@ -4604,7 +4603,7 @@ void LoosedPack::Clear()
 void LoosedPack::Add( DWORD DPID, int ID )
 {
 	int idx = -1;
-	int CurTime = GetTickCount();
+	uint64_t CurTime = GetSDLTickCount();
 	for (int i = 0; i < 16; i++)
 	{
 		if (OLID[i].DPID == DPID)
@@ -4622,10 +4621,10 @@ void LoosedPack::Add( DWORD DPID, int ID )
 		};
 		if (idx == -1)
 		{
-			int MaxDiff = 0;
+			uint64_t MaxDiff = 0;
 			for (int i = 0; i < 16; i++)
 			{
-				int dt = CurTime - OLID[i].LastAccessTime;
+				uint64_t dt = CurTime - OLID[i].LastAccessTime;
 				if (dt > MaxDiff)
 				{
 					MaxDiff = dt;
@@ -4641,7 +4640,7 @@ void LoosedPack::Add( DWORD DPID, int ID )
 					OLID[idx].NPings = 0;
 					OLID[idx].NSent = 0;
 					OLID[idx].NReceived = 0;
-					OLID[idx].LastReceiveTime = GetTickCount();
+					OLID[idx].LastReceiveTime = GetSDLTickCount();
 				};
 			};
 		};
@@ -4656,7 +4655,7 @@ void LoosedPack::Add( DWORD DPID, int ID )
 		OP->StartTime = CurTime;
 		OP->UniqID = ID;
 		if (!OLID[idx].LastReceiveTime)
-			OLID[idx].LastReceiveTime = GetTickCount();
+			OLID[idx].LastReceiveTime = GetSDLTickCount();
 	};
 };
 void LoosedPack::Remove( int ID )
@@ -4670,7 +4669,7 @@ void LoosedPack::Remove( int ID )
 			{
 				OLID[i].NReceived++;
 				OLID[i].NSent++;
-				OLID[i].LastReceiveTime = GetTickCount();
+				OLID[i].LastReceiveTime = GetSDLTickCount();
 				if (OLID[i].NReceived > OLID[i].NSent)
 				{
 					OLID[i].NReceived = OLID[i].NSent;
@@ -4691,7 +4690,7 @@ void LoosedPack::Remove( int ID )
 }
 void LoosedPack::Process()
 {
-	int CT = GetTickCount();
+	uint64_t CT = GetSDLTickCount();
 	for (int i = 0; i < 16; i++)
 	{
 		int N = OLID[i].NPings;
@@ -4714,7 +4713,7 @@ void LoosedPack::Process()
 		};
 	};
 };
-int LoosedPack::GetLastAnswerTime( DWORD ID )
+uint64_t LoosedPack::GetLastAnswerTime( DWORD ID )
 {
 	for (int i = 0; i < 16; i++)if (OLID[i].DPID == ID)
 	{
@@ -4743,7 +4742,7 @@ char* GetLString( DWORD DPID )
 };
 void StartPing( DWORD DPID, int ID );
 void EndPing( int ID );
-int GetLastAnswerT( DWORD ID )
+uint64_t GetLastAnswerT( DWORD ID )
 {
 	return LPACK.GetLastAnswerTime( ID );
 };

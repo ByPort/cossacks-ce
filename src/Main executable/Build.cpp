@@ -31,14 +31,14 @@
 #include "Fonts.h"
 #include "ConstStr.h"
 
-extern const int kImportantMessageDisplayTime;
-extern const int kMinorMessageDisplayTime;
+extern const uint64_t kImportantMessageDisplayTime;
+extern const uint64_t kMinorMessageDisplayTime;
 
 bool CheapMode;
 void PerformAction( OneObject* OB, int x, int y );
 extern const int drr[9] = { 7,6,5,0,0,4,1,2,3 };
 extern word LastObject;
-void CreateTimedHint( char* s, int time );
+void CreateTimedHint( char* s, uint64_t time );
 
 //return 0-unable
 //       n-busy(n=number of tasks)

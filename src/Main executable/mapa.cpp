@@ -41,7 +41,7 @@
 #include "PlayerInfo.h"
 extern PlayerInfo PINFO[8];
 
-extern const int kMinorMessageDisplayTime;
+extern const uint64_t kMinorMessageDisplayTime;
 
 int LastActionX = 0;
 int LastActionY = 0;
@@ -86,7 +86,7 @@ extern bool KeyPressed;
 extern bool Mode3D;
 extern bool FullMini;
 void TestTriangle();
-extern int time1, time2, time3, time4;
+extern int time4;
 int time6, time7, time8;
 extern int PortBuiX, PortBuiY;
 extern int HintX;
@@ -99,7 +99,7 @@ extern RLCFont FActive;
 extern RLCFont FDisable;
 int GetRLen( char* s, RLCFont* font );
 word GetEnemy( int x, int y, byte NI );
-int COUNTER;
+//uint64_t COUNTER;
 extern int BlobMode;
 extern int LASTRAND, LASTIND;
 void ShowRMap();
@@ -537,7 +537,7 @@ void OutErr( LPCSTR s )
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Loading failed...", s, sdlWindow);
 };
 
-void CreateTimedHint( char* s, int time );
+void CreateTimedHint( char* s, uint64_t time );
 //Получить блок для InLineCom
 char* GetAsmBlock()
 {
@@ -1104,7 +1104,6 @@ bool NoWinner = 0;
 bool ShowStat = 0;
 extern bool NOPAUSE;
 void CmdEndGame( byte NI, byte state, byte cause );
-unsigned long GetRealTime();
 extern int WaitState;
 extern bool EnterChatMode;
 extern int ShowGameScreen;
@@ -1459,7 +1458,6 @@ void ShowPulse();
 void AddPulse( word ObjID, byte c );
 void ProcessFog1();
 void CreateFogImage();
-extern int DoLink_Time, SearchVictim_Time, CheckCapture_Time;
 void SyncroDoctor();
 void PrepareSound();
 void ProcessSelectedTower();
@@ -1520,7 +1518,6 @@ extern int CURTMTMT;
 extern byte BalloonState;
 extern byte CannonState;
 extern byte XVIIIState;
-extern int COUNTER1;
 extern int COUNTER2;
 void DottedLine( int x1, int y1, int x2, int y2, byte c )
 {
@@ -1576,6 +1573,8 @@ extern bool CanProduce;
 
 void ProcessHints();
 
+extern uint64_t GetSDLTickCount();
+
 //Draw a lot of stuff on screen
 void GFieldShow()
 {
@@ -1586,7 +1585,6 @@ void GFieldShow()
 
 	tmt++;
 
-	time1 = GetRealTime();
 	time0 = GetRealTime();
 
 	if (SHOWSLIDE)
@@ -1965,7 +1963,7 @@ void GFieldShow()
 
 	if (SeqErrorsCount)//IMPORTANT: show syncro warning message
 	{
-		int TTT = GetTickCount() / 1500;
+		uint64_t TTT = GetSDLTickCount() / 1500;
 		if (TTT & 1)
 		{
 			ShowString( HintX, HintY - 100, DELSYNC, &BigWhiteFont );
@@ -2072,7 +2070,7 @@ void GFieldShow()
 		int NF = NATIONS[NatRefTBL[MyNation]].NFarms;
 		if (NF <= NG)
 		{
-			GPS.ShowGPRedN( BrigPnX + 42, BrigPnY, BordGP, 92, MyNation, 9 + int( 8 * sin( float( GetTickCount() ) / 100 ) ) );
+			GPS.ShowGPRedN( BrigPnX + 42, BrigPnY, BordGP, 92, MyNation, 9 + int( 8 * sin( float( GetSDLTickCount() ) / 100 ) ) );
 		}
 		else
 		{
@@ -2237,7 +2235,7 @@ void GFieldShow()
 						};
 					};
 					prevms = ms;
-					if (( !SYNBAD[ord[q]] ) || ( GetTickCount() >> 9 ) & 1)
+					if (( !SYNBAD[ord[q]] ) || ( GetSDLTickCount() >> 9 ) & 1)
 					{
 						CBar( minix + 3, y + 5, 4, 4, c );
 						Xbar( minix + 2, y + 4, 6, 6, c + 1 );
@@ -3017,7 +3015,7 @@ char EXCOMM[1024];
 bool HaveExComm = 0;
 void CmdAddMoney( byte, DWORD );
 
-extern const int kChatMessageDisplayTime;
+extern const uint64_t kChatMessageDisplayTime;
 
 __declspec( dllexport ) void SetExComm( char* Data, int size )
 {
@@ -4158,7 +4156,7 @@ Edgetest:;
 PrInfo:;
 }
 
-extern int LastScrollTime;
+extern uint64_t LastScrollTime;
 
 //Handle scrolling via mouse and keys and jumping via minimap
 //Call rate: ~40 Hz
@@ -4357,7 +4355,7 @@ void EDGETEST()
 
 		if (mapx != OLDMX || mapy != OLDMY || Lpressed || Rpressed)
 		{
-			LastScrollTime = GetTickCount();
+			LastScrollTime = GetSDLTickCount();
 		}
 	}
 

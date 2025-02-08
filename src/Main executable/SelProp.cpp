@@ -22,7 +22,7 @@
 
 #include <cstring>
 
-extern const int kImportantMessageDisplayTime;
+extern const uint64_t kImportantMessageDisplayTime;
 
 int GetQueueMultiplier();
 void EconomyInterface( IconSet* ISET );
@@ -51,7 +51,6 @@ char* GetSprResourceName( OneObject* OB );
 
 #define MaxO 200
 
-void CreateTimedHint( char* s, int time );
 bool SelSoundDobe;
 bool SelSoundReady;
 int SelSoundType;

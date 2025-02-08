@@ -378,7 +378,7 @@ VOID CCommCore::NewCommCoreUID( LPSTR lpszCCUID )
 	CHAR	szComputerName[255];
 	CHAR	szCCUID[255];
 	DWORD	dwSize = 64;
-	DWORD	dwTicks;
+	uint64_t	dwTicks;
 	int		iRand;
 
 	GetComputerName( szComputerName, &dwSize );
@@ -388,7 +388,7 @@ VOID CCommCore::NewCommCoreUID( LPSTR lpszCCUID )
 
 	szComputerName[iRand] = '\0';
 
-	dwTicks = GetTickCount();
+	dwTicks = GetSDLTickCount();
 
 	srand( dwTicks );
 

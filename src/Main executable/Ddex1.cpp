@@ -112,7 +112,7 @@ int CostThickness;
 int HISPEED = 0;
 int ReliefBrush;
 int TerrBrush;
-int AutoTime;
+uint64_t AutoTime;
 int BlobMode;
 int CoalID;
 int CurGroundTexture = 0;
@@ -807,7 +807,7 @@ void AddMouseEvent( int x, int y, bool L, bool R )
 
 int LastUMX = 0;
 int LastUMY = 0;
-int LastUTime = 0;
+uint64_t LastUTime = 0;
 
 MouseStack* ReadMEvent()
 {
@@ -905,6 +905,8 @@ void OnWTPacket( WPARAM wSerial, LPARAM hCtx );
 
 void CmdEndGame( byte NI, byte state, byte cause );
 
+extern uint64_t GetSDLTickCount();
+
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
 	static BYTE phase = 0;
@@ -985,7 +987,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			//Double click
 			if (!BuildMode//BUGFIX: Prevent unit selection while placing buildings
 				&& (abs(mouseX - LastUMX) + abs(mouseY - LastUMY)) < 16
-				&& GetTickCount() - LastUTime < 600)
+				&& GetSDLTickCount() - LastUTime < 600)
 			{
 				//Select all units of selected type on screen
 				SpecCmd = 241;
@@ -993,7 +995,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 			LastUMX = mouseX;
 			LastUMY = mouseY;
-			LastUTime = GetTickCount();
+			LastUTime = GetSDLTickCount();
 		}
 		else if (event->button.button == SDL_BUTTON_RIGHT)
 		{
@@ -1160,7 +1162,7 @@ bool RetryVideo = 0;
 
 extern byte PlayGameMode;
 extern bool GameExit;
-extern int LastCTRLPressTime;
+extern uint64_t LastCTRLPressTime;
 bool CheckFNSend( int idx );
 void ProcessVotingKeys();
 extern bool RESMODE;
@@ -1585,7 +1587,7 @@ void GameKeyCheck()
 		default:
 			if (SDLK_0 <= wParam && wParam <= SDLK_9)
 			{
-				if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
+				if (GetSDLTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 				{
 					CmdMemSelection( MyNation, wParam - SDLK_0 );
 				}
@@ -2161,7 +2163,7 @@ void EditorKeyCheck()
 				}
 				else
 				{
-					if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
+					if (GetSDLTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 					{
 						CmdMemSelection( MyNation, wParam - SDLK_0 );
 					}
@@ -2742,7 +2744,6 @@ void PreDrawGameProcess()
 bool ProcessMessages();
 extern word NPlayers;
 void CmdSaveNetworkGame( byte NI, int ID, char* Name );
-int SaveTime;
 extern char SaveFileName[128];
 void ProcessNature();
 bool NeedEBuf = 0;
@@ -2754,37 +2755,37 @@ int RealPause = 0;
 int RealStTime = 0;
 int RealGameLength = 0;
 int CurrentStepTime = 80;
-unsigned long GetRealTime();
 
-int SUBTIME = 0;
+uint64_t SUBTIME = 0;
 void ProcessScreen();
 void GSYSDRAW();
 extern int StepX;
 extern int StepY;
-int TAverage = 50;
+uint64_t TAverage = 50;
 
-void WaitToTime( int Time )
+void WaitToTime( uint64_t Time )
 {
-	int dt0 = int( Time ) - int( GetRealTime() );
+	// TODO: check if this can be negative
+	uint64_t dt0 = Time - GetSDLTickCount();
 	bool DoDraw = dt0 > ( TAverage >> 2 );
 	do
 	{
 		if (DoDraw)
 		{
-			int T0 = GetRealTime();
+			// Need to cast to handle negative values in condition
+			int T0 = static_cast<int>(GetSDLTickCount());
 			if (T0 - Time < 0)
 			{
 				int tt = T0;
 				ProcessScreen();
 				GSYSDRAW();
-				int dt = GetRealTime() - tt;
+				uint64_t dt = GetSDLTickCount() - tt;
 				TAverage = ( TAverage + TAverage + TAverage + dt ) >> 2;
-				SUBTIME += GetRealTime() - T0;
+				SUBTIME += GetSDLTickCount() - T0;
 			}
 		}
 		ProcessMessages();
-	} while (int( Time ) - int( GetRealTime() ) > 0);
-	int ttx = GetRealTime();
+	} while (int( Time ) - int( GetSDLTickCount() ) > 0);
 	//SUBTIME=0;
 }
 
@@ -2909,7 +2910,7 @@ void PostDrawGameProcess()
 		SHOWSLIDE = !div( tmtmt, HISPEED + 1 ).rem;
 	}
 
-	int difTime = GetRealTime() - AutoTime;
+	uint64_t difTime = GetSDLTickCount() - AutoTime;
 
 	ProcessUpdate();
 
@@ -2976,7 +2977,7 @@ void PostDrawGameProcess()
 				}
 			}
 		}
-		AutoTime = GetRealTime();
+		AutoTime = GetSDLTickCount();
 	}
 
 	if (!PrevCheckTime)
@@ -3042,7 +3043,7 @@ void PrepareToEdit()
 	CheapMode = false;
 	NMyUnits = 1;
 	NThemUnits = 1;
-	AutoTime = GetRealTime() + 180000;
+	AutoTime = GetSDLTickCount() + 180000;
 	ObjTimer.~TimeReq();
 	InitWaves();
 	PeaceMode = false;
@@ -3109,8 +3110,7 @@ void PrepareToGame()
 	NMyUnits = 1;
 	NThemUnits = 1;
 
-	SaveTime = GetRealTime();
-	AutoTime = GetRealTime();
+	AutoTime = GetSDLTickCount();
 	ObjTimer.~TimeReq();
 
 	InitWaves();
@@ -3199,7 +3199,6 @@ void FilesExit();
 void PlayCDTrack( int Id );
 void PlayRandomTrack();
 extern int PlayMode;
-unsigned long GetRealTime();
 
 //Create "Cossacks.reg" with Microsoft DirectPlay key
 // TODO: Remove once DirectPlay is removed
@@ -3491,9 +3490,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	LoadRLC("xrcross.rlc", &RCross);
 
 	memset(Events, 0, sizeof Events);
-
-	//Probably just to define PREVT
-	GetRealTime();
 
 	//Register winapi window class, init DirectDraw, sounds and cursor
 	if (!doInit())

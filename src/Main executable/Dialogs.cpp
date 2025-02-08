@@ -1062,12 +1062,15 @@ BpxTextButton* DialogsSystem::addBpxTextButton( SimpleDialog* Parent,
 	};
 	return nullptr;
 };
+
+extern uint64_t GetSDLTickCount();
+
 //--------end of button with text----------//
 bool Video_OnDraw( SimpleDialog* SD )
 {
 	VideoButton* tb = (VideoButton*) SD;
 	if (!SD->Visible)return 0;
-	int dt = GetTickCount() - tb->LastTime;
+	uint64_t dt = GetSDLTickCount() - tb->LastTime;
 	if (tb->Stage == 2)
 	{
 		GPS.ShowGP( tb->x, tb->y, tb->GP_off, tb->CurSprite, 0 );
@@ -1076,7 +1079,7 @@ bool Video_OnDraw( SimpleDialog* SD )
 			if (dt > 40)
 			{
 				tb->CurSprite++;
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 			};
 		}
 		else
@@ -1093,7 +1096,7 @@ bool Video_OnDraw( SimpleDialog* SD )
 			if (dt > 40)
 			{
 				tb->CurSprite++;
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 			};
 		}
 		else
@@ -1142,7 +1145,7 @@ VideoButton* DialogsSystem::addVideoButton( SimpleDialog* Parent, int x, int y, 
 		tb->Destroy = nullptr;
 		tb->Enabled = true;
 		tb->Active = false;
-		tb->LastTime = GetTickCount();
+		tb->LastTime = GetSDLTickCount();
 		return tb;
 	};
 	return nullptr;
@@ -1277,7 +1280,7 @@ bool VScrollBar_Draw( SimpleDialog* SD )
 bool VScrollBar_MouseOver( SimpleDialog* SD )
 {
 	VScrollBar* tb = (VScrollBar*) SD;
-	int dt = GetTickCount() - tb->LastTime;
+	uint64_t dt = GetSDLTickCount() - tb->LastTime;
 	if (tb->SMaxPos > 0)
 	{
 		if (!realLpressed)tb->Zaxvat = false;
@@ -1286,7 +1289,7 @@ bool VScrollBar_MouseOver( SimpleDialog* SD )
 		{
 			if (MouseInsL( tb->x, tb->y, tb->sblx, tb->btnly ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos > 0)tb->SPos--;
@@ -1294,7 +1297,7 @@ bool VScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseInsL( tb->x, tb->sby + tb->sbly, tb->sblx, tb->btnly ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos < tb->SMaxPos)tb->SPos++;
@@ -1302,7 +1305,7 @@ bool VScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseIns( tb->x, tb->y + tb->btnly, tb->x + tb->sblx - 1, my ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos > 6)tb->SPos -= 6;
@@ -1311,7 +1314,7 @@ bool VScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseIns( tb->x, my + tb->mkly, tb->x + tb->sblx - 1, tb->y + tb->sbly + tb->btnly - 1 ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SMaxPos - tb->SPos > 6)tb->SPos += 6;
@@ -1320,7 +1323,7 @@ bool VScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseInsL( tb->x, my, tb->sblx, tb->mkly ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				tb->Zaxvat = true;
 			};
@@ -1419,7 +1422,7 @@ bool HScrollBar_Draw( SimpleDialog* SD )
 bool HScrollBar_MouseOver( SimpleDialog* SD )
 {
 	VScrollBar* tb = (VScrollBar*) SD;
-	int dt = GetTickCount() - tb->LastTime;
+	uint64_t dt = GetSDLTickCount() - tb->LastTime;
 	if (tb->SMaxPos > 0)
 	{
 		if (!realLpressed)tb->Zaxvat = false;
@@ -1428,7 +1431,7 @@ bool HScrollBar_MouseOver( SimpleDialog* SD )
 		{
 			if (MouseInsL( tb->x, tb->y, tb->btnly, tb->sblx ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos > 0)tb->SPos--;
@@ -1436,7 +1439,7 @@ bool HScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseInsL( tb->sby + tb->sbly, tb->y, tb->btnly, tb->sblx ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos < tb->SMaxPos)tb->SPos++;
@@ -1444,7 +1447,7 @@ bool HScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseIns( tb->x + tb->btnly, tb->y, my, tb->y + tb->sblx - 1 ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SPos > 6)tb->SPos -= 6;
@@ -1453,7 +1456,7 @@ bool HScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseIns( my + tb->mkly, tb->y, tb->x + tb->sbly + tb->btnly - 1, tb->y + tb->sblx - 1 ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				int txx = tb->SPos;
 				if (tb->SMaxPos - tb->SPos > 6)tb->SPos += 6;
@@ -1462,7 +1465,7 @@ bool HScrollBar_MouseOver( SimpleDialog* SD )
 			};
 			if (MouseInsL( my, tb->y, tb->mkly, tb->sblx ) && Lpressed&&dt > 150)
 			{
-				tb->LastTime = GetTickCount();
+				tb->LastTime = GetSDLTickCount();
 				//Lpressed=false;
 				tb->Zaxvat = true;
 			};
@@ -1685,19 +1688,19 @@ bool NewGP_VScrollBar_OnDraw( SimpleDialog* SD )
 	}
 	else
 	{
-		if (GetTickCount() - SB->LastTime > 100)
+		if (GetSDLTickCount() - SB->LastTime > 100)
 		{
 			if (upid == 1 && Lpressed)
 			{
 				SB->SPos -= SB->OnesDy;
 				if (SB->SPos < 0)SB->SPos = 0;
-				SB->LastTime = GetTickCount();
+				SB->LastTime = GetSDLTickCount();
 			};
 			if (dnid == 3 && Lpressed)
 			{
 				SB->SPos += SB->OnesDy;
 				if (SB->SPos > SB->SMaxPos)SB->SPos = SB->SMaxPos;
-				SB->LastTime = GetTickCount();
+				SB->LastTime = GetSDLTickCount();
 			};
 			if (Lpressed&&SB->MouseOver&&upid == 0 && dnid == 2)
 			{
@@ -1753,7 +1756,7 @@ VScrollBar* DialogsSystem::addNewGP_VScrollBar( SimpleDialog* Parent, int x, int
 		tb->Enabled = true;
 		tb->btnly = GPS.GetGPHeight( GP_File, Sprite );
 		tb->OnDraw = &NewGP_VScrollBar_OnDraw;
-		tb->LastTime = GetTickCount();
+		tb->LastTime = GetSDLTickCount();
 		tb->OnesDy = 1;
 		return tb;
 	};
@@ -2392,7 +2395,7 @@ bool InputBox_OnDraw( SimpleDialog* SD )
 		PushWindow( &TW );
 		IntersectWindows( IB->x, IB->y, IB->x1, IB->y1 );
 
-		//if(IB->Active&&(GetTickCount()/250)&1)strcat(base,"|");
+		//if(IB->Active&&(GetSDLTickCount()/250)&1)strcat(base,"|");
 		if (IB->Pict)IB->Pict->Draw( IB->x, IB->y );
 		if (IB->Active)
 		{
@@ -2408,7 +2411,7 @@ bool InputBox_OnDraw( SimpleDialog* SD )
 		};
 		base[0] = '|';
 		base[1] = 0;
-		if (IB->Active && ( GetTickCount() / 250 ) & 1)ShowString( IB->x + 8 + xx - IB->totdx, IB->y + 4, base, IB->Font );
+		if (IB->Active && ( GetSDLTickCount() / 250 ) & 1)ShowString( IB->x + 8 + xx - IB->totdx, IB->y + 4, base, IB->Font );
 		PopWindow( &TW );
 	};
 	return true;
@@ -3371,7 +3374,7 @@ bool ChatViewer_OnDraw( SimpleDialog* SD )
 				int y1 = Y0 + GetRLCHeight( WhiteFont.RLC, 'y' );
 				if (mouseX >= x0&&mouseX <= x1&&mouseY >= Y0&&mouseY < y1)
 				{
-					if (( GetTickCount() / 500 ) & 1)ShowString( x0, y0 + ( i - DYL )*CLY, cc3, &WhiteFont );
+					if (( GetSDLTickCount() / 500 ) & 1)ShowString( x0, y0 + ( i - DYL )*CLY, cc3, &WhiteFont );
 					else ShowString( x0, y0 + ( i - DYL )*CLY, cc3, &YellowFont );
 					if (Lpressed)
 					{
@@ -4451,7 +4454,7 @@ bool WinComboBox_OnDraw( SimpleDialog* SD )
 	WinComboBox* CB = (WinComboBox*) SD;
 	if (!CB->Visible)return false;
 	if (!CB->NLines)return false;
-	bool CanChoose = GetTickCount() - CB->LastChooseTime > 500;
+	bool CanChoose = GetSDLTickCount() - CB->LastChooseTime > 500;
 	if (!CB->CurBox)
 	{
 		int MouseOvList = mouseX >= CB->ListX0&&mouseX <= CB->ListX1&&mouseY >= CB->ListY0&&mouseY <= CB->ListY1;
@@ -4505,7 +4508,7 @@ bool WinComboBox_OnDraw( SimpleDialog* SD )
 			{
 				for (int i = 0; i < CB->NBox; i++)CB->Group[i]->ActiveLine = -1;
 				CB->Group[Cur]->ActiveLine = CB->Group[Cur]->CurLine;
-				CB->LastChooseTime = GetTickCount();
+				CB->LastChooseTime = GetSDLTickCount();
 			};
 		};
 		for (int i = 0; i < CB->NBox; i++)
@@ -4819,7 +4822,7 @@ SimpleDialog::SimpleDialog()
 	OnKeyDown = nullptr;
 	OnLeave = nullptr;
 	OnMouseOver = nullptr;
-	MouseOverActive = nullptr;
+	MouseOverActive = false;
 	Destroy = nullptr;
 	Refresh = nullptr;
 	Parent = nullptr;
@@ -5993,15 +5996,15 @@ void PerformTransMix( int degree )
 	break;
 	};
 };
-int Time0 = 0;
+uint64_t Time0 = 0;
 void StartMixing()
 {
-	Time0 = GetTickCount();
+	Time0 = GetSDLTickCount();
 	MakeTranspSnapshot();
 };
 void ProcessMixing()
 {
-	int idx = ( GetTickCount() - Time0 ) / 50;
+	int idx = (GetSDLTickCount() - Time0 ) / 50;
 	if (idx <= 8)
 	{
 		idx--;

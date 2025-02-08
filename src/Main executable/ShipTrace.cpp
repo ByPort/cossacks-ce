@@ -204,9 +204,7 @@ byte BlobVisible[MaxBlob];
 byte BlobOpt[MaxBlob];
 int NBlobs;
 int CurBlob;
-extern int time3;
 void ProcessBlobs() {
-	int tm = GetTickCount();
 	if (!NBlobs)return;
 	int MinX = (mapx << 9) - 32 * 16;
 	int MinY = (mapy << 9) - 32 * 16;
@@ -294,8 +292,6 @@ void ProcessBlobs() {
 			BlobTime[i] = 0;
 		}
 	}
-
-	time3 = GetTickCount() - tm;
 }
 
 short BDVX[256];

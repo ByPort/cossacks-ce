@@ -24,7 +24,6 @@ void ShowRLCItemGrad( int x, int y, lpRLCTable lprt, int n, byte* Pal );
 word GP_L_IDXS[MaxGPIdx];
 int LOADED = 0;
 
-extern int COUNTER;
 typedef short* lpShort;
 typedef DWORD* lpDWORD;
 GP_System::GP_System()

@@ -6,7 +6,7 @@
 #include "menu.h"
 #include "MapDiscr.h"
 
-void AssignHintLo(char* s, int time);
+void AssignHintLo(char* s, uint64_t time);
 
 class MouseZone 
 {
@@ -335,6 +335,8 @@ void ControlZones()
 			}
 			if (int(Z->Hint))
 			{
+				// FIXME: time should be in milliseconds?
+				// For AssignHint and AssignHintLo everywhere
 				AssignHint(Z->Hint, 3);
 			}
 			if (Z->HintLo)

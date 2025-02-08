@@ -29,7 +29,7 @@
 #include "ConstStr.h"
 #include "EinfoClass.h"
 
-extern const int kImportantMessageDisplayTime;
+extern const uint64_t kImportantMessageDisplayTime;
 
 extern int PeaceTimeLeft;
 extern City CITY[8];

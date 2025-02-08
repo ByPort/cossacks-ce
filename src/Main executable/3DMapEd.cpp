@@ -702,11 +702,12 @@ void CreateMiniMap()
 
 void CBar(int x, int y, int Lx, int Ly, unsigned char c);
 extern int tmtmt;
+extern uint64_t GetSDLTickCount();
 void ShowPen(int x, int y1, int r, byte ptc) {
 	SetRLCWindow(smapx, smapy, smaplx << 5, mul3(smaply) << 3, ScrWidth);
 	int y = Prop43(y1);
 	int npt = r >> 1;
-	int tm = GetTickCount()&(0xFFFF);
+	uint64_t tm = GetSDLTickCount();
 	double angle0 = double(tm) / 20 / r;
 	for (int i = 0; i < npt; i++) {
 		double angl = (i * 2 * 3.1415 / npt) + angle0;

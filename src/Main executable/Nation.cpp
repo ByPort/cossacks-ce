@@ -32,7 +32,7 @@
 #include "Safety.h"
 #include "EinfoClass.h"
 
-extern const int kSystemMessageDisplayTime;
+extern const uint64_t kSystemMessageDisplayTime;
 
 int NMyUnits;
 int NThemUnits;

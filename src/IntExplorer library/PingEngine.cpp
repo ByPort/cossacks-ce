@@ -1,11 +1,13 @@
+#include <cstdint>
 #include <winsock2.h> 
 #include <stdio.h> 
-#include <stdlib.h> 
+#include <stdlib.h>
+#include "../Main executable/common.h"
 
 struct OneIPAddress{
 	DWORD IP;
-	int LastPingTime;
-	int LastRequestTime;
+	uint64_t LastPingTime;
+	uint64_t LastRequestTime;
 	int Ping;
 };
 class PingEngine{
@@ -17,7 +19,7 @@ public:
 	int NRequests;
 	int GetPing(DWORD IP);
 	void Process();
-	int LastPingTime;
+	uint64_t LastPingTime;
 	void Setup();
 	bool SendPingToIP(DWORD IP);
 	PingEngine();
@@ -54,6 +56,7 @@ typedef struct _ihdr {
   USHORT i_cksum; 
   USHORT i_id; 
   USHORT i_seq; 
+  // TODO: if this packet is only read by us, we can change the timestamp type to uint64_t
   ULONG timestamp; 
 }IcmpHeader; 
  
@@ -106,19 +109,19 @@ bool PingEngine::SendPingToIP(DWORD IP){
  	char icmp_data[MAX_PACKET];
 	memset(icmp_data,0,MAX_PACKET); 
 	fill_icmp_data(icmp_data,datasize); 
-	((IcmpHeader*)icmp_data)->i_cksum = 0; 
-	((IcmpHeader*)icmp_data)->timestamp = GetTickCount(); 
+	((IcmpHeader*)icmp_data)->i_cksum = 0;
+	((IcmpHeader*)icmp_data)->timestamp = static_cast<ULONG>(GetSDLTickCount());
 	((IcmpHeader*)icmp_data)->i_seq = (USHORT)seq_no++; 
 	((IcmpHeader*)icmp_data)->i_cksum = checksum((USHORT*)icmp_data,datasize); 
 	DWORD bwrote = sendto(sockRaw,icmp_data,datasize,0,(struct sockaddr*)&dest,sizeof(dest));
 	if (bwrote == SOCKET_ERROR)return false;
 	return true;
 };
-int pcallT=0;
+uint64_t pcallT=0;
 bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time);
 void PingEngine::Process(){
 	if(!IsInit)return;
-	int T=GetTickCount();
+	uint64_t T=GetSDLTickCount();
 	if(!pcallT)pcallT=T;
 	if(T-pcallT<10)return;
 	pcallT=T;
@@ -141,16 +144,16 @@ void PingEngine::Process(){
 	};
 	if(T-LastPingTime>4000){
 		int BestID=-1;
-		int LastT=T;
+		uint64_t LastT=T;
 		for(int i=0;i<NRequests;i++){
 			if(T-Requests[i].LastRequestTime<1000){
-				int rt=Requests[i].LastPingTime;
-				if(rt==-1&&LastT!=-1){
-					LastT=-1;
+				uint64_t rt=Requests[i].LastPingTime;
+				if(rt==0&&LastT!=0){
+					LastT=0;
 					BestID=i;
 					break;
 				}else
-				if(LastT!=-1&&rt<LastT){
+				if(LastT!=0&&rt<LastT){
 					LastT=rt;
 					BestID=i;
 				};
@@ -169,14 +172,15 @@ void PingEngine::Process(){
 int PingEngine::GetPing(DWORD IP){
 	if(!IsInit)return false;
 	for(int i=0;i<NRequests;i++)if(Requests[i].IP==IP){
-		Requests[i].LastRequestTime=GetTickCount();
+		Requests[i].LastRequestTime=GetSDLTickCount();
 		return Requests[i].Ping;
 	};
 	Requests=(OneIPAddress*)realloc(Requests,(NRequests+1)*sizeof OneIPAddress);
 	memset(Requests+NRequests,0,sizeof OneIPAddress);
-	Requests[NRequests].LastPingTime=-1;
+	// TODO: was changed from -1 to 0, should be fine until we send packets 0ms after the startup
+	Requests[NRequests].LastPingTime=0;
 	Requests[NRequests].IP=IP;
-	Requests[NRequests].LastRequestTime=GetTickCount();
+	Requests[NRequests].LastRequestTime=GetSDLTickCount();
 	NRequests++;
 	return 0;
 };
@@ -230,7 +234,7 @@ bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time) {
 	if (icmphdr->i_id != (USHORT)GetCurrentProcessId()) { 
 		return false;
 	};
-	*time=GetTickCount()-icmphdr->timestamp;
+	*time = static_cast<int>(GetSDLTickCount() - icmphdr->timestamp);
 	return true;
 }
 PingEngine PE;

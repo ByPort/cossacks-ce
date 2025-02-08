@@ -131,7 +131,6 @@ bool ProcessNewInternetLogin()
 	char* AKEY = "";
 	ACCESS[0] = 0;
 	bool pal = 0;
-	int t0 = GetTickCount();
 
 	do
 	{

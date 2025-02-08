@@ -131,7 +131,7 @@ BOOL CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
 	if (!bWaitForCompletion)
 		return TRUE;
 
-	DWORD dwSendTime = m_FrameList[m_uFrameCount - 1].m_dwSendTime;
+	uint64_t dwSendTime = m_FrameList[m_uFrameCount - 1].m_dwSendTime;
 
 	m_bBlockingCall = TRUE;
 
@@ -144,5 +144,5 @@ BOOL CCommCore::SendRawPacket(PEER_ADDR			PeerAddr,
 
 	m_bBlockingCall = FALSE;
 
-	return ((GetTickCount() - dwSendTime) < (RETRY_COUNT*RETRY_TIME));
+	return ((GetSDLTickCount() - dwSendTime) < (RETRY_COUNT*RETRY_TIME));
 }

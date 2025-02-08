@@ -30,7 +30,7 @@ BOOL CCommCore::QueueAddPacket(PEER_ADDR			PeerAddr,
 	m_FrameList[m_uFrameCount].m_uSize = uSize;
 	m_FrameList[m_uFrameCount].m_PeerAddr.s_addr = PeerAddr.s_addr;
 	m_FrameList[m_uFrameCount].m_PeerPort = PeerPort;
-	m_FrameList[m_uFrameCount].m_dwSendTime = GetTickCount();
+	m_FrameList[m_uFrameCount].m_dwSendTime = GetSDLTickCount();
 	m_FrameList[m_uFrameCount].m_uRetrCount = 0;
 
 	m_uFrameCount++;
@@ -72,7 +72,7 @@ BOOL CCommCore::QueueDropConfirmedPacket(u_long lStamp)
 
 BOOL CCommCore::QueueProcess()
 {
-	DWORD dwTime;
+	uint64_t dwTime;
 	BOOL bDrops;
 
 	int j = 0;
@@ -91,7 +91,7 @@ BOOL CCommCore::QueueProcess()
 		}
 	} while (bDrops);
 
-	dwTime = GetTickCount();
+	dwTime = GetSDLTickCount();
 
 	for (u_short i = 0; i < m_uFrameCount; i++)
 	{

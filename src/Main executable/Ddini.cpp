@@ -585,6 +585,8 @@ void SetDarkPalette()
 	}
 }
 
+extern uint64_t GetSDLTickCount();
+
 // SlowLoadPalette creates fadein effect, originally by setting the palette from black to colors
 // And it worked because changes reflected on the screen immediately
 // TODO: Rewrite SlowLoadPalette to render each palette update or to make fade-in effect different way
@@ -676,12 +678,12 @@ __declspec( dllexport ) void SlowLoadPalette( const char* lpFileName )
 		{
 			SDL_Color originalColors[256];
 			memcpy(originalColors, sdlPal->colors, sizeof(SDL_Color) * 256);
-			int mul = 0;
-			int t0 = GetTickCount();
-			int mul0 = 0;
+			uint64_t mul = 0;
+			uint64_t t0 = GetSDLTickCount();
+			uint64_t mul0 = 0;
 			do
 			{
-				mul = ( GetTickCount() - t0 ) * 2;
+				mul = ( GetSDLTickCount() - t0 ) * 2;
 				if (mul > 255)
 				{
 					mul = 255;
@@ -724,12 +726,12 @@ __declspec( dllexport ) void SlowUnLoadPalette( const char* lpFileName )
 	{
 		SDL_Color originalColors[256];
 		memcpy(originalColors, sdlPal->colors, sizeof(SDL_Color) * 256);
-		int mul = 0;
-		int t0 = GetTickCount();
-		int mul0 = 0;
+		uint64_t mul = 0;
+		uint64_t t0 = GetSDLTickCount();
+		uint64_t mul0 = 0;
 		do
 		{
-			mul = ( GetTickCount() - t0 ) * 2;
+			mul = ( GetSDLTickCount() - t0 ) * 2;
 			if (mul > 255)
 			{
 				mul = 255;

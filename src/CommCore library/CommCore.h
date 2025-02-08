@@ -31,6 +31,10 @@
 #include <WS2tcpip.h>
 #include <Windows.h>
 #include <assert.h>
+
+#include <cstdint>
+#include "../Main executable/common.h"
+
 #ifdef CC_DEBUG
 #include <stdio.h>
 #endif //CC_DEBUG
@@ -252,7 +256,7 @@ typedef struct FRAME_ENTRY
 	u_short						m_uSize;		// Размер пакета
 	PEER_ADDR					m_PeerAddr;		// Адрес хоста
 	PEER_PORT					m_PeerPort;		// Порт хоста
-	DWORD						m_dwSendTime;	// Время последней отправки пакета
+	uint64_t					m_dwSendTime;	// Время последней отправки пакета
 												// в миллисекундах
 	u_short						m_uRetrCount;	// Количество попыток отправки пакета
 } *LPFRAME_ENTRY;
@@ -381,11 +385,6 @@ public:
 	{
 		return m_dwNxBytes;
 	}
-	// Какое число миллисекунд назад был принят последний пакет
-	DWORD	GetRecvTimeOut()
-	{
-		return ( GetTickCount() - m_dwLastPacketTime );
-	}
 
 	// ---------------------------------------------------------------------------------------------
 protected:
@@ -403,8 +402,6 @@ protected:
 
 	DWORD		m_dwAddrList[8];					// Список адресов локальной машины в network order формате
 	u_short		m_uAddrCount;						// Количество адресов локальной машины
-
-	DWORD		m_dwLastPacketTime;
 
 	u_short		m_uMaxPeers;
 	BOOL		m_bOverNAT;

@@ -1894,7 +1894,7 @@ extern bool FASTMODE;
 extern word MAXOBJECT;
 
 void SetupHint();
-void AssignHint( char* s, int time );
+void AssignHint( char* s, uint64_t time );
 void GetChar( GeneralObject* GO, char* s );
 
 extern OneObject OBJECTS[ULIMIT];
@@ -2094,8 +2094,8 @@ extern int REALTIME;
 
 typedef DWORD DPID1, FAR *LPDPID;
 
-void CreateTimedHint( char* s, int time );
-void CreateTimedHintEx( char* s, int time, byte opt );
+void CreateTimedHint( char* s, uint64_t time );
+void CreateTimedHintEx( char* s, uint64_t time, byte opt );
 
 //-----------------New text files------------------//
 extern int LX_fmap;

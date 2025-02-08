@@ -17,10 +17,10 @@
 #include "recorder.h"
 
 //Duration in ms for various messages and hints
-extern const int kChatMessageDisplayTime = 10000;
-extern const int kImportantMessageDisplayTime = 5000;
-extern const int kSystemMessageDisplayTime = 3000;
-extern const int kMinorMessageDisplayTime = 1500;
+extern const uint64_t kChatMessageDisplayTime = 10000;
+extern const uint64_t kImportantMessageDisplayTime = 5000;
+extern const uint64_t kSystemMessageDisplayTime = 3000;
+extern const uint64_t kMinorMessageDisplayTime = 1500;
 
 
 extern bool RecordMode;
@@ -30,9 +30,9 @@ extern byte CHOPT;
 extern char LASTCHATSTR[512];
 
 //Ensures that ProcessHints() does not run more frequently than every ... ms
-const unsigned int kMinimalProcessingInterval = 100;
+const uint64_t kMinimalProcessingInterval = 100;
 
-unsigned long last_hint_processing_time = 0;
+uint64_t last_hint_processing_time = 0;
 
 //Base coordinates for all calculations
 int HintX;
@@ -41,13 +41,13 @@ int HintY;
 //Primary UI hint field
 char primary_hint[256];
 char primary_hint_lo[256];
-static unsigned int primary_hint_time;
+static uint64_t primary_hint_time;
 
 //Maximum number of simoultaneous shown chat messages or hints
 const int kMaxHintCount = 25;
 //Additional secondary hints and chat messages
 char additional_hints[kMaxHintCount][256];
-static unsigned int  additional_hints_times[kMaxHintCount];
+static uint64_t additional_hints_times[kMaxHintCount];
 
 //Hint or chat messages design
 //0: normal; 16-23: national color border; 32: red
@@ -60,6 +60,8 @@ void SetupHint()
 	HintX = smapx;
 	primary_hint_time = 0;
 }
+
+extern uint64_t GetSDLTickCount();
 
 //Shows active hints and chat messages
 void ShowHints()
@@ -88,7 +90,7 @@ void ShowHints()
 			byte opp = opt >> 4;
 			if (opp == 2)
 			{//Red blinking hint
-				int tt = ( GetTickCount() / 300 ) & 1;
+				uint64_t tt = ( GetSDLTickCount() / 300 ) & 1;
 				if (tt)
 				{
 					ShowString( HintX, yy, additional_hints[i], &WhiteFont );
@@ -127,7 +129,7 @@ void ClearHints()
 }
 
 //Sets primary UI hint text for given time in ms
-void AssignHint( char* s, int time )
+void AssignHint( char* s, uint64_t time )
 {
 	strcpy( primary_hint, s );
 	primary_hint_time = time;
@@ -135,14 +137,14 @@ void AssignHint( char* s, int time )
 }
 
 //Sets primary UI hint text for given time in ms
-void AssignHintLo( char* s, int time )
+void AssignHintLo( char* s, uint64_t time )
 {
 	strcpy( primary_hint_lo, s );
 	primary_hint_time = time;
 }
 
 //Adds secondary hint or chat message for [time] ms
-void CreateTimedHint( char* s, int time )
+void CreateTimedHint( char* s, uint64_t time )
 {
 	if (!strcmp( s, additional_hints[0] ))
 	{//Same text already on display, reset timer and exit
@@ -164,7 +166,7 @@ void CreateTimedHint( char* s, int time )
 }
 
 //Adds secondary hint or chat message with special design option for [time] ms
-void CreateTimedHintEx( char* s, int time, byte opt )
+void CreateTimedHintEx( char* s, uint64_t time, byte opt )
 {
 	if (opt >= 16)
 	{//National color masking requested
@@ -203,14 +205,14 @@ void ProcessHints()
 
 	//BUGFIX: Replaced weird internal function call timer with proper timing in ms
 
-	unsigned long current_time = GetTickCount();
+	uint64_t current_time = GetSDLTickCount();
 
 	if (0 == last_hint_processing_time)
 	{
 		last_hint_processing_time = current_time;
 	}
 
-	const unsigned int delta = current_time - last_hint_processing_time;
+	const uint64_t delta = current_time - last_hint_processing_time;
 
 	if (kMinimalProcessingInterval > delta)
 	{//Don't overdo it with precision

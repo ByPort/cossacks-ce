@@ -12,8 +12,7 @@
 #include "NewUpgrade.h"
 #include "ConstStr.h"
 
-extern const int kSystemMessageDisplayTime;
-extern const int kMinorMessageDisplayTime;
+extern const uint64_t kMinorMessageDisplayTime;
 
 Upgrade::Upgrade()
 {
@@ -105,7 +104,7 @@ void OneObject::PerformUpgrade( word NewU, word MakerID )
 	Ready = false;
 }
 
-void CreateTimedHint( char* s, int time );
+void CreateTimedHint( char* s, uint64_t time );
 extern int tmtmt;
 extern int StartTmtmt;
 void PerformUpgradeLink( OneObject* OBJ )

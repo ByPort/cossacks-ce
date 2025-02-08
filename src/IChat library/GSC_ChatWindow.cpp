@@ -955,16 +955,16 @@ __declspec( dllexport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF )
 	bool newpersonal = 0;
 	bool BIGSIZE = 0;
 	bool FENTER = 1;
-	int T0 = GetTickCount() - 10000;
+	uint64_t T0 = GetSDLTickCount() - 10000;
 	SetCurPtr( 0 );
 	do
 	{
-		if (GetTickCount() - T0 > 2000)
+		if (GetSDLTickCount() - T0 > 2000)
 		{
 			char CC[32];
 			sprintf( CC, "LW_gvar&%%ASTATE&%d", Active );
 			ExplorerOpenRef( 0, CC );
-			T0 = GetTickCount();
+			T0 = GetSDLTickCount();
 		}
 
 		if (!CSYS.Connected)
@@ -1089,7 +1089,7 @@ __declspec( dllexport ) int Process_GSC_ChatWindow( bool Active, RoomInfo* RIF )
 			CHVIEW[2]->Enabled = CSYS.CurChannel == 1;
 			if (newpersonal)
 			{
-				CH_PSNL->PassiveFrame = 12 + ( ( GetTickCount() / 600 ) & 1 );
+				CH_PSNL->PassiveFrame = 12 + ( ( GetSDLTickCount() / 600 ) & 1 );
 			}
 			else CH_PSNL->PassiveFrame = 13;
 		}
@@ -1750,14 +1750,14 @@ void ReportAliveState( int NPlayers, int* Profiles )
 	P1.UnParse( REQ, 4096 );
 	ExplorerOpenRef( 0, REQ );
 };
-int LastSVS_Time = 0;
+uint64_t LastSVS_Time = 0;
 int LastPID;
 byte LastState;
 __declspec( dllexport )
 
 void SendVictoryState( int PlayerID, byte State )
 {
-	int T = GetTickCount();
+	uint64_t T = GetSDLTickCount();
 	if (LastSVS_Time && T - LastSVS_Time < 3000 && LastPID == PlayerID && State == LastState)
 	{
 		return;

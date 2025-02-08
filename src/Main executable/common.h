@@ -69,3 +69,5 @@ __declspec(dllimport) void SlowUnLoadPalette(const char* lpFileName);
 __declspec(dllimport) void SavePlayerData();
 __declspec(dllimport) void LoadPlayerData();
 __declspec(dllimport) int CurPalette;
+
+__declspec(dllimport) uint64_t GetSDLTickCount();

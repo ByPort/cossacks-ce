@@ -33,7 +33,7 @@
 #include "PlayerInfo.h"
 extern PlayerInfo PINFO[8];
 
-extern const int kMinorMessageDisplayTime;
+extern const uint64_t kMinorMessageDisplayTime;
 
 extern word SelCenter[8];
 void CreateFishMap();

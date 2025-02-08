@@ -261,6 +261,9 @@ void PlayCDTrack(int Id) {
 };
 extern int CurrentNation;
 extern int PlayMode;
+
+extern uint64_t GetSDLTickCount();
+
 void PlayRandomTrack()
 {
 	if (PlayMode == 1 && CurrentNation != -1) {
@@ -269,7 +272,8 @@ void PlayRandomTrack()
 	};
 	int Track = -1;
 	do {
-		Track = (((GetTickCount() & 4095)*NTracks) >> 12) + StartTrack;
+		// TODO: replace with random
+		Track = (((GetSDLTickCount() & 0b111111111111)*NTracks) >> 12) + StartTrack;
 		if (Track == PrevTrack1 || Track == PrevTrack2 || Track == PrevTrack3)Track = -1;
 	} while (Track == -1);
 	PrevTrack3 = PrevTrack2;

@@ -47,9 +47,8 @@
 #include "EinfoClass.h"
 #include "Sort.h"
 
-extern const int kImportantMessageDisplayTime;
-extern const int kSystemMessageDisplayTime;
-extern const int kMinorMessageDisplayTime;
+extern const uint64_t kImportantMessageDisplayTime;
+extern const uint64_t kMinorMessageDisplayTime;
 
 extern byte CaptState;
 extern bool NOPAUSE;
@@ -4579,6 +4578,9 @@ void AddToVisual( short uy, short x, short y, OneObject* OB, word FileID, word S
 		} while ( true );
 	};
 };
+
+extern uint64_t GetSDLTickCount();
+
 void ShowVisualLess( int yend )
 {
 	if ( !NVUnits )return;
@@ -4622,7 +4624,7 @@ void ShowVisualLess( int yend )
 				break;
 			case AV_PULSING:
 			{
-				int NNN = 5 + int( 8 * ( sin( double( GetTickCount() ) / 100 ) + 2 ) );
+				int NNN = 5 + int( 8 * ( sin( double( GetSDLTickCount() ) / 100 ) + 2 ) );
 				GPS.ShowGPPal( smapx + UnitX[fu], smapy + UnitY[fu], FID, spr, nat, (byte*) par2 + ( NNN << 8 ) );
 			};
 			break;
@@ -4642,8 +4644,6 @@ void ShowVisualLess( int yend )
 	} while ( fu != 0xFFFF && ylog < yend );
 };
 bool PInside( int x, int y, int x1, int y1, int xp, int yp );
-extern int time1;
-extern int time2;
 extern int tmtmt;
 #ifdef CONQUEST
 void QShowFiresEx( OneObject* OB, int x0, int y0, int FirIDX, NewAnimation** PreFires, NewAnimation** FiresAnm, int NFiresAnm, int FIndex )
@@ -4979,8 +4979,6 @@ bool ShowProducedShip( OneObject* Port, int CX, int CY );
 
 void ShowNewMonsters()
 {
-	time1 = GetTickCount();
-
 	ClearZBuffer();
 
 	int x0 = mapx * 32;
@@ -5516,8 +5514,6 @@ void ShowNewMonsters()
 	ShowTrianglesOwerUnits();
 
 	PreShowSprites();
-
-	time2 = GetTickCount() - time1;
 }
 
 void RunLeftVeslo( OneObject* OB, bool State )
@@ -7829,17 +7825,13 @@ char* its1( int i )
 	sprintf( scs, " %d", i );
 	return scs;
 };
-void CreateTimedHint( char* s, int time );
-int DoLink_Time, SearchVictim_Time, CheckCapture_Time;
+void CreateTimedHint( char* s, uint64_t time );
 
 extern HGLOBAL PTR_MISS;
 int rppx = 0;
 
 void LongProcesses()
 {
-
-	int T0 = GetTickCount();
-
 	int d = tmtmt & 7;
 	int d1 = tmtmt & 15;
 	for ( int i = 0; i < MAXOBJECT; i++ )
@@ -7874,9 +7866,6 @@ void LongProcesses()
 
 		};
 	};
-
-	SearchVictim_Time = GetTickCount() - T0;
-	T0 = GetTickCount();
 
 	for ( int i = 0; i < 8; i++ )
 	{
@@ -7938,8 +7927,6 @@ void LongProcesses()
 		};
 	};
 
-	DoLink_Time = GetTickCount() - T0;
-	T0 = GetTickCount();
 	for ( int i = 0; i < MAXOBJECT; i++ )
 	{
 		int mm = i & 31;
@@ -7952,8 +7939,6 @@ void LongProcesses()
 			}
 		}
 	}
-
-	CheckCapture_Time = GetTickCount() - T0;
 }
 
 void CheckArmies( City* );

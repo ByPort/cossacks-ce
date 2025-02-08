@@ -161,9 +161,9 @@ BOOL CCommCore::InitClient( LPCSTR lpcszServerIP, LPCSTR lpcszUserName, unsigned
 
 	free( lpConnectPacket );
 
-	DWORD dwTime = GetTickCount();
+	uint64_t dwTime = GetSDLTickCount();
 
-	while (( ( GetTickCount() - dwTime ) < ( RETRY_TIME*( RETRY_COUNT + 3 ) ) ) && m_csState == csWait)
+	while (( ( GetSDLTickCount() - dwTime ) < ( RETRY_TIME*( RETRY_COUNT + 3 ) ) ) && m_csState == csWait)
 	{
 
 		ReceiveData( NULL );

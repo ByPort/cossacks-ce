@@ -1011,7 +1011,6 @@ void EnemyInfo::ResearchSafeObject(OneObject* OB, int MinR, int MaxR, int pstart
 	};
 };
 void EnemyInfo::ResearchSafeCells(int MinR, int MaxR) {
-	//COUNTER=GetTickCount();
 	if (rando() < 4096)CheckSafeInfo();
 	else {
 		if (CurRStage < NEnWalls) {
@@ -1039,7 +1038,6 @@ void EnemyInfo::ResearchSafeCells(int MinR, int MaxR) {
 		};
 		CurRStage++;
 	};
-	//COUNTER=GetTickCount()-COUNTER;
 };
 void EnemyInfo::ResearchHumanAttackPlaces() {
 	byte MASK = Mask;

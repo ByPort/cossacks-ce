@@ -51,7 +51,7 @@ public:
 	int NDownl;
 	int MaxDownl;
 
-	int LastReparseTime;
+	uint64_t LastReparseTime;
 
 	int GetGPPictureIndex(char* Name);
 
@@ -173,7 +173,7 @@ public:
 	OneAddFont* ADFonts;
 	int NAddFonts;
 
-	int TimeLimit[NTIME];
+	uint64_t TimeLimit[NTIME];
 	char TimeLimitRequest[NTIME][160];
 
 	char CurrTempCml[64];

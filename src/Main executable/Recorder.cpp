@@ -41,7 +41,7 @@
 #include "PlayerInfo.h"
 extern PlayerInfo PINFO[8];
 
-extern const int kChatMessageDisplayTime;
+extern const uint64_t kChatMessageDisplayTime;
 
 //--------------------inserted from DIPLOMACY.H---------------//
 typedef void tpStartDownloadInternetFile( char* Name, char* Server, char* DestName );
@@ -160,11 +160,14 @@ void RecordGame::AddEmptyRecord()
 }
 
 extern byte PlayGameMode;
-int LastScrollTime = 0;
+uint64_t LastScrollTime = 0;
 int CurrentAnswer = 0;
 bool AUTOSCROLL = 1;
 extern int SeqErrorsCount;
 extern bool RecordMode;
+
+extern uint64_t GetSDLTickCount();
+
 bool RecordGame::Extract()
 {
 	if ( PlayGameMode && RecordMode )
@@ -172,7 +175,7 @@ bool RecordGame::Extract()
 		RecordMode = 0;
 	}
 	AUTOSCROLL = 1;
-	if ( PlayGameMode == 2 && LastScrollTime && GetTickCount() - LastScrollTime < 10000 )
+	if ( PlayGameMode == 2 && LastScrollTime && GetSDLTickCount() - LastScrollTime < 10000 )
 	{
 		AUTOSCROLL = 0;
 	}
@@ -984,7 +987,7 @@ int InternetStream::ReadSomething( byte* Buf, int MaxLen, bool Scroll, bool Bloc
 	bool ready = 0;
 	int bytesread = 0;
 	if ( !DOWNLOADING )DOWNLOADING = GetTextByID( "DOWNLOADING" );
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		char HNM[128];
@@ -1040,7 +1043,7 @@ int InternetStream::ReadSomething( byte* Buf, int MaxLen, bool Scroll, bool Bloc
 				HISPEED = 0;
 				SHOWSLIDE = true;
 				ProcessScreen();
-				int TT = GetTickCount();
+				uint64_t TT = GetSDLTickCount();
 				if ( TT - T0 > 2000 )
 				{
 					if ( CurPalette == 2 )

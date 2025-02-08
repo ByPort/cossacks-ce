@@ -171,13 +171,13 @@ public:
 	int N_off;
 	int CurSprite;
 	int Stage;
-	int LastTime;
+	uint64_t LastTime;
 };
 class DIALOGS_API VScrollBar :public SimpleDialog {
 public:
 	int SMaxPos, SPos;
 	int sbx, sby, sblx, sbly;
-	int LastTime;
+	uint64_t LastTime;
 	int mkly, btnly;
 	bool Zaxvat;
 	SQPicture* btn_up0;
@@ -403,7 +403,7 @@ public:
 	int NLines;
 	char* Message;
 	WinComboBox** Group;
-	int LastChooseTime;
+	uint64_t LastChooseTime;
 	int NBox;
 	int CurBox;
 	void AddLine(char* Text);

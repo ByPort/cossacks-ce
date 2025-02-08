@@ -558,6 +558,8 @@ void CurrentGame::SaveGameToFile()
 	SetNormAttr();
 }
 
+extern uint64_t GetSDLTickCount();
+
 void CurrentGame::LoadGameFromFile()
 {
 	ResFile F = RReset( "cew.dll" );
@@ -569,8 +571,9 @@ void CurrentGame::LoadGameFromFile()
 	RSeek( F, 20532 );
 	int cur = 0;
 	int sz = 0;
-	int t = GetTickCount() & 4096;
+	uint64_t t = GetSDLTickCount() & 0b1000000000000;
 
+	// TODO: set seed instead
 	for (int p = 0; p < t; p++)
 	{
 		rand();
@@ -867,15 +870,15 @@ void DecodeGS_Password( char* pass, char* result )
 CurrentGame CURIGAME;
 
 
-int PREVUPDATETIME = 0;
+uint64_t PREVUPDATETIME = 0;
 void UPDATEIGAME()
 {
 	if (CURIGAME.Active)
 	{
-		if (( !PREVUPDATETIME ) || ( GetTickCount() - PREVUPDATETIME > 60000 ))
+		if (( !PREVUPDATETIME ) || ( GetSDLTickCount() - PREVUPDATETIME > 60000 ))
 		{
 			CURIGAME.UpdateGame();
-			PREVUPDATETIME = GetTickCount();
+			PREVUPDATETIME = GetSDLTickCount();
 		};
 	};
 };
@@ -1043,22 +1046,22 @@ void StopRaiting()
 	}
 }
 
-int PBackTime = 0;
+uint64_t PBackTime = 0;
 void DontMakeRaiting();
 
 void ProcessUpdate()
 {
 	if (PBackTime == 0)
 	{
-		PBackTime = GetTickCount() - 100000;
+		PBackTime = GetSDLTickCount() - 100000;
 	}
 
-	if (GetTickCount() - PBackTime > 100000)
+	if (GetSDLTickCount() - PBackTime > 100000)
 	{
 		if (NPlayers <= 1)
 			DontMakeRaiting();
 
-		PBackTime = GetTickCount();
+		PBackTime = GetSDLTickCount();
 
 		if (CURIGAME.Active)
 			CURIGAME.UpdateGame();
@@ -1460,7 +1463,7 @@ void SetBrokenState()
 
 #include "http\HttpComm.h"
 
-int T0 = 0;
+uint64_t T0 = 0;
 char CLANR[32] = "";
 char PLNICK[32] = "";
 
@@ -1545,7 +1548,7 @@ void SendAllRequests( char* clan, char* nick, char* mail )
 {
 	RejectThisPlayer = 0;
 	char ccc[512];
-	sprintf( ccc, "com=check&clan=%s&user=%s&mail=%s&code=%d", clan, nick, mail, GetTickCount() & 65535 );
+	sprintf( ccc, "com=check&clan=%s&user=%s&mail=%s&code=%d", clan, nick, mail, GetSDLTickCount() & 0b1111111111111111 );
 	NSERV = 0;
 
 	GFILE* F = Gopen( "Internet\\serv.dat", "r" );
@@ -1591,7 +1594,7 @@ bool CheckPlayerToExit()
 		{
 			char STR[4096];
 			int sz = 4096;
-			if (!T0)T0 = GetTickCount();
+			if (!T0)T0 = GetSDLTickCount();
 			if (CheckHTTPAnswer( SERV_HANDLES[i], &sz, (byte*) STR ))
 			{
 				STR[255] = 0;

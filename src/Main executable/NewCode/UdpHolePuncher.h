@@ -14,14 +14,14 @@ class UdpHolePuncher
 {
 public:
 	void Init( const char *server_addr , const unsigned short port, 
-		const unsigned interval , const long player_id, const char *access_key );
+		const uint64_t interval , const long player_id, const char *access_key );
 	void KeepAlive();
 private:
 	bool ready_for_punching_;
 	std::vector<char> packet_;
 	int packet_size_;
-	unsigned long last_send_time_;
-	unsigned interval_;
+	uint64_t last_send_time_;
+	uint64_t interval_;
 	sockaddr_in server_addr_;
 };
 
