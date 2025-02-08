@@ -2317,7 +2317,6 @@ void GSU_Error(char* Nation) {
 	sprintf(ccc, "Invalid data for %s in %s", Nation, GSU_file);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", ccc, sdlWindow);
 };
-extern HWND hwnd;
 bool ReadWinString(GFILE* F, char* STR, int Max);
 int ADDRES[8];
 bool GenerateStartUnits(char* NationID, byte NI, int x, int y, int GenIndex) {

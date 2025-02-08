@@ -1143,7 +1143,7 @@ void ShutdownMultiplayer( bool Final )
 bool ShutdownConnection()
 {
 #ifndef NODPLAY
-	if (lpDPInfo->lpDirectPlay3A)
+	if (lpDPInfo && lpDPInfo->lpDirectPlay3A)
 	{
 		if (lpDPInfo->dpidPlayer)
 		{
@@ -1254,6 +1254,10 @@ __declspec( dllexport ) void CloseMPL();
 bool IPCORE_INIT = 0;
 void WaitWithError( char* ID, int GPID );
 bool NETWORK_INIT = 0;
+
+#ifndef NODPLAY
+extern HWND hwnd;
+#endif
 
 bool CreateMultiplaterInterface()
 {

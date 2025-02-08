@@ -316,7 +316,9 @@ void CloseEventHandler( int i )
 	memset( &Events[i], 0, sizeof Events[i] );
 }
 
+#ifndef NODPLAY
 HWND hwnd;
+#endif
 SDL_Window* sdlWindow;
 
 //fonts
@@ -403,24 +405,7 @@ void ClipCursorToWindowArea()
 		return;
 	}
 
-	if (!InGame && !InEditor)
-	{//Reset mouse locking in menues
-		ClipCursor( nullptr );
-		return;
-	}
-
-	//Determine absolute coordinates of window client area
-	RECT client_coords;
-	GetClientRect( hwnd, &client_coords );
-	MapWindowPoints( hwnd, nullptr, (LPPOINT) &client_coords, 2 );
-
-	//Necessary for correct cursor capture
-	//Using exact ClientRect causes cursor to freeze short of
-	//right or bottom border when moving fast
-	client_coords.right--;
-	client_coords.bottom--;
-
-	ClipCursor( &client_coords );
+	SDL_SetWindowMouseGrab(sdlWindow, InGame || InEditor);
 }
 
 void ResizeAndCenterWindow()
@@ -430,15 +415,8 @@ void ResizeAndCenterWindow()
 		return;
 	}
 
-	RECT window_size;
-	window_size.top = 0;
-	window_size.left = 0;
-	window_size.right = RealLx;
-	window_size.bottom = RealLy;
-	AdjustWindowRect( &window_size, window_style, FALSE );
-
-	int width = window_size.right - window_size.left;
-	int height = window_size.bottom - window_size.top;
+	int width = RealLx;
+	int height = RealLy;
 
 	int x = screen_width / 2 - width / 2;
 	int y = screen_height / 2 - height / 2;
@@ -452,11 +430,13 @@ void ResizeAndCenterWindow()
 		y = 0;
 	}
 
-	MoveWindow( hwnd, x, y, width, height, TRUE );
+	SDL_SetWindowPosition( sdlWindow, x, y );
+	SDL_SetWindowSize( sdlWindow, width, height );
+	SDL_SyncWindow( sdlWindow );
 
 	ClipCursorToWindowArea();
 
-	SetCursorPos( screen_width / 2, screen_height / 2 );
+	SDL_WarpMouseInWindow( sdlWindow, width / 2, height / 2 );
 }
 
 //Load ids, textures etc
@@ -2208,40 +2188,6 @@ bool InitScreen()
 	return false;
 }
 
-//BOOL CreateRGBDDObjects( HWND hwnd );
-
-//bool InitRGBScreen()
-//{
-//	PalDone = false;
-//	CreateRGBDDObjects( hwnd );
-//	PalDone = false;
-//	if (!DDError)
-//	{
-//		LockSurface();
-//
-//		UnlockSurface();
-//
-//		return true;
-//	}
-//	return false;
-//}
-
-//BOOL CreateRGB640DDObjects( HWND hwnd );
-
-//bool InitRGB640Screen()
-//{
-//	CreateRGB640DDObjects( hwnd );
-//	if (!DDError)
-//	{
-//		LockSurface();
-//
-//		UnlockSurface();
-//
-//		return true;
-//	}
-//	return false;
-//}
-
 bool ProcessMessages();
 extern int PlayMode;
 void StopPlayCD();
@@ -2278,16 +2224,18 @@ static BOOL doInit()
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error", "Unable to create SDL window", nullptr);
 		return false;
 	}
+#ifndef NODPLAY
 	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+#endif
 	SDL_HideCursor();
 	if (window_mode)
 	{
 		ResizeAndCenterWindow();
 	}
 	
-	ShowWindow( hwnd, SW_SHOWNORMAL );
-
-	UpdateWindow( hwnd );
+	// TODO: this was mapped from winapi, not really needed
+	SDL_ShowWindow( sdlWindow );
+	SDL_UpdateWindowSurface( sdlWindow );
 
 	CDIRSND.CreateDirSound();
 
@@ -2359,17 +2307,12 @@ static BOOL doInit()
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading error[2]", "Unable to initialise SDL. It is possible that hardware acceleration is turned off.", sdlWindow);
 			exit( 0 );
 		}
-
-		//TODO: check if this always returns true and replace with return true
-		if (SetTimer( hwnd, TIMER_ID, 20, nullptr ))
-		{
-			return TRUE;
-		}
 	}
 
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", "SDL Init Failed\n", sdlWindow);
 	finiObjects();
-	DestroyWindow( hwnd );
+	// TODO: this was mapped from winapi, not needed here, could be moved to SDL_AppQuit
+	SDL_DestroyWindow( sdlWindow );
 	return FALSE;
 }
 
@@ -3198,8 +3141,8 @@ void PlayCDTrack( int Id );
 void PlayRandomTrack();
 extern int PlayMode;
 
+#ifndef NODPLAY
 //Create "Cossacks.reg" with Microsoft DirectPlay key
-// TODO: Remove once DirectPlay is removed
 void CreateReg()
 {
 	char path[300];
@@ -3228,6 +3171,7 @@ void CreateReg()
 	Gprintf( f, "REGEDIT4\n[HKEY_LOCAL_MACHINE\\Software\\Microsoft\\DirectPlay]\n[HKEY_LOCAL_MACHINE\\Software\\Microsoft\\DirectPlay\\Applications]\n[HKEY_LOCAL_MACHINE\\Software\\Microsoft\\DirectPlay\\Applications\\Cossacks]\n\"CommandLine\"=\"\"\n\"CurrentDirectory\"=\"%s\"\n\"File\"=\"dmcr.exe\"\n\"Guid\"=\"{5BFDB060-06A4-11d0-9C4F-00A0C705475f}\"\n\"Path\"=\"%s\"\n", path1, path1 );
 	Gclose( f );
 }
+#endif
 
 typedef bool tpShowDialog( int NModes, int* Sizex, int* Sizey, int* Current );
 tpShowDialog* lpShowDialog;
@@ -3302,8 +3246,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	//Init DirectDraw and find possible resolutions
 	EnumModesOnly();
 
+#ifndef NODPLAY
 	//Create "Cossacks.reg" with Microsoft DirectPlay key
 	CreateReg();
+#endif
 
 	//Load unrar.dll, call CGSCset::gOpen() to load archives
 	if (!FilesInit())

@@ -412,8 +412,6 @@ SDMOD:;
 		// TODO: check SDL_WINDOW_FULLSCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP modes if any problem here
 		success = SDL_SetWindowFullscreen(sdlWindow, true);
 		SDL_SyncWindow(sdlWindow);
-		//ddrval = lpDD->SetCooperativeLevel( hwnd,
-		//	DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN );
 		if (success)
 		{
 			// TODO: originally was set to RealLx, RealLy, 8. Need to make sure we choose the same display mode or sync back chosen with RealLx and RealLy (and a lot of other variables)

@@ -6947,12 +6947,12 @@ void ProcessRESSEND()
 			if (SDLK_RETURN == K)
 			{
 				GAME_CLICK_RESULT = 1;
-				K = -1;
+				K = SDLK_UNKNOWN;
 			}
 			if (SDLK_ESCAPE == K)
 			{
 				GAME_CLICK_RESULT = 0;
-				K = -1;
+				K = SDLK_UNKNOWN;
 			}
 			if (SDLK_UNKNOWN != K)
 			{

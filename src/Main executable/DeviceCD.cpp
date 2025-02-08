@@ -157,7 +157,6 @@ bool CDeviceCD::SetVolume(DWORD Volume)
 
 	return 1;
 }
-extern HWND hwnd;
 bool CDeviceCD::Play(DWORD Track)
 {
 	if (FOpened)

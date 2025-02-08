@@ -153,8 +153,6 @@ DWORD GetSumm(char* Name) {
 	else return 0;
 }
 
-extern HWND hwnd;
-
 #undef free
 #undef malloc
 int TotalSize = 0;

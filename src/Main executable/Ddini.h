@@ -45,7 +45,6 @@ extern BOOL                    bActive;        // is application active?
 //extern BOOL                    DDError;        //=FALSE if Direct Draw works normally 
 extern bool                    SDLError;       // false if SDL works normally 
 //extern DDSURFACEDESC   ddsd;
-extern HWND hwnd;
 extern SDL_Window* sdlWindow;
 extern bool window_mode;
 extern SDL_Palette* sdlPal;
