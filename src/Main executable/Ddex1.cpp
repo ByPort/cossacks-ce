@@ -905,6 +905,8 @@ void OnWTPacket( WPARAM wSerial, LPARAM hCtx );
 
 void CmdEndGame( byte NI, byte state, byte cause );
 
+extern uint64_t GetSDLTickCount();
+
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
 	static BYTE phase = 0;
@@ -985,7 +987,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			//Double click
 			if (!BuildMode//BUGFIX: Prevent unit selection while placing buildings
 				&& (abs(mouseX - LastUMX) + abs(mouseY - LastUMY)) < 16
-				&& GetTickCount() - LastUTime < 600)
+				&& GetSDLTickCount() - LastUTime < 600)
 			{
 				//Select all units of selected type on screen
 				SpecCmd = 241;
@@ -993,7 +995,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 			LastUMX = mouseX;
 			LastUMY = mouseY;
-			LastUTime = GetTickCount();
+			LastUTime = GetSDLTickCount();
 		}
 		else if (event->button.button == SDL_BUTTON_RIGHT)
 		{
@@ -1585,7 +1587,7 @@ void GameKeyCheck()
 		default:
 			if (SDLK_0 <= wParam && wParam <= SDLK_9)
 			{
-				if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
+				if (GetSDLTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 				{
 					CmdMemSelection( MyNation, wParam - SDLK_0 );
 				}
@@ -2161,7 +2163,7 @@ void EditorKeyCheck()
 				}
 				else
 				{
-					if (GetTickCount() - LastCTRLPressTime < kCtrlStickyTime)
+					if (GetSDLTickCount() - LastCTRLPressTime < kCtrlStickyTime)
 					{
 						CmdMemSelection( MyNation, wParam - SDLK_0 );
 					}
@@ -2742,7 +2744,6 @@ void PreDrawGameProcess()
 bool ProcessMessages();
 extern word NPlayers;
 void CmdSaveNetworkGame( byte NI, int ID, char* Name );
-int SaveTime;
 extern char SaveFileName[128];
 void ProcessNature();
 bool NeedEBuf = 0;
@@ -2754,7 +2755,6 @@ int RealPause = 0;
 int RealStTime = 0;
 int RealGameLength = 0;
 int CurrentStepTime = 80;
-unsigned long GetRealTime();
 
 int SUBTIME = 0;
 void ProcessScreen();
@@ -2765,26 +2765,25 @@ int TAverage = 50;
 
 void WaitToTime( int Time )
 {
-	int dt0 = int( Time ) - int( GetRealTime() );
+	int dt0 = Time - GetSDLTickCount();
 	bool DoDraw = dt0 > ( TAverage >> 2 );
 	do
 	{
 		if (DoDraw)
 		{
-			int T0 = GetRealTime();
+			int T0 = GetSDLTickCount();
 			if (T0 - Time < 0)
 			{
 				int tt = T0;
 				ProcessScreen();
 				GSYSDRAW();
-				int dt = GetRealTime() - tt;
+				int dt = GetSDLTickCount() - tt;
 				TAverage = ( TAverage + TAverage + TAverage + dt ) >> 2;
-				SUBTIME += GetRealTime() - T0;
+				SUBTIME += GetSDLTickCount() - T0;
 			}
 		}
 		ProcessMessages();
-	} while (int( Time ) - int( GetRealTime() ) > 0);
-	int ttx = GetRealTime();
+	} while ( Time - GetSDLTickCount() > 0);
 	//SUBTIME=0;
 }
 
@@ -2855,7 +2854,7 @@ void PostDrawGameProcess()
 	if (GLOBALTIME - PGLOBALTIME > PitchTicks)
 	{
 		CurrentStepTime -= CurrentStepTime >> 5;
-		RealGameLength = GetRealTime() - RealStTime;
+		RealGameLength = GetSDLTickCount() - RealStTime;
 		HandleMultiplayer();
 
 		SYN.Copy( &SYN1 );
@@ -2868,7 +2867,7 @@ void PostDrawGameProcess()
 		}
 
 		PGLOBALTIME = GLOBALTIME;
-		RealStTime = GetRealTime();
+		RealStTime = GetSDLTickCount();
 
 		if (PlayGameMode)
 		{
@@ -2909,7 +2908,7 @@ void PostDrawGameProcess()
 		SHOWSLIDE = !div( tmtmt, HISPEED + 1 ).rem;
 	}
 
-	int difTime = GetRealTime() - AutoTime;
+	int difTime = GetSDLTickCount() - AutoTime;
 
 	ProcessUpdate();
 
@@ -2976,17 +2975,17 @@ void PostDrawGameProcess()
 				}
 			}
 		}
-		AutoTime = GetRealTime();
+		AutoTime = GetSDLTickCount();
 	}
 
 	if (!PrevCheckTime)
 	{
-		PrevCheckTime = GetRealTime();
+		PrevCheckTime = GetSDLTickCount();
 	}
 
-	if (GetRealTime() - PrevCheckTime > 90000)
+	if (GetSDLTickCount() - PrevCheckTime > 90000)
 	{
-		PrevCheckTime = GetRealTime();
+		PrevCheckTime = GetSDLTickCount();
 		if (PeaceTimeLeft / 60 < PeaceTimeStage)
 		{
 			CmdChangePeaceTimeStage( PeaceTimeLeft / 60 );
@@ -2994,16 +2993,16 @@ void PostDrawGameProcess()
 	}
 
 	/* Multiplayer save functions
-	if(NPlayers > 1 && MyDPID == ServerDPID && SaveTime - GetRealTime() > 60000*5)
+	if(NPlayers > 1 && MyDPID == ServerDPID && SaveTime - GetSDLTickCount() > 60000*5)
 	{
-		CmdSaveNetworkGame(MyNation, GetRealTime(), "NETWORK SAVE");
-		SaveTime = GetRealTime();
+		CmdSaveNetworkGame(MyNation, GetSDLTickCount(), "NETWORK SAVE");
+		SaveTime = GetSDLTickCount();
 	}
 	*/
 
 	if (0 == prev_postdraw_time)
 	{
-		prev_postdraw_time = GetRealTime();
+		prev_postdraw_time = GetSDLTickCount();
 	}
 
 
@@ -3015,10 +3014,10 @@ void PostDrawGameProcess()
 		{
 			GameKeyCheck();
 		}
-		time_since_last_call = GetRealTime() - prev_postdraw_time;
+		time_since_last_call = GetSDLTickCount() - prev_postdraw_time;
 	} while (PauseMode || time_since_last_call < kPostDrawInterval);
 
-	prev_postdraw_time = GetRealTime();
+	prev_postdraw_time = GetSDLTickCount();
 }
 
 void InitWaves();
@@ -3042,7 +3041,7 @@ void PrepareToEdit()
 	CheapMode = false;
 	NMyUnits = 1;
 	NThemUnits = 1;
-	AutoTime = GetRealTime() + 180000;
+	AutoTime = GetSDLTickCount() + 180000;
 	ObjTimer.~TimeReq();
 	InitWaves();
 	PeaceMode = false;
@@ -3109,8 +3108,7 @@ void PrepareToGame()
 	NMyUnits = 1;
 	NThemUnits = 1;
 
-	SaveTime = GetRealTime();
-	AutoTime = GetRealTime();
+	AutoTime = GetSDLTickCount();
 	ObjTimer.~TimeReq();
 
 	InitWaves();
@@ -3199,7 +3197,6 @@ void FilesExit();
 void PlayCDTrack( int Id );
 void PlayRandomTrack();
 extern int PlayMode;
-unsigned long GetRealTime();
 
 //Create "Cossacks.reg" with Microsoft DirectPlay key
 // TODO: Remove once DirectPlay is removed
@@ -3299,7 +3296,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	//window_mode = true;
 	//window_style = WS_POPUP;
 
-		// Init SDL window
+	// Init SDL window
 	InitSDL();
 
 	//Init DirectDraw and find possible resolutions
@@ -3491,9 +3488,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv)
 	LoadRLC("xrcross.rlc", &RCross);
 
 	memset(Events, 0, sizeof Events);
-
-	//Probably just to define PREVT
-	GetRealTime();
 
 	//Register winapi window class, init DirectDraw, sounds and cursor
 	if (!doInit())

@@ -86,8 +86,6 @@ extern bool KeyPressed;
 extern bool Mode3D;
 extern bool FullMini;
 void TestTriangle();
-extern int time1, time2, time3, time4;
-int time6, time7, time8;
 extern int PortBuiX, PortBuiY;
 extern int HintX;
 extern int HintY;
@@ -99,7 +97,6 @@ extern RLCFont FActive;
 extern RLCFont FDisable;
 int GetRLen( char* s, RLCFont* font );
 word GetEnemy( int x, int y, byte NI );
-int COUNTER;
 extern int BlobMode;
 extern int LASTRAND, LASTIND;
 void ShowRMap();
@@ -1104,7 +1101,6 @@ bool NoWinner = 0;
 bool ShowStat = 0;
 extern bool NOPAUSE;
 void CmdEndGame( byte NI, byte state, byte cause );
-unsigned long GetRealTime();
 extern int WaitState;
 extern bool EnterChatMode;
 extern int ShowGameScreen;
@@ -1176,6 +1172,8 @@ void ShowCentralText0( char* sss )
 	} while (c);
 }
 
+extern uint64_t GetSDLTickCount();
+
 void ShowWinner()
 {
 	if (NoWinner || PlayGameMode == 1)
@@ -1208,10 +1206,10 @@ void ShowWinner()
 				strcpy( sss, WINNER );
 				CmdEndGame( MyNation, 2, 111 );
 				LockPause = 1;
-				if (GetRealTime() - PrevMissTime > 7000)
+				if (GetSDLTickCount() - PrevMissTime > 7000)
 				{
-					PrevMissTime = GetRealTime();
-					FirstMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
+					FirstMissTime = GetSDLTickCount();
 				}
 				else
 				{
@@ -1222,7 +1220,7 @@ void ShowWinner()
 						PrevMissTime = 0;
 						SCENINF.Victory = false;
 					};
-					PrevMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
 				};
 			}
 			else
@@ -1230,14 +1228,14 @@ void ShowWinner()
 				strcpy( sss, LOOSER );
 				LockPause = 1;
 				CmdEndGame( MyNation, 1, 112 );
-				if (GetRealTime() - PrevMissTime > 7000)
+				if (GetSDLTickCount() - PrevMissTime > 7000)
 				{
-					PrevMissTime = GetRealTime();
-					FirstMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
+					FirstMissTime = GetSDLTickCount();
 				}
 				else
 				{
-					PrevMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
 					if (WaitState == 2)
 					{
 						GameExit = true;
@@ -1266,15 +1264,15 @@ void ShowWinner()
 			{
 				strcpy( sss, LOOSER );
 			}
-			if (GetRealTime() - PrevMissTime > 7000)
+			if (GetSDLTickCount() - PrevMissTime > 7000)
 			{
-				PrevMissTime = GetRealTime();
-				FirstMissTime = GetRealTime();
+				PrevMissTime = GetSDLTickCount();
+				FirstMissTime = GetSDLTickCount();
 			}
 			else
 			{
-				PrevMissTime = GetRealTime();
-				if (GetRealTime() - FirstMissTime > 7000 || WaitState == 2)
+				PrevMissTime = GetSDLTickCount();
+				if (GetSDLTickCount() - FirstMissTime > 7000 || WaitState == 2)
 				{
 					GameExit = true;
 					ShowStat = 0;
@@ -1298,21 +1296,21 @@ void ShowWinner()
 				{
 					strcpy( sss, WINNER );
 				}
-				if (GetRealTime() - PrevMissTime > 7000)
+				if (GetSDLTickCount() - PrevMissTime > 7000)
 				{
-					PrevMissTime = GetRealTime();
-					FirstMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
+					FirstMissTime = GetSDLTickCount();
 				}
 				else
 				{
-					if (GetRealTime() - FirstMissTime > 7000 || WaitState == 2)
+					if (GetSDLTickCount() - FirstMissTime > 7000 || WaitState == 2)
 					{
 						GameExit = true;
 						ShowStat = 0;
 						PrevMissTime = 0;
 						SCENINF.Victory = false;
 					}
-					PrevMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
 					if (CurrentCampagin != -1 && CurrentMission != -1)
 					{
 						int idx = CAMPAGINS.SCamp[CurrentCampagin].OpenIndex[CurrentMission];
@@ -1379,14 +1377,14 @@ void ShowWinner()
 				LockPause = 1;
 				CmdEndGame( MyNation, 1, 113 );
 				strcpy( sss, LOOSER );
-				if (GetRealTime() - PrevMissTime > 7000)
+				if (GetSDLTickCount() - PrevMissTime > 7000)
 				{
-					PrevMissTime = GetRealTime();
-					FirstMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
+					FirstMissTime = GetSDLTickCount();
 				}
 				else
 				{
-					PrevMissTime = GetRealTime();
+					PrevMissTime = GetSDLTickCount();
 					if (WaitState == 2)
 					{
 						GameExit = true;
@@ -1403,10 +1401,10 @@ void ShowWinner()
 					LockPause = 1;
 					CmdEndGame( MyNation, 2, 114 );
 					strcpy( sss, WINNER );
-					if (GetRealTime() - PrevMissTime > 7000)
+					if (GetSDLTickCount() - PrevMissTime > 7000)
 					{
-						PrevMissTime = GetRealTime();
-						FirstMissTime = GetRealTime();
+						PrevMissTime = GetSDLTickCount();
+						FirstMissTime = GetSDLTickCount();
 					}
 					else
 					{
@@ -1417,7 +1415,7 @@ void ShowWinner()
 							PrevMissTime = 0;
 							SCENINF.Victory = false;
 						};
-						PrevMissTime = GetRealTime();
+						PrevMissTime = GetSDLTickCount();
 					}
 				}
 			}
@@ -1453,13 +1451,11 @@ void ShowWinner()
 void ProcessWaveFrames();
 void ShowVisualLess( int yend );
 extern word rpos;
-int time0;
 word PreRpos;
 void ShowPulse();
 void AddPulse( word ObjID, byte c );
 void ProcessFog1();
 void CreateFogImage();
-extern int DoLink_Time, SearchVictim_Time, CheckCapture_Time;
 void SyncroDoctor();
 void PrepareSound();
 void ProcessSelectedTower();
@@ -1520,7 +1516,6 @@ extern int CURTMTMT;
 extern byte BalloonState;
 extern byte CannonState;
 extern byte XVIIIState;
-extern int COUNTER1;
 extern int COUNTER2;
 void DottedLine( int x1, int y1, int x2, int y2, byte c )
 {
@@ -1576,6 +1571,8 @@ extern bool CanProduce;
 
 void ProcessHints();
 
+extern uint64_t GetSDLTickCount();
+
 //Draw a lot of stuff on screen
 void GFieldShow()
 {
@@ -1586,18 +1583,13 @@ void GFieldShow()
 
 	tmt++;
 
-	time1 = GetRealTime();
-	time0 = GetRealTime();
 
 	if (SHOWSLIDE)
 	{
 		SetRLCWindow( smapx, smapy, smaplx << 5, mul3( smaply ) << 3, SCRSizeX );
 		TestTriangle();
 		TestBlob();
-		time6 = GetRealTime() - time0;
-		time0 = GetRealTime();
 		ShowNewMonsters();
-		time0 = GetRealTime();
 		WallHandleDraw();
 	}
 
@@ -1764,7 +1756,7 @@ void GFieldShow()
 						NewAnimation* DN = &NM->StandLo;
 						NewAnimation* WR = &NM->Work;
 
-						int NNN = 5 + int( 8 * ( sin( double( GetRealTime() ) / 100 ) + 2 ) );
+						int NNN = 5 + int( 8 * ( sin( double( GetSDLTickCount() ) / 100 ) + 2 ) );
 						int xx3 = xxx * 16;
 						int yy3 = yyy * 16;
 						int AddGP = -1;
@@ -1922,8 +1914,6 @@ void GFieldShow()
 
 	if (SHOWSLIDE && FogMode && BalloonState != 2 && ( !NATIONS[NatRefTBL[MyNation]].Vision ) && !NoText)
 	{
-		time0 = GetRealTime();
-
 		if (NOPAUSE && !( LockFog || NoPFOG ))
 		{
 			ProcessFog1();
@@ -1932,8 +1922,6 @@ void GFieldShow()
 		CreateFogImage();
 
 		DrawFog();
-
-		time4 = GetRealTime() - time0;
 	}
 
 	DrawCurves();
@@ -1961,11 +1949,9 @@ void GFieldShow()
 
 	ShowDestn();
 
-	time7 = GetRealTime() - time0;
-
 	if (SeqErrorsCount)//IMPORTANT: show syncro warning message
 	{
-		int TTT = GetTickCount() / 1500;
+		int TTT = GetSDLTickCount() / 1500;
 		if (TTT & 1)
 		{
 			ShowString( HintX, HintY - 100, DELSYNC, &BigWhiteFont );
@@ -2072,7 +2058,7 @@ void GFieldShow()
 		int NF = NATIONS[NatRefTBL[MyNation]].NFarms;
 		if (NF <= NG)
 		{
-			GPS.ShowGPRedN( BrigPnX + 42, BrigPnY, BordGP, 92, MyNation, 9 + int( 8 * sin( float( GetTickCount() ) / 100 ) ) );
+			GPS.ShowGPRedN( BrigPnX + 42, BrigPnY, BordGP, 92, MyNation, 9 + int( 8 * sin( float( GetSDLTickCount() ) / 100 ) ) );
 		}
 		else
 		{
@@ -2088,16 +2074,16 @@ void GFieldShow()
 	{
 		if (LastTimeStage == -1)
 		{
-			LastTimeStage = GetRealTime();
+			LastTimeStage = GetSDLTickCount();
 		}
 		else
 		{
-			int dd = GetRealTime() - LastTimeStage;
+			int dd = GetSDLTickCount() - LastTimeStage;
 
 			if (!NOPAUSE)
 			{
 				dd = 0;
-				LastTimeStage = GetRealTime();
+				LastTimeStage = GetSDLTickCount();
 			}
 
 			if (dd > 1000)
@@ -2237,7 +2223,7 @@ void GFieldShow()
 						};
 					};
 					prevms = ms;
-					if (( !SYNBAD[ord[q]] ) || ( GetTickCount() >> 9 ) & 1)
+					if (( !SYNBAD[ord[q]] ) || ( GetSDLTickCount() >> 9 ) & 1)
 					{
 						CBar( minix + 3, y + 5, 4, 4, c );
 						Xbar( minix + 2, y + 4, 6, 6, c + 1 );
@@ -2271,7 +2257,7 @@ void GFieldShow()
 		ShowString( x - 2, y - 4, PAUSETEXT, &BigWhiteFont );
 	}
 
-	int t0 = GetRealTime();
+	int t0 = GetSDLTickCount();
 	if (!PRVGT)PRVGT = t0;
 	if (t0 - PRVGT > 2000)
 	{
@@ -4357,7 +4343,7 @@ void EDGETEST()
 
 		if (mapx != OLDMX || mapy != OLDMY || Lpressed || Rpressed)
 		{
-			LastScrollTime = GetTickCount();
+			LastScrollTime = GetSDLTickCount();
 		}
 	}
 
@@ -6053,7 +6039,7 @@ int ShowNationalForces( int x, int y, bool Header )
 		return 0;
 	}
 
-	int tt = GetRealTime();
+	int tt = GetSDLTickCount();
 
 	if (tt - Renew1Time > 10000)
 	{
@@ -6127,11 +6113,11 @@ int ShowNationalForces( int x, int y, bool Header )
 	{
 		if (LastTimeStage == -1)
 		{
-			LastTimeStage = GetRealTime();
+			LastTimeStage = GetSDLTickCount();
 		}
 		else
 		{
-			int dd = GetRealTime() - LastTimeStage;
+			int dd = GetSDLTickCount() - LastTimeStage;
 			if (dd > 1000)
 			{
 				dd /= 1000;

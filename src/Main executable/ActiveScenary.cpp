@@ -5456,6 +5456,8 @@ extern byte PlayGameMode;
 int PrevRand = -1;
 extern word NPlayers;
 
+extern uint64_t GetSDLTickCount();
+// TODO: maybe not used
 extern "C" __declspec( dllexport ) int GetRandomIndex()
 {
 	if ( PlayGameMode || RecordMode )
@@ -5481,7 +5483,8 @@ extern "C" __declspec( dllexport ) int GetRandomIndex()
 	}
 	else
 	{
-		if ( PrevRand == -1 )PrevRand = ( GetTickCount() / 100 ) & 32767;
+		// TODO: replace with random
+		if ( PrevRand == -1 )PrevRand = ( GetSDLTickCount() / 100 ) & 0b111111111111111;
 		else PrevRand *= 177;
 	}
 

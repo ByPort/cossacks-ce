@@ -1095,13 +1095,15 @@ char* GetSprResourceName( OneObject* OB )
 
 void ShowRLCItemTrans8( int x, int y, lpRLCTable lprt, int n );
 
+extern uint64_t GetSDLTickCount();
+
 void ShowBuilding( NewMonster* NM, int x, int y, byte kind )
 {
 	int x0 = x + NM->PicDx;
 	int y0 = y + NM->PicDy;
 	NewAnimation* UP = &NM->StandHi;
 	NewAnimation* DN = &NM->StandLo;
-	int NNN = 5 + int( 8 * ( sin( double( GetTickCount() ) / 100 ) + 2 ) );
+	int NNN = 5 + int( 8 * ( sin( double( GetSDLTickCount() ) / 100 ) + 2 ) );
 	if (kind)
 	{
 		if (UP->Enabled)

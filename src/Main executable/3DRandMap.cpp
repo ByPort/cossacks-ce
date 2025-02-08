@@ -2859,14 +2859,13 @@ void ProcessTexPiece( int x, int y, bool press )
 }
 
 void ClearAllRounds();
+extern uint64_t GetSDLTickCount();
 void SetRandomPiece( char* Name )
 {
 	short* vx = NULL;
 	short* vy = NULL;
 	int Nv = 0;
-	int t = GetTickCount();
 	RM_LoadVerticesOnly( Name, &vx, &vy, &Nv );
-	t = GetTickCount() - t;
 	if ( Nv )
 	{
 		//search for the place
@@ -2912,9 +2911,7 @@ void SetPieceInPoints( char* Name, int* xi, int* yi, int N, byte* Used, int NATT
 	short* vx = NULL;
 	short* vy = NULL;
 	int Nv = 0;
-	int t = GetTickCount();
 	RM_LoadVerticesOnly( Name, &vx, &vy, &Nv );
-	t = GetTickCount() - t;
 	if ( Nv )
 	{
 		//search for the place
@@ -3722,21 +3719,17 @@ LocalGP ReportPanel;
 char InfMessage[128];
 char CurMessage[128];
 int LastCallTime;
-int InitInfTime;
-int LastStageTime;
 //SQPicture GPANEL;
 
 void SetupInfMessage( char* Header )
 {
 	//if(!GPANEL.PicPtr)GPANEL.LoadPicture("y288x128.bpx");
 	strcpy( InfMessage, Header );
-	InitInfTime = GetTickCount();
 }
 
 void SetNextInfStage( char* Message )
 {
 	strcpy( CurMessage, Message );
-	LastStageTime = GetTickCount();
 }
 
 extern int RealLx;
@@ -5169,7 +5162,7 @@ void GenerateMapForMission( char* Relief, char* Ground, char* Mount, char* Soft 
 		ReadHiMap( Mount, &HiMap, 255 );
 		for ( int i = 0; i < 300000; i++ )
 		{
-			int tm = GetTickCount() & 1023;
+			int tm = GetSDLTickCount() & 0b1111111111;
 			int x = ( rand() + tm ) & 255;
 			int y = ( rand() + tm ) & 255;
 			if ( x > 3 && y > 3 && x < 251 && y < 251 )
@@ -6664,8 +6657,6 @@ void FAST_RM_Load( SaveBuf* SB, int x, int y )
 {
 	int TMP_VERTEX[8192];
 	int NVert = 0;
-	int tt0 = GetTickCount();
-	int tt1, tt2, tt3, tt4;
 	SB->Pos = 0;
 	int SIGN, SIZE;
 	SIGN = GET_INT( SB );
@@ -6681,13 +6672,10 @@ void FAST_RM_Load( SaveBuf* SB, int x, int y )
 			switch ( SIGN )
 			{
 			case 'TREV':
-				tt1 = GetTickCount();
 				NVert = FAST_RM_LoadVertices( SB, ( x >> 6 ) << 1, ( y >> 6 ) << 1, TMP_VERTEX, 8192 );
-				tt1 = GetTickCount() - tt1;
 				break;
 
 			case 'TRPS':
-				tt2 = GetTickCount();
 				{
 					for ( int i = 0; i < NVert; i++ )
 					{
@@ -6699,26 +6687,18 @@ void FAST_RM_Load( SaveBuf* SB, int x, int y )
 						THMap[TMP_VERTEX[i]] -= 2048;
 					}
 				}
-				tt2 = GetTickCount() - tt2;
 				break;
 
 			case 'KCOL':
-				tt3 = GetTickCount();
 				FAST_RM_LoadLock( SB, x >> 6, y >> 6 );
-				tt3 = GetTickCount() - tt3;
 				break;
 
 			case 'SJBO':
-				tt4 = GetTickCount();
 				FAST_RM_LoadObj( SB, ( x >> 6 ) << 6, ( y >> 6 ) << 6 );
-				tt4 = GetTickCount() - tt4;
 				break;
 			}
 		}
 	}
-
-	tt0 = GetTickCount() - tt0;
-	tt0 = 0;
 }
 
 extern byte trans4[65536];

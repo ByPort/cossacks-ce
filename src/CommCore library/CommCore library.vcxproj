@@ -57,6 +57,8 @@
     <IntDir>../Temp/CommCore/</IntDir>
     <TargetName>CommCore</TargetName>
     <TargetExt>.lib</TargetExt>
+    <IncludePath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Uladzimir Sernatski\SDL3-3.2.0\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">
     <ClCompile>

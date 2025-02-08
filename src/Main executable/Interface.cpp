@@ -135,8 +135,6 @@ void Load3DMap( char* Map );
 void EditMiniMap();
 extern short WheelDelta;
 void LoadMEDButtons();
-int time1, time2, time3, time4;
-extern int time8;
 void processMLoadGame();
 extern char GameName[128];
 bool ContinueGame;
@@ -246,7 +244,6 @@ void ShowProgStr( char* ss, int prog )
 
 void ProcessNewInternet();
 int PrevT = 0;
-int COUNTER1 = 0;
 void IAmLeft();
 extern byte SpecCmd;
 
@@ -292,6 +289,8 @@ extern tpSendRecBuffer* SendRecBuffer;
 
 extern bool GetSDLKeyState(SDL_Scancode scancode, bool leftright = true);
 
+extern uint64_t GetSDLTickCount();
+
 __declspec( dllexport ) bool ProcessMessages()
 {
 	if ( PDIF_Inside )
@@ -299,7 +298,7 @@ __declspec( dllexport ) bool ProcessMessages()
 		return false;
 	}
 
-	int TT = GetTickCount();
+	int TT = GetSDLTickCount();
 
 	if ( !PrevProcTime )
 	{
@@ -320,7 +319,7 @@ __declspec( dllexport ) bool ProcessMessages()
 
 	if ( NeedToPerformGSC_Report )
 	{
-		int T = GetTickCount();
+		int T = GetSDLTickCount();
 		if ( !PrevReportTime )
 		{
 			PrevReportTime = T;
@@ -407,31 +406,21 @@ __declspec( dllexport ) bool ProcessMessages()
 
 	try
 	{
-		int T1 = GetTickCount();
+		int T1 = GetSDLTickCount();
 		if ( ( !PrevT ) || T1 - PrevT > 10 )
 		{
 			try
 			{
-				int TT0 = T1;
 				ProcessNewInternet();
 			}
 			catch ( ... )
 			{
 			}
 
-			int TT0 = GetTickCount() - T1;
-			if ( TT0 > COUNTER )
-			{
-				COUNTER = TT0;
-			}
-
-
 			if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )
 			{
-				LastCTRLPressTime = GetTickCount();
+				LastCTRLPressTime = GetSDLTickCount();
 			}
-
-			TT0 = GetTickCount();
 
 			try
 			{
@@ -439,13 +428,6 @@ __declspec( dllexport ) bool ProcessMessages()
 			}
 			catch ( ... )
 			{
-			}
-
-			TT0 = GetTickCount() - TT0;
-
-			if ( TT0 > COUNTER1 )
-			{
-				COUNTER1 = TT0;
 			}
 
 			try
@@ -496,9 +478,9 @@ __declspec( dllexport ) bool ProcessMessages()
 
 		if ( GPROG.NWeights )
 		{
-			if ( ( !PrevProgStage ) || GetTickCount() - PrevProgStage > 300 )
+			if ( ( !PrevProgStage ) || GetSDLTickCount() - PrevProgStage > 300 )
 			{
-				PrevProgStage = GetTickCount();
+				PrevProgStage = GetSDLTickCount();
 				if ( !PROGSTR )
 				{
 					PROGSTR = GetTextByID( "PROGSTR%s" );
@@ -539,7 +521,7 @@ bool ProcessMessagesEx()
 {
 	if ( GetSDLKeyState( SDL_SCANCODE_LCTRL ) )
 	{
-		LastCTRLPressTime = GetTickCount();
+		LastCTRLPressTime = GetSDLTickCount();
 	}
 
 	ProcessVotingKeys();
@@ -662,7 +644,6 @@ int OldSizeX;
 int OldSizeY;
 int mul3( int );
 //extern LPDIRECTDRAW lpDD;
-unsigned long GetRealTime();
 
 void GSSetup800();
 void DrawAllScreen();
@@ -672,26 +653,26 @@ extern int RealLy;
 void SERROR()
 {
 	PlayEffect( 0, 0, 0 );
-	int time = GetRealTime();
+	int time = GetSDLTickCount();
 	do
 	{
-	} while ( GetRealTime() - time < 1000 );
+	} while ( GetSDLTickCount() - time < 1000 );
 };
 void SERROR1()
 {
 	PlayEffect( 1, 0, 0 );
-	int time = GetRealTime();
+	int time = GetSDLTickCount();
 	do
 	{
-	} while ( GetRealTime() - time < 1000 );
+	} while ( GetSDLTickCount() - time < 1000 );
 };
 void SERROR2()
 {
 	PlayEffect( 2, 0, 0 );
-	int time = GetRealTime();
+	int time = GetSDLTickCount();
 	do
 	{
-	} while ( GetRealTime() - time < 1000 );
+	} while ( GetSDLTickCount() - time < 1000 );
 };
 extern int SCRSZY;
 
@@ -2196,12 +2177,12 @@ void WaitWithMessage( char* Message )
 	DarkScreen();
 	ShowCentralMessage( Message, BOR2.GPID );
 	FlipPages();
-	int T = GetTickCount();
+	int T = GetSDLTickCount();
 	KeyPressed = 0;
 	do
 	{
 		ProcessMessages();
-	} while ( GetTickCount() - T < 3000 && !KeyPressed );
+	} while ( GetSDLTickCount() - T < 3000 && !KeyPressed );
 	KeyPressed = 0;
 }
 
@@ -2410,19 +2391,19 @@ bool TryToJoinToPlayer( char* name )
 	RESPOND = 0;
 	PASSHASH = 0;
 	JP_ver = 0;
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	DarkScreen();
 	ShowCentralMessage( GetTextByID( "ICJOIN" ), BOR2.GPID );
 	FlipPages();
-	int TT = GetTickCount();
+	int TT = GetSDLTickCount();
 	do
 	{
-		if ( GetTickCount() - TT > 3000 )
+		if ( GetSDLTickCount() - TT > 3000 )
 		{
-			TT = GetTickCount();
+			TT = GetSDLTickCount();
 		}
 		ProcessMessages();
-	} while ( GetTickCount() - T0 < 20000 && RESPOND == 0 );
+	} while ( GetSDLTickCount() - T0 < 20000 && RESPOND == 0 );
 	char* ERR = nullptr;
 	switch ( RESPOND )
 	{
@@ -2433,11 +2414,11 @@ bool TryToJoinToPlayer( char* name )
 		if ( EnterPassword() )
 		{
 			DWORD V = CalcPassHash( SessPassword );
-			int T0 = GetTickCount();
+			int T0 = GetSDLTickCount();
 			do
 			{
 				ProcessMessages();
-			} while ( GetTickCount() - T0 < 1000 );
+			} while ( GetSDLTickCount() - T0 < 1000 );
 			if ( V != PASSHASH )
 			{
 				ERR = GetTextByID( "JNPG_E6" );
@@ -2464,12 +2445,12 @@ bool TryToJoinToPlayer( char* name )
 		DarkScreen();
 		ShowCentralMessage( ERR, BOR2.GPID );
 		FlipPages();
-		int T0 = GetTickCount();
+		int T0 = GetSDLTickCount();
 		KeyPressed = 0;
 		do
 		{
 			ProcessMessages();
-		} while ( GetTickCount() - T0 < 10000 && !KeyPressed );
+		} while ( GetSDLTickCount() - T0 < 10000 && !KeyPressed );
 		return false;
 	};
 	return true;
@@ -2651,7 +2632,7 @@ bool MPL_WaitingGame( bool Host, bool SINGLE )
 
 	ServerDPID = 0;
 
-	int r0 = GetTickCount();
+	int r0 = GetSDLTickCount();
 
 	PPTIME = r0;
 
@@ -3291,7 +3272,7 @@ ffe2:
 	bool MyOldVers = 0;
 	bool PresOldVers = 0;
 
-	int PREVSD = GetTickCount() - 3000;
+	int PREVSD = GetSDLTickCount() - 3000;
 
 	word MaxVers = 0;
 	int CURSUMM = 0;
@@ -3304,7 +3285,7 @@ ffe2:
 		NOCONN = _engNOCONN;
 	}
 
-	int FInTime = GetTickCount();
+	int FInTime = GetSDLTickCount();
 	char* COMPTXT = "Computer";
 	char* DIFSAV = GetTextByID( "DIFSAV" );
 	bool PrevPress = 0;
@@ -3353,7 +3334,7 @@ ffe2:
 	//int MAXOPTVAL[8] = { 10,3,3,10,3,4,7,9 };
 	int NOPTV = 7;
 	int PREVCUROPT = -1;
-	int PREVCNAME = GetTickCount();
+	int PREVCNAME = GetSDLTickCount();
 
 
 	LARGE_INTEGER V1;
@@ -3649,14 +3630,14 @@ ffe2:
 		{
 			int png = GetMaxRealPing();
 
-			if ( GetRealTime() - PPTIME > 1000 )
+			if ( GetSDLTickCount() - PPTIME > 1000 )
 			{
 				DWORD lpp[3];
 				lpp[0] = 'PNTF';
 				lpp[1] = png;
 				lpp[2] = lpp[0] + lpp[1];
 				SendToAllPlayers( 12, lpp );
-				PPTIME = GetRealTime();
+				PPTIME = GetSDLTickCount();
 				for ( int p = 0; p < NPlayers; p++ )
 				{
 					if ( PINFO[p].PlayerID == MyDPID )
@@ -3888,7 +3869,7 @@ ffe2:
 						}
 
 						//Time generated random number
-						int r = r0 % 65536;
+						int r = r0 % 0b10000000000000000;
 
 						//Map style
 						int s = CMGRP1[0]->CurLine
@@ -4075,8 +4056,6 @@ ffe2:
 					}
 				}
 
-				int r = r0 % 65536;
-
 				//Check number of players in the lobby
 				int NP = 0;
 				for ( int u = 0; u < 8; u++ )
@@ -4160,14 +4139,14 @@ ffe2:
 
 					bool ch = memcmp( &MYPINF, PINFO + i, sizeof MYPINF ) != 0;
 
-					if ( ch || GetTickCount() - PREVSD > 5000 )
+					if ( ch || GetSDLTickCount() - PREVSD > 5000 )
 					{
 						if ( !SINGLE )
 						{
 							SETPLAYERDATA( MyDPID, (void*) &PINFO[i].NationID, sizeof( PlayerInfo ) - 36, ch );
 						}
 						memcpy( &MYPINF, PINFO + i, sizeof MYPINF );
-						PREVSD = GetTickCount();
+						PREVSD = GetSDLTickCount();
 					}
 
 					if ( ch && Host && !SINGLE )
@@ -4175,7 +4154,7 @@ ffe2:
 						PSUMM.ClearPingInfo();
 					}
 
-					if ( strcmp( MNAME[i]->Str, oldname ) || GetTickCount() - PREVCNAME > 3000 )
+					if ( strcmp( MNAME[i]->Str, oldname ) || GetSDLTickCount() - PREVCNAME > 3000 )
 					{
 						if ( !SINGLE )
 						{
@@ -4183,7 +4162,7 @@ ffe2:
 							SETPLAYERNAME( MNAME[i]->Str, change );
 						}
 						strcpy( oldname, MNAME[i]->Str );
-						PREVCNAME = GetTickCount();
+						PREVCNAME = GetSDLTickCount();
 					}
 
 					MNATION[i]->Enabled = P2E;
@@ -4294,7 +4273,7 @@ ffe2:
 						NameBack[i]->SpriteID = 9 + ( i % 3 );
 					}
 				}
-				Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
+				Flags[i]->SpriteID = ( i * 229 + GetSDLTickCount() / 30 ) % 45;
 				Flags[i]->Nation = ColorBack[i]->Nation;
 
 				if ( AliasBack[i]->Nation )
@@ -4347,7 +4326,7 @@ ffe2:
 					strcpy( VersText[i]->Message, VERS );
 					strcpy( VersTextShadow[i]->Message, VERS );
 
-					if ( v != MaxVers && ( GetTickCount() / 300 ) & 1 )
+					if ( v != MaxVers && ( GetSDLTickCount() / 300 ) & 1 )
 					{
 						VersText[i]->ActiveFont = &SmallRedFont;
 						VersText[i]->PassiveFont = &SmallRedFont;
@@ -4405,7 +4384,7 @@ ffe2:
 					{
 						AliasID[i]->Message[0] = 'X';
 					}
-					Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
+					Flags[i]->SpriteID = ( i * 229 + GetSDLTickCount() / 30 ) % 45;
 					Flags[i]->Nation = ColorBack[i]->Nation;
 				}
 				else
@@ -4700,7 +4679,7 @@ ffe2:
 						{
 							AliasID[i]->Message[0] = 'X';
 						}
-						Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
+						Flags[i]->SpriteID = ( i * 229 + GetSDLTickCount() / 30 ) % 45;
 						Flags[i]->Nation = ColorBack[i]->Nation;
 						word W = int( Flags[i]->Nation )
 							+ ( int( AliasBack[i]->Nation ) << 4 )
@@ -4782,7 +4761,7 @@ ffe2:
 							{
 								AliasID[i]->Message[0] = 'X';
 							}
-							Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
+							Flags[i]->SpriteID = ( i * 229 + GetSDLTickCount() / 30 ) % 45;
 							ColorBack[i]->Nation = W & 15;
 							if ( Flags[i]->Nation != ColorBack[i]->Nation )
 							{//Changed flag color
@@ -4957,7 +4936,7 @@ ffe2:
 					OkBtn->Enabled = 0;
 					OkBtn->Visible = 0;
 				}
-				if (GetTickCount() - FInTime > 2000)
+				if (GetSDLTickCount() - FInTime > 2000)
 				{
 					strcpy( MENU.DefaultHint, NOCONN );
 					PrintBadConn( MENU.DefaultHint + strlen( MENU.DefaultHint ) );
@@ -4971,7 +4950,7 @@ ffe2:
 				OkBtn->Visible = PREV->Visible;
 				if ( !PREV->Visible )
 				{
-					if ( ( GetTickCount() / 200 ) & 1 )
+					if ( ( GetSDLTickCount() / 200 ) & 1 )
 					{
 						LBMaps->AFont = &WhiteFont;
 						LBMaps->PFont = &YellowFont;
@@ -5470,7 +5449,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 	char oldname[64] = "";
 	bool MyOldVers = 0;
 	bool PresOldVers = 0;
-	int PREVSD = GetTickCount();
+	int PREVSD = GetSDLTickCount();
 	int NOMREADY = -1;
 	word MaxVers = 0;
 	char* OLDV = GetTextByID( "OLDVER" );
@@ -5577,14 +5556,14 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 
 			//png=GetAveragePing();
 			//MaxPingTime=png;
-			if ( GetRealTime() - PPTIME > 1000 )
+			if ( GetSDLTickCount() - PPTIME > 1000 )
 			{
 				DWORD lpp[3];
 				lpp[0] = 'PNTF';
 				lpp[1] = png;
 				lpp[2] = lpp[0] + lpp[1];
 				SendToAllPlayers( 12, lpp );
-				PPTIME = GetRealTime();
+				PPTIME = GetSDLTickCount();
 				for ( int p = 0; p < NPlayers; p++ )if ( PINFO[p].PlayerID == MyDPID )CurrentMaxPing[p] = png;
 			};
 			for ( int p = 0; p < NPlayers; p++ )if ( CurrentMaxPing[p] > png )png = CurrentMaxPing[p];
@@ -5664,11 +5643,11 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 					PINFO[i].NationID = MNATION[i]->CurLine;
 					PINFO[i].ColorID = ColorBack[i]->Nation;
 					bool change = ( memcmp( &MYPINF, PINFO + i, sizeof MYPINF ) != 0 );
-					if ( change || GetTickCount() - PREVSD > 3000 )
+					if ( change || GetSDLTickCount() - PREVSD > 3000 )
 					{
 						SETPLAYERDATA( MyDPID, (void*) &PINFO[i].NationID, sizeof( PlayerInfo ) - 36, change );
 						memcpy( &MYPINF, PINFO + i, sizeof MYPINF );
-						PREVSD = GetTickCount();
+						PREVSD = GetSDLTickCount();
 					}
 					if ( change && Host )
 					{
@@ -5716,7 +5695,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 				{
 					NameBack[i]->SpriteID = 9 + ( i % 3 );
 				}
-				Flags[i]->SpriteID = ( i * 229 + GetRealTime() / 30 ) % 45;
+				Flags[i]->SpriteID = ( i * 229 + GetSDLTickCount() / 30 ) % 45;
 				Flags[i]->Nation = ColorBack[i]->Nation;
 				MNATION[i]->Visible = true;
 				//MCOLOR[i]->Visible=true;
@@ -5744,7 +5723,7 @@ bool MPL_WaitingBattleGame( bool Host, int BattleID )
 				}
 				strcpy( VersText[i]->Message, VERS );
 				strcpy( VersTextShadow[i]->Message, VERS );
-				if ( v != MaxVers && ( GetTickCount() / 300 ) & 1 )
+				if ( v != MaxVers && ( GetSDLTickCount() / 300 ) & 1 )
 				{
 					VersText[i]->ActiveFont = &SmallRedFont;
 					VersText[i]->PassiveFont = &SmallRedFont;
@@ -6367,14 +6346,14 @@ bool ProcessGameOptions()
 
 	int PrevPlayMode = MUS->CurLine != 0;
 	int ppp = PlayMode;
-	int StartTime = GetTickCount();
+	int StartTime = GetSDLTickCount();
 
 	ItemChoose = -1;
 	KeyPressed = 0;
 
 	do
 	{
-		if ( GetTickCount() - StartTime > 10000 && NPlayers > 1 )
+		if ( GetSDLTickCount() - StartTime > 10000 && NPlayers > 1 )
 		{
 			ItemChoose = mcmCancel;
 			ShowOptMessage( "#LOOKOPT", 0 );
@@ -6473,7 +6452,7 @@ int processMainMenu()
 	//Time of inactivity in ms which triggers the credits
 	const int kCreditsDemoDelay = 300000;
 
-	int StTime = GetTickCount();
+	int StTime = GetSDLTickCount();
 
 	CloseMPL();
 
@@ -6572,7 +6551,7 @@ int processMainMenu()
 
 		LoadFog( 2 );
 
-		StTime = GetTickCount();
+		StTime = GetSDLTickCount();
 
 		LastKey = SDLK_UNKNOWN;
 		KeyPressed = 0;
@@ -6583,7 +6562,7 @@ int processMainMenu()
 		{
 			//Check conditions and roll credits
 			if ( ADDSH == 1 && bActive
-				&& ( GetTickCount() - StTime > kCreditsDemoDelay || RetryVideo )
+				&& ( GetSDLTickCount() - StTime > kCreditsDemoDelay || RetryVideo )
 				&& !( RUNMAPEDITOR || RUNUSERMISSION ) )
 			{
 				GFILE* f = Gopen( "Demo\\demo.run", "r" );
@@ -6611,7 +6590,7 @@ int processMainMenu()
 						}
 					}
 					Gclose( f );
-					StTime = GetTickCount();
+					StTime = GetSDLTickCount();
 				}
 			}
 
@@ -6905,14 +6884,14 @@ bool CheckFileIdentity( char* Name )
 	}
 
 	SendToAllPlayers( 128 + 8, FID );
-	int t0 = GetTickCount();
+	int t0 = GetSDLTickCount();
 	int t1 = t0;
 
 	do
 	{
-		if ( GetTickCount() - t1 > 500 )
+		if ( GetSDLTickCount() - t1 > 500 )
 		{
-			t1 = GetTickCount();
+			t1 = GetSDLTickCount();
 			SendToAllPlayers( 128 + 8, FID );
 		}
 
@@ -6942,7 +6921,7 @@ bool CheckFileIdentity( char* Name )
 		{
 			return true;
 		}
-	} while ( GetTickCount() - t0 < 10000 );
+	} while ( GetSDLTickCount() - t0 < 10000 );
 	return false;
 }
 
@@ -6974,13 +6953,13 @@ void ProcessGLoadGame()
 	SFLB_CreateGamesList( LB );
 	ItemChoose = -1;
 	int pp = 1;
-	int LastCTime = GetRealTime();
+	int LastCTime = GetSDLTickCount();
 	LastKey = SDLK_UNKNOWN;
-	int StartTime = GetTickCount();
+	int StartTime = GetSDLTickCount();
 
 	do
 	{
-		if ( GetTickCount() - StartTime > 10000 && NPlayers > 1 )
+		if ( GetSDLTickCount() - StartTime > 10000 && NPlayers > 1 )
 		{
 			ItemChoose = mcmCancel;
 			ShowOptMessage( "#LOOKOPT", 0 );
@@ -7035,24 +7014,24 @@ void ProcessFranceMission()
 	Pan1.Draw( 0, 0 );
 	FlipPages();
 	SlowLoadPalette( "1\\agew_1.pal" );
-	int t0 = GetRealTime();
+	int t0 = GetSDLTickCount();
 	KeyPressed = 0;
 	do
 	{
 		ProcessMessages();
-	} while ( !( GetRealTime() - t0 > 15000 || Lpressed || KeyPressed ) );
+	} while ( !( GetSDLTickCount() - t0 > 15000 || Lpressed || KeyPressed ) );
 	if ( LastKey == SDLK_ESCAPE )return;
 	LastKey = SDLK_UNKNOWN;
 	SlowUnLoadPalette( "1\\agew_1.pal" );
 	Pan2.Draw( 0, 0 );
 	FlipPages();
 	SlowLoadPalette( "1\\agew_1.pal" );
-	t0 = GetRealTime();
+	t0 = GetSDLTickCount();
 	KeyPressed = 0;
 	do
 	{
 		ProcessMessages();
-	} while ( !( GetRealTime() - t0 > 15000 || Lpressed || KeyPressed ) );
+	} while ( !( GetSDLTickCount() - t0 > 15000 || Lpressed || KeyPressed ) );
 	if ( LastKey == SDLK_ESCAPE )return;
 
 	strcpy( CurrentMap, MISSLIST.MISS[0].MapName );
@@ -7102,7 +7081,7 @@ void processMLoadGame()
 	CreateRecList( LB );
 	ItemChoose = -1;
 	int pp = 1;
-	int LastCTime = GetRealTime();
+	int LastCTime = GetSDLTickCount();
 	VS->ScrDy = 14;
 	KeyPressed = 0;
 	SetMyNation( 0 );
@@ -7529,13 +7508,13 @@ void ProcessGSaveGame()
 	ItemChoose = -1;
 	SFLB_CreateGamesList( LB );
 	LB->CurItem = -1;
-	int LastCTime = GetRealTime();
+	int LastCTime = GetSDLTickCount();
 	int PrevListVal = LB->CurItem;
 	KeyPressed = false;
-	int StartTime = GetTickCount();
+	int StartTime = GetSDLTickCount();
 	do
 	{
-		if ( GetTickCount() - StartTime > 15000 && NPlayers > 1 )
+		if ( GetSDLTickCount() - StartTime > 15000 && NPlayers > 1 )
 		{
 			ItemChoose = mcmCancel;
 			ShowOptMessage( "#LOOKOPT", 0 );
@@ -7567,7 +7546,7 @@ void ProcessGSaveGame()
 	} while ( ItemChoose == -1 );
 	if ( ItemChoose == mcmOk )
 	{
-		CmdSaveNetworkGame( MyNation, GetRealTime(), IB->Str );
+		CmdSaveNetworkGame( MyNation, GetSDLTickCount(), IB->Str );
 	};
 	ContinueGame = true;
 	FreeNames();
@@ -8030,14 +8009,14 @@ int ProcessGMainMenu()
 {
 	if ( NPlayers > 1 )
 	{
-		if ( LastLookTime && ( GetTickCount() - LastLookTime < 180000 ) )
+		if ( LastLookTime && ( GetSDLTickCount() - LastLookTime < 180000 ) )
 		{
-			int v = ( 180000 - GetTickCount() + LastLookTime ) / 1000;
+			int v = ( 180000 - GetSDLTickCount() + LastLookTime ) / 1000;
 			ShowOptMessage( "#F12LOCK", v );
 			return mcmResume;
 		};
 	};
-	LastLookTime = GetTickCount();
+	LastLookTime = GetSDLTickCount();
 	LocalGP BTNS( "Interface\\GameMenu" );
 	ContinueGame = false;
 	GameMode = 2;
@@ -8082,13 +8061,13 @@ int ProcessGMainMenu()
 	//HelpBtn->OnUserClick=&MMItemChoose;
 stg:
 	ItemChoose = -1;
-	int StartTime = GetTickCount();
+	int StartTime = GetSDLTickCount();
 	do
 	{
 		ProcessMessages();
 		GMM.ProcessDialogs();
 		GMM.RefreshView();
-		if ( GetTickCount() - StartTime > 15000 && NPlayers > 1 )
+		if ( GetSDLTickCount() - StartTime > 15000 && NPlayers > 1 )
 		{
 			ShowOptMessage( "#LOOKOPT", 0 );
 			ItemChoose = mcmResume;
@@ -8593,10 +8572,9 @@ void FastScreenProcess()
 
 	if ( SHOWSLIDE )
 	{
-		int time0 = GetRealTime();
+		int time0 = GetSDLTickCount();
 
 		GSYS.RefreshView();
-		time8 = GetRealTime() - time0;
 	}
 
 	if ( NeedLoadGamePalette )
@@ -8633,7 +8611,7 @@ void ShowAbout()
 	PushWindow( &TM );
 	IntersectWindows( 0, smapy, smaplx * 32, smaply * 16 );
 
-	int y0 = RealLy - ( GetTickCount() - StartAboutTime ) / 50;
+	int y0 = RealLy - ( GetSDLTickCount() - StartAboutTime ) / 50;
 	char pp[100];
 
 	if ( NAboutLn == -1 )
@@ -8769,7 +8747,7 @@ void PlayGame()
 
 	if ( PlayGameMode )
 	{
-		StartAboutTime = GetTickCount();
+		StartAboutTime = GetSDLTickCount();
 	}
 
 StartPlay://IMPORTANT: Main game loop
@@ -8779,8 +8757,6 @@ StartPlay://IMPORTANT: Main game loop
 		{
 			GameExit = true;
 		}
-
-		time1 = GetRealTime();
 
 		ProcessMessages();
 
@@ -8803,8 +8779,6 @@ StartPlay://IMPORTANT: Main game loop
 
 			ProcessMessages();
 
-			time1 = GetRealTime();
-
 			PostDrawGameProcess();
 
 			if ( MakeMenu )
@@ -8826,11 +8800,11 @@ StartPlay://IMPORTANT: Main game loop
 							{
 								CmdEndGame( MyNation, 1, 101 );
 							}
-							int t0 = GetRealTime();
+							int t0 = GetSDLTickCount();
 							do
 							{
 								ProcessMessages();
-							} while ( GetRealTime() - t0 < 500 );
+							} while ( GetSDLTickCount() - t0 < 500 );
 						}
 						GameExit = true;
 						ShutdownMultiplayer( 0 );
@@ -9181,7 +9155,8 @@ int prevVid2 = -1;
 int prevVid3 = -1;
 int GetRndVid( int N )
 {
-	int dt = GetTickCount() & 1023;
+	// TODO: set seed instead
+	int dt = GetSDLTickCount() & 0b1111111111;
 	for ( int i = 0; i < dt; i++ )
 	{
 		rand();
@@ -9566,7 +9541,7 @@ int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp
 	};
 	ItemChoose = -1;
 	DrawPaperPanelShadow( ( RealLx - Lx ) >> 1, 80 + DDY - 32, ( ( RealLx - Lx ) >> 1 ) + Lx, 80 + DDY + Ny * 64 + 20 );
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		ProcessMessages();
@@ -9578,7 +9553,7 @@ int ProcessComplexQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Bmp
 		GMM.MarkToDraw();
 		GMM.ProcessDialogs();
 		GMM.RefreshView();
-		if ( PlayGameMode&&GetTickCount() - T0 > 5000 )ItemChoose = CurrentAnswer;
+		if ( PlayGameMode&&GetSDLTickCount() - T0 > 5000 )ItemChoose = CurrentAnswer;
 	} while ( ItemChoose == -1 );
 	ContinueGame = true;
 	UnPress();
@@ -9712,7 +9687,7 @@ int ProcessMultilineQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Q
 	ItemChoose = -1;
 	//DrawPaperPanelShadow((RealLx-Lx)>>1,80+DDY-32,((RealLx-Lx)>>1)+Lx,80+DDY+Ny1*64+20);
 	DrawPaperPanel( ( RealLx - Lx ) >> 1, 80 + DDY - 32, ( ( RealLx - Lx ) >> 1 ) + Lx, 80 + DDY + qy0/*Ny1*64+20*/ );
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		if ( PlayGameMode )
@@ -9740,7 +9715,7 @@ int ProcessMultilineQuestion( int Nx, char* Bmp1, byte or1, char* Text1, char* Q
 		GMM.MarkToDraw();
 		GMM.ProcessDialogs();
 		GMM.RefreshView();
-		if ( PlayGameMode&&GetTickCount() - T0 > 5000 )ItemChoose = CurrentAnswer;
+		if ( PlayGameMode&&GetSDLTickCount() - T0 > 5000 )ItemChoose = CurrentAnswer;
 	} while ( ItemChoose == -1 );
 	ContinueGame = true;
 	UnPress();
@@ -9821,7 +9796,7 @@ void ProcessMissionText( char* Bmp, char* Text )
 	};
 	ItemChoose = -1;
 	DrawPaperPanelShadow( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		DrawPaperPanel( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
@@ -9834,7 +9809,7 @@ void ProcessMissionText( char* Bmp, char* Text )
 		GMM.MarkToDraw();
 		GMM.ProcessDialogs();
 		GMM.RefreshView();
-		if ( PlayGameMode&&GetTickCount() - T0 > 5000 )ItemChoose = mcmOk;
+		if ( PlayGameMode&&GetSDLTickCount() - T0 > 5000 )ItemChoose = mcmOk;
 	} while ( ItemChoose == -1 );
 	ContinueGame = true;
 	UnPress();
@@ -10028,7 +10003,7 @@ bool AskMissionQuestion( char* Bmp, char* Text )
 	};
 
 	DrawPaperPanelShadow( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
-	int T0 = GetTickCount();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		DrawPaperPanel( GMM.BaseX, GMM.BaseY, GMM.BaseX + MPPLX, GMM.BaseY + MPPLY );
@@ -10042,7 +10017,7 @@ bool AskMissionQuestion( char* Bmp, char* Text )
 		GMM.MarkToDraw();
 		GMM.ProcessDialogs();
 		GMM.RefreshView();
-		if ( PlayGameMode&&GetTickCount() - T0 > 5000 )
+		if ( PlayGameMode&&GetSDLTickCount() - T0 > 5000 )
 		{
 			ItemChoose = CurrentAnswer == 0 ? mcmCancel : mcmOk;
 		};
@@ -10210,7 +10185,7 @@ bool ProcessLoadingFile( char* Mask, char* DestName, int Header )
 	CreateFilesList( Mask, LB );
 	ItemChoose = -1;
 	int pp = 1;
-	int LastCTime = GetRealTime();
+	int LastCTime = GetSDLTickCount();
 	LastKey = SDLK_UNKNOWN;
 	do
 	{
@@ -10275,7 +10250,7 @@ bool ProcessSavingFile( char* Mask, char* DestName, int Header, bool clear )
 	ItemChoose = -1;
 	CreateFilesList( Mask, LB );
 	LB->CurItem = -1;
-	int LastCTime = GetRealTime();
+	int LastCTime = GetSDLTickCount();
 	int PrevListVal = LB->CurItem;
 	KeyPressed = false;
 	do
@@ -10330,7 +10305,7 @@ static int HiRound = 0;
 int getR( double a, int r )
 {
 	int nn = tpr4 >> 6;
-	double tm = double( GetRealTime() ) / 1000;
+	double tm = double( GetSDLTickCount() ) / 1000;
 	return int( r*( ( sin( a*(nn) +tpr6 / 256 + tm ) +
 		sin( a*( nn + 1 ) + tpr6 / 256 + tm*1.5 ) +
 		sin( a*( nn + 2 ) + tpr6 / 256 - tm / 2 ) +
@@ -10367,7 +10342,7 @@ void Circ( int x, int y, int r, int n, byte c )
 	}
 	else
 	{
-		double time = double( GetRealTime() ) / 1000;
+		double time = double( GetSDLTickCount() ) / 1000;
 		for ( int i = 0; i < n; i++ )
 		{
 			double alpha = 3.1415 * 2 * i / n;
@@ -11136,17 +11111,17 @@ bool WaitingGame( bool Host )
 
 	do
 	{
-		tmm1 = GetRealTime();
+		tmm1 = GetSDLTickCount();
 		ProcessMessages();
-		tmm1 = GetRealTime() - tmm1;
-		tmm2 = GetRealTime();
+		tmm1 = GetSDLTickCount() - tmm1;
+		tmm2 = GetSDLTickCount();
 		AnalyseMessages();
-		tmm2 = GetRealTime() - tmm2;
+		tmm2 = GetSDLTickCount() - tmm2;
 		MPLAY.MarkToDraw();
 		MPLAY.ProcessDialogs();
-		tmm3 = GetRealTime();
+		tmm3 = GetSDLTickCount();
 		MPLAY.RefreshView();
-		tmm3 = GetRealTime() - tmm3;
+		tmm3 = GetSDLTickCount() - tmm3;
 		sprintf( STRI, "%d %d %d %d", COUN, tmm1, tmm2, tmm3 );
 		for ( int i = 0; i < 8; i++ )
 		{
@@ -11716,7 +11691,7 @@ void RandomMapDialog( char* Result )
 	y += 40;
 	DSY.addTextButton( nullptr, x0, y, "Code:", &FONT2, &FONT2, &FONT2, 0 );
 	char ccc[128];
-	sprintf( ccc, "%d", GetRealTime() & 32767 );
+	sprintf( ccc, "%d", GetSDLTickCount() & 0b111111111111111);
 	InputBox* IB = DSY.addInputBox( nullptr, x, y, ccc, 20, 144, 28, &FONT2, &FONT2 );
 	y += 40;
 	TextButton* OkBtn = DSY.addTextButton( nullptr, 10 + 164 / 2, 315, "OK", &FONT2, &FONT3, &FONT3, 1 );
@@ -11754,7 +11729,7 @@ void RandomMapDialog( char* Result )
 	UnPress();
 	if ( ItemChoose == mcmOk )
 	{
-		int r = GetRealTime() & 65535;
+		int r = GetSDLTickCount() & 0b1111111111111111;
 		sscanf( ccc, "%d", &r );
 		int q = CBSTYLE->CurLine + ( CBPLAY->CurLine << 4 ) + ( CBMOUNT->CurLine << 8 ) + ( CBRESST->CurLine << 12 ) +
 			( CBRESTOT->CurLine << 16 );
@@ -13621,7 +13596,6 @@ extern bool EnterChatMode;
 extern char ChatString[128];
 extern wchar_t unicode_chat_string[128];
 bool Superuser = 0;
-void CreateTimedHint( char* s, int time );
 void CmdGiveMoney( byte SrcNI, byte DstNI, byte Res, int Amount );
 void CmdMoney( byte NI );
 SDL_Keycode ReadKey();
@@ -13994,7 +13968,7 @@ void ShowChat()
 
 		ShowString( x0 - L - 4, y0 - 5, ENCHAT, &BigWhiteFont );
 
-		if ( ( GetRealTime() / 200 ) & 1 )
+		if ( ( GetSDLTickCount() / 200 ) & 1 )
 		{
 			ShowString( x0 - L + L0 + 4, y0 - 4 + 7, ChatString, &YellowFont );
 		}
@@ -14111,7 +14085,7 @@ void ShowMultiplayerChat()
 		ShowString( x0 - L - 4, y0 - 5, ENCHAT, &BigWhiteFont );
 
 		//Show string inside chat message box with blinking carriage bar
-		if ( ( GetRealTime() / 200 ) % 2 )
+		if ( ( GetSDLTickCount() / 200 ) % 2 )
 		{
 			ShowString( x0 - L + L0 + 4, y0 - 4 + 7, ChatString, &YellowFont );
 		}
@@ -15944,7 +15918,7 @@ double GetPenH( int x, int y, int r, int v )
 void TerrDrawHi( int x, int y, int v1, int v2 )
 {
 	int r = ( Pen2*v1 ) >> 10;
-	double DD = double( GetTickCount() % 10 ) / 10.0;
+	double DD = double( GetSDLTickCount() % 10 ) / 10.0;
 	for ( int ix = -r; ix < r; ix++ )
 	{
 		for ( int iy = -r; iy < r; iy++ )

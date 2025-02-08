@@ -335,6 +335,8 @@ void ControlZones()
 			}
 			if (int(Z->Hint))
 			{
+				// FIXME: time should be in milliseconds?
+				// For AssignHint and AssignHintLo everywhere
 				AssignHint(Z->Hint, 3);
 			}
 			if (Z->HintLo)

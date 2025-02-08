@@ -639,7 +639,6 @@ extern int BestForce;
 extern int BestNat;
 extern int NextBest;
 void OutCInf( byte x, byte y );
-extern int COUNTER;
 extern DWORD BMASK[MBR4];
 void InitSuperMortiraCells();
 void CreateEnmBuildList();

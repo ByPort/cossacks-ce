@@ -1,8 +1,8 @@
-
-
 #include "CommCore.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "../Main executable/common.h"
 
 // ---------------------------------------------------------------------------------------------
 
@@ -388,7 +388,7 @@ VOID CCommCore::NewCommCoreUID( LPSTR lpszCCUID )
 
 	szComputerName[iRand] = '\0';
 
-	dwTicks = GetTickCount();
+	dwTicks = GetSDLTickCount();
 
 	srand( dwTicks );
 

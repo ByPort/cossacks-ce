@@ -205,7 +205,7 @@ void OneIcon::Draw( int x, int y )
 		if (Disabled)GPS.ShowGPTransparent( x, y, FileID, SpriteID, NatRefTBL[MyNation] );//.ShowGPPal(x,y,FileID,SpriteID,MyNation,GraySet);
 		else
 		{
-			if (Type & 512)GPS.ShowGPPal( x, y, FileID, SpriteID, NatRefTBL[MyNation],/*9+int(8.0*sin(float(GetTickCount())/100)),*/graysc );
+			if (Type & 512)GPS.ShowGPPal( x, y, FileID, SpriteID, NatRefTBL[MyNation],/*9+int(8.0*sin(float(GetSDLTickCount())/100)),*/graysc );
 			else GPS.ShowGP( x, y, FileID, SpriteID, NatRefTBL[MyNation] );
 		};
 	}

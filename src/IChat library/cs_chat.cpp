@@ -5,7 +5,7 @@
 #pragma pack(1)
 #include "cs_chat.h"
 
-#define current_time GetTickCount
+#define current_time GetSDLTickCount
 void ChatSystem::AddPlayer( char* Nick, int c )
 {
 	int i;

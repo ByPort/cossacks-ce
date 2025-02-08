@@ -1006,13 +1006,15 @@ void CmdSetMaxPingTime( int Time )
 	EBPos += 4;
 }
 
+extern uint64_t GetSDLTickCount();
+
 void CmdDoItSlow( word DT )
 {
 	ExBuf[EBPos] = 80;
 	*( (word*) ( ExBuf + EBPos + 1 ) ) = DT;
 	EBPos += 3;
-	ADDGR( 9, GetTickCount(), DT, 255 );
-	ADDGR( 9, GetTickCount(), 0, 254 );
+	ADDGR( 9, GetSDLTickCount(), DT, 255 );
+	ADDGR( 9, GetSDLTickCount(), 0, 254 );
 }
 
 void CmdDoItSlowEx( word DT, byte* Data, DWORD* sz )
@@ -1020,8 +1022,8 @@ void CmdDoItSlowEx( word DT, byte* Data, DWORD* sz )
 	Data[*sz] = 80;
 	*( (word*) ( Data + ( *sz ) + 1 ) ) = DT;
 	( *sz ) += 3;
-	ADDGR( 9, GetTickCount(), DT, 255 );
-	ADDGR( 9, GetTickCount(), 0, 254 );
+	ADDGR( 9, GetSDLTickCount(), DT, 255 );
+	ADDGR( 9, GetSDLTickCount(), 0, 254 );
 }
 
 void CmdFillFormation( byte NI, word BrigadeID )
@@ -1241,7 +1243,7 @@ char VotingText[500];
 char* GetTextByID( char* ID );
 void ComOfferVoting( DWORD DPID )
 {
-	LastVotingTime = GetTickCount();
+	LastVotingTime = GetSDLTickCount();
 	VotingMode = 1;
 	sprintf( VotingText, GetTextByID( "PSR_NOREG1" ), "???" );
 	for ( int i = 0; i < 8; i++ )
@@ -1264,7 +1266,7 @@ void ComOfferVoting( DWORD DPID )
 };
 void ComDoVote( DWORD DPID, byte result )
 {
-	LastVotingTime = GetTickCount();
+	LastVotingTime = GetSDLTickCount();
 	for ( int i = 0; i < NPlayers; i++ )if ( PINFO[i].PlayerID == DPID )
 	{
 		VotingResult[i] = result;
@@ -1307,18 +1309,19 @@ void ProcessVotingKeys()
 			if ( VotingResult[i] != 1 )ALLYES = 0;
 			if ( VotingResult[i] == 2 )
 			{
-				if ( GetTickCount() < LastVotingTime + 60000 * 3 - 4000 )
+				if ( GetSDLTickCount() < LastVotingTime + 60000 * 3 - 4000 )
 				{
-					LastVotingTime = GetTickCount() - 60000 * 3 + 3000;
+					LastVotingTime = GetSDLTickCount() - 60000 * 3 + 3000;
 					char buf[200];
 					sprintf( buf, GetTextByID( "PSR_DENY" ), PINFO[i].name );
 					CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//Player %s has rejected the offer.
 				};
 			};
 		};
-		if ( ALLYES&&GetTickCount() < LastVotingTime + 60000 * 3 - 4000 )
+		if ( ALLYES&&GetSDLTickCount() < LastVotingTime + 60000 * 3 - 4000 )
 		{
-			LastVotingTime = GetTickCount() - 60000 * 3 + 3000;
+			// FIXME: this yields negative number if voting is started within first 3 minutes of the game
+			LastVotingTime = GetSDLTickCount() - 60000 * 3 + 3000;
 			char buf[200];
 			sprintf( buf, GetTextByID( "PSR_ACCEPT" ) );
 			CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//All players have accepted the offer. This game will not be rated.
@@ -1328,7 +1331,7 @@ void ProcessVotingKeys()
 				ExplorerOpenRef( 0, "GW|norate" );
 			};
 		};
-		if ( GetTickCount() - LastVotingTime > 60000 * 3 )
+		if ( GetSDLTickCount() - LastVotingTime > 60000 * 3 )
 		{
 			VotingMode = 0;
 		};
@@ -1433,7 +1436,7 @@ void DoItSlow( word DT )
 		if ( CurrentStepTime < 160 )CurrentStepTime += CurrentStepTime >> 4;
 		//if(DT>3000)NeedCurrentTime+=DT>>1;
 		SlowMade = 1;
-		ADDGR( 9, GetTickCount(), DT, 0xD0 );
+		ADDGR( 9, GetSDLTickCount(), DT, 0xD0 );
 	};
 };
 int MaxDCT = 0;
@@ -2984,7 +2987,6 @@ extern bool NoWinner;
 extern char SaveFileName[128];
 extern word PrevRpos;
 extern DWORD RealTime;
-unsigned long GetRealTime();
 extern int PitchTicks;
 extern int PREVGLOBALTIME;
 extern DWORD EBPos1;
@@ -3010,11 +3012,11 @@ void LoadNetworkGame( char* Name )
 	PBACK.Clear();
 	RETSYS.Clear();
 
-	int T0 = GetRealTime();
+	int T0 = GetSDLTickCount();
 	do
 	{
 		ProcessMessages();
-	} while ( GetRealTime() - T0 < 5000 );
+	} while ( GetSDLTickCount() - T0 < 5000 );
 
 	PBACK.Clear();
 	RETSYS.Clear();
@@ -4734,7 +4736,7 @@ void ExecuteBuffer()
 	int len;
 	byte tp;
 	CURMAXP = -1;
-	ADDGR( 5, GetTickCount(), EBPos, 0xD0 );
+	ADDGR( 5, GetSDLTickCount(), EBPos, 0xD0 );
 
 	char sss[128];
 	while ( pos < EBPos )
@@ -5234,7 +5236,7 @@ void ExecuteBuffer()
 		rando();
 	}
 
-	ADDGR( 6, GetTickCount(), GetTickCount() - NeedCurrentTime, 0xD4 );
+	ADDGR( 6, GetSDLTickCount(), GetSDLTickCount() - NeedCurrentTime, 0xD4 );
 	if ( PlayGameMode == 1 )
 	{
 		for ( int i = 0; i < MAXOBJECT; i++ )

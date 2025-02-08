@@ -12,7 +12,6 @@
 #include "NewUpgrade.h"
 #include "ConstStr.h"
 
-extern const int kSystemMessageDisplayTime;
 extern const int kMinorMessageDisplayTime;
 
 Upgrade::Upgrade()

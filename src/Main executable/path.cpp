@@ -678,8 +678,6 @@ bool FindBestPosition(OneObject* OB, int* xd, int* yd, int R0)
 	return false;
 }
 
-extern int COUNTER;
-
 void CreateFullPath(int x1, int y1, OneObject* OB)
 {
 	OB->DeletePath();
@@ -695,10 +693,7 @@ void CreateFullPath(int x1, int y1, OneObject* OB)
 	AllowPathDelay = false;
 	do
 	{
-		int t0 = GetTickCount();
-
 		pc = OB->CreatePrePath(xx1, yy1);
-		t0 = GetTickCount() - t0;
 
 		if (pc) {
 			xx1 = OB->PathX[OB->NIPoints - 1];
@@ -715,7 +710,6 @@ void CreateFullPath(int x1, int y1, OneObject* OB)
 }
 
 #define sssh 1
-extern int COUNTER;
 bool OneObject::CreatePrePath(int x1, int y1)
 {
 	AllowPathDelay = false;

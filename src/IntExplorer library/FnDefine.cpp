@@ -1562,16 +1562,16 @@ void Process_DBTBL( sicExplorer* SXP, void* PData, int size )
 
 	if (TBL->LastUpdateTime)
 	{
-		if (GetTickCount() - TBL->LastUpdateTime > (unsigned long) TBL->UpdateFreq)
+		if (GetSDLTickCount() - TBL->LastUpdateTime > (unsigned long) TBL->UpdateFreq)
 		{
 			SXP->SendTableRefresh( TBL->DB_REQID, "GW" );
-			TBL->LastUpdateTime = GetTickCount();
+			TBL->LastUpdateTime = GetSDLTickCount();
 		}
 	}
 	else
 	{
 		SXP->SendTableRefresh( TBL->DB_REQID, "GW" );
-		TBL->LastUpdateTime = GetTickCount();
+		TBL->LastUpdateTime = GetSDLTickCount();
 	}
 }
 
@@ -2012,14 +2012,14 @@ bool ADI_Time( sicExplorer* SXP, DialogsSystem* DSS, int* x, int* y, int* x1, in
 		if (V >= 0 && V < NTIME)
 		{
 			OneSicWindow* OSW = SXP->Windows[SXP->CurWPosition];
-			OSW->TimeLimit[V] = GetTickCount() + atoi( Param[0] );
+			OSW->TimeLimit[V] = GetSDLTickCount() + atoi( Param[0] );
 			strcpy( OSW->TimeLimitRequest[V], Param[1] );
 		};
 	}
 	else
 	{
 		OneSicWindow* OSW = SXP->Windows[SXP->CurWPosition];
-		OSW->TimeLimit[0] = GetTickCount() + atoi( Param[0] );
+		OSW->TimeLimit[0] = GetSDLTickCount() + atoi( Param[0] );
 		strcpy( OSW->TimeLimitRequest[0], Param[1] );
 	};
 	return true;

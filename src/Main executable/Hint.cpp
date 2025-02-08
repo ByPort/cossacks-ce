@@ -47,7 +47,7 @@ static unsigned int primary_hint_time;
 const int kMaxHintCount = 25;
 //Additional secondary hints and chat messages
 char additional_hints[kMaxHintCount][256];
-static unsigned int  additional_hints_times[kMaxHintCount];
+static unsigned int additional_hints_times[kMaxHintCount];
 
 //Hint or chat messages design
 //0: normal; 16-23: national color border; 32: red
@@ -60,6 +60,8 @@ void SetupHint()
 	HintX = smapx;
 	primary_hint_time = 0;
 }
+
+extern uint64_t GetSDLTickCount();
 
 //Shows active hints and chat messages
 void ShowHints()
@@ -88,7 +90,7 @@ void ShowHints()
 			byte opp = opt >> 4;
 			if (opp == 2)
 			{//Red blinking hint
-				int tt = ( GetTickCount() / 300 ) & 1;
+				int tt = ( GetSDLTickCount() / 300 ) & 1;
 				if (tt)
 				{
 					ShowString( HintX, yy, additional_hints[i], &WhiteFont );
@@ -203,7 +205,7 @@ void ProcessHints()
 
 	//BUGFIX: Replaced weird internal function call timer with proper timing in ms
 
-	unsigned long current_time = GetTickCount();
+	unsigned long current_time = GetSDLTickCount();
 
 	if (0 == last_hint_processing_time)
 	{

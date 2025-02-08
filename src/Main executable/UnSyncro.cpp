@@ -21,6 +21,8 @@ extern bool RecordMode;
 extern byte PlayGameMode;
 char CURLOG[32];
 
+extern uint64_t GetSDLTickCount();
+
 void WriteRec( char* s )
 {
 	if ( !( PlayGameMode || RecordMode ) )
@@ -28,7 +30,7 @@ void WriteRec( char* s )
 		return;
 	}
 
-	if ( GetTickCount() - prevrtime > 10000 )
+	if ( GetSDLTickCount() - prevrtime > 10000 )
 	{
 		if ( FX )
 		{
@@ -44,7 +46,7 @@ void WriteRec( char* s )
 				strcpy( CURLOG, "lox0.log" );
 			}
 		}
-		prevrtime = GetTickCount();
+		prevrtime = GetSDLTickCount();
 	}
 	if ( !FX )
 	{

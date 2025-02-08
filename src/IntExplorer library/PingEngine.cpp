@@ -1,6 +1,7 @@
 #include <winsock2.h> 
 #include <stdio.h> 
-#include <stdlib.h> 
+#include <stdlib.h>
+#include "../Main executable/common.h"
 
 struct OneIPAddress{
 	DWORD IP;
@@ -106,8 +107,8 @@ bool PingEngine::SendPingToIP(DWORD IP){
  	char icmp_data[MAX_PACKET];
 	memset(icmp_data,0,MAX_PACKET); 
 	fill_icmp_data(icmp_data,datasize); 
-	((IcmpHeader*)icmp_data)->i_cksum = 0; 
-	((IcmpHeader*)icmp_data)->timestamp = GetTickCount(); 
+	((IcmpHeader*)icmp_data)->i_cksum = 0;
+	((IcmpHeader*)icmp_data)->timestamp = GetSDLTickCount();
 	((IcmpHeader*)icmp_data)->i_seq = (USHORT)seq_no++; 
 	((IcmpHeader*)icmp_data)->i_cksum = checksum((USHORT*)icmp_data,datasize); 
 	DWORD bwrote = sendto(sockRaw,icmp_data,datasize,0,(struct sockaddr*)&dest,sizeof(dest));
@@ -118,7 +119,7 @@ int pcallT=0;
 bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time);
 void PingEngine::Process(){
 	if(!IsInit)return;
-	int T=GetTickCount();
+	int T=GetSDLTickCount();
 	if(!pcallT)pcallT=T;
 	if(T-pcallT<10)return;
 	pcallT=T;
@@ -169,14 +170,14 @@ void PingEngine::Process(){
 int PingEngine::GetPing(DWORD IP){
 	if(!IsInit)return false;
 	for(int i=0;i<NRequests;i++)if(Requests[i].IP==IP){
-		Requests[i].LastRequestTime=GetTickCount();
+		Requests[i].LastRequestTime=GetSDLTickCount();
 		return Requests[i].Ping;
 	};
 	Requests=(OneIPAddress*)realloc(Requests,(NRequests+1)*sizeof OneIPAddress);
 	memset(Requests+NRequests,0,sizeof OneIPAddress);
 	Requests[NRequests].LastPingTime=-1;
 	Requests[NRequests].IP=IP;
-	Requests[NRequests].LastRequestTime=GetTickCount();
+	Requests[NRequests].LastRequestTime=GetSDLTickCount();
 	NRequests++;
 	return 0;
 };
@@ -230,7 +231,7 @@ bool decode_resp(char *buf, int bytes,struct sockaddr_in *from,int* time) {
 	if (icmphdr->i_id != (USHORT)GetCurrentProcessId()) { 
 		return false;
 	};
-	*time=GetTickCount()-icmphdr->timestamp;
+	*time = GetSDLTickCount() - icmphdr->timestamp;
 	return true;
 }
 PingEngine PE;

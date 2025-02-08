@@ -42,8 +42,6 @@ u_short CCommCore::ReceiveData(LPBYTE lpbBuffer, LPPEER_ID lpPeerId)
 					&SenderLength)==SOCKET_ERROR)
 		return 0x00;
 
-	m_dwLastPacketTime=GetTickCount();
-
 	lpFrame=(LPCC_PK_RAW_FRAME)m_lpbRecvBuffer;
 
 // ----------------------------------------------------------------------

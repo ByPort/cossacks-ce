@@ -49,6 +49,8 @@ void UdpHolePuncher::Init( const char *server_addr, const unsigned short port,
 	ready_for_punching_ = true;
 }
 
+extern uint64_t GetSDLTickCount();
+
 //Checks readiness and delta time
 //Sends udp packet via CommCore
 void UdpHolePuncher::KeepAlive()
@@ -58,7 +60,7 @@ void UdpHolePuncher::KeepAlive()
 		return;
 	}
 
-	unsigned long current_time = GetTickCount();
+	unsigned long current_time = GetSDLTickCount();
 	if (interval_ < current_time - last_send_time_)
 	{
 		IPCORE.SendUdpHolePunch( (sockaddr *) &server_addr_, packet_.data(), packet_size_ );

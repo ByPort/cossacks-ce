@@ -525,6 +525,8 @@ void DrawGrassNearUnit( int x, int y );
 
 void RegisterVisibleGP( word Index, int FileIndex, int SprIndex, int x, int y );
 
+extern uint64_t GetSDLTickCount();
+
 void ShowZElement( ZElement* ZEL )
 {
 	ZEL->IsDrawn = true;
@@ -627,14 +629,14 @@ void ShowZElement( ZElement* ZEL )
 
 	case 7432:
 	{
-		int NNN = 6 + int( 3 * ( sin( double( GetTickCount() ) / 114 ) ) );
+		int NNN = 6 + int( 3 * ( sin( double( GetSDLTickCount() ) / 114 ) ) );
 		GPS.ShowGPPalLayers( smapx + ZEL->x, smapy + ZEL->y, ZEL->FileID, ZEL->SpriteID, nat, wfog + ( NNN << 8 ), mask );
 	}
 	break;
 
 	case AV_PULSING:
 	{
-		int NNN = 5 + int( 8 * ( sin( double( GetTickCount() ) / 100 ) + 2 ) );
+		int NNN = 5 + int( 8 * ( sin( double( GetSDLTickCount() ) / 100 ) + 2 ) );
 		GPS.ShowGPPalLayers( smapx + ZEL->x, smapy + ZEL->y, ZEL->FileID, ZEL->SpriteID, nat, (byte*) par2 + ( NNN << 8 ), mask );
 	}
 	break;

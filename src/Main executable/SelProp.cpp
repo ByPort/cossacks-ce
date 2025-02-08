@@ -51,7 +51,6 @@ char* GetSprResourceName( OneObject* OB );
 
 #define MaxO 200
 
-void CreateTimedHint( char* s, int time );
 bool SelSoundDobe;
 bool SelSoundReady;
 int SelSoundType;

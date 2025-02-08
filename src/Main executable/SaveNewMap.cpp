@@ -1959,6 +1959,8 @@ void FastSave3DMap( char* Map );
 extern bool EditMapMode;
 int ME_prevtime = 0;
 
+extern uint64_t GetSDLTickCount();
+
 //Autosave in map editor every 5 min
 void ProcessMapAutosave()
 {
@@ -1967,15 +1969,15 @@ void ProcessMapAutosave()
 
 	if ( ME_prevtime == 0 )
 	{
-		ME_prevtime = GetTickCount();
+		ME_prevtime = GetSDLTickCount();
 	}
-	if ( GetTickCount() - ME_prevtime > 300000 )
+	if ( GetSDLTickCount() - ME_prevtime > 300000 )
 	{
 		RenameAnyway( "MapAutosave.old.bak.m3d", "MapAutosave.old.old.bak.m3d" );
 		RenameAnyway( "MapAutosave.bak.m3d", "MapAutosave.old.bak.m3d" );
 		RenameAnyway( "MapAutosave.m3d", "MapAutosave.bak.m3d" );
 		FastSave3DMap( "MapAutosave.m3d" );
-		ME_prevtime = GetTickCount();
+		ME_prevtime = GetSDLTickCount();
 	}
 }
 

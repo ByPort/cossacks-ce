@@ -251,7 +251,7 @@ char* SaveCurrentResult( OneSicWindow* OSW, char* dest )
 {
 	if (OSW->Result)
 	{
-		sprintf( dest, "Internet/Cash/tempcml_%X.cml", GetTickCount() );
+		sprintf( dest, "Internet/Cash/tempcml_%X.cml", GetSDLTickCount() );
 		ResFile F = RRewrite( dest );
 		if (F != INVALID_HANDLE_VALUE)
 		{
@@ -305,7 +305,7 @@ void exec_LW_time( int Np, char** par, int* size )
 			OneSicWindow* OSW = SX->Windows[i];
 			if (!strcmp( OSW->WinID, win ))
 			{
-				OSW->TimeLimit[0] = GetTickCount() + atoi( par[0] );
+				OSW->TimeLimit[0] = GetSDLTickCount() + atoi( par[0] );
 				strncpy( OSW->TimeLimitRequest[0], par[1], 159 );
 				OSW->TimeLimitRequest[0][159] = 0;
 			};
@@ -1712,7 +1712,7 @@ void StartDownloadInternetFile( char* Name, char* Server, char* DestName )
 	P1.AddParam( DestName, strlen( DestName ) + 1 );
 	P1.AddIntParam( DNPR[N_DNPR - 1].DownloadedSize );
 	P1.AddIntParam( 8192 );
-	DNPR[N_DNPR].LastReqTime = GetTickCount();
+	DNPR[N_DNPR].LastReqTime = GetSDLTickCount();
 	P1.UnParse( CC, 1024 );
 	SendGlobalRequest( SXP + 7, CC, 0 );
 };
@@ -1720,7 +1720,7 @@ void StartDownloadInternetFile( char* Name, char* Server, char* DestName )
 __declspec( dllexport )
 void ProcessDownloadInternetFiles()
 {
-	int TIME = GetTickCount();
+	int TIME = GetSDLTickCount();
 	for (int i = 0; i < N_DNPR; i++)
 	{
 		if (DNPR[i].NeedToSendRequest&&TIME - DNPR[i].LastReqTime > 16000)
@@ -1797,7 +1797,7 @@ void exec_LW_dfp( int Np, char** par, int* size )
 			for (int i = 0; i < N_DNPR; i++)if (!strcmp( DNPR[i].HashName, par[0] ))
 			{
 				DNPR[i].DownloadedSize = CSize + sz;
-				DNPR[i].LastReqTime = GetTickCount();
+				DNPR[i].LastReqTime = GetSDLTickCount();
 				if (sz != 8192)DNPR[i].NotFinished = 1;
 				DNPR[i].NeedToSendRequest = 1;
 			};
