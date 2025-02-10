@@ -1,3 +1,6 @@
+#include <chrono>
+#include <ctime>
+
 #include <windows.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
@@ -12,13 +15,17 @@ bool LOGMODE = 0;
 void ReportIt( char* s, ... )
 {
 	if (!LOGMODE)return;
-	SYSTEMTIME ST;
-	GetSystemTime( &ST );
+
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+	std::tm* local_time = std::localtime(&now_time);
+	int now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+
 	FILE* F = fopen( "s.log", "a" );
 	if (F)
 	{
 		char ach[16384];
-		sprintf( ach, "%d:%d %dms                               ", ST.wMinute, ST.wSecond, ST.wMilliseconds );
+		sprintf( ach, "%d:%d %dms                               ", local_time->tm_min, local_time->tm_sec, now_ms );
 		va_list va;
 		va_start( va, s );
 		vsprintf( ach + 18, s, va );

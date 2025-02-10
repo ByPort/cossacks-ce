@@ -1,3 +1,6 @@
+#include <chrono>
+#include <ctime>
+
 //If you don't include UdpHolePuncher.h first,
 //it's winsock includes will mess up the project >_<
 #include "NewCode/UdpHolePuncher.h"
@@ -2518,9 +2521,11 @@ void SaveGlobalChat()
 	{
 		if ( NCHATS )
 		{
-			SYSTEMTIME ST;
-			GetSystemTime( &ST );
-			fprintf( F, "[UPDATED %d.%d.%d %d:%d]\n", ST.wDay, ST.wMonth, ST.wYear, ST.wHour, ST.wMinute );
+			auto now = std::chrono::system_clock::now();
+			std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+			std::tm* local_time = std::localtime(&now_time);
+
+			fprintf( F, "[UPDATED %d.%d.%d %d:%d]\n", local_time->tm_mday, local_time->tm_mon + 1, local_time->tm_year + 1900, local_time->tm_hour, local_time->tm_min );
 		};
 		for ( int i = 0; i < NCHATS; i++ )fprintf( F, "%s:%s\n", ChatSender[i], ChatMess[i] );
 		fclose( F );
@@ -2534,9 +2539,11 @@ void SavePersChat()
 	{
 		if ( NPERSCHATS )
 		{
-			SYSTEMTIME ST;
-			GetSystemTime( &ST );
-			fprintf( F, "[UPDATED %d.%d.%d %d:%d]\n", ST.wDay, ST.wMonth, ST.wYear, ST.wHour, ST.wMinute );
+			auto now = std::chrono::system_clock::now();
+			std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+			std::tm* local_time = std::localtime(&now_time);
+
+			fprintf( F, "[UPDATED %d.%d.%d %d:%d]\n", local_time->tm_mday, local_time->tm_mon + 1, local_time->tm_year + 1900, local_time->tm_hour, local_time->tm_min );
 		};
 		for ( int i = 0; i < NPERSCHATS; i++ )fprintf( F, "%s:%s\n", PersChatSender[i], PersChatMess[i] );
 		fclose( F );
