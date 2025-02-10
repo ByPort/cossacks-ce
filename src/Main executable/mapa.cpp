@@ -1538,25 +1538,11 @@ void DottedLine( int x1, int y1, int x2, int y2, byte c )
 	}
 }
 extern bool RecordMode;
-bool IsGameActive();
-bool CheckGameTime();
 
 void AddRecordAndRatingSymbols( char* s )
 {
 	char ccc[256];
 	ccc[0] = 0;
-
-	if (IsGameActive())
-	{
-		if (CheckGameTime())
-		{
-			strcpy( ccc, "0019" );
-		}
-		else
-		{
-			strcpy( ccc, "[ 0019-?]" );
-		}
-	}
 
 	if ( RecordMode )
 	{
@@ -4650,7 +4636,6 @@ bool MiniChoose( SimpleDialog* SD )
 	return false;
 }
 
-bool IsGameActive();
 extern bool VotingMode;
 
 //Shows ingame menu on top of the screen
@@ -4731,13 +4716,6 @@ void CreateMiniMenu()
 	{
 		MMITM[NInf] = GetTextByID( "UM_SURRENDER" );
 		MMID[NInf] = 6;
-		NInf++;
-	}
-
-	if (NPlayers > 1 && ( IsGameActive() ) && !( VotingMode || PlayGameMode ))
-	{
-		MMITM[NInf] = GetTextByID( "UM_NORT" );
-		MMID[NInf] = 73;
 		NInf++;
 	}
 

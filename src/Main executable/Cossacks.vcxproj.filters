@@ -430,9 +430,6 @@
     <ClInclude Include="Icontool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Ir.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Lines.h">
       <Filter>Header Files</Filter>
     </ClInclude>

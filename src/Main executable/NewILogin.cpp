@@ -38,7 +38,6 @@
 #include "EinfoClass.h"
 #include "mode.h"
 
-#include "IR.H"
 #include "bmptool.h"
 
 void StartExplorer();

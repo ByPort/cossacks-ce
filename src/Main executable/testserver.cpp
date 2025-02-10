@@ -40,7 +40,6 @@
 
 #pragma pack(1)
 
-#include "IR.H"
 #include "bmptool.h"
 
 typedef void fnInitSXP();

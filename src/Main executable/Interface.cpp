@@ -42,7 +42,6 @@
 #include "Safety.h"
 #include "EinfoClass.h"
 #include "mode.h"
-#include "IR.H"
 #include "bmptool.h"
 
 #include "PlayerInfo.h"
@@ -81,7 +80,6 @@ extern int PitchTicks;
 extern int MaxPingTime;
 void StartPing( DWORD DPID, int ID );
 void EndPing( int ID );
-bool CheckLogin();
 char* GetLString( DWORD DPID );
 
 #define MinPing0 50
@@ -2455,31 +2453,8 @@ bool TryToJoinToPlayer( char* name )
 	};
 	return true;
 };
-void RunHTTPC()
-{
-	STARTUPINFO			StartUpInfo;
-	PROCESS_INFORMATION		ProcessInformation;
-	memset( &StartUpInfo, 0x00, sizeof( STARTUPINFO ) );
-	StartUpInfo.cb = sizeof( STARTUPINFO );
-	StartUpInfo.wShowWindow = SW_SHOWMINNOACTIVE;
-	StartUpInfo.dwFlags = STARTF_USESHOWWINDOW;
-
-	CreateProcess( "httpc.exe",
-		nullptr,
-		nullptr,
-		nullptr,
-		FALSE,
-		0x00,
-		nullptr,
-		nullptr,
-		&StartUpInfo,
-		&ProcessInformation );
-};
 bool GetPLIP( char* Nick, char* IP );
 bool T100_cmd_done = 0;
-void DecodeGS_Password( char* pass, char* result );
-bool CheckPlayerToExit();
-extern bool RejectThisPlayer;
 
 bool INSIDE1 = 0;
 
@@ -2603,8 +2578,6 @@ void SetStdTBL()
 	}
 }
 
-int GetLogRank();
-
 void SETPLAYERDATA( DWORD ID, void* Data, int size, bool );
 
 extern CDPID ServerDPID;
@@ -2614,8 +2587,6 @@ void ClearLPACK();
 bool GetPreviewName( char* Name, char* ccc );
 
 void DeepDeletePeer( DWORD ID );
-
-int GetMyProfile();
 
 // IChat library exports this
 __declspec( dllimport ) void ChatProcess();
@@ -3210,8 +3181,8 @@ ffe2:
 			PINFO[i].Host = Host;
 			PINFO[i].CD = 1;
 			PINFO[i].Version = dwVersion;
-			PINFO[i].Rank = GetLogRank();
-			PINFO[i].ProfileID = GetMyProfile();
+			PINFO[i].Rank = 0;
+			PINFO[i].ProfileID = GetGSC_Profile();
 		}
 		else
 		{
@@ -3468,8 +3439,8 @@ ffe2:
 				PINFO[i].Host = Host;
 				PINFO[i].CD = 1;
 				PINFO[i].Version = dwVersion;
-				PINFO[i].Rank = GetLogRank();
-				PINFO[i].ProfileID = GetMyProfile();
+				PINFO[i].Rank = 0;
+				PINFO[i].ProfileID = GetGSC_Profile();
 
 				if ( Host )
 				{
@@ -4994,11 +4965,7 @@ ffe2:
 			}
 		}
 
-	FinCLC:
-		if ( RejectThisPlayer || CheckPlayerToExit() )
-		{
-			ItemChoose = mcmCancel;
-		}
+	FinCLC:;
 
 	} while ( ItemChoose == -1 && PlayerMenuMode == 1 );
 
@@ -6430,7 +6397,6 @@ extern bool RetryVideo;
 int GetRndVid( int N );
 void processMLoadGame();
 bool InMainMenuLoop = 0;
-extern bool RejectThisPlayer;
 
 void ResizeAndCenterWindow();
 
@@ -6555,7 +6521,6 @@ int processMainMenu()
 
 		LastKey = SDLK_UNKNOWN;
 		KeyPressed = 0;
-		RejectThisPlayer = 0;
 
 		// Main menu loop
 		do
@@ -8002,7 +7967,6 @@ int SelectTexture()
 	return ItemChoose;
 }
 //----------MAIN MENU IN GAME------------//
-bool IsGameActive();
 int LastLookTime = 0;
 
 int ProcessGMainMenu()
@@ -8040,7 +8004,7 @@ int ProcessGMainMenu()
 	GP_Button* SaveBtn = GMM.addGP_Button( nullptr, 43, 70 + 31 * 1, BTNS.GPID, 7, 6 );
 	SaveBtn->UserParam = mcmSave;
 	SaveBtn->OnUserClick = &MMItemChoose;
-	if ( !( IsGameActive() || use_gsc_network_protocol ) )
+	if ( !use_gsc_network_protocol )
 	{
 		GP_Button* LoadBtn = GMM.addGP_Button( nullptr, 43, 70 + 31 * 2, BTNS.GPID, 5, 4 );
 		LoadBtn->UserParam = mcmLoad;
@@ -8710,7 +8674,6 @@ bool IngameYesNoDialog( char* dialog_text )
 
 bool Lobby = 0;
 void REPLAY();
-void LOOSEANDEXITFAST();
 void EndGSC_Reporting();
 
 extern int screen_width;
@@ -8831,7 +8794,6 @@ StartPlay://IMPORTANT: Main game loop
 				if ( GameExit )
 				{
 					IAmLeft();
-					LOOSEANDEXITFAST();
 					CloseMPL();
 					ShutdownMultiplayer( 0 );
 				}

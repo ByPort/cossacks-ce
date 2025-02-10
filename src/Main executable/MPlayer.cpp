@@ -30,7 +30,6 @@
 #pragma pack(4)
 #include "Pinger.h"
 #pragma pack(1)
-#include "IR.h"
 
 #include "PlayerInfo.h"
 extern PlayerInfo PINFO[8];
@@ -2713,8 +2712,6 @@ void xAnalyseMessages()
 	}
 }
 
-void LOOSEANDEXITFAST();
-
 void IAmLeft()
 {
 	if (DoNewInet)
@@ -2823,11 +2820,7 @@ extern int SUBTIME;
 extern int NPROCM;
 extern int TPROCM;
 extern byte PlayGameMode;
-void DontMakeRaiting();
-bool IsGameActive();
-void DontMakeRaiting();
 bool CheckInternet();
-void StopRaiting();
 extern City CITY[8];
 extern int SumAccount[8];
 
@@ -3148,11 +3141,6 @@ void HandleMultiplayer()
 											byte NIR = NatRefTBL[NI];
 											if (SumAccount[NIR] == MAXACC)
 											{
-												if (IsGameActive())
-												{
-													DontMakeRaiting();
-													ShowCentralText( "NORATE", 400 );
-												}
 												CmdEndGame( PINFO[i].ColorID, 5, 104 );
 											}
 											else
@@ -3165,18 +3153,9 @@ void HandleMultiplayer()
 											if (CITY[NatRefTBL[MyNation]].Account < ( MAXACC * 2 ) / 4)
 											{
 												CmdEndGame( MyNation, 4, 106 );//defeat
-												if (IsGameActive())
-												{
-													ShowCentralText( "SPECIALDEFEAT", 400 );
-												}
 											}
 											else
 											{
-												if (IsGameActive())
-												{
-													StopRaiting();
-													ShowCentralText( "INCOMTXT", 400 );
-												}
 												CmdEndGame( PINFO[i].ColorID, 5, 107 );
 											}
 										}
@@ -3885,7 +3864,6 @@ void LoadSaveFile()
 void CmdLoadNetworkGame( byte NI, int ID, char* Name );
 int LastSynTime = 0;
 extern char LASTSAVEFILE[64];
-void DontMakeRaiting();
 void ExplorerOpenRef( int Index, char* ref );
 int PREVSYNC = 0;
 void SyncroDoctor()
@@ -3895,15 +3873,6 @@ void SyncroDoctor()
 	int tc = GetSDLTickCount();
 	if (tc - LastSynTime > 30000 || tc < LastSynTime)
 	{
-		if (LASTSAVEFILE[0])
-		{
-			DontMakeRaiting();
-			//CmdLoadNetworkGame(MyNation,0,LASTSAVEFILE);
-		}
-		else
-		{
-			DontMakeRaiting();
-		};
 		//if(MyDPID==PlayersID[0]){
 		// SaveGame("SYNCRO.sav","SYNCRO",0);
 		// strcpy(SaveFileName,"SYNCRO.sav");

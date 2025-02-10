@@ -878,7 +878,6 @@ extern bool PATROLMODE;
 extern byte NeedToPopUp;
 short WheelDelta = 0;
 void IAmLeft();
-void LOOSEANDEXITFAST();
 extern bool DoNewInet;
 bool ReadWinString( GFILE* F, char* STR, int Max );
 void OnWTPacket( WPARAM wSerial, LPARAM hCtx );
@@ -1107,7 +1106,6 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 	case SDL_EVENT_QUIT:
 		//Leave game and assign defeat
 		IAmLeft();
-		LOOSEANDEXITFAST();
 		break;
 
 	// Handled by SDL_AppQuit
@@ -2735,7 +2733,6 @@ void WaitToTime( int Time )
 int NeedCurrentTime = 0;
 extern bool PreNoPause;
 void StopPlayCD();
-void ProcessUpdate();
 extern byte CaptState;
 extern byte SaveState;
 void WritePitchTicks();
@@ -2854,8 +2851,6 @@ void PostDrawGameProcess()
 	}
 
 	int difTime = GetSDLTickCount() - AutoTime;
-
-	ProcessUpdate();
 
 	int MaxDT = 60000;
 
@@ -3014,13 +3009,11 @@ extern char RECFILE[128];
 
 void PerformNewUpgrade( Nation* NT, int UIndex, OneObject* OB );
 
-bool IsGameActive();
-
 void PrepareToGame()
 {
 	if (!PlayGameMode)
 	{
-		if (NPlayers > 1 && ( IsGameActive() || use_gsc_network_protocol ) && !RecordMode)
+		if (NPlayers > 1 && use_gsc_network_protocol && !RecordMode)
 		{
 			RecordMode = true;
 			sprintf( RECFILE, "Autorecord\\%s", CurrentMap );

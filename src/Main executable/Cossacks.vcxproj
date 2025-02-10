@@ -290,7 +290,6 @@
     <ClInclude Include="HTTP\HttpComm.h" />
     <ClInclude Include="Icons.h" />
     <ClInclude Include="Icontool.h" />
-    <ClInclude Include="Ir.h" />
     <ClInclude Include="Lines.h" />
     <ClInclude Include="Loadsave.h" />
     <ClInclude Include="MapDiscr.h" />

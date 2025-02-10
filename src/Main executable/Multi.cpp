@@ -25,7 +25,6 @@
 #include "DrawForm.h"
 
 #pragma pack(1)
-#include "IR.h"
 
 
 #include "PlayerInfo.h"
@@ -1272,7 +1271,6 @@ void ComDoVote( DWORD DPID, byte result )
 		VotingResult[i] = result;
 	};
 };
-void DontMakeRaiting();
 extern bool EnterChatMode;
 extern bool KeyPressed;
 extern SDL_Keycode LastKey;
@@ -1325,7 +1323,6 @@ void ProcessVotingKeys()
 			char buf[200];
 			sprintf( buf, GetTextByID( "PSR_ACCEPT" ) );
 			CreateTimedHintEx( buf, kSystemMessageDisplayTime, 32 );//All players have accepted the offer. This game will not be rated.
-			DontMakeRaiting();
 			if ( use_gsc_network_protocol )
 			{
 				ExplorerOpenRef( 0, "GW|norate" );
@@ -1520,15 +1517,9 @@ extern bool TP_Made;
 extern bool LockPause;
 extern bool ShowStat;
 
-void SetBrokenState();
-
 void __EndGame( byte NI, byte state )
 {
 	int state0 = state;
-	if ( state > 2 )
-	{
-		SetBrokenState();
-	}
 
 	if ( state == 3 || state == 4 )
 	{
@@ -1590,20 +1581,6 @@ void __EndGame( byte NI, byte state )
 		}
 
 		WaitState = 1;
-		for ( int i = 0; i < NPlayers; i++ )if ( PINFO[i].ColorID == NI )
-		{
-			if ( state == 1 )
-			{
-				LOOSEIGAME( PINFO[i].name );
-			}
-			else
-			{
-				if ( state == 2 )
-				{
-					WINIGAME( PINFO[i].name );
-				}
-			}
-		}
 	}
 	else
 	{

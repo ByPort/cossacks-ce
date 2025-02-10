@@ -128,10 +128,25 @@ void xBlockWrite( SaveBuf* SB, void* Data, int Size )
 	memcpy( SB->Buf + SB->Size, Data, Size );
 	SB->Size += Size;
 };
+void xBlockSet( SaveBuf* SB, int Value, int Size )
+{
+	while (SB->Size + Size > SB->RealSize)
+	{
+		SB->RealSize += 65536;
+		SB->Buf = (byte*) realloc( SB->Buf, SB->RealSize );
+	};
+	memset( SB->Buf + SB->Size, Value, Size );
+	SB->Size += Size;
+};
 void xBlockRead( SaveBuf* SB, void* Data, int Size )
 {
 	//assert(SB->Buf&&SB->Pos+Size<=SB->Size);
 	if (SB->Buf)memcpy( Data, SB->Buf + SB->Pos, Size );
+	SB->Pos += Size;
+};
+void xBlockSeek(SaveBuf* SB, int Size)
+{
+	//assert(SB->Buf&&SB->Pos+Size<=SB->Size);
 	SB->Pos += Size;
 };
 void SAVMES( SaveBuf* ff1, char* mes )
@@ -2868,8 +2883,6 @@ int GetMapSUMM( char* Name )
 	return s;
 }
 
-int GetCurGamePtr( byte** Ptr );
-
 extern int MaxPeaceTime;
 
 extern int PeaceTimeStage;
@@ -2946,11 +2959,12 @@ void PreSaveGame( SaveBuf* SB, char* Messtr, int ID )
 	int v = tmtmt + CURTMTMT;
 	xBlockWrite( SB, &v, 4 );
 	xBlockWrite( SB, &GameTime, 4 );
-	byte* Ptr;
-	sz = GetCurGamePtr( &Ptr );
 
+	// This used to write a SaveGame CURIGAME to the save file, but it's outdated and not used anymore
+	sz = 1531;
 	xBlockWrite( SB, &sz, 4 );
-	xBlockWrite( SB, Ptr, sz );
+	xBlockSet( SB, 0, sz );
+
 	xBlockWrite( SB, &BalloonState, 4 );
 	xBlockWrite( SB, &CannonState, 4 );
 	xBlockWrite( SB, &NoArtilleryState, 4 );
@@ -3002,7 +3016,6 @@ void SaveGame( char* Name, char* Messtr, int ID )
 void ResearchCurrentIsland( byte Nat );
 void SetMonstersInCells();
 void CreateMiniMap();
-void UpdateCurGame();
 
 char PL_Names[8][32];
 byte PL_Colors[8];
@@ -3148,11 +3161,10 @@ void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 	xBlockRead( SB, &CURTMTMT, 4 );
 	xBlockRead( SB, &GameTime, 4 );
 
-	byte* Ptr;
-	sz = GetCurGamePtr( &Ptr );
-
+	// This used to read a SaveGame CURIGAME from the save file, but it's outdated and not used anymore
 	xBlockRead( SB, &sz, 4 );
-	xBlockRead( SB, Ptr, sz );
+	xBlockSeek( SB, sz );
+
 	xBlockRead( SB, &BalloonState, 4 );
 	xBlockRead( SB, &CannonState, 4 );
 	xBlockRead( SB, &NoArtilleryState, 4 );
@@ -3192,7 +3204,6 @@ void SFLB_PreLoadGame( SaveBuf* SB, bool LoadNation )
 		xBlockRead( SB, &SaveState, 1 );
 	}
 
-	UpdateCurGame();
 	CreateMiniMap();
 }
 
