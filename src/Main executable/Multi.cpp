@@ -2830,9 +2830,9 @@ void ClearSFNames()
 	};
 	NSFNames = 0;
 };
-void InstallSFName( WIN32_FIND_DATA* FD )
+void InstallSFName( char* cFileName )
 {
-	ResFile ff1 = RReset( FD->cFileName );
+	ResFile ff1 = RReset( cFileName );
 	char nam[128];
 	if ( ff1 != INVALID_HANDLE_VALUE )
 	{
@@ -2851,10 +2851,10 @@ void InstallSFName( WIN32_FIND_DATA* FD )
 				RBlockRead( ff1, nam, nlen );
 				RClose( ff1 );
 				PLNames[NSFNames] = new char[strlen( nam ) + 1];
-				SFNames[NSFNames] = new char[strlen( FD->cFileName ) + 1];
+				SFNames[NSFNames] = new char[strlen( cFileName ) + 1];
 				PLID[NSFNames] = lap;
 				strcpy( PLNames[NSFNames], nam );
-				strcpy( SFNames[NSFNames], FD->cFileName );
+				strcpy( SFNames[NSFNames], cFileName );
 				NSFNames++;
 			}
 			else RClose( ff1 );
@@ -2865,12 +2865,16 @@ void InstallSFName( WIN32_FIND_DATA* FD )
 void CreateSFList()
 {
 	NSFNames = 0;
-	WIN32_FIND_DATA FD;
-	HANDLE HF = FindFirstFile( "*.sav", &FD );
-	if ( HF != INVALID_HANDLE_VALUE )
+	int pathN;
+	char** paths = SDL_GlobDirectory(".", ".sav", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		InstallSFName( &FD );
-		while ( FindNextFile( HF, &FD ) )InstallSFName( &FD );
+		for (int i = 0; i < pathN; i++)
+		{
+			InstallSFName( paths[i] );
+		}
+
+		SDL_free(paths);
 	};
 };
 //2. Search for name of the game,returns -1 if name not found

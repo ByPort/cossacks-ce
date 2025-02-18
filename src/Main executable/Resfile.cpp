@@ -7,6 +7,7 @@
  */
 
 #include <windows.h>
+#include <SDL3/SDL_filesystem.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "unrar.h"
@@ -78,7 +79,7 @@ void EraseFName( ResFile F )
 {
 	for (int i = 0; i < NHNames; i++)if (FHANDLES[i] == F)
 	{
-		DeleteFile( FHNames[i] );
+		SDL_RemovePath( FHNames[i] );
 		free( FHNames[i] );
 		if (i < NHNames - 1)
 		{
@@ -91,7 +92,10 @@ void EraseFName( ResFile F )
 
 void EraseAllFNames()
 {
-	for (int i = 0; i < NHNames; i++)DeleteFile( FHNames[i] );
+	for (int i = 0; i < NHNames; i++)
+	{
+		SDL_RemovePath( FHNames[i] );
+	}
 }
 
 void RCloseEx( ResFile hFile );

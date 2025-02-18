@@ -21,7 +21,7 @@ The list is not exhaustive and will be updated as the project progresses.
 | Migrate from DirectSound to SDL | ✅ Done | The sounds are a little "crunchy" |
 | Remove DirectPlay | ✅ Done | Hidden under the `NODPLAY` definition (lobby works, but the gameplay was not tested) |
 | Migrate Music system (MCI CD audio) to SDL | ✅ Done ||
-| Remove Windows-specific symbols and types | ⏳ In Progress | Things left to be migrated: DLL loading, FS management, registry management, misc. |
+| Remove Windows-specific symbols and types | ⏳ In Progress | Things left to be migrated: DLL loading, registry management, types (e.g. DWORD), misc. |
 | Migrate window management from Win32 to SDL | ✅ Done | DirectPlay still seems to need an HWND pointer |
 | Migrate from Winsock to cross-platform sockets | 🚧 Not Started ||
 | Remove or replace binary dependencies | 🚧 Not Started | Known so far: `Pinger.lib`, `unrar.dll`, `gw_server.dll`, `dplayx.lib` (when `NODPLAY` is not defined) |

@@ -1,5 +1,6 @@
 #include <chrono>
 #include <ctime>
+#include <string>
 
 //If you don't include UdpHolePuncher.h first,
 //it's winsock includes will mess up the project >_<
@@ -6748,10 +6749,10 @@ void FreeNames()
 
 extern int sfVersion;
 
-void InstallName( ListBox* LB, WIN32_FIND_DATA* FD, char* StartDir )
+void InstallName( ListBox* LB, const char* cFileName, char* StartDir )
 {
 	char CCC[256];
-	sprintf( CCC, "%s%s", StartDir, FD->cFileName );
+	sprintf( CCC, "%s%s", StartDir, cFileName );
 	ResFile ff1 = RReset( CCC );
 	if ( ff1 != INVALID_HANDLE_VALUE )
 	{
@@ -6789,33 +6790,44 @@ void InstallName( ListBox* LB, WIN32_FIND_DATA* FD, char* StartDir )
 
 void SFLB_CreateGamesList( ListBox* LB )
 {
-	WIN32_FIND_DATA FD;
 	ClearNames();
-	HANDLE HF = FindFirstFile( "*.sav", &FD );
-	if ( HF != INVALID_HANDLE_VALUE )
+	int pathN;
+	char** paths = SDL_GlobDirectory(".", "*.sav", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		InstallName( LB, &FD, "" );
-		while ( FindNextFile( HF, &FD ) )InstallName( LB, &FD, "" );
+		for (int i = 0; i < pathN; i++)
+		{
+			InstallName( LB, paths[i], "" );
+		}
+
+		SDL_free(paths);
 	};
 }
 
 void CreateRecList( ListBox* LB )
 {
-	WIN32_FIND_DATA FD;
 	//ClearNames();
-	HANDLE HF = FindFirstFile( "*.rec", &FD );
-	if ( HF != INVALID_HANDLE_VALUE )
+	int pathN;
+	char** paths = SDL_GlobDirectory(".", "*.rec", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		InstallName( LB, &FD, "" );
-		while ( FindNextFile( HF, &FD ) )InstallName( LB, &FD, "" );
-		FindClose( HF );
+		for (int i = 0; i < pathN; i++)
+		{
+			InstallName( LB, paths[i], "" );
+		}
+
+		SDL_free(paths);
 	};
-	HF = FindFirstFile( "Autorecord\\*.rec", &FD );
-	if ( HF != INVALID_HANDLE_VALUE )
+
+	paths = SDL_GlobDirectory("Autorecord", "*.rec", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		InstallName( LB, &FD, "Autorecord\\" );
-		while ( FindNextFile( HF, &FD ) )InstallName( LB, &FD, "Autorecord\\" );
-		FindClose( HF );
+		for (int i = 0; i < pathN; i++)
+		{
+			InstallName( LB, paths[i], "Autorecord\\" );
+		}
+
+		SDL_free(paths);
 	};
 }
 
@@ -7563,7 +7575,7 @@ void ProcessGSaveMap()
 			if ( cc )
 			{
 				strcpy( cc, ".bak" );
-				DeleteFile( cc );
+				SDL_RemovePath( cc );
 				rename( GameName, ccc );
 			};
 		};
@@ -10105,18 +10117,26 @@ void CreateHiMap()
 	}
 }
 
+extern void SplitPath(char* fullpath, std::string& path, std::string& filename);
+
 //----------------------LOADING THE FILE--------------------//
 void CreateFilesList( char* Mask, ListBox* LB )
 {
-	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( Mask, &FD );
-	if ( H != INVALID_HANDLE_VALUE )
+	std::string path;
+	std::string filename;
+	SplitPath(Mask, path, filename);
+
+	int pathN;
+	char** paths = SDL_GlobDirectory(path.c_str(), filename.c_str(), 0, &pathN);
+
+	if ( pathN > 0 )
 	{
-		do
+		for (int i = 0; i < pathN; i++)
 		{
-			LB->AddItem( FD.cFileName, 0 );
-		} while ( FindNextFile( H, &FD ) );
-		FindClose( H );
+			LB->AddItem( paths[i], 0);
+		}
+		
+		SDL_free(paths);
 	}
 }
 
@@ -12169,14 +12189,15 @@ AddMissionsPack::AddMissionsPack()
 {
 	Pack = nullptr;
 	NMiss = 0;
-	WIN32_FIND_DATA SR;
-	HANDLE H = FindFirstFile( "UserMissions\\*.add", &SR );
-	if ( H != INVALID_HANDLE_VALUE )
+
+	int pathN;
+	char** paths = SDL_GlobDirectory("UserMissions", "*.add", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		do
+		for (int i = 0; i < pathN; i++)
 		{
 			char ccc[128];
-			sprintf( ccc, "UserMissions\\%s", SR.cFileName );
+			sprintf( ccc, "UserMissions\\%s", paths[i] );
 			GFILE* F = Gopen( ccc, "r" );
 			if ( F )
 			{
@@ -12203,8 +12224,9 @@ AddMissionsPack::AddMissionsPack()
 				Gclose( F );
 				NMiss++;
 			};
-		} while ( FindNextFile( H, &SR ) );
-		FindClose( H );
+		}
+
+		SDL_free(paths);
 	};
 };
 AddMissionsPack::~AddMissionsPack()
@@ -15168,15 +15190,17 @@ void ClearPieces()
 void ReadAllPieces()
 {
 	ClearPieces();
-	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( "UserPieces\\*.smp", &FD );
-	if ( H != INVALID_HANDLE_VALUE )
+
+	int pathN;
+	char** paths = SDL_GlobDirectory("UserPieces", "*.smp", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		do
+		for (int i = 0; i < pathN; i++)
 		{
-			AddPiece( FD.cFileName );
-		} while ( FindNextFile( H, &FD ) );
-		FindClose( H );
+			AddPiece( paths[i] );
+		}
+
+		SDL_free(paths);
 	};
 };
 ListBox* ED_PLIST;
@@ -16465,14 +16489,15 @@ extern bool SafeLoad;
 void ReadClanData()
 {
 	SafeLoad = 1;
-	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( "Clans\\*.clan", &FD );
-	if ( H != INVALID_HANDLE_VALUE )
+
+	int pathN;
+	char** paths = SDL_GlobDirectory("Clans", "*.clan", 0, &pathN);
+	if ( pathN > 0 )
 	{
-		do
+		for (int i = 0; i < pathN; i++)
 		{
 			char ccc[128];
-			sprintf( ccc, "Clans\\%s", FD.cFileName );
+			sprintf( ccc, "Clans\\%s", paths[i] );
 			FILE* F = fopen( ccc, "r" );
 			if ( F )
 			{
@@ -16503,7 +16528,7 @@ void ReadClanData()
 								CLINFO[NClans].Active.LoadPicture( ccc );
 								sprintf( ccc, "Clans\\%s", cc3 );
 								CLINFO[NClans].Passive.LoadPicture( ccc );
-								strcpy( ccc, FD.cFileName );
+								strcpy( ccc, paths[i] );
 								char* ccx = strstr( ccc, ".clan" );
 								if ( !ccx )ccx = strstr( ccc, ".CLAN" );
 								if ( !ccx )ccx = strstr( ccc, ".Clan" );
@@ -16517,9 +16542,9 @@ void ReadClanData()
 				}
 				fclose( F );
 			}
-		} while ( FindNextFile( H, &FD ) );
+		}
 
-		FindClose( H );
+		SDL_free(paths);
 	}
 
 	SafeLoad = 0;

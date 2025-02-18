@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <SDL3/SDL_filesystem.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -607,17 +608,19 @@ void OneMap::AddMapPicture( char* Name, int x, int y, int dx, int dy, int Sprite
 	OMP->Sprite = Sprite;
 	int NF = 0;
 	char cc[128];
-	sprintf( cc, "Internet\\Cash\\%s_*.gp", Name );
+	sprintf( cc, "%s_*.gp", Name );
 	int L = strlen( Name );
-	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( cc, &FD );
-	if (H != INVALID_HANDLE_VALUE)
+
+	int pathN;
+	char** paths = SDL_GlobDirectory("Internet/Cash", cc, 0, &pathN);
+
+	if (pathN > 0)
 	{
-		do
+		for (int i = 0; i < pathN && NF < 15; i++)
 		{
-			sprintf( cc, "Internet\\Cash\\%s", FD.cFileName );
+			sprintf( cc, "Internet\\Cash\\%s", paths[i] );
 			cc[strlen( cc ) - 3] = 0;
-			int scale = atoi( FD.cFileName + L + 1 );
+			int scale = atoi( paths[i] + L + 1);
 			int GPI = GPS.PreLoadGPImage( cc );
 			if (GPI != -1)
 			{
@@ -630,7 +633,9 @@ void OneMap::AddMapPicture( char* Name, int x, int y, int dx, int dy, int Sprite
 					OMP->NScales = NF;
 				};
 			};
-		} while (FindNextFile( H, &FD ) && NF < 15);
+		}
+
+		SDL_free(paths);
 	};
 	if (NF)NMapPix++;
 };

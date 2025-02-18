@@ -137,18 +137,4 @@ _asm
 	}
 }
 
-BOOL isiFileExists(LPSTR lpszFileName)
-{
-	WIN32_FIND_DATA	FindData;
-	HANDLE			hFindFile;
-	
-	if((hFindFile=FindFirstFile(lpszFileName,&FindData))!=INVALID_HANDLE_VALUE)
-		{
-			FindClose(hFindFile);
-			return TRUE;
-		}
-	else
-		return FALSE;
-}
-
 #pragma warning (default : 4035)

@@ -2,7 +2,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include <string>
 #include <stdio.h>
+#include <SDL3/SDL_filesystem.h>
 #include "GSCtypes.h"
 #include "GSCarch.h"
 #include "GSCset.h"
@@ -24,18 +26,14 @@ CGSCset::~CGSCset()
 LPGSCfile CGSCset::gOpenFile( LPCSTR lpcsFileName, bool Only )
 {
 	LPGSCfile		gFile = NULL;
-	HANDLE			hFindFile;
-	WIN32_FIND_DATA	FindData;
 	BOOL			isArch = TRUE;
 
 	if (!Only)
 	{
-		hFindFile = FindFirstFile( lpcsFileName, &FindData );
-		if (hFindFile != INVALID_HANDLE_VALUE)
+		if (SDL_GetPathInfo(lpcsFileName, nullptr))
 		{
 			isArch = FALSE;
 		}
-		FindClose( hFindFile );
 	}
 
 	if (isArch)
@@ -166,11 +164,11 @@ VOID AddItem( LPGSCFileList pFileList, LPCSTR lpcsFileName )
 	};
 }
 
+extern void SplitPath(char* fullpath, std::string& path, std::string& filename);
+
 LPGSCFindInfo CGSCset::gFindFirst( LPCSTR lpcsMask )
 {
 	LPGSCFindInfo lpFindInfo = NULL;
-	WIN32_FIND_DATA	FindData;
-	HANDLE	hFindFile;
 	LPGSCFileList	lpFileList = NULL;
 
 	CHAR	sUpMask[64];
@@ -178,9 +176,14 @@ LPGSCFindInfo CGSCset::gFindFirst( LPCSTR lpcsMask )
 	strcpy( sUpMask, lpcsMask );
 	_strupr( sUpMask );
 
-	hFindFile = FindFirstFile( sUpMask, &FindData );
+	std::string path;
+	std::string filename;
+	SplitPath(sUpMask, path, filename);
 
-	if (hFindFile != INVALID_HANDLE_VALUE)
+	int pathN;
+	char** paths = SDL_GlobDirectory(path.c_str(), filename.c_str(), SDL_GLOB_CASEINSENSITIVE, &pathN);
+
+	if (pathN > 0)
 	{
 		lpFindInfo = new TGSCFindInfo;
 		lpFindInfo->m_Pos = NULL;
@@ -189,21 +192,24 @@ LPGSCFindInfo CGSCset::gFindFirst( LPCSTR lpcsMask )
 		lpFileList = new TGSCFileList;
 		lpFindInfo->m_FileList = lpFileList;
 		lpFindInfo->m_Pos = lpFileList;
-		lpFileList->m_NextEntry = NULL;
-		strcpy( lpFileList->m_FileName, FindData.cFileName );
-		_strupr( FindData.cFileName );
 
-		while (FindNextFile( hFindFile, &FindData ))
+		lpFileList->m_NextEntry = NULL;
+		strcpy( lpFileList->m_FileName, paths[0] );
+		// FIXME: seems like a bug, should have been lpFileList->m_FileName
+		_strupr( paths[0] );
+
+		for (int i = 1; i < pathN; i++)
 		{
 			lpFileList->m_NextEntry = new TGSCFileList;
 			lpFileList = lpFileList->m_NextEntry;
 			lpFileList->m_NextEntry = NULL;
-			strcpy( lpFileList->m_FileName, FindData.cFileName );
-			_strupr( FindData.cFileName );
-		};
-	};
+			strcpy( lpFileList->m_FileName, paths[i] );
+			// FIXME: seems like a bug, should have been lpFileList->m_FileName
+			_strupr( paths[i] );
+		}
 
-	FindClose( hFindFile );
+		SDL_free(paths);
+	};
 
 	LPGSCArchList	pArchList = m_ArchList;
 	LPGSCFindData	pFindData;
@@ -286,36 +292,24 @@ void GSC_OpenError();
 //4) A*.gsc
 BOOL CGSCset::gOpen()
 {
-	HANDLE hFindFile;
-	WIN32_FIND_DATA FindData;
 	LPGSCArchList pArchList = nullptr;
 	BOOL retval = TRUE;
 
 	m_ArchList = nullptr;
 
-	hFindFile = FindFirstFile( "override.gsc", &FindData );
-	if (INVALID_HANDLE_VALUE != hFindFile)
+	if (SDL_GetPathInfo("override.gsc", nullptr))
 	{
 		pArchList = new TGSCArchList;
 		m_ArchList = pArchList;
 		pArchList->m_NextArch = nullptr;
 		pArchList->m_Arch = new CGSCarch;
-		pArchList->m_Arch->Open( FindData.cFileName );
+		pArchList->m_Arch->Open( "override.gsc" );
 
-		while (FindNextFile( hFindFile, &FindData ))
-		{
-			pArchList->m_NextArch = new TGSCArchList;
-			pArchList = pArchList->m_NextArch;
-
-			pArchList->m_Arch = new CGSCarch;
-			pArchList->m_NextArch = nullptr;
-			pArchList->m_Arch->Open( FindData.cFileName );
-		}
+		// Here was a loop iterating over all "override.gsc" file entries
+		// But since it's a single file, there's no need to iterate over it
 	}
-	FindClose( hFindFile );
 
-	hFindFile = FindFirstFile( "resources.gsc", &FindData );
-	if (INVALID_HANDLE_VALUE != hFindFile)
+	if (SDL_GetPathInfo("resources.gsc", nullptr))
 	{
 		if (nullptr == m_ArchList)
 		{
@@ -330,23 +324,15 @@ BOOL CGSCset::gOpen()
 
 		pArchList->m_NextArch = nullptr;
 		pArchList->m_Arch = new CGSCarch;
-		pArchList->m_Arch->Open( FindData.cFileName );
+		pArchList->m_Arch->Open( "resources.gsc" );
 
-		while (FindNextFile( hFindFile, &FindData ))
-		{
-			pArchList->m_NextArch = new TGSCArchList;
-			pArchList = pArchList->m_NextArch;
-			pArchList->m_Arch = new CGSCarch;
-			pArchList->m_NextArch = nullptr;
-			pArchList->m_Arch->Open( FindData.cFileName );
-		}
+		// Here was a loop iterating over all "resources.gsc" file entries
+		// But since it's a single file, there's no need to iterate over it
 	}
 	else
 	{
 		retval = FALSE;
 	}
-
-	FindClose( hFindFile );
 
 	return retval;
 }

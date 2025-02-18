@@ -1,3 +1,4 @@
+#include <string>
 // TODO: this include forces IChat and IntExplorer to add SDL includes
 // Need to find a way to avoid this
 #include <SDL3/SDL_keycode.h>
@@ -71,3 +72,4 @@ __declspec(dllimport) void LoadPlayerData();
 __declspec(dllimport) int CurPalette;
 
 __declspec(dllimport) uint64_t GetSDLTickCount();
+__declspec(dllimport) void SplitPath(char* fullpath, std::string& path, std::string& filename);

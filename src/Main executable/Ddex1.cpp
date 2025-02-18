@@ -3081,12 +3081,13 @@ void EraseRND()
 	DWORD* RndData = nullptr;
 	word* Ridx = nullptr;
 
-	WIN32_FIND_DATA FD;
-	HANDLE HF = FindFirstFile( "RN? *.m3d", &FD );
-	if (HF != INVALID_HANDLE_VALUE)
+	int pathN;
+	char** paths = SDL_GlobDirectory(".", "RN? *.m3d", 0, &pathN);
+
+	if (pathN > 0)
 	{
-		bool r = true;
-		do
+		// TODO: can use NRND instead of i
+		for (int i = 0; i < pathN; i++)
 		{
 			if (NRND >= MaxRND)
 			{
@@ -3096,12 +3097,20 @@ void EraseRND()
 				Ridx = (word*) realloc( Ridx, 2 * MaxRND );
 			}
 			Ridx[NRND] = NRND;
-			RNDF[NRND] = new char[strlen( FD.cFileName ) + 1];
-			strcpy( RNDF[NRND], FD.cFileName );
-			RndData[NRND] = FD.ftCreationTime.dwHighDateTime;
+			RNDF[NRND] = new char[strlen( paths[i] ) + 1];
+			strcpy( RNDF[NRND], paths[i] );
+			SDL_PathInfo info;
+			SDL_GetPathInfo(paths[i], &info);
+			// I'm not sure if we can use just an SDL_Time later in SortClass,
+			// so converting it to a FILETIME format
+			//uint64_t creationTime = info.create_time / 100 + 116444736000000000LL;
+			//uint32_t _dwHighDateTime = ((uint32_t*)&creationTime)[1];
+			Uint32 dwLowDateTime;
+			Uint32 dwHighDateTime;
+			SDL_TimeToWindows(info.create_time, &dwLowDateTime, &dwHighDateTime);
+			RndData[NRND] = dwHighDateTime;
 			NRND++;
-			r = FindNextFile( HF, &FD ) != 0;
-		} while (r);
+		}
 		if (NRND > 3)
 		{
 			SortClass SORT;
@@ -3114,7 +3123,7 @@ void EraseRND()
 			SORT.Copy( Ridx );
 			for (int i = 0; i < NRND - 3; i++)
 			{
-				DeleteFile( RNDF[Ridx[i]] );
+				SDL_RemovePath( RNDF[Ridx[i]] );
 			}
 		}
 		if (NRND)
@@ -3127,6 +3136,7 @@ void EraseRND()
 			free( Ridx );
 			free( RndData );
 		}
+		SDL_free(paths);
 	}
 }
 

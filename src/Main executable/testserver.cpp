@@ -93,7 +93,7 @@ __declspec( dllexport ) void StartExplorer()
 			RClose( F );
 		}
 		free( buf );
-		DeleteFile( "Internet\\Cash\\IntExplorerNew.dll" );
+		SDL_RemovePath( "Internet\\Cash\\IntExplorerNew.dll" );
 	}
 
 	H_Exp = LoadLibrary( "IntExplorer.dll" );

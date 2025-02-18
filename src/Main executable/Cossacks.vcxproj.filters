@@ -311,6 +311,9 @@
     <ClCompile Include="NewCode\stb_vorbis.c">
       <Filter>NewCode</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>NewCode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3DBars.h">

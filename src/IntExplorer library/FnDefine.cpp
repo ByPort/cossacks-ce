@@ -1,4 +1,6 @@
 #include <windows.h>
+#include <string>
+#include <SDL3/SDL_filesystem.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include <assert.h>
@@ -2243,25 +2245,34 @@ void EnumFilesInDirectory( char* Dir, char** Mask, int NMasks, char* FrameID, ch
 	for (int i = 0; i < NMasks; i++)
 	{
 		sprintf( way, "%s\\%s", tmp, Mask[i] );
-		WIN32_FIND_DATA FD;
-		HANDLE H = FindFirstFile( way, &FD );
-		if (H != INVALID_HANDLE_VALUE)
+
+		std::string path;
+		std::string filename;
+		SplitPath(way, path, filename);
+
+		// TODO: test this
+		int pathN;
+		char** paths = SDL_GlobDirectory(path.c_str(), filename.c_str(), 0, &pathN);
+		if (pathN > 0)
 		{
-			do
+			for (int i = 0; i < pathN; i++)
 			{
-				if (!( strchr( FD.cFileName, '&' ) || strchr( FD.cFileName, '|' ) ))
+				if (!( strchr( paths[i], '&' ) || strchr( paths[i], '|' ) ))
 				{
-					if (FD.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
+					SDL_PathInfo info;
+					sprintf(way, "%s/%s", path.c_str(), paths[i]);
+					SDL_GetPathInfo(way, &info);
+					if (info.type == SDL_PATHTYPE_DIRECTORY)
 					{
-						if (strcmp( FD.cFileName, "." ) && strcmp( FD.cFileName, ".." ))
+						if (strcmp( paths[i], "." ) && strcmp( paths[i], ".." ))
 						{
 							if (NDirs >= MaxDirs)
 							{
 								MaxDirs += 512;
 								Dirs = (char**) realloc( Dirs, MaxDirs << 2 );
 							};
-							Dirs[NDirs] = (char*) malloc( strlen( FD.cFileName ) + 1 );
-							strcpy( Dirs[NDirs], FD.cFileName );
+							Dirs[NDirs] = (char*) malloc( strlen( paths[i] ) + 1 );
+							strcpy( Dirs[NDirs], paths[i] );
 							NDirs++;
 						};
 					}
@@ -2272,12 +2283,14 @@ void EnumFilesInDirectory( char* Dir, char** Mask, int NMasks, char* FrameID, ch
 							MaxFiles += 512;
 							Files = (char**) realloc( Files, MaxFiles << 2 );
 						};
-						Files[NFiles] = (char*) malloc( strlen( FD.cFileName ) + 1 );
-						strcpy( Files[NFiles], FD.cFileName );
+						Files[NFiles] = (char*) malloc( strlen( paths[i] ) + 1 );
+						strcpy( Files[NFiles], paths[i] );
 						NFiles++;
 					};
 				};
-			} while (FindNextFile( H, &FD ));
+			}
+
+			SDL_free(paths);
 		};
 	};
 	//sorting files&dirs

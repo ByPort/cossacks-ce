@@ -238,6 +238,7 @@
     <ClCompile Include="UnRar.cpp" />
     <ClCompile Include="UnSyncro.cpp" />
     <ClCompile Include="Upgrade.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VirtScr.cpp" />
     <ClCompile Include="walls.cpp" />
     <ClCompile Include="Waves.cpp" />

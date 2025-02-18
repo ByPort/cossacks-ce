@@ -1952,7 +1952,7 @@ void Save3DMap( char* Map )
 };
 void RenameAnyway( char* src, char* dst )
 {
-	DeleteFile( dst );
+	SDL_RemovePath( dst );
 	rename( src, dst );
 };
 void FastSave3DMap( char* Map );

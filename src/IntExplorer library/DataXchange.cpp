@@ -2,6 +2,7 @@
 #include <ctime>
 
 #include <windows.h>
+#include <SDL3/SDL_filesystem.h>
 #include "../Main executable/common.h"
 #include "IntExplorer.h"
 #include "ParseRQ.h"
@@ -285,17 +286,18 @@ char* SaveCurrentResultTo( OneSicWindow* OSW, char* dest )
 };
 void EraseTempFiles()
 {
-	WIN32_FIND_DATA FD;
-	HANDLE H = FindFirstFile( "Internet\\Cash\\tempcml_*.cml", &FD );
-	if (H&&H != INVALID_HANDLE_VALUE)
+	int pathN;
+	char** paths = SDL_GlobDirectory("Internet/Cash", "tempcml_*.cml", 0, &pathN);
+	if (pathN > 0)
 	{
-		do
+		for (int i = 0; i < pathN; i++)
 		{
 			char cc[64];
-			sprintf( cc, "Internet\\Cash\\%s", FD.cFileName );
-			DeleteFile( cc );
-		} while (FindNextFile( H, &FD ));
-		FindClose( H );
+			sprintf( cc, "Internet\\Cash\\%s", paths[i] );
+			SDL_RemovePath( cc );
+		}
+
+		SDL_free(paths);
 	};
 };
 void exec_LW_time( int Np, char** par, int* size )
@@ -1155,7 +1157,7 @@ void exec_LW_compose( int Np, char** par, int* size )
 				RBlockWrite( F, Buf, sz );
 				free( Buf );
 				RClose( F1 );
-				DeleteFile( fnm );
+				SDL_RemovePath( fnm );
 			};
 		};
 		RClose( F );
